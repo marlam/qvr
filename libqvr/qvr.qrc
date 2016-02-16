@@ -1,0 +1,7 @@
+<RCC>
+  <qresource>
+    <file>cg-logo.png</file>
+    <file>stereo3d-vs.glsl</file>
+    <file>stereo3d-fs.glsl</file>
+  </qresource>
+</RCC>

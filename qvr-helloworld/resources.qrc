@@ -1,0 +1,11 @@
+<RCC>
+  <qresource>
+    <file>floor-diff.jpg</file>
+    <file>floor-norm.jpg</file>
+    <file>pillar-diff.jpg</file>
+    <file>pillar-norm.jpg</file>
+    <file>pillar-spec.jpg</file>
+    <file>vertex-shader.glsl</file>
+    <file>fragment-shader.glsl</file>
+  </qresource>
+</RCC>

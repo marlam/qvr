@@ -1,0 +1,20 @@
+observer o0
+	type stationary
+
+process master
+	window 0
+		observer o0
+		stereo_mode red_cyan
+		position 100 100
+		size 400 400
+		screen_is_fixed_to_observer false
+		screen_is_given_by_center false
+		screen_wall -1 -1 -1   +1 -1 -1   -1 +1 -1
+	window 1
+		observer o0
+		stereo_mode none
+		position 100 100
+		size 283 283
+		screen_is_fixed_to_observer false
+		screen_is_given_by_center false
+		screen_wall -1 0 -1   0 -1 -1   0 1 -1

@@ -1,0 +1,12 @@
+observer o0
+	type stationary
+
+process master
+	window 0
+		observer o0
+		stereo_mode none
+		display_screen -1
+		fullscreen true
+		screen_is_fixed_to_observer true
+		screen_is_given_by_center true
+		screen_center 0 0 -1

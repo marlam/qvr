@@ -1,0 +1,34 @@
+observer o0
+	type stationary
+
+process master
+	window 0
+		observer o0
+		stereo_mode red_cyan
+		display_screen -1
+		position 100 100
+		size 400 400
+		screen_is_fixed_to_observer true
+		screen_is_given_by_center true
+process slave0
+	launcher ssh jones env LD_LIBRARY_PATH=/home/lambers/install/lib
+	display :0.0
+	window 1
+		observer o0
+		stereo_mode red_cyan
+		display_screen -1
+		position 510 100
+		size 400 400
+		screen_is_fixed_to_observer true
+		screen_is_given_by_center true
+process slave1
+	launcher ssh jones env LD_LIBRARY_PATH=/home/lambers/install/lib
+	display :0.0
+	window 2
+		observer o0
+		stereo_mode red_cyan
+		display_screen -1
+		position 920 100
+		size 400 400
+		screen_is_fixed_to_observer true
+		screen_is_given_by_center true
