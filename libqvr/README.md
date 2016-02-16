@@ -33,44 +33,44 @@ e.g. for the left and right views of a stereo-3D window.
 
 The other functions are all optional and are listed below, with decreasing
 importance:
-- `update()`
+- `update()`  
   This function is called once for every frame. Use it to update your scene
   state, e.g. for animations etc.
   Optionally, this function allows to update custom tracked observers using
   tracking systems of your choice.
-- `wantExit()`
+- `wantExit()`  
   This function is called once per frame to check if your application wants to
   quit.
-- `keyPressEvent()`, `mousePressEvent()`, `mouseMoveEvent()` etc.
+- `keyPressEvent()`, `mousePressEvent()`, `mouseMoveEvent()` etc.  
   These functions handle Qt events. Events from all windows of all processes
   will be sent to your application. You can access information about the
   originating window and process.
-- `serializeDynamicData()`, `deserializeDynamicData()`
+- `serializeDynamicData()`, `deserializeDynamicData()`  
   These functions are only required if you want your application to support
   configurations with multiple processes. Use them to serialize your
   application scene state.
-- `serializeStaticData()`, `deserializeStaticData()`
+- `serializeStaticData()`, `deserializeStaticData()`  
   These functions offer an optimization for serialization. You can serialize
   just the static parts of your application state with them (i.e. the parts that
   do not change after initialization). This avoids sending those parts to
   additional processes with each new frame.
-- `preRenderWindow()`, `postRenderWindow()`
+- `preRenderWindow()`, `postRenderWindow()`  
   These functions are called once per frame for every window, before rendering
   the frame and after rendering it. You can do per-window per-frame
   initializations and cleanups here, or screen-space post-processing.
-- `preRenderProcess()`, `postRenderProcess()`
+- `preRenderProcess()`, `postRenderProcess()`  
   These functions are called once per frame for every process, before rendering
   the frame and after rendering it. You can do per-process per-frame
   initializations and cleanups here.
-- `initWindow()`, `exitWindow()`
+- `initWindow()`, `exitWindow()`  
   These functions are called once per window, before rendering the first frame
   and after rendering the last. You can do per-window initializations and
   cleanups here.
-- `initProcess()`, `exitProcess()`
+- `initProcess()`, `exitProcess()`  
   These functions are called once per process, before rendering the first
   frame and after rendering the last. You can do per-process initializations
   and cleanups here.
-- `getNearFar()`
+- `getNearFar()`  
   Use this to tell QVR which near and far plane values you like to have
   in the frustum passed to render().
 
@@ -81,13 +81,13 @@ Of course, writing messages to `stderr` is still possible.
 ## Launching QVR applications
 
 Each QVR application supports the following command line options:
-- `--qvr-log-level=fatal|warning|info|debug|firehose`
+- `--qvr-log-level=fatal|warning|info|debug|firehose`  
   Set the log level.
-- `--qvr-config=<configfile>`
+- `--qvr-config=<configfile>`  
   Set the configuration file to use. If none is given, a simple default
   configuration will be created. If an Oculus Rift is detected, that default
   configuration will use it.
-- `--qvr-fps=<milliseconds>`
+- `--qvr-fps=<milliseconds>`  
   Print an FPS measurement every x milliseconds.
 
 ## Configuration files
@@ -110,23 +110,23 @@ the rest of the geometry automatically from the known screen dimensions, or by
 explicitly defining the screen geometry in the virtual world space.
 
 Observer properties:
-- `type <static|oculus|custom>`
+- `type <static|oculus|custom>`  
   Static observers stay put, Oculus observers are updated automatically,
   custom observers use a tracking system of your choice.
-- `eye_distance <meters>`
+- `eye_distance <meters>`  
   Interpupillary distance.
-- `position <x> <y> <z>`
+- `position <x> <y> <z>`  
   Initial position of the observer.
-- `forward <x> <y> <z>`
+- `forward <x> <y> <z>`  
   Initial forward (or viewing) direction of the observer.
-- `up <x> <y> <z>`
+- `up <x> <y> <z>`  
   Initial up direction of the observer.
 
 Process properties:
-- `display <name>`
+- `display <name>`  
   Display that this process talks to. For Linux/X11, this is usually something
   like :0, :1, or :0.2.
-- `launcher <prg-and-args>`
+- `launcher <prg-and-args>`  
   Launcher process used to start this process. Only required when processes
   need to run on remote computers. Example for ssh (passwordless login to
   remotehost must be set up):
@@ -135,44 +135,44 @@ Process properties:
   `launcher ssh remotehost env LD_LIBRARY_PATH=/path/to/libs`
 
 Window properties:
-- `observer <id>`
+- `observer <id>`  
   The observer that this window provides a view into the virtual scene for.
   Must be one of the observers defined at the beginning of the configuration
   file.
-- `stereo_mode <none|gl|left|right|red_cyan|green_magenta|amber_blue|oculus>`
+- `stereo_mode <none|gl|left|right|red_cyan|green_magenta|amber_blue|oculus>`  
   Stereo-3D mode to use. None means no stereo (the observer only has a single
   eye); left and right only show the left eye / right eye view in this window,
   the color modes are for the corresponding anaglyph glasses, and oculus is
   for the Oculus Rift. Driver-supported OpenGL stereo (gl) is currently not
   implemented.
-- `display_screen <screen>`
+- `display_screen <screen>`  
   The display of the process may contain multiple screens. This option chooses
   one. The default screen is specified with -1.
-- `fullscreen <true|false>`
+- `fullscreen <true|false>`  
   Whether or not to show the window in fullscreen mode.
-- `position <x> <y>`
+- `position <x> <y>`  
   Window position on screen, in pixels. The default is -1 -1, which means the
   window manager automatically places the window.
-  This property is ignored for fullscreen windows and windows with stereo_mode
+  This property is ignored for fullscreen windows and windows with `stereo_mode`
   oculus.
-- `size <w> <h>`
+- `size <w> <h>`  
   Window size on screen, in pixels.
-  This property is ignored for fullscreen windows and windows with stereo_mode
+  This property is ignored for fullscreen windows and windows with `stereo_mode`
   oculus.
-- `screen_is_fixed_to_observer <true|false>`
+- `screen_is_fixed_to_observer <true|false>`  
   Whether this screen is fixed to the observer, like a head-mounted display,
   or it is fixed in virtual world space.
-- `screen_wall <blx> <bly> <blz> <brx> <bry> <brz> <tlx> <tly> <tlz>`
+- `screen_wall <blx> <bly> <blz> <brx> <bry> <brz> <tlx> <tly> <tlz>`  
   The screen geometry defined by three points: bottom left corner, bottom
   right corner, and top left corner.
-- `screen_is_given_by_center <true|false>`
+- `screen_is_given_by_center <true|false>`  
   Whether this screen is given only by its center (see next option). In this
   case, the full geometry is derived from querying the screen dimensions
   automatically.
-- `screen_center <x> <y> <z>`
+- `screen_center <x> <y> <z>`  
   Center of the screen, usually given relative to the observer (i.e.
   `screen_is_fixed_to_observer` is true).
-- `render_resolution_factor <factor>`
+- `render_resolution_factor <factor>`  
   Optionally, the window can show scenes that were rendered at a different
   resolution than the actual window size. This is useful for example if a
   control window does not need to look good and can render at lower
