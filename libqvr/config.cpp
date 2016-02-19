@@ -51,7 +51,11 @@ QMatrix4x4 QVRObserverConfig::initialEyeMatrix(QVREye eye) const
     QMatrix4x4 viewMatrix;
     viewMatrix.lookAt(initialPosition(), initialPosition() + initialForwardDirection(), initialUpDirection());
     QMatrix4x4 eyeMatrix = viewMatrix.inverted();
-    eyeMatrix.translate((eye == QVR_Eye_Left ? -0.5f : +0.5f) * initialEyeDistance(), 0.0f, 0.0f);
+    if (eye == QVR_Eye_Left) {
+        eyeMatrix.translate(-0.5f * initialEyeDistance(), 0.0f, 0.0f);
+    } else if (eye == QVR_Eye_Right) {
+        eyeMatrix.translate(+0.5f * initialEyeDistance(), 0.0f, 0.0f);
+    }
     return eyeMatrix;
 }
 
@@ -118,7 +122,7 @@ void QVRConfig::createDefault()
         // One observer
         QVRObserverConfig observerConf;
         observerConf._id = "default";
-        observerConf._type = QVR_Observer_Custom;
+        observerConf._type = QVR_Observer_WASDQE;
         // One window
         QVRWindowConfig windowConf;
         windowConf._id = "default";
@@ -196,9 +200,10 @@ bool QVRConfig::readFromFile(const QString& filename)
             }
             // ... or observer properties.
             if (cmd == "type" && arglist.length() == 1
-                    && (arg == "stationary" || arg == "oculus" || arg == "custom")) {
+                    && (arg == "stationary" || arg == "wasdqe" || arg == "oculus" || arg == "custom")) {
                 observerConfig._type = (
                         arg == "stationary" ? QVR_Observer_Stationary
+                        : arg == "wasdqe" ? QVR_Observer_WASDQE
                         : arg == "oculus" ? QVR_Observer_Oculus
                         : QVR_Observer_Custom);
                 continue;

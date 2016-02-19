@@ -1,5 +1,5 @@
 observer o0
-	type stationary
+	type wasdqe
 
 process master
 	window 0

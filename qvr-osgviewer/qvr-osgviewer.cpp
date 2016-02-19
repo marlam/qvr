@@ -37,61 +37,8 @@
 
 QVROSGViewer::QVROSGViewer(osg::ref_ptr<osg::Node> model) :
     _wantExit(false),
-    _model(model),
-    _wasdqeIsPressed { false, false, false, false, false, false },
-    _mouseGrabProcessIndex(-1),
-    _mouseGrabWindowIndex(-1),
-    _mouseGrabInitialized(false),
-    _pos(0.0f, 0.0f, 0.0f),
-    _horzAngle(0.0f),
-    _vertAngle(0.0f)
+    _model(model)
 {
-}
-
-void QVROSGViewer::serializeDynamicData(QDataStream& ds) const
-{
-    ds << _pos << _horzAngle << _vertAngle
-        << _mouseGrabProcessIndex << _mouseGrabWindowIndex
-        << _mouseGrabInitialized;
-}
-
-void QVROSGViewer::deserializeDynamicData(QDataStream& ds)
-{
-    ds >> _pos >> _horzAngle >> _vertAngle
-        >> _mouseGrabProcessIndex >> _mouseGrabWindowIndex
-        >> _mouseGrabInitialized;
-}
-
-void QVROSGViewer::update(const QList<QVRObserver*>& /* customObservers */)
-{
-    if (_wasdqeIsPressed[0] || _wasdqeIsPressed[1] || _wasdqeIsPressed[2] || _wasdqeIsPressed[3]) {
-        QMatrix4x4 viewerMatrix;
-        viewerMatrix.translate(_pos);
-        viewerMatrix.rotate(QQuaternion::fromEulerAngles(_vertAngle, _horzAngle, 0.0f));
-        viewerMatrix = _wasdViewMatrix * viewerMatrix.inverted();
-        QVector3D dir;
-        if (_wasdqeIsPressed[0]) {
-            dir = -viewerMatrix.row(2).toVector3D();
-        } else if (_wasdqeIsPressed[1]) {
-            dir = -viewerMatrix.row(0).toVector3D();
-        } else if (_wasdqeIsPressed[2]) {
-            dir = viewerMatrix.row(2).toVector3D();
-        } else if (_wasdqeIsPressed[3]) {
-            dir = viewerMatrix.row(0).toVector3D();
-        }
-        dir.setY(0.0f);
-        dir.normalize();
-        _pos += dir * 0.04f;
-    }
-    if (_wasdqeIsPressed[4] || _wasdqeIsPressed[5]) {
-        QVector3D dir;
-        if (_wasdqeIsPressed[4]) {
-            dir = QVector3D(0.0f, +1.0f, 0.0f);
-        } else if (_wasdqeIsPressed[5]) {
-            dir = QVector3D(0.0f, -1.0f, 0.0f);
-        }
-        _pos += dir * 0.04f;
-    }
 }
 
 bool QVROSGViewer::wantExit()
@@ -126,26 +73,11 @@ bool QVROSGViewer::initProcess(QVRProcess* /* p */)
     return true;
 }
 
-void QVROSGViewer::preRenderWindow(QVRWindow* w)
-{
-    if (!_mouseGrabInitialized) {
-        if (_mouseGrabProcessIndex == w->processIndex()
-                && _mouseGrabWindowIndex == w->index()) {
-            w->setCursor(Qt::BlankCursor);
-            QCursor::setPos(w->mapToGlobal(QPoint(w->width() / 2, w->height() / 2)));
-        } else {
-            w->unsetCursor();
-        }
-    }
-}
-
 void QVROSGViewer::render(QVRWindow* /* w */,
         unsigned int fboTex,
         const float* frustumLrbtnf,
         const QMatrix4x4& viewMatrix)
 {
-    _mouseGrabInitialized = true; // since preRenderWindow() was executed for all windows
-
     // Set up framebuffer object to render into
     GLint width, height;
     glBindTexture(GL_TEXTURE_2D, fboTex);
@@ -164,11 +96,7 @@ void QVROSGViewer::render(QVRWindow* /* w */,
     _viewer.getCamera()->setProjectionMatrixAsFrustum(
             frustumLrbtnf[0], frustumLrbtnf[1], frustumLrbtnf[2], frustumLrbtnf[3],
             frustumLrbtnf[4], frustumLrbtnf[5]);
-    QMatrix4x4 viewerMatrix;
-    viewerMatrix.translate(_pos);
-    viewerMatrix.rotate(QQuaternion::fromEulerAngles(_vertAngle, _horzAngle, 0.0f));
-    viewerMatrix = viewMatrix * viewerMatrix.inverted();
-    _viewer.getCamera()->setViewMatrix(osg::Matrix(viewerMatrix.constData()));
+    _viewer.getCamera()->setViewMatrix(osg::Matrix(viewMatrix.constData()));
 
     // Render
     _viewer.frame();
@@ -176,107 +104,14 @@ void QVROSGViewer::render(QVRWindow* /* w */,
 
 void QVROSGViewer::keyPressEvent(int /* processIndex */, int /* windowIndex */,
         const QRect& /* windowGeometry */, const QRect& /* screenGeometry */,
-        const float* /* frustumLrbtnf */, const QMatrix4x4& viewMatrix,
+        const float* /* frustumLrbtnf */, const QMatrix4x4& /* viewMatrix */,
         QKeyEvent* event)
 {
     switch (event->key())
     {
     case Qt::Key_Escape:
-        if (_mouseGrabProcessIndex >= 0) {
-            _mouseGrabProcessIndex = -1;
-            _mouseGrabWindowIndex = -1;
-            _mouseGrabInitialized = false;
-        } else {
-            _wantExit = true;
-        }
+        _wantExit = true;
         break;
-    case Qt::Key_W:
-        _wasdqeIsPressed[0] = true;
-        _wasdViewMatrix = viewMatrix;
-        break;
-    case Qt::Key_A:
-        _wasdqeIsPressed[1] = true;
-        _wasdViewMatrix = viewMatrix;
-        break;
-    case Qt::Key_S:
-        _wasdqeIsPressed[2] = true;
-        _wasdViewMatrix = viewMatrix;
-        break;
-    case Qt::Key_D:
-        _wasdqeIsPressed[3] = true;
-        _wasdViewMatrix = viewMatrix;
-        break;
-    case Qt::Key_Q:
-        _wasdqeIsPressed[4] = true;
-        break;
-    case Qt::Key_E:
-        _wasdqeIsPressed[5] = true;
-        break;
-    }
-}
-
-void QVROSGViewer::keyReleaseEvent(int /* processIndex */, int /* windowIndex */,
-        const QRect& /* windowGeometry */, const QRect& /* screenGeometry */,
-        const float* /* frustumLrbtnf */, const QMatrix4x4& /* viewMatrix */,
-        QKeyEvent* event)
-{
-    switch (event->key())
-    {
-    case Qt::Key_W:
-        _wasdqeIsPressed[0] = false;
-        break;
-    case Qt::Key_A:
-        _wasdqeIsPressed[1] = false;
-        break;
-    case Qt::Key_S:
-        _wasdqeIsPressed[2] = false;
-        break;
-    case Qt::Key_D:
-        _wasdqeIsPressed[3] = false;
-        break;
-    case Qt::Key_Q:
-        _wasdqeIsPressed[4] = false;
-        break;
-    case Qt::Key_E:
-        _wasdqeIsPressed[5] = false;
-        break;
-    }
-}
-
-void QVROSGViewer::mousePressEvent(int processIndex, int windowIndex,
-        const QRect& /* windowGeometry */, const QRect& /* screenGeometry */,
-        const float* /* frustumLrbtnf */, const QMatrix4x4& /* viewMatrix */,
-        QMouseEvent* /* event */)
-{
-    _mouseGrabProcessIndex = processIndex;
-    _mouseGrabWindowIndex = windowIndex;
-    _mouseGrabInitialized = false;
-}
-
-void QVROSGViewer::mouseMoveEvent(int processIndex, int windowIndex,
-        const QRect& windowGeometry, const QRect& /* screenGeometry */,
-        const float* /* frustumLrbtnf */, const QMatrix4x4& /* viewMatrix */,
-        QMouseEvent* event)
-{
-    if (_mouseGrabInitialized
-            && _mouseGrabProcessIndex == processIndex
-            && _mouseGrabWindowIndex == windowIndex) {
-        // Horizontal angle
-        float x = event->pos().x();
-        float w = windowGeometry.width();
-        float xf = x / w * 2.0f - 1.0f;
-        _horzAngle = -xf * 180.0f;
-        // Vertical angle
-        // For HMDs, up/down views are realized via head movements. Additional
-        // mouse-based up/down views should be disabled since they lead to
-        // sickness fast ;)
-        if (QVRManager::windowConfig(processIndex, windowIndex).outputMode()
-                != QVR_Output_Stereo_Oculus) {
-            float y = event->pos().y();
-            float h = windowGeometry.height();
-            float yf = y / h * 2.0f - 1.0f;
-            _vertAngle = -yf * 90.0f;
-        }
     }
 }
 

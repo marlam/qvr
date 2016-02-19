@@ -26,6 +26,7 @@
 #include <QDesktopWidget>
 #include <QApplication>
 #include <QTimer>
+#include <QQuaternion>
 
 #include "manager.hpp"
 #include "event.hpp"
@@ -86,6 +87,7 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
     _config(NULL),
     _observers(),
     _customObservers(),
+    _wasdqeObservers(),
     _masterWindow(NULL),
     _masterGLContext(NULL),
     _windows(),
@@ -235,6 +237,18 @@ bool QVRManager::init(QVRApp* app)
         _observers.append(new QVRObserver(o));
         if (_config->observerConfigs()[o].type() == QVR_Observer_Custom)
             _customObservers.append(_observers[o]);
+        if (_config->observerConfigs()[o].type() == QVR_Observer_WASDQE)
+            _wasdqeObservers.append(_observers[o]);
+    }
+    if (!_wasdqeObservers.empty()) {
+        for (int i = 0; i < 6; i++)
+            _wasdqeIsPressed[i] = false;
+        _wasdqeMouseProcessIndex = -1;
+        _wasdqeMouseWindowIndex = -1;
+        _wasdqeMouseInitialized = false;
+        _wasdqePos = QVector3D(0.0f, 0.0f, 0.0f);
+        _wasdqeHorzAngle = 0.0f;
+        _wasdqeVertAngle = 0.0f;
     }
 
     // Find out about our desktop and available screens
@@ -341,15 +355,53 @@ void QVRManager::masterLoop()
         QVRObserver* obs = _observers[o];
         if (obs->config().type() != QVR_Observer_Stationary) {
             QVR_FIREHOSE("  ... updating observer %d", o);
-            if (obs->config().type() == QVR_Observer_Oculus) {
+            switch (obs->config().type()) {
+            case QVR_Observer_Stationary:
+                // nothing to do
+                break;
+            case QVR_Observer_WASDQE:
+                if (_wasdqeIsPressed[0] || _wasdqeIsPressed[1] || _wasdqeIsPressed[2] || _wasdqeIsPressed[3]) {
+                    QMatrix4x4 viewerMatrix = obs->eyeMatrix(QVR_Eye_Center).inverted();
+                    QVector3D dir;
+                    if (_wasdqeIsPressed[0])
+                        dir = -viewerMatrix.row(2).toVector3D();
+                    else if (_wasdqeIsPressed[1])
+                        dir = -viewerMatrix.row(0).toVector3D();
+                    else if (_wasdqeIsPressed[2])
+                        dir = viewerMatrix.row(2).toVector3D();
+                    else if (_wasdqeIsPressed[3])
+                        dir = viewerMatrix.row(0).toVector3D();
+                    dir.setY(0.0f);
+                    dir.normalize();
+                    _wasdqePos += dir * 0.04f;
+                }
+                if (_wasdqeIsPressed[4] || _wasdqeIsPressed[5]) {
+                    QVector3D dir;
+                    if (_wasdqeIsPressed[4]) {
+                        dir = QVector3D(0.0f, +1.0f, 0.0f);
+                    } else if (_wasdqeIsPressed[5]) {
+                        dir = QVector3D(0.0f, -1.0f, 0.0f);
+                    }
+                    _wasdqePos += dir * 0.04f;
+                }
+                {
+                    QMatrix4x4 eyeMatrix = obs->config().initialEyeMatrix(QVR_Eye_Center);
+                    eyeMatrix.translate(_wasdqePos);
+                    eyeMatrix.rotate(QQuaternion::fromEulerAngles(_wasdqeVertAngle, _wasdqeHorzAngle, 0.0f));
+                    obs->setEyeMatrices(eyeMatrix, obs->config().initialEyeDistance());
+                }
+                break;
+            case QVR_Observer_Oculus:
                 for (int w = 0; w < _windows.size(); w++) {
                     if (_windows[w]->observerId() == obs->id())
                         _windows[w]->updateObserver();
                 }
-            } else if (obs->config().type() == QVR_Observer_Custom) {
+                break;
+            case QVR_Observer_Custom:
                 // We already got updated observer information after the
-                // last frame was rendered, via updateCustomObserver() below.
+                // last frame was rendered, via app->update() below.
                 // There is nothing more to do now.
+                break;
             }
         }
     }
@@ -471,6 +523,16 @@ void QVRManager::render()
         GLuint textures[_windows.size()][2];
         for (int w = 0; w < _windows.size(); w++) {
             QVR_FIREHOSE("  ... preRenderWindow(%d)", w);
+            if (!_wasdqeMouseInitialized) {
+                if (_wasdqeMouseProcessIndex == _windows[w]->processIndex()
+                        && _wasdqeMouseWindowIndex == _windows[w]->index()) {
+                    _windows[w]->setCursor(Qt::BlankCursor);
+                    QCursor::setPos(_windows[w]->mapToGlobal(
+                                QPoint(_windows[w]->width() / 2, _windows[w]->height() / 2)));
+                } else {
+                    _windows[w]->unsetCursor();
+                }
+            }
             _app->preRenderWindow(_windows[w]);
             QVR_FIREHOSE("  ... render(%d)", w);
             _windows[w]->getTextures(textures[w]);
@@ -500,6 +562,7 @@ void QVRManager::render()
             QVR_FIREHOSE("  ... postRenderWindow(%d)", w);
             _app->postRenderWindow(_windows[w]);
         }
+        _wasdqeMouseInitialized = true;
         QVR_FIREHOSE("  ... postRenderProcess()");
         _app->postRenderProcess(_thisProcess);
         /* At this point, we must make sure that all textures actually contain
@@ -612,6 +675,104 @@ void QVRManager::processEventQueue()
 {
     while (!eventQueue->empty()) {
         QVREvent e = eventQueue->front();
+        eventQueue->dequeue();
+        if (!_wasdqeObservers.empty()) {
+            bool consumed = false;
+            if (e.type == QVR_Event_KeyPress) {
+                switch (e.keyEvent.key()) {
+                case Qt::Key_Escape:
+                    if (_wasdqeMouseProcessIndex >= 0) {
+                        _wasdqeMouseProcessIndex = -1;
+                        _wasdqeMouseWindowIndex = -1;
+                        _wasdqeMouseInitialized = false;
+                        consumed = true;
+                    }
+                    break;
+                case Qt::Key_W:
+                    _wasdqeIsPressed[0] = true;
+                    consumed = true;
+                    break;
+                case Qt::Key_A:
+                    _wasdqeIsPressed[1] = true;
+                    consumed = true;
+                    break;
+                case Qt::Key_S:
+                    _wasdqeIsPressed[2] = true;
+                    consumed = true;
+                    break;
+                case Qt::Key_D:
+                    _wasdqeIsPressed[3] = true;
+                    consumed = true;
+                    break;
+                case Qt::Key_Q:
+                    _wasdqeIsPressed[4] = true;
+                    consumed = true;
+                    break;
+                case Qt::Key_E:
+                    _wasdqeIsPressed[5] = true;
+                    consumed = true;
+                    break;
+                }
+            } else if (e.type == QVR_Event_KeyRelease) {
+                switch (e.keyEvent.key())
+                {
+                case Qt::Key_W:
+                    _wasdqeIsPressed[0] = false;
+                    consumed = true;
+                    break;
+                case Qt::Key_A:
+                    _wasdqeIsPressed[1] = false;
+                    consumed = true;
+                    break;
+                case Qt::Key_S:
+                    _wasdqeIsPressed[2] = false;
+                    consumed = true;
+                    break;
+                case Qt::Key_D:
+                    _wasdqeIsPressed[3] = false;
+                    consumed = true;
+                    break;
+                case Qt::Key_Q:
+                    _wasdqeIsPressed[4] = false;
+                    consumed = true;
+                    break;
+                case Qt::Key_E:
+                    _wasdqeIsPressed[5] = false;
+                    consumed = true;
+                    break;
+                }
+            } else if (e.type == QVR_Event_MousePress) {
+                _wasdqeMouseProcessIndex = e.processIndex;
+                _wasdqeMouseWindowIndex = e.windowIndex;
+                _wasdqeMouseInitialized = false;
+                consumed = true;
+            } else if (e.type == QVR_Event_MouseMove) {
+                if (_wasdqeMouseInitialized
+                        && _wasdqeMouseProcessIndex == e.processIndex
+                        && _wasdqeMouseWindowIndex == e.windowIndex) {
+                    // Horizontal angle
+                    float x = e.mouseEvent.pos().x();
+                    float w = e.windowGeometry.width();
+                    float xf = x / w * 2.0f - 1.0f;
+                    _wasdqeHorzAngle = -xf * 180.0f;
+                    // Vertical angle
+                    // For HMDs, up/down views are realized via head movements. Additional
+                    // mouse-based up/down views should be disabled since they lead to
+                    // sickness fast ;)
+                    if (windowConfig(e.processIndex, e.windowIndex).outputMode()
+                            != QVR_Output_Stereo_Oculus) {
+                        float y = e.mouseEvent.pos().y();
+                        float h = e.windowGeometry.height();
+                        float yf = y / h * 2.0f - 1.0f;
+                        _wasdqeVertAngle = -yf * 90.0f;
+                    }
+                    consumed = true;
+                }
+            }
+            if (consumed) {
+                continue;
+            }
+        }
         switch (e.type) {
         case QVR_Event_KeyPress:
             _app->keyPressEvent(e.processIndex, e.windowIndex, e.windowGeometry, e.screenGeometry, e.frustum, e.viewMatrix, &e.keyEvent);
@@ -635,6 +796,5 @@ void QVRManager::processEventQueue()
             _app->wheelEvent(e.processIndex, e.windowIndex, e.windowGeometry, e.screenGeometry, e.frustum, e.viewMatrix, &e.wheelEvent);
             break;
         }
-        eventQueue->dequeue();
     }
 }

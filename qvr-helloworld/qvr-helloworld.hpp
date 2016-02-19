@@ -59,8 +59,6 @@ private:
     /* Data not directly relevant for rendering */
     bool _wantExit;             // do we want to exit the app?
     QElapsedTimer _timer;       // used for animation purposes
-    bool _wasdqeIsPressed[6];   // for keyboard interaction with WASD + QE
-    QMatrix4x4 _wasdViewMatrix; // view matrix relevant for WASD movement
 
     /* Static data for rendering. Here, these are OpenGL resources that are
      * initialized per process, so there is no need to serialize them for
@@ -81,12 +79,6 @@ private:
 
     /* Dynamic data for rendering. This needs to be serialized for multi-process
      * rendering) */
-    int _mouseGrabProcessIndex; // for mouse interaction: process and ...
-    int _mouseGrabWindowIndex;  // ... window index of window that grabs mouse
-    bool _mouseGrabInitialized; // flag: did we init the window for mouse?
-    QVector3D _pos;             // viewer position
-    float _horzAngle;           // viewer orientation as angle around the y axis
-    float _vertAngle;           // viewer orientation as angle around the x axis
     float _objectRotationAngle; // animated object rotation
 
     /* Helper function for texture loading */
@@ -114,8 +106,6 @@ public:
 
     bool initProcess(QVRProcess* p) override;
 
-    void preRenderWindow(QVRWindow* w) override;
-
     void render(QVRWindow* w,
             unsigned int fboTex,
             const float* frustumLrbtnf,
@@ -125,18 +115,6 @@ public:
             const QRect& windowGeometry, const QRect& screenGeometry,
             const float* frustumLrbtnf, const QMatrix4x4& viewMatrix,
             QKeyEvent* event) override;
-    void keyReleaseEvent(int processIndex, int windowIndex,
-            const QRect& windowGeometry, const QRect& screenGeometry,
-            const float* frustumLrbtnf, const QMatrix4x4& viewMatrix,
-            QKeyEvent* event) override;
-    void mousePressEvent(int processIndex, int windowIndex,
-            const QRect& windowGeometry, const QRect& screenGeometry,
-            const float* frustumLrbtnf, const QMatrix4x4& viewMatrix,
-            QMouseEvent* event) override;
-    void mouseMoveEvent(int processIndex, int windowIndex,
-            const QRect& windowGeometry, const QRect& screenGeometry,
-            const float* frustumLrbtnf, const QMatrix4x4& viewMatrix,
-            QMouseEvent* event) override;
 };
 
 #endif

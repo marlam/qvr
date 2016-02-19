@@ -2,7 +2,7 @@ observer o0
 	type stationary
 
 observer o1
-	type custom
+	type wasdqe
 
 process master
 	window 0

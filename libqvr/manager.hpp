@@ -25,6 +25,7 @@
 #define QVR_MANAGER_HPP
 
 #include <QObject>
+#include <QVector3D>
 
 template <typename T> class QList;
 class QTimer;
@@ -69,13 +70,21 @@ private:
     QVRApp* _app;
     QVRConfig* _config;
     QList<QVRObserver*> _observers;
-    QList<QVRObserver*> _customObservers;
+    QList<QVRObserver*> _customObservers; // subset of _observers
+    QList<QVRObserver*> _wasdqeObservers; // subset of _observers
     QVRWindow* _masterWindow;
     QOpenGLContext* _masterGLContext;
     QList<QVRWindow*> _windows;
     QVRProcess* _thisProcess;
     QList<QVRProcess*> _slaveProcesses;
     bool _wantExit;
+    bool _wasdqeIsPressed[6];     // WASDQE observers: keys
+    int _wasdqeMouseProcessIndex; // WASDQE observers: process with mouse grab
+    int _wasdqeMouseWindowIndex;  // WASDQE observers: window with mouse grab
+    bool _wasdqeMouseInitialized; // WASDQE observers: was mouse grab initialized
+    QVector3D _wasdqePos;         // WASDQE observers: position
+    float _wasdqeHorzAngle;       // WASDQE observers: angle around the y axis
+    float _wasdqeVertAngle;       // WASDQE observers: angle around the x axis
 
     void processEventQueue();
 

@@ -45,27 +45,11 @@ private:
     // OpenGL objects
     unsigned int _fbo;
     unsigned int _fboDepthTex;
-    // Navigation: mouse-based looking and movement with WASD + QE
-    bool _wasdqeIsPressed[6];
-    QMatrix4x4 _wasdViewMatrix;
-    int _mouseGrabProcessIndex;
-    int _mouseGrabWindowIndex;
-    bool _mouseGrabInitialized;
-    QVector3D _pos;
-    float _horzAngle;
-    float _vertAngle;
 
 public:
-    void serializeDynamicData(QDataStream& ds) const override;
-    void deserializeDynamicData(QDataStream& ds) override;
-
-    void update(const QList<QVRObserver*>& customObservers) override;
-
     bool wantExit() override;
 
     bool initProcess(QVRProcess* p) override;
-
-    void preRenderWindow(QVRWindow* w) override;
 
     void render(QVRWindow* w,
             unsigned int fboTex,
@@ -76,18 +60,6 @@ public:
             const QRect& windowGeometry, const QRect& screenGeometry,
             const float* frustumLrbtnf, const QMatrix4x4& viewMatrix,
             QKeyEvent* event) override;
-    void keyReleaseEvent(int processIndex, int windowIndex,
-            const QRect& windowGeometry, const QRect& screenGeometry,
-            const float* frustumLrbtnf, const QMatrix4x4& viewMatrix,
-            QKeyEvent* event) override;
-    void mousePressEvent(int processIndex, int windowIndex,
-            const QRect& windowGeometry, const QRect& screenGeometry,
-            const float* frustumLrbtnf, const QMatrix4x4& viewMatrix,
-            QMouseEvent* event) override;
-    void mouseMoveEvent(int processIndex, int windowIndex,
-            const QRect& windowGeometry, const QRect& screenGeometry,
-            const float* frustumLrbtnf, const QMatrix4x4& viewMatrix,
-            QMouseEvent* event) override;
 };
 
 #endif

@@ -516,10 +516,10 @@ void QVRWindow::screenGeometry(QVector3D& cornerBottomLeft, QVector3D& cornerBot
         cornerTopLeft = config().screenCornerTopLeft();
     }
     if (config().screenIsFixedToObserver()) {
-        QVector3D o = _observer->centerPosition();
-        cornerBottomLeft += o;
-        cornerBottomRight += o;
-        cornerTopLeft += o;
+        QMatrix4x4 o = _observer->eyeMatrix(QVR_Eye_Center);
+        cornerBottomLeft = o * cornerBottomLeft;
+        cornerBottomRight = o * cornerBottomRight;
+        cornerTopLeft = o * cornerTopLeft;
     }
 }
 
@@ -734,10 +734,10 @@ QMatrix4x4 QVRWindow::getFrustumAndViewMatrix(int viewPass, float near, float fa
     } else {
         // Determine the eye position
         QVector3D eyePosition;
-        if (viewPass == 1 || config().outputMode() == QVR_Output_Right)
+        if (config().outputMode() == QVR_Output_Center)
+            eyePosition = _observer->eyePosition(QVR_Eye_Center);
+        else if (viewPass == 1 || config().outputMode() == QVR_Output_Right)
             eyePosition = _observer->eyePosition(QVR_Eye_Right);
-        else if (config().outputMode() == QVR_Output_Center)
-            eyePosition = _observer->centerPosition();
         else
             eyePosition = _observer->eyePosition(QVR_Eye_Left);
         // Get the geometry of the screen area relative to the eye

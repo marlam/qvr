@@ -1,5 +1,5 @@
 observer default
-	type custom
+	type wasdqe
 	position 0 1.78 0
 	up 0 1 0
 	forward 0 0 -1

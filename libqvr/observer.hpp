@@ -34,7 +34,7 @@ class QVRObserver
 {
 private:
     int _index;
-    QMatrix4x4 _matrix[2];
+    QMatrix4x4 _matrix[3];
 
 public:
     QVRObserver();
@@ -57,19 +57,10 @@ public:
         return eyeMatrix(eye).column(3).toVector3D();
     }
 
-    QVector3D centerPosition() const
-    {
-        return 0.5f * (eyePosition(QVR_Eye_Left) + eyePosition(QVR_Eye_Right));
-    }
-
-    void setEyeMatrices(const QMatrix4x4& leftMatrix, const QMatrix4x4& rightMatrix)
-    {
-        _matrix[QVR_Eye_Left] = leftMatrix;
-        _matrix[QVR_Eye_Right] = rightMatrix;
-    }
-
     void setEyeMatrices(const QMatrix4x4& centerMatrix,
             float eyeDistance = QVRObserverConfig::defaultEyeDistance);
+
+    void setEyeMatrices(const QMatrix4x4& leftMatrix, const QMatrix4x4& rightMatrix);
 };
 
 #endif

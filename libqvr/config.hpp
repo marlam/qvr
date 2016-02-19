@@ -34,13 +34,15 @@
 
 typedef enum {
     QVR_Observer_Stationary,
+    QVR_Observer_WASDQE,
     QVR_Observer_Oculus,
     QVR_Observer_Custom
 } QVRObserverType;
 
 typedef enum {
-    QVR_Eye_Left = 0,
-    QVR_Eye_Right = 1
+    QVR_Eye_Center = 0,
+    QVR_Eye_Left = 1,
+    QVR_Eye_Right = 2
 } QVREye;
 
 typedef enum {

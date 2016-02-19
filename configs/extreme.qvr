@@ -1,5 +1,5 @@
 observer default
-	type stationary
+	type wasdqe
 
 process master
 	window wall1

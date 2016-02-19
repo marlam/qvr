@@ -33,6 +33,7 @@ QVRObserver::QVRObserver() :
 QVRObserver::QVRObserver(int observerIndex) :
     _index(observerIndex)
 {
+    _matrix[QVR_Eye_Center] = config().initialEyeMatrix(QVR_Eye_Center);
     _matrix[QVR_Eye_Left] = config().initialEyeMatrix(QVR_Eye_Left);
     _matrix[QVR_Eye_Right] = config().initialEyeMatrix(QVR_Eye_Right);
 }
@@ -54,18 +55,29 @@ const QVRObserverConfig& QVRObserver::config() const
 
 void QVRObserver::serialize(QDataStream& ds) const
 {
-    ds << _index << _matrix[0] << _matrix[1];
+    ds << _index << _matrix[0] << _matrix[1] << _matrix[2];
 }
 
 void QVRObserver::deserialize(QDataStream& ds)
 {
-    ds >> _index >> _matrix[0] >> _matrix[1];
+    ds >> _index >> _matrix[0] >> _matrix[1] >> _matrix[2];
 }
 
 void QVRObserver::setEyeMatrices(const QMatrix4x4& centerMatrix, float eyeDistance)
 {
+    _matrix[QVR_Eye_Center] = centerMatrix;
     _matrix[QVR_Eye_Left] = centerMatrix;
     _matrix[QVR_Eye_Left].translate(-0.5f * eyeDistance, 0.0f, 0.0f);
     _matrix[QVR_Eye_Right] = centerMatrix;
     _matrix[QVR_Eye_Right].translate(+0.5f * eyeDistance, 0.0f, 0.0f);
+}
+
+void QVRObserver::setEyeMatrices(const QMatrix4x4& leftMatrix, const QMatrix4x4& rightMatrix)
+{
+    // To compute the center matrix, we simply average left and right matrix.
+    // This works if both eyes have the same orientation and only their
+    // position differs. Let's hope that other cases are irrelevant...
+    _matrix[QVR_Eye_Center] = 0.5f * (leftMatrix + rightMatrix);
+    _matrix[QVR_Eye_Left] = leftMatrix;
+    _matrix[QVR_Eye_Right] = rightMatrix;
 }
