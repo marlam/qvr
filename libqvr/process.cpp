@@ -127,6 +127,13 @@ void QVRProcess::sendCmdInit(const QByteArray& serializedStatData)
     write(serializedStatData);
 }
 
+void QVRProcess::sendCmdWasdqeState(const QByteArray& serializedWasdqeState)
+{
+    Q_ASSERT(processId());
+    putChar('w');
+    write(serializedWasdqeState);
+}
+
 void QVRProcess::sendCmdObserver(const QByteArray& serializedObserver)
 {
     Q_ASSERT(processId());
@@ -203,6 +210,12 @@ void QVRProcess::receiveCmdInit(QVRApp* app)
 {
     QDataStream ds(_stdin);
     app->deserializeStaticData(ds);
+}
+
+void QVRProcess::receiveCmdWasdqeState(int* wasdqeMouseProcessIndex, int* wasdqeMouseWindowIndex, bool* wasdqeMouseInitialized)
+{
+    QDataStream ds(_stdin);
+    ds >> *wasdqeMouseProcessIndex >> *wasdqeMouseWindowIndex >> *wasdqeMouseInitialized;
 }
 
 void QVRProcess::receiveCmdObserver(QVRObserver* obs)

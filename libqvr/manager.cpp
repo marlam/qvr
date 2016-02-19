@@ -407,6 +407,14 @@ void QVRManager::masterLoop()
     }
 
     if (_slaveProcesses.size() > 0) {
+        if (!_wasdqeObservers.empty()) {
+            QByteArray serializedWasdqeState;
+            QDataStream serializationDataStream(&serializedWasdqeState, QIODevice::WriteOnly);
+            serializationDataStream << _wasdqeMouseProcessIndex << _wasdqeMouseWindowIndex << _wasdqeMouseInitialized;
+            QVR_FIREHOSE("  ... sending wasdqe state to slave processes");
+            for (int p = 0; p < _slaveProcesses.size(); p++)
+                _slaveProcesses[p]->sendCmdWasdqeState(serializedWasdqeState);
+        }
         for (int o = 0; o < _observers.size(); o++) {
             QVRObserver* obs = _observers[o];
             if (obs->config().type() != QVR_Observer_Stationary) {
@@ -463,7 +471,10 @@ void QVRManager::slaveLoop()
         return;
     }
     QVR_FIREHOSE("  ... got command %c from master", cmd);
-    if (cmd == 'o') {
+    if (cmd == 'w') {
+        _thisProcess->receiveCmdWasdqeState(&_wasdqeMouseProcessIndex,
+                &_wasdqeMouseWindowIndex, &_wasdqeMouseInitialized);
+    } else if (cmd == 'o') {
         QVRObserver o;
         _thisProcess->receiveCmdObserver(&o);
         *(_observers.at(o.index())) = o;
@@ -676,7 +687,9 @@ void QVRManager::processEventQueue()
     while (!eventQueue->empty()) {
         QVREvent e = eventQueue->front();
         eventQueue->dequeue();
-        if (!_wasdqeObservers.empty()) {
+        if (!_wasdqeObservers.empty()
+                && observerConfig(windowConfig(e.processIndex, e.windowIndex)
+                    .observerIndex()).type() == QVR_Observer_WASDQE) {
             bool consumed = false;
             if (e.type == QVR_Event_KeyPress) {
                 switch (e.keyEvent.key()) {

@@ -48,10 +48,11 @@ private:
     bool exit();
 
     // communication functions to be called by the master to apply to slave processes
-    void sendCmdInit(const QByteArray& serializedStatData);     // starts with 'i'
-    void sendCmdObserver(const QByteArray& serializedObserver); // starts with 'o'
-    void sendCmdRender(const QByteArray& serializedDynData);    // starts with 'r'
-    void sendCmdQuit();                                         // is 'q'
+    void sendCmdInit(const QByteArray& serializedStatData);           // starts with 'i'
+    void sendCmdWasdqeState(const QByteArray& serializedWasdqeState); // starts with 'w'
+    void sendCmdObserver(const QByteArray& serializedObserver);       // starts with 'o'
+    void sendCmdRender(const QByteArray& serializedDynData);          // starts with 'r'
+    void sendCmdQuit();                                               // is 'q'
     void waitForSlaveData();
     bool receiveCmdEvent(QVREvent* e);
     bool receiveCmdSync();
@@ -61,6 +62,7 @@ private:
     void sendCmdSync();                                 // is 's'
     bool receiveCmd(char* cmd);                         // will only get the first character
     void receiveCmdInit(QVRApp* app);
+    void receiveCmdWasdqeState(int*, int*, bool*);
     void receiveCmdObserver(QVRObserver* obs);
     void receiveCmdRender(QVRApp* app);
 
