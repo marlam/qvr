@@ -21,8 +21,6 @@
  * SOFTWARE.
  */
 
-#include <cstdlib>
-
 #include <QDir>
 #include <QQueue>
 #include <QDesktopWidget>
@@ -283,14 +281,14 @@ bool QVRManager::init(QVRApp* app)
 
     // Initialize application process and windows
     if (_masterWindow)
-        _masterWindow->winMakeCurrent();
+        _masterWindow->winContext()->makeCurrent(_masterWindow);
     if (!_app->initProcess(_thisProcess))
         return false;
     for (int w = 0; w < _windows.size(); w++)
         if (!_app->initWindow(_windows[w]))
             return false;
     if (_masterWindow)
-        _masterWindow->winDoneCurrent();
+        _masterWindow->winContext()->doneCurrent();
     if (_processIndex == 0) {
         _app->update(_customObservers);
     }
@@ -325,7 +323,7 @@ void QVRManager::masterLoop()
     QVR_FIREHOSE("masterLoop() ...");
 
     if (_masterWindow)
-        _masterWindow->winMakeCurrent();
+        _masterWindow->winContext()->makeCurrent(_masterWindow);
 
     if (_wantExit || _app->wantExit()) {
         QVR_FIREHOSE("  ... exit now!");
@@ -441,7 +439,7 @@ void QVRManager::quit()
 {
     QVR_DEBUG("quitting process %d...", _thisProcess->index());
     if (_masterWindow)
-        _masterWindow->winMakeCurrent();
+        _masterWindow->winContext()->makeCurrent(_masterWindow);
 
     for (int w = _windows.size() - 1; w >= 0; w--) {
         QVR_DEBUG("... exiting window %d", w);
@@ -461,7 +459,7 @@ void QVRManager::render()
     QVR_FIREHOSE("  render() ...");
 
     if (_masterWindow)
-        _masterWindow->winMakeCurrent();
+        _masterWindow->winContext()->makeCurrent(_masterWindow);
 
     float near, far;
     _app->getNearFar(&near, &far);

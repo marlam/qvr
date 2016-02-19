@@ -270,8 +270,8 @@ void QVROSGViewer::mouseMoveEvent(int processIndex, int windowIndex,
         // For HMDs, up/down views are realized via head movements. Additional
         // mouse-based up/down views should be disabled since they lead to
         // sickness fast ;)
-        if (QVRManager::windowConfig(processIndex, windowIndex).stereoMode()
-                != QVR_Stereo_Oculus) {
+        if (QVRManager::windowConfig(processIndex, windowIndex).outputMode()
+                != QVR_Output_Stereo_Oculus) {
             float y = event->pos().y();
             float h = windowGeometry.height();
             float yf = y / h * 2.0f - 1.0f;

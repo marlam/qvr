@@ -4,7 +4,7 @@ observer o0
 process master
 	window 0
 		observer o0
-		stereo_mode none
+		output center
 		display_screen -1
 		position 100 100
 		size 400 800
@@ -12,7 +12,7 @@ process master
 		screen_is_given_by_center true
 	window 1
 		observer o0
-		stereo_mode none
+		output center
 		display_screen -1
 		position 510 100
 		size 400 800
@@ -20,7 +20,7 @@ process master
 		screen_is_given_by_center true
 	window 2
 		observer o0
-		stereo_mode none
+		output center
 		display_screen -1
 		position 920 100
 		size 400 800

@@ -58,7 +58,8 @@ QMatrix4x4 QVRObserverConfig::initialEyeMatrix(QVREye eye) const
 QVRWindowConfig::QVRWindowConfig() :
     _id(),
     _observerIndex(-1),
-    _stereoMode(QVR_Stereo_None),
+    _outputMode(QVR_Output_Center),
+    _outputPlugin(),
     _initialDisplayScreen(-1),
     _initialFullscreen(false),
     _initialPosition(-1, -1),
@@ -105,7 +106,7 @@ void QVRConfig::createDefault()
         QVRWindowConfig windowConf;
         windowConf._id = "default";
         windowConf._observerIndex = 0;
-        windowConf._stereoMode = QVR_Stereo_Oculus;
+        windowConf._outputMode = QVR_Output_Stereo_Oculus;
         // One process
         QVRProcessConfig processConf;
         processConf._id = "default";
@@ -122,7 +123,7 @@ void QVRConfig::createDefault()
         QVRWindowConfig windowConf;
         windowConf._id = "default";
         windowConf._observerIndex = 0;
-        windowConf._stereoMode = QVR_Stereo_Anaglyph_Red_Cyan;
+        windowConf._outputMode = QVR_Output_Center;
         // One process
         QVRProcessConfig processConf;
         processConf._id = "default";
@@ -271,20 +272,26 @@ bool QVRConfig::readFromFile(const QString& filename)
                     }
                     continue;
                 }
-                if (cmd == "stereo_mode" && arglist.length() == 1
-                        && (arg == "none" || arg == "gl"
-                            || arg == "left" || arg == "right"
-                            || arg == "red_cyan" || arg == "green_magenta"
-                            || arg == "amber_blue" || arg == "oculus")) {
-                    windowConfig._stereoMode = (
-                            arg == "none" ? QVR_Stereo_None
-                            : arg == "gl" ? QVR_Stereo_GL
-                            : arg == "left" ? QVR_Stereo_Only_Left
-                            : arg == "right" ? QVR_Stereo_Only_Right
-                            : arg == "red_cyan" ? QVR_Stereo_Anaglyph_Red_Cyan
-                            : arg == "green_magenta" ? QVR_Stereo_Anaglyph_Green_Magenta
-                            : arg == "amber_blue" ? QVR_Stereo_Anaglyph_Amber_Blue
-                            : QVR_Stereo_Oculus);
+                if (cmd == "output" && arglist.length() >= 1
+                        && (arglist[0] == "center"
+                            || arglist[0] == "left"
+                            || arglist[0] == "right"
+                            || (arglist[0] == "stereo" && arglist.length() >= 2))) {
+                    windowConfig._outputMode = (
+                            arglist[0] == "center" ? QVR_Output_Center
+                            : arglist[0] == "left" ? QVR_Output_Left
+                            : arglist[0] == "right" ? QVR_Output_Right
+                            : arglist[1] == "gl" ? QVR_Output_Stereo_GL
+                            : arglist[1] == "red_cyan" ? QVR_Output_Stereo_Red_Cyan
+                            : arglist[1] == "green_magenta" ? QVR_Output_Stereo_Green_Magenta
+                            : arglist[1] == "amber_blue" ? QVR_Output_Stereo_Amber_Blue
+                            : arglist[1] == "oculus" ? QVR_Output_Stereo_Oculus
+                            : QVR_Output_Stereo_Custom);
+                    windowConfig._outputPlugin = QString();
+                    if (arglist.length() > 1
+                            && (arglist[0] != "stereo" || windowConfig._outputMode == QVR_Output_Stereo_Custom)) {
+                        windowConfig._outputPlugin = arglist.mid(1).join(' ');
+                    }
                     continue;
                 }
                 if (cmd == "display_screen" && arglist.length() == 1) {
@@ -407,10 +414,10 @@ bool QVRConfig::readFromFile(const QString& filename)
     for (int i = 0; i < _processConfigs.size(); i++) {
         bool haveOculusWindow = false;
         for (int j = 0; j < _processConfigs[i]._windowConfigs.size(); j++) {
-            if (_processConfigs[i]._windowConfigs[j]._stereoMode == QVR_Stereo_Oculus) {
+            if (_processConfigs[i]._windowConfigs[j]._outputMode == QVR_Output_Stereo_Oculus) {
                 if (i > 0) {
                     QVR_FATAL("config file %s: currently only the master process "
-                            "can have a window with stereo_mode oculus", qPrintable(filename));
+                            "can have a window with output stereo oculus", qPrintable(filename));
                     return false;
                 }
                 if (haveOculusWindow) {
@@ -427,9 +434,9 @@ bool QVRConfig::readFromFile(const QString& filename)
                 return false;
             }
             if (_observerConfigs[_processConfigs[i]._windowConfigs[j]._observerIndex]._type == QVR_Observer_Oculus
-                    && _processConfigs[i]._windowConfigs[j]._stereoMode != QVR_Stereo_Oculus) {
+                    && _processConfigs[i]._windowConfigs[j]._outputMode != QVR_Output_Stereo_Oculus) {
                     QVR_FATAL("config file %s: process %s: "
-                            "only windows with stereo_mode oculus can have observers of type oculus",
+                            "only windows with output stereo oculus can have observers of type oculus",
                             qPrintable(filename), qPrintable(_processConfigs[i]._id));
                     return false;
             }

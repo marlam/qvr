@@ -9,13 +9,13 @@ observer oculus
 process master
 	window oculus
 		observer oculus
-		stereo_mode oculus
+		output stereo oculus
 
 process oculus
 	display :0.0
 	window control
 		observer oculus
-		stereo_mode red_cyan
+		output stereo red_cyan
 		display_screen -1
 		position 100 100
 		size 400 400

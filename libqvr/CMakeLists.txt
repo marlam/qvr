@@ -53,4 +53,5 @@ install(FILES
     observer.hpp
     window.hpp
     process.hpp
+    outputplugin.hpp
     DESTINATION include/qvr)

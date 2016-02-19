@@ -9,7 +9,7 @@ process master
 		observer default
 		position 100 100
 		size 300 400
-		stereo_mode red_cyan
+		output stereo red_cyan
 		screen_is_fixed_to_observer false
 		screen_is_given_by_center false
 		screen_wall  -2.49 0 -0.0771964  -1.5598 0 -1.94244  -2.49 2.6 -0.0771964
@@ -17,7 +17,7 @@ process master
 		observer default
 		position 410 100
 		size 300 400
-		stereo_mode red_cyan
+		output stereo red_cyan
 		screen_is_fixed_to_observer false
 		screen_is_given_by_center false
 		screen_wall  -1.78883 0 -1.73382  0.1549 0 -2.48638  -1.78883 2.6 -1.73382
@@ -25,7 +25,7 @@ process master
 		observer default
 		position 720 100
 		size 300 400
-		stereo_mode red_cyan
+		output stereo red_cyan
 		screen_is_fixed_to_observer false
 		screen_is_given_by_center false
 		screen_wall  -0.1549 0 -2.48638  1.78883 0 -1.73382  -0.1549 2.6 -2.48638
@@ -33,7 +33,7 @@ process master
 		observer default
 		position 1030 100
 		size 300 400
-		stereo_mode red_cyan
+		output stereo red_cyan
 		screen_is_fixed_to_observer false
 		screen_is_given_by_center false
 		screen_wall  1.5598 0 -1.94244  2.49 0 -0.0771964  1.5598 2.6 -1.94244
@@ -41,7 +41,7 @@ process master
 		observer default
 		position 310 535
 		size 400 300
-		stereo_mode red_cyan
+		output stereo red_cyan
 		screen_is_fixed_to_observer false
 		screen_is_given_by_center false
 		screen_wall  -2.49 0 -0.0771964  0.7 0 -0.0771964  -2.49 0 -2.4912
@@ -49,7 +49,7 @@ process master
 		observer default
 		position 720 535
 		size 400 300
-		stereo_mode red_cyan
+		output stereo red_cyan
 		screen_is_fixed_to_observer false
 		screen_is_given_by_center false
 		screen_wall  -0.7 0 -0.0771964  2.49 0 -0.0771964  -0.7 0 -2.4912

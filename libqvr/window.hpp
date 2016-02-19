@@ -33,6 +33,7 @@ class QVRObserver;
 class QVRWindowThread;
 class QOpenGLShaderProgram;
 class QOpenGLContext;
+class QStringList;
 
 class QVRWindow : public QWindow, protected QOpenGLFunctions_3_3_Core
 {
@@ -43,8 +44,11 @@ private:
     int _processIndex;
     int _windowIndex;
     unsigned int _textures[2];
-    unsigned int _quadVao;
-    QOpenGLShaderProgram* _stereo3dPrg;
+    unsigned int _outputQuadVao;
+    QOpenGLShaderProgram* _outputPrg;
+    bool (*_outputPluginInitFunc)(QVRWindow*, const QStringList&);
+    void (*_outputPluginExitFunc)(QVRWindow*);
+    void (*_outputPluginFunc)(QVRWindow*, unsigned int, unsigned int);
     QOpenGLContext* _winContext;
     // only for HMDs:
     void* _hmdHandle;
@@ -59,8 +63,7 @@ private:
     void screenGeometry(QVector3D& cornerBottomLeft, QVector3D& cornerBottomRight, QVector3D& cornerTopLeft);
 
     // to be called from _thread:
-    void renderStereo3D();
-    void winSwapBuffers();
+    void renderOutput();
 
     // to be called by QVRManager from the main thread:
     bool isValid() const { return _isValid; }
@@ -73,8 +76,7 @@ private:
     void updateObserver();
 
     // to be called from _thread and QVRManager:
-    void winMakeCurrent();
-    void winDoneCurrent();
+    QOpenGLContext* winContext() { return _winContext; }
 
     // to be called from the constructor:
     bool initGL();

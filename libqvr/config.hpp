@@ -45,15 +45,16 @@ typedef enum {
 
 typedef enum {
     // these values are re-used in a GLSL shader; keep them in sync
-    QVR_Stereo_None = 0,
-    QVR_Stereo_GL = 1,
-    QVR_Stereo_Only_Left = 2,
-    QVR_Stereo_Only_Right = 3,
-    QVR_Stereo_Anaglyph_Red_Cyan = 4,
-    QVR_Stereo_Anaglyph_Green_Magenta = 5,
-    QVR_Stereo_Anaglyph_Amber_Blue = 6,
-    QVR_Stereo_Oculus = 7
-} QVRStereoMode;
+    QVR_Output_Center = 0,
+    QVR_Output_Left = 1,
+    QVR_Output_Right = 2,
+    QVR_Output_Stereo_GL = 3,
+    QVR_Output_Stereo_Red_Cyan = 4,
+    QVR_Output_Stereo_Green_Magenta = 5,
+    QVR_Output_Stereo_Amber_Blue = 6,
+    QVR_Output_Stereo_Oculus = 7,
+    QVR_Output_Stereo_Custom = 8
+} QVROutputMode;
 
 class QVRObserverConfig
 {
@@ -97,8 +98,10 @@ private:
     QString _id;
     // The observer that gets to view this window.
     int _observerIndex;
-    // Stereo-3D mode.
-    QVRStereoMode _stereoMode;
+    // Output mode.
+    QVROutputMode _outputMode;
+    // Output postprocessing.
+    QString _outputPlugin;
     // Initial window configuration. This may change at runtime.
     int _initialDisplayScreen;
     bool _initialFullscreen;
@@ -124,7 +127,8 @@ public:
 
     const QString& id() const { return _id; }
     int observerIndex() const { return _observerIndex; }
-    QVRStereoMode stereoMode() const { return _stereoMode; }
+    QVROutputMode outputMode() const { return _outputMode; }
+    const QString& outputPlugin() const { return _outputPlugin; }
     int initialDisplayScreen() const { return _initialDisplayScreen; }
     bool initialFullscreen() const { return _initialFullscreen; }
     QPoint initialPosition() const { return _initialPosition; }

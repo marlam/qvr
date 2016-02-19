@@ -32,6 +32,7 @@
 #include <QDesktopWidget>
 #include <QScreen>
 #include <QKeyEvent>
+#include <QLibrary>
 
 #ifdef HAVE_OCULUS
 # include <OVR.h>
@@ -91,11 +92,11 @@ void QVRWindowThread::run()
 {
     bool oculus = false;
 #ifdef HAVE_OCULUS
-    oculus = _window->config().stereoMode() == QVR_Stereo_Oculus;
+    oculus = _window->config().outputMode() == QVR_Output_Stereo_Oculus;
     ovrHmd oculusHmd = reinterpret_cast<ovrHmd>(_window->_hmdHandle);
 #endif
     for (;;) {
-        _window->winMakeCurrent();
+        _window->winContext()->makeCurrent(_window);
         if (oculus) {
 #ifdef HAVE_OCULUS
             ovrHmd_BeginFrame(oculusHmd, 0);
@@ -114,7 +115,7 @@ void QVRWindowThread::run()
         renderingMutex.lock();
         if (!exitWanted) {
             if (!oculus) {
-                _window->renderStereo3D();
+                _window->renderOutput();
             }
         }
         renderingMutex.unlock();
@@ -130,7 +131,7 @@ void QVRWindowThread::run()
                         reinterpret_cast<ovrTexture*>(oculusEyeTextures));
 #endif
             } else {
-                _window->winSwapBuffers();
+                _window->winContext()->swapBuffers(_window);
             }
         }
         swapbuffersMutex.unlock();
@@ -138,8 +139,8 @@ void QVRWindowThread::run()
         if (exitWanted)
             break;
     }
-    _window->winDoneCurrent();
-    _window->moveToThread(QCoreApplication::instance()->thread());
+    _window->winContext()->doneCurrent();
+    _window->winContext()->moveToThread(QCoreApplication::instance()->thread());
 }
 
 QVRWindow::QVRWindow(QOpenGLContext* masterContext,
@@ -152,6 +153,9 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext,
     _observer(observer),
     _processIndex(processIndex),
     _windowIndex(windowIndex),
+    _textures { 0, 0 },
+    _outputQuadVao(0),
+    _outputPrg(NULL),
     _hmdHandle(NULL),
     _eventFrustum { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
     _eventViewMatrix(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f)
@@ -189,7 +193,7 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext,
     // Disable the close button, since we cannot really properly handle it.
     setFlags(flags() | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
     // Set an icon
-    setIcon(QIcon(":/cg-logo.png"));
+    setIcon(QIcon(":/libqvr/cg-logo.png"));
 
     if (!isMaster()) {
         QVR_DEBUG("    creating window %s...", qPrintable(config().id()));
@@ -199,7 +203,7 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext,
             setTitle(config().id());
         }
         setMinimumSize(QSize(64, 64));
-        if (config().stereoMode() == QVR_Stereo_Oculus) {
+        if (config().outputMode() == QVR_Output_Stereo_Oculus) {
 #ifdef HAVE_OCULUS
             bool ok;
             QVR_DEBUG("    initializing Oculus ...");
@@ -345,8 +349,7 @@ QVRWindow::~QVRWindow()
 {
     if (_thread) {
         exitGL();
-        delete _thread;
-        _winContext->deleteLater();
+        winContext()->deleteLater();
      }
 #ifdef HAVE_OCULUS
     if (_hmdHandle) {
@@ -354,21 +357,6 @@ QVRWindow::~QVRWindow()
         ovr_Shutdown();
     }
 #endif
-}
-
-void QVRWindow::winMakeCurrent()
-{
-    _winContext->makeCurrent(this);
-}
-
-void QVRWindow::winDoneCurrent()
-{
-    _winContext->doneCurrent();
-}
-
-void QVRWindow::winSwapBuffers()
-{
-    _winContext->swapBuffers(this);
 }
 
 void QVRWindow::renderToScreen()
@@ -418,7 +406,7 @@ static QMatrix4x4 poseToMatrix(const ovrPosef& pose)
 
 void QVRWindow::updateObserver()
 {
-    if (config().stereoMode() == QVR_Stereo_Oculus) {
+    if (config().outputMode() == QVR_Output_Stereo_Oculus) {
 #ifdef HAVE_OCULUS
         _observer->setEyeMatrices(
                 _hmdInitialObserverMatrix * poseToMatrix(_thread->oculusRenderPoses[0]),
@@ -482,7 +470,7 @@ void QVRWindow::screenGeometry(QVector3D& cornerBottomLeft, QVector3D& cornerBot
     Q_ASSERT(!isMaster());
     Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
     Q_ASSERT(QOpenGLContext::currentContext() != _winContext);
-    Q_ASSERT(config().stereoMode() != QVR_Stereo_Oculus);
+    Q_ASSERT(config().outputMode() != QVR_Output_Stereo_Oculus);
 
     if (config().screenIsGivenByCenter()) {
         // Get geometry (in meter) of the screen
@@ -536,16 +524,19 @@ void QVRWindow::screenGeometry(QVector3D& cornerBottomLeft, QVector3D& cornerBot
 
 bool QVRWindow::initGL()
 {
-    Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
-    _winContext->makeCurrent(this);
-    Q_ASSERT(QOpenGLContext::currentContext() == _winContext);
+    if (isMaster())
+        return true;
 
+    Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
+
+    _winContext->makeCurrent(this);
     if (!QOpenGLFunctions_3_3_Core::initializeOpenGLFunctions()) {
         QVR_FATAL("Cannot initialize OpenGL functions");
         return false;
     }
 
-    if (!isMaster()) {
+    if (config().outputPlugin().isEmpty()) {
+        // Initialize our own output code
         static QVector3D quadPositions[] = {
             QVector3D(-1.0f, -1.0f, 0.0f), QVector3D(+1.0f, -1.0f, 0.0f),
             QVector3D(+1.0f, +1.0f, 0.0f), QVector3D(-1.0f, +1.0f, 0.0f)
@@ -557,8 +548,8 @@ bool QVRWindow::initGL()
         static GLuint quadIndices[] = {
             0, 1, 3, 1, 2, 3
         };
-        glGenVertexArrays(1, &_quadVao);
-        glBindVertexArray(_quadVao);
+        glGenVertexArrays(1, &_outputQuadVao);
+        glBindVertexArray(_outputQuadVao);
         GLuint positionBuffer;
         glGenBuffers(1, &positionBuffer);
         glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);
@@ -582,17 +573,43 @@ bool QVRWindow::initGL()
             return false;
         }
 
-        _stereo3dPrg = new QOpenGLShaderProgram(this);
-        if(!_stereo3dPrg->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/stereo3d-vs.glsl"))
+        _outputPrg = new QOpenGLShaderProgram(this);
+        if (!_outputPrg->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/libqvr/output-vs.glsl")) {
+            QVR_FATAL("Cannot add output vertex shader");
             return false;
-        if(!_stereo3dPrg->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/stereo3d-fs.glsl"))
+        }
+        if (!_outputPrg->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/libqvr/output-fs.glsl")) {
+            QVR_FATAL("Cannot add output fragment shader");
             return false;
-        if(!_stereo3dPrg->link())
+        }
+        if (!_outputPrg->link()) {
+            QVR_FATAL("Cannot link output program");
             return false;
-
-        _textures[0] = 0;
-        _textures[1] = 0;
-
+        }
+    } else {
+        // Initialize output plugin
+        QStringList pluginSpec = config().outputPlugin().split(' ', QString::SkipEmptyParts);
+        QString pluginPath = pluginSpec.at(0);
+        QStringList pluginArgs = pluginSpec.mid(1);
+        QLibrary plugin(pluginPath);
+        if (!plugin.load()) {
+            QVR_FATAL("Cannot load output plugin %s", qPrintable(pluginPath));
+            return false;
+        }
+        _outputPluginInitFunc = reinterpret_cast<bool (*)(QVRWindow*, const QStringList&)>
+            (plugin.resolve("QVROutputPluginInit"));
+        _outputPluginExitFunc = reinterpret_cast<void (*)(QVRWindow*)>
+            (plugin.resolve("QVROutputPluginExit"));
+        _outputPluginFunc = reinterpret_cast<void (*)(QVRWindow*, unsigned int, unsigned int)>
+            (plugin.resolve("QVROutputPlugin"));
+        if (!_outputPluginInitFunc || !_outputPluginExitFunc || !_outputPluginFunc) {
+            QVR_FATAL("Cannot resolve output plugin functions from plugin %s", qPrintable(pluginPath));
+            return false;
+        }
+        if (!_outputPluginInitFunc(this, pluginArgs)) {
+            QVR_FATAL("Cannot initialize output plugin %s", qPrintable(pluginPath));
+            return false;
+        }
     }
 
     _winContext->doneCurrent();
@@ -604,16 +621,25 @@ void QVRWindow::exitGL()
     Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
     Q_ASSERT(QOpenGLContext::currentContext() != _winContext);
 
-     if (!isMaster() && _thread->isRunning()) {
-        _thread->exitWanted = 1;
-        _thread->renderingMutex.unlock();
-        _thread->swapbuffersMutex.unlock();
-        _thread->wait();
-        glDeleteTextures(2, _textures);
-        glDeleteVertexArrays(1, &_quadVao);
-        delete _stereo3dPrg;
-     }
-
+    if (!isMaster() && _thread) {
+        if (_thread->isRunning()) {
+            _thread->exitWanted = 1;
+            _thread->renderingMutex.unlock();
+            _thread->swapbuffersMutex.unlock();
+            _thread->wait();
+        }
+        delete _thread;
+        _thread = NULL;
+        _winContext->makeCurrent(this);
+        if (config().outputPlugin().isEmpty()) {
+            glDeleteTextures(2, _textures);
+            glDeleteVertexArrays(1, &_outputQuadVao);
+            delete _outputPrg;
+        } else {
+            _outputPluginExitFunc(this);
+        }
+        _winContext->doneCurrent();
+    }
 }
 
 void QVRWindow::getTextures(unsigned int textures[2])
@@ -626,11 +652,9 @@ void QVRWindow::getTextures(unsigned int textures[2])
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &textureBinding2dBak);
 
     bool wantTwoTextures = false;
-    if (config().stereoMode() == QVR_Stereo_GL
-            || config().stereoMode() == QVR_Stereo_Anaglyph_Red_Cyan
-            || config().stereoMode() == QVR_Stereo_Anaglyph_Green_Magenta
-            || config().stereoMode() == QVR_Stereo_Anaglyph_Amber_Blue
-            || config().stereoMode() == QVR_Stereo_Oculus) {
+    if (config().outputMode() != QVR_Output_Center
+            && config().outputMode() != QVR_Output_Left
+            && config().outputMode() != QVR_Output_Right) {
         wantTwoTextures = true;
     }
     for (int i = 0; i < (wantTwoTextures ? 2 : 1); i++) {
@@ -651,7 +675,7 @@ void QVRWindow::getTextures(unsigned int textures[2])
             glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &th);
         }
         int w = 0, h = 0;
-        if (config().stereoMode() == QVR_Stereo_Oculus) {
+        if (config().outputMode() == QVR_Output_Stereo_Oculus) {
 #ifdef HAVE_OCULUS
             ovrHmd oculusHmd = reinterpret_cast<ovrHmd>(_hmdHandle);
             ovrSizei tex_size = ovrHmd_GetFovTextureSize(oculusHmd,
@@ -695,7 +719,7 @@ QMatrix4x4 QVRWindow::getFrustumAndViewMatrix(int viewPass, float near, float fa
 
     /* Compute frustum and view matrix for this eye */
     QMatrix4x4 viewMatrix;
-    if (config().stereoMode() == QVR_Stereo_Oculus) {
+    if (config().outputMode() == QVR_Output_Stereo_Oculus) {
         // Oculus provides this for us, we don't compute it ourselves
         frustum[0] = -_hmdLRBTTan[0][viewPass] * near;
         frustum[1] =  _hmdLRBTTan[1][viewPass] * near;
@@ -707,9 +731,9 @@ QMatrix4x4 QVRWindow::getFrustumAndViewMatrix(int viewPass, float near, float fa
     } else {
         // Determine the eye position
         QVector3D eyePosition;
-        if (viewPass == 1 || config().stereoMode() == QVR_Stereo_Only_Right)
+        if (viewPass == 1 || config().outputMode() == QVR_Output_Right)
             eyePosition = _observer->eyePosition(QVR_Eye_Right);
-        else if (config().stereoMode() == QVR_Stereo_None)
+        else if (config().outputMode() == QVR_Output_Center)
             eyePosition = _observer->centerPosition();
         else
             eyePosition = _observer->eyePosition(QVR_Eye_Left);
@@ -752,27 +776,31 @@ QMatrix4x4 QVRWindow::getFrustumAndViewMatrix(int viewPass, float near, float fa
     return viewMatrix;
 }
 
-void QVRWindow::renderStereo3D()
+void QVRWindow::renderOutput()
 {
     Q_ASSERT(!isMaster());
     Q_ASSERT(QThread::currentThread() == _thread);
     Q_ASSERT(QOpenGLContext::currentContext() == _winContext);
 
-    glViewport(0, 0, width(), height());
-    glDisable(GL_DEPTH_TEST);
-    glUseProgram(_stereo3dPrg->programId());
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, _textures[0]);
-    glUniform1i(glGetUniformLocation(_stereo3dPrg->programId(), "tex_l"), 0);
-    glUniform1i(glGetUniformLocation(_stereo3dPrg->programId(), "tex_r"), 0);
-    if (_textures[1] != 0) {
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, _textures[1]);
-        glUniform1i(glGetUniformLocation(_stereo3dPrg->programId(), "tex_r"), 1);
+    if (config().outputPlugin().isEmpty()) {
+        glViewport(0, 0, width(), height());
+        glDisable(GL_DEPTH_TEST);
+        glUseProgram(_outputPrg->programId());
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, _textures[0]);
+        glUniform1i(glGetUniformLocation(_outputPrg->programId(), "tex_l"), 0);
+        glUniform1i(glGetUniformLocation(_outputPrg->programId(), "tex_r"), 0);
+        if (_textures[1] != 0) {
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, _textures[1]);
+            glUniform1i(glGetUniformLocation(_outputPrg->programId(), "tex_r"), 1);
+        }
+        glUniform1i(glGetUniformLocation(_outputPrg->programId(), "output_mode"), config().outputMode());
+        glBindVertexArray(_outputQuadVao);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    } else {
+        _outputPluginFunc(this, _textures[0], _textures[1]);
     }
-    glUniform1i(glGetUniformLocation(_stereo3dPrg->programId(), "stereo_mode"), config().stereoMode());
-    glBindVertexArray(_quadVao);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
 void QVRWindow::keyPressEvent(QKeyEvent* event)

@@ -139,12 +139,17 @@ Window properties:
   The observer that this window provides a view into the virtual scene for.
   Must be one of the observers defined at the beginning of the configuration
   file.
-- `stereo_mode <none|gl|left|right|red_cyan|green_magenta|amber_blue|oculus>`  
-  Stereo-3D mode to use. None means no stereo (the observer only has a single
-  eye); left and right only show the left eye / right eye view in this window,
-  the color modes are for the corresponding anaglyph glasses, and oculus is
-  for the Oculus Rift. Driver-supported OpenGL stereo (gl) is currently not
-  implemented.
+- `output <center|left|right|stereo> <type|plugin>`
+  Which views are used for output to the display, and how they are displayed.
+  Center means a virtual center eye for monoscopic view, left and right mean
+  only the left eye / right eye view, and stereo means both views.  
+  For stereo, a builtin type or a plugin have to be specified. For the three
+  single-view modes (center, left, right), specifying a plugin is optional.  
+  Builtin stereo types are `gl` for OpenGL stereo (currently not implemented),
+  `red_cyan`, `green_magenta`, and `amber_blue` for anaglyph glasses, and
+  `oculus` for the Oculus Rift. Anything else will be interpreted as a plugin.  
+  A plugin specification consists of the file name of the plugin and an optional
+  list of arguments for it.
 - `display_screen <screen>`  
   The display of the process may contain multiple screens. This option chooses
   one. The default screen is specified with -1.
