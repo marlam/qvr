@@ -30,6 +30,7 @@ class QVRWindow;
 class QElapsedTimer;
 class QStringList;
 class QOpenGLShaderProgram;
+class QMatrix4x4;
 
 class QVROutputPluginExample : protected QOpenGLFunctions_3_3_Core
 {
@@ -47,7 +48,8 @@ public:
 
     bool init(const QStringList& args);
     void exit();
-    void output(unsigned int tex0, unsigned int tex1);
+    void output(unsigned int tex0, const float* frustumLrbtnf0, const QMatrix4x4& viewMatrix0,
+                unsigned int tex1, const float* frustumLrbtnf1, const QMatrix4x4& viewMatrix1);
 };
 
 #endif

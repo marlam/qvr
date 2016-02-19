@@ -48,16 +48,17 @@ private:
     QOpenGLShaderProgram* _outputPrg;
     bool (*_outputPluginInitFunc)(QVRWindow*, const QStringList&);
     void (*_outputPluginExitFunc)(QVRWindow*);
-    void (*_outputPluginFunc)(QVRWindow*, unsigned int, unsigned int);
+    void (*_outputPluginFunc)(QVRWindow*, unsigned int, const float*, const QMatrix4x4&,
+                                          unsigned int, const float*, const QMatrix4x4&);
     QOpenGLContext* _winContext;
     // only for HMDs:
     void* _hmdHandle;
     float _hmdLRBTTan[4][2];
     float _hmdToEyeViewOffset[3][2];
     QMatrix4x4 _hmdInitialObserverMatrix;
-    // last frustum / view matrix (view pass 0); for events:
-    float _eventFrustum[6];
-    QMatrix4x4 _eventViewMatrix;
+    // last frustum / view matrix for each view pass; for events and output plugins:
+    float _viewPassFrustum[2][6];
+    QMatrix4x4 _viewPassViewMatrix[2];
 
     bool isMaster() const;
     void screenGeometry(QVector3D& cornerBottomLeft, QVector3D& cornerBottomRight, QVector3D& cornerTopLeft);

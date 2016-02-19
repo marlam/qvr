@@ -53,7 +53,7 @@ void main(void)
     if (ripple_effect) {
         tc.x += 0.005 * sin(ripple_offset + tc.y * 100.0);
     }
-    vec3 color = texture(tex, tc).rgb;
+    vec3 color = texture(tex, mirror_texcoords(tc)).rgb;
 
     // 2. Sobel filter for edge detection
     if (edge_effect) {
