@@ -87,7 +87,6 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
     _config(NULL),
     _observers(),
     _customObservers(),
-    _wasdqeObservers(),
     _masterWindow(NULL),
     _masterGLContext(NULL),
     _windows(),
@@ -233,14 +232,15 @@ bool QVRManager::init(QVRApp* app)
     }
 
     // Create observers
+    _haveWasdqeObservers = false;
     for (int o = 0; o < _config->observerConfigs().size(); o++) {
         _observers.append(new QVRObserver(o));
         if (_config->observerConfigs()[o].type() == QVR_Observer_Custom)
             _customObservers.append(_observers[o]);
         if (_config->observerConfigs()[o].type() == QVR_Observer_WASDQE)
-            _wasdqeObservers.append(_observers[o]);
+            _haveWasdqeObservers = true;
     }
-    if (!_wasdqeObservers.empty()) {
+    if (_haveWasdqeObservers) {
         for (int i = 0; i < 6; i++)
             _wasdqeIsPressed[i] = false;
         _wasdqeMouseProcessIndex = -1;
@@ -407,7 +407,7 @@ void QVRManager::masterLoop()
     }
 
     if (_slaveProcesses.size() > 0) {
-        if (!_wasdqeObservers.empty()) {
+        if (_haveWasdqeObservers) {
             QByteArray serializedWasdqeState;
             QDataStream serializationDataStream(&serializedWasdqeState, QIODevice::WriteOnly);
             serializationDataStream << _wasdqeMouseProcessIndex << _wasdqeMouseWindowIndex << _wasdqeMouseInitialized;
@@ -687,7 +687,7 @@ void QVRManager::processEventQueue()
     while (!eventQueue->empty()) {
         QVREvent e = eventQueue->front();
         eventQueue->dequeue();
-        if (!_wasdqeObservers.empty()
+        if (_haveWasdqeObservers
                 && observerConfig(windowConfig(e.processIndex, e.windowIndex)
                     .observerIndex()).type() == QVR_Observer_WASDQE) {
             bool consumed = false;

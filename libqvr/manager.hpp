@@ -71,13 +71,13 @@ private:
     QVRConfig* _config;
     QList<QVRObserver*> _observers;
     QList<QVRObserver*> _customObservers; // subset of _observers
-    QList<QVRObserver*> _wasdqeObservers; // subset of _observers
     QVRWindow* _masterWindow;
     QOpenGLContext* _masterGLContext;
     QList<QVRWindow*> _windows;
     QVRProcess* _thisProcess;
     QList<QVRProcess*> _slaveProcesses;
     bool _wantExit;
+    bool _haveWasdqeObservers;    // WASDQE observers: do we have at least one?
     bool _wasdqeIsPressed[6];     // WASDQE observers: keys
     int _wasdqeMouseProcessIndex; // WASDQE observers: process with mouse grab
     int _wasdqeMouseWindowIndex;  // WASDQE observers: window with mouse grab
