@@ -110,9 +110,14 @@ the rest of the geometry automatically from the known screen dimensions, or by
 explicitly defining the screen geometry in the virtual world space.
 
 Observer properties:
-- `type <static|oculus|custom>`  
-  Static observers stay put, Oculus observers are updated automatically,
-  custom observers use a tracking system of your choice.
+- `type <static|wasdqe|oculus|custom>`  
+  Static observers stay put.  
+  WASDQE observers navigate via a common keyboard and mouse mapping: the keys
+  WASD are use for forward, sideways, and backward movement, and the additional
+  keys QE move up and down. Mouse movements for looking left/right/up/down are
+  activated by clicking in a window and deactivated by pressing ESC.  
+  Oculus observers are updated automatically from Oculus sensors.  
+  Custom observers use a tracking system of your choice.
 - `eye_distance <meters>`  
   Interpupillary distance.
 - `position <x> <y> <z>`  
