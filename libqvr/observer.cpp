@@ -55,9 +55,12 @@ QVRObserver::QVRObserver(int observerIndex) :
     _matrix[QVR_Eye_Right] = config().initialEyeMatrix(QVR_Eye_Right);
 #ifdef HAVE_VRPN
     if (config().type() == QVR_Observer_VRPN) {
-        _vrpnTracker = new vrpn_Tracker_Remote(qPrintable(config().parameters()));
+        QStringList args = config().parameters().split(' ', QString::SkipEmptyParts);
+        QString name = (args.length() >= 2 ? args[0] : config().parameters());
+        int sensor = (args.length() >= 2 ? args[1].toInt() : vrpn_ALL_SENSORS);
+        _vrpnTracker = new vrpn_Tracker_Remote(qPrintable(name));
         vrpn_System_TextPrinter.set_ostream_to_use(stderr);
-        _vrpnTracker->register_change_handler(this, vrpnPosChangeHandler);
+        _vrpnTracker->register_change_handler(this, vrpnPosChangeHandler, sensor);
     } else {
         _vrpnTracker = NULL;
     }

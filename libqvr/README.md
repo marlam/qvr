@@ -117,13 +117,14 @@ Observer properties:
   keys QE move up and down. Mouse movements for looking left/right/up/down are
   activated by clicking in a window and deactivated by pressing ESC.  
   VRPN observers are bound to a VRPN tracker that will determine their position
-  and orientation. Use the `parameters` property to set the name of the VRPN
-  tracker, e.g. `Tracker0@localhost`.  
+  and orientation. Use the `parameters` property to configure the VRPN tracker.
   Oculus observers are updated automatically from Oculus sensors.  
   Custom observers use a tracking system of your choice.
 - `parameters <...>`  
   Any parameters that a tracked observer might need. For VRPN observers, this is
-  the VRPN name of the tracker.
+  currently of the form `<name> [<sensor>]`, where `<name>` is the VRPN tracker
+  name, e.g. `Tracker0@localhost`, and `<sensor>` is the sensor number to be
+  used. The sensor number can be omitted.
 - `eye_distance <meters>`  
   Interpupillary distance.
 - `position <x> <y> <z>`  
