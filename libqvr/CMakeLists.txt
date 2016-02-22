@@ -19,7 +19,8 @@ endif()
 find_package(Qt5Widgets REQUIRED)
 
 # Optional libraries
-find_package(Oculus QUIET)
+find_package(VRPN)
+find_package(Oculus)
 
 # The library
 qt5_add_resources(QVRRESOURCES qvr.qrc)
@@ -36,6 +37,11 @@ set_target_properties(libqvr PROPERTIES OUTPUT_NAME qvr)
 set_target_properties(libqvr PROPERTIES VERSION "0.0.0")  
 set_target_properties(libqvr PROPERTIES SOVERSION "0")  
 target_link_libraries(libqvr Qt5::Widgets)
+if(VRPN_FOUND)
+    add_definitions(-DHAVE_VRPN)
+    include_directories(${VRPN_INCLUDE_DIRS})
+    target_link_libraries(libqvr ${VRPN_LIBRARIES})
+endif()
 if(OCULUS_FOUND)
     add_definitions(-DHAVE_OCULUS)
     include_directories(${OCULUS_INCLUDE_DIRS})

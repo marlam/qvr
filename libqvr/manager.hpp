@@ -85,6 +85,7 @@ private:
     QVector3D _wasdqePos;         // WASDQE observers: position
     float _wasdqeHorzAngle;       // WASDQE observers: angle around the y axis
     float _wasdqeVertAngle;       // WASDQE observers: angle around the x axis
+    bool _haveVrpnObservers;
 
     void processEventQueue();
 

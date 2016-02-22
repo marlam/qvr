@@ -110,14 +110,20 @@ the rest of the geometry automatically from the known screen dimensions, or by
 explicitly defining the screen geometry in the virtual world space.
 
 Observer properties:
-- `type <static|wasdqe|oculus|custom>`  
+- `type <static|wasdqe|vrpn|oculus|custom>`  
   Static observers stay put.  
   WASDQE observers navigate via a common keyboard and mouse mapping: the keys
   WASD are use for forward, sideways, and backward movement, and the additional
   keys QE move up and down. Mouse movements for looking left/right/up/down are
   activated by clicking in a window and deactivated by pressing ESC.  
+  VRPN observers are bound to a VRPN tracker that will determine their position
+  and orientation. Use the `parameters` property to set the name of the VRPN
+  tracker, e.g. `Tracker0@localhost`.  
   Oculus observers are updated automatically from Oculus sensors.  
   Custom observers use a tracking system of your choice.
+- `parameters <...>`  
+  Any parameters that a tracked observer might need. For VRPN observers, this is
+  the VRPN name of the tracker.
 - `eye_distance <meters>`  
   Interpupillary distance.
 - `position <x> <y> <z>`  

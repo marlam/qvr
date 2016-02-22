@@ -26,6 +26,10 @@
 
 #include <QMatrix4x4>
 
+#ifdef HAVE_VRPN
+# include <vrpn_Tracker.h>
+#endif
+
 #include "config.hpp"
 
 class QDataStream;
@@ -35,10 +39,14 @@ class QVRObserver
 private:
     int _index;
     QMatrix4x4 _matrix[3];
+#ifdef HAVE_VRPN
+    vrpn_Tracker_Remote* _vrpnTracker;
+#endif
 
 public:
     QVRObserver();
     QVRObserver(int index);
+    ~QVRObserver();
 
     int index() const;
     const QString& id() const;
@@ -61,6 +69,8 @@ public:
             float eyeDistance = QVRObserverConfig::defaultEyeDistance);
 
     void setEyeMatrices(const QMatrix4x4& leftMatrix, const QMatrix4x4& rightMatrix);
+
+    void update();
 };
 
 #endif

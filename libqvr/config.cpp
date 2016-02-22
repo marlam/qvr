@@ -39,6 +39,7 @@
 QVRObserverConfig::QVRObserverConfig() :
     _id(),
     _type(QVR_Observer_Stationary),
+    _parameters(),
     _initialPosition(QVector3D(0.0f, defaultEyeHeight, 0.0f)),
     _initialForwardDirection(QVector3D(0.0f, 0.0f, -1.0f)),
     _initialUpDirection(QVector3D(0.0f, 1.0f, 0.0f)),
@@ -200,12 +201,17 @@ bool QVRConfig::readFromFile(const QString& filename)
             }
             // ... or observer properties.
             if (cmd == "type" && arglist.length() == 1
-                    && (arg == "stationary" || arg == "wasdqe" || arg == "oculus" || arg == "custom")) {
+                    && (arg == "stationary" || arg == "wasdqe"
+                        || arg == "vrpn" || arg == "oculus" || arg == "custom")) {
                 observerConfig._type = (
                         arg == "stationary" ? QVR_Observer_Stationary
                         : arg == "wasdqe" ? QVR_Observer_WASDQE
+                        : arg == "vrpn" ? QVR_Observer_VRPN
                         : arg == "oculus" ? QVR_Observer_Oculus
                         : QVR_Observer_Custom);
+                continue;
+            } else if (cmd == "parameters") {
+                observerConfig._parameters = arg;
                 continue;
             } else if (cmd == "position" && arglist.size() == 3) {
                 observerConfig._initialPosition.setX(arglist[0].toFloat());

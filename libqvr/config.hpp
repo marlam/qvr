@@ -35,6 +35,7 @@
 typedef enum {
     QVR_Observer_Stationary,
     QVR_Observer_WASDQE,
+    QVR_Observer_VRPN,
     QVR_Observer_Oculus,
     QVR_Observer_Custom
 } QVRObserverType;
@@ -66,6 +67,8 @@ private:
     // Type of observer. If stationary, the transformation matrix will be
     // constant. Otherwise, it will be updated for each frame.
     QVRObserverType _type;
+    // Parameters of observer, for observer types that need this.
+    QString _parameters;
     // Initial position and orientation for the center between
     // left and right eye, and eye distance
     QVector3D _initialPosition;
@@ -85,6 +88,7 @@ public:
 
     const QString& id() const { return _id; }
     QVRObserverType type() const { return _type; }
+    const QString& parameters() const { return _parameters; }
 
     const QVector3D& initialPosition() const { return _initialPosition; }
     const QVector3D& initialForwardDirection() const { return _initialForwardDirection; }

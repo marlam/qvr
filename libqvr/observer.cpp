@@ -21,13 +21,30 @@
  * SOFTWARE.
  */
 
+#include <QQuaternion>
+
 #include "manager.hpp"
 #include "observer.hpp"
+
+
+#ifdef HAVE_VRPN
+static void vrpnPosChangeHandler(void* userdata, const vrpn_TRACKERCB info)
+{
+    QVRObserver* o = reinterpret_cast<QVRObserver*>(userdata);
+    QMatrix4x4 m;
+    m.rotate(QQuaternion(info.quat[3], info.quat[0], info.quat[1], info.quat[2]));
+    m.translate(QVector3D(info.pos[0], info.pos[1], info.pos[2]));
+    o->setEyeMatrices(m);
+}
+#endif
 
 
 QVRObserver::QVRObserver() :
     _index(-1)
 {
+#ifdef HAVE_VRPN
+    _vrpnTracker = NULL;
+#endif
 }
 
 QVRObserver::QVRObserver(int observerIndex) :
@@ -36,6 +53,22 @@ QVRObserver::QVRObserver(int observerIndex) :
     _matrix[QVR_Eye_Center] = config().initialEyeMatrix(QVR_Eye_Center);
     _matrix[QVR_Eye_Left] = config().initialEyeMatrix(QVR_Eye_Left);
     _matrix[QVR_Eye_Right] = config().initialEyeMatrix(QVR_Eye_Right);
+#ifdef HAVE_VRPN
+    if (config().type() == QVR_Observer_VRPN) {
+        _vrpnTracker = new vrpn_Tracker_Remote(qPrintable(config().parameters()));
+        vrpn_System_TextPrinter.set_ostream_to_use(stderr);
+        _vrpnTracker->register_change_handler(this, vrpnPosChangeHandler);
+    } else {
+        _vrpnTracker = NULL;
+    }
+#endif
+}
+
+QVRObserver::~QVRObserver()
+{
+#ifdef HAVE_VRPN
+    delete _vrpnTracker;
+#endif
 }
 
 int QVRObserver::index() const
@@ -80,4 +113,12 @@ void QVRObserver::setEyeMatrices(const QMatrix4x4& leftMatrix, const QMatrix4x4&
     _matrix[QVR_Eye_Center] = 0.5f * (leftMatrix + rightMatrix);
     _matrix[QVR_Eye_Left] = leftMatrix;
     _matrix[QVR_Eye_Right] = rightMatrix;
+}
+
+void QVRObserver::update()
+{
+#ifdef HAVE_VRPN
+    if (_vrpnTracker)
+        _vrpnTracker->mainloop();
+#endif
 }

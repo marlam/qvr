@@ -203,6 +203,36 @@ bool QVRManager::init(QVRApp* app)
         }
     }
 
+    // Create observers
+    _haveWasdqeObservers = false;
+    _haveVrpnObservers = false;
+    for (int o = 0; o < _config->observerConfigs().size(); o++) {
+        _observers.append(new QVRObserver(o));
+        if (_config->observerConfigs()[o].type() == QVR_Observer_Custom)
+            _customObservers.append(_observers[o]);
+        if (_config->observerConfigs()[o].type() == QVR_Observer_WASDQE)
+            _haveWasdqeObservers = true;
+        if (_config->observerConfigs()[o].type() == QVR_Observer_VRPN)
+            _haveVrpnObservers = true;
+    }
+    if (_haveWasdqeObservers) {
+        for (int i = 0; i < 6; i++)
+            _wasdqeIsPressed[i] = false;
+        _wasdqeMouseProcessIndex = -1;
+        _wasdqeMouseWindowIndex = -1;
+        _wasdqeMouseInitialized = false;
+        _wasdqePos = QVector3D(0.0f, 0.0f, 0.0f);
+        _wasdqeHorzAngle = 0.0f;
+        _wasdqeVertAngle = 0.0f;
+    }
+    if (_haveVrpnObservers) {
+#ifdef HAVE_VRPN
+#else
+        QVR_FATAL("VRPN observers configured but VRPN is not available");
+        return false;
+#endif
+    }
+
     // Create processes
     _thisProcess = new QVRProcess(_processIndex);
     if (_processIndex == 0) {
@@ -229,26 +259,6 @@ bool QVRManager::init(QVRApp* app)
         QVR_INFO("initializing slave process %s (index %d) ...", qPrintable(_thisProcess->id()), _processIndex);
         _thisProcess->receiveCmdInit(_app);
         QVR_INFO("... done");
-    }
-
-    // Create observers
-    _haveWasdqeObservers = false;
-    for (int o = 0; o < _config->observerConfigs().size(); o++) {
-        _observers.append(new QVRObserver(o));
-        if (_config->observerConfigs()[o].type() == QVR_Observer_Custom)
-            _customObservers.append(_observers[o]);
-        if (_config->observerConfigs()[o].type() == QVR_Observer_WASDQE)
-            _haveWasdqeObservers = true;
-    }
-    if (_haveWasdqeObservers) {
-        for (int i = 0; i < 6; i++)
-            _wasdqeIsPressed[i] = false;
-        _wasdqeMouseProcessIndex = -1;
-        _wasdqeMouseWindowIndex = -1;
-        _wasdqeMouseInitialized = false;
-        _wasdqePos = QVector3D(0.0f, 0.0f, 0.0f);
-        _wasdqeHorzAngle = 0.0f;
-        _wasdqeVertAngle = 0.0f;
     }
 
     // Find out about our desktop and available screens
@@ -390,6 +400,9 @@ void QVRManager::masterLoop()
                     eyeMatrix.rotate(QQuaternion::fromEulerAngles(_wasdqeVertAngle, _wasdqeHorzAngle, 0.0f));
                     obs->setEyeMatrices(eyeMatrix, obs->config().initialEyeDistance());
                 }
+                break;
+            case QVR_Observer_VRPN:
+                obs->update();
                 break;
             case QVR_Observer_Oculus:
                 for (int w = 0; w < _windows.size(); w++) {
