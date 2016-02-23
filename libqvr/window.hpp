@@ -28,6 +28,7 @@
 #include <QOpenGLFunctions_3_3_Core>
 
 #include "config.hpp"
+#include "rendercontext.hpp"
 
 class QVRObserver;
 class QVRWindowThread;
@@ -48,20 +49,17 @@ private:
     QOpenGLShaderProgram* _outputPrg;
     bool (*_outputPluginInitFunc)(QVRWindow*, const QStringList&);
     void (*_outputPluginExitFunc)(QVRWindow*);
-    void (*_outputPluginFunc)(QVRWindow*, unsigned int, const float*, const QMatrix4x4&,
-                                          unsigned int, const float*, const QMatrix4x4&);
+    void (*_outputPluginFunc)(QVRWindow*, const QVRRenderContext&, unsigned int, unsigned int);
     QOpenGLContext* _winContext;
+    QVRRenderContext _renderContext;
     // only for HMDs:
     void* _hmdHandle;
     float _hmdLRBTTan[4][2];
     float _hmdToEyeViewOffset[3][2];
     QMatrix4x4 _hmdInitialObserverMatrix;
-    // last frustum / view matrix for each view pass; for events and output plugins:
-    float _viewPassFrustum[2][6];
-    QMatrix4x4 _viewPassViewMatrix[2];
 
     bool isMaster() const;
-    void screenGeometry(QVector3D& cornerBottomLeft, QVector3D& cornerBottomRight, QVector3D& cornerTopLeft);
+    void screenWall(QVector3D& cornerBottomLeft, QVector3D& cornerBottomRight, QVector3D& cornerTopLeft);
 
     // to be called from _thread:
     void renderOutput();

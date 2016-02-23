@@ -156,10 +156,8 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext,
     _textures { 0, 0 },
     _outputQuadVao(0),
     _outputPrg(NULL),
-    _hmdHandle(NULL),
-    _viewPassFrustum { { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f } },
-    _viewPassViewMatrix { QMatrix4x4(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f),
-        QMatrix4x4(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f) }
+    _renderContext(),
+    _hmdHandle(NULL)
 {
     setSurfaceType(OpenGLSurface);
     create();
@@ -342,6 +340,9 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext,
         _thread->swapbuffersMutex.lock();
         _thread->start();
 
+        _renderContext.setProcessIndex(this->processIndex());
+        _renderContext.setWindowIndex(index());
+
         QVR_DEBUG("    ... done");
     }
 }
@@ -466,7 +467,7 @@ const QVRObserverConfig& QVRWindow::observerConfig() const
     return _observer->config();
 }
 
-void QVRWindow::screenGeometry(QVector3D& cornerBottomLeft, QVector3D& cornerBottomRight, QVector3D& cornerTopLeft)
+void QVRWindow::screenWall(QVector3D& cornerBottomLeft, QVector3D& cornerBottomRight, QVector3D& cornerTopLeft)
 {
     Q_ASSERT(!isMaster());
     Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
@@ -495,7 +496,6 @@ void QVRWindow::screenGeometry(QVector3D& cornerBottomLeft, QVector3D& cornerBot
         float windowY = 1.0f - static_cast<float>(windowGeom.y() + windowGeom.height() - monitorGeom.y()) / monitorGeom.height();
         float windowW = static_cast<float>(windowGeom.width()) / monitorGeom.width();
         float windowH = static_cast<float>(windowGeom.height()) / monitorGeom.height();
-
         QVector3D l0 = (1.0f - windowX) * cornerBottomLeft + windowX * cornerBottomRight;
         QVector3D l1 = (1.0f - windowX) * cornerTopLeft  + windowX * cornerTopRight;
         QVector3D bl = (1.0f - windowY) * l0 + windowY * l1;
@@ -601,9 +601,8 @@ bool QVRWindow::initGL()
             (plugin.resolve("QVROutputPluginInit"));
         _outputPluginExitFunc = reinterpret_cast<void (*)(QVRWindow*)>
             (plugin.resolve("QVROutputPluginExit"));
-        _outputPluginFunc = reinterpret_cast<void (*)(QVRWindow*,
-                unsigned int, const float*, const QMatrix4x4&,
-                unsigned int, const float*, const QMatrix4x4&)>
+        _outputPluginFunc = reinterpret_cast<void (*)(QVRWindow*, const QVRRenderContext&,
+                unsigned int, unsigned int)>
             (plugin.resolve("QVROutputPlugin"));
         if (!_outputPluginInitFunc || !_outputPluginExitFunc || !_outputPluginFunc) {
             QVR_FATAL("Cannot resolve output plugin functions from plugin %s", qPrintable(pluginPath));
@@ -720,29 +719,36 @@ QMatrix4x4 QVRWindow::getFrustumAndViewMatrix(int viewPass, float near, float fa
     Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
     Q_ASSERT(QOpenGLContext::currentContext() != _winContext);
 
+    if (viewPass == 0) {
+        // these render context properties do not change between view passes
+        _renderContext.setWindowRect(geometry());
+        _renderContext.setScreenRect(screen()->geometry());
+        _renderContext.setOutputConf(config().outputMode());
+        QVector3D bl, br, tl;
+        screenWall(bl, br, tl);
+        _renderContext.setScreenWall(bl, br, tl);
+    }
+
+    QVREye eye = _renderContext.eye(viewPass);
+    _renderContext.setEyeMatrix(viewPass, _observer->eyeMatrix(eye));
+
     /* Compute frustum and view matrix for this eye */
-    QMatrix4x4 viewMatrix;
     if (config().outputMode() == QVR_Output_Stereo_Oculus) {
-        // Oculus provides this for us, we don't compute it ourselves
-        frustum[0] = -_hmdLRBTTan[0][viewPass] * near;
-        frustum[1] =  _hmdLRBTTan[1][viewPass] * near;
-        frustum[2] = -_hmdLRBTTan[2][viewPass] * near;
-        frustum[3] =  _hmdLRBTTan[3][viewPass] * near;
-        frustum[4] = near;
-        frustum[5] = far;
-        viewMatrix = _observer->eyeMatrix(viewPass == 0 ? QVR_Eye_Left : QVR_Eye_Right).inverted();
+        _renderContext.setFrustum(viewPass,
+                -_hmdLRBTTan[0][viewPass] * near,
+                 _hmdLRBTTan[1][viewPass] * near,
+                -_hmdLRBTTan[2][viewPass] * near,
+                 _hmdLRBTTan[3][viewPass] * near,
+                near, far);
+        _renderContext.setViewMatrix(viewPass,
+                _renderContext.eyeMatrix(viewPass).inverted());
     } else {
         // Determine the eye position
-        QVector3D eyePosition;
-        if (config().outputMode() == QVR_Output_Center)
-            eyePosition = _observer->eyePosition(QVR_Eye_Center);
-        else if (viewPass == 1 || config().outputMode() == QVR_Output_Right)
-            eyePosition = _observer->eyePosition(QVR_Eye_Right);
-        else
-            eyePosition = _observer->eyePosition(QVR_Eye_Left);
+        QVector3D eyePosition = _observer->eyePosition(eye);
         // Get the geometry of the screen area relative to the eye
-        QVector3D bl, br, tl;
-        screenGeometry(bl, br, tl);
+        QVector3D bl = _renderContext.screenWallBottomLeft();
+        QVector3D br = _renderContext.screenWallBottomRight();
+        QVector3D tl = _renderContext.screenWallTopLeft();
         bl -= eyePosition;
         br -= eyePosition;
         tl -= eyePosition;
@@ -759,22 +765,17 @@ QMatrix4x4 QVRWindow::getFrustumAndViewMatrix(int viewPass, float near, float fa
         float b = -QVector3D::dotProduct(-bl, planeUp);
         float t = height + b;
         float q = near / planeDistance;
-        frustum[0] = l * q;
-        frustum[1] = r * q;
-        frustum[2] = b * q;
-        frustum[3] = t * q;
-        frustum[4] = near;
-        frustum[5] = far;
+        _renderContext.setFrustum(viewPass, l * q, r * q, b * q, t * q, near, far);
         // Compute the view matrix
         QVector3D eyeProjection = -QVector3D::dotProduct(-bl, planeNormal) * planeNormal;
+        QMatrix4x4 viewMatrix;
         viewMatrix.lookAt(eyePosition, eyePosition + eyeProjection, planeUp);
+        _renderContext.setViewMatrix(viewPass, viewMatrix);
     }
 
     for (int i = 0; i < 6; i++)
-        _viewPassFrustum[viewPass][i] = frustum[i];
-    _viewPassViewMatrix[viewPass] = viewMatrix;
-
-    return viewMatrix;
+        frustum[i] = _renderContext.frustumLrbtnf(viewPass)[i];
+    return _renderContext.viewMatrix(viewPass);
 }
 
 void QVRWindow::renderOutput()
@@ -800,8 +801,7 @@ void QVRWindow::renderOutput()
         glBindVertexArray(_outputQuadVao);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     } else {
-        _outputPluginFunc(this, _textures[0], _viewPassFrustum[0], _viewPassViewMatrix[0],
-                                _textures[1], _viewPassFrustum[1], _viewPassViewMatrix[1]);
+        _outputPluginFunc(this, _renderContext, _textures[0], _textures[1]);
     }
 }
 
@@ -817,36 +817,36 @@ void QVRWindow::keyPressEvent(QKeyEvent* event)
         else
             showFullScreen();
     } else {
-        QVRManager::enqueueKeyPressEvent(processIndex(), index(), geometry(), screen()->geometry(), _viewPassFrustum[0], _viewPassViewMatrix[0], event);
+        QVRManager::enqueueKeyPressEvent(_renderContext, event);
     }
 }
 
 void QVRWindow::keyReleaseEvent(QKeyEvent* event)
 {
-    QVRManager::enqueueKeyReleaseEvent(processIndex(), index(), geometry(), screen()->geometry(), _viewPassFrustum[0], _viewPassViewMatrix[0], event);
+    QVRManager::enqueueKeyReleaseEvent(_renderContext, event);
 }
 
 void QVRWindow::mouseMoveEvent(QMouseEvent* event)
 {
-    QVRManager::enqueueMouseMoveEvent(processIndex(), index(), geometry(), screen()->geometry(), _viewPassFrustum[0], _viewPassViewMatrix[0], event);
+    QVRManager::enqueueMouseMoveEvent(_renderContext, event);
 }
 
 void QVRWindow::mousePressEvent(QMouseEvent* event)
 {
-    QVRManager::enqueueMousePressEvent(processIndex(), index(), geometry(), screen()->geometry(), _viewPassFrustum[0], _viewPassViewMatrix[0], event);
+    QVRManager::enqueueMousePressEvent(_renderContext, event);
 }
 
 void QVRWindow::mouseReleaseEvent(QMouseEvent* event)
 {
-    QVRManager::enqueueMouseReleaseEvent(processIndex(), index(), geometry(), screen()->geometry(), _viewPassFrustum[0], _viewPassViewMatrix[0], event);
+    QVRManager::enqueueMouseReleaseEvent(_renderContext, event);
 }
 
 void QVRWindow::mouseDoubleClickEvent(QMouseEvent* event)
 {
-    QVRManager::enqueueMouseDoubleClickEvent(processIndex(), index(), geometry(), screen()->geometry(), _viewPassFrustum[0], _viewPassViewMatrix[0], event);
+    QVRManager::enqueueMouseDoubleClickEvent(_renderContext, event);
 }
 
 void QVRWindow::wheelEvent(QWheelEvent* event)
 {
-    QVRManager::enqueueWheelEvent(processIndex(), index(), geometry(), screen()->geometry(), _viewPassFrustum[0], _viewPassViewMatrix[0], event);
+    QVRManager::enqueueWheelEvent(_renderContext, event);
 }

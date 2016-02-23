@@ -32,6 +32,7 @@ add_library(libqvr SHARED
     process.hpp process.cpp
     logging.hpp logging.cpp
     event.hpp event.cpp
+    rendercontext.hpp rendercontext.cpp
     ${QVRRESOURCES})
 set_target_properties(libqvr PROPERTIES OUTPUT_NAME qvr)
 set_target_properties(libqvr PROPERTIES VERSION "0.0.0")  
@@ -59,5 +60,6 @@ install(FILES
     observer.hpp
     window.hpp
     process.hpp
+    rendercontext.hpp
     outputplugin.hpp
     DESTINATION include/qvr)

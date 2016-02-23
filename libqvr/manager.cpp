@@ -464,7 +464,7 @@ void QVRManager::masterLoop()
         _slaveProcesses[p]->waitForSlaveData();
         while (_slaveProcesses[p]->receiveCmdEvent(&e)) {
             QVR_FIREHOSE("  ... got an event from process %d window %d",
-                    e.processIndex, e.windowIndex);
+                    e.context.processIndex(), e.context.windowIndex());
             eventQueue->enqueue(e);
         }
         if (!_slaveProcesses[p]->receiveCmdSync()) {
@@ -660,39 +660,39 @@ int QVRManager::processIndex()
     return manager->_processIndex;
 }
 
-void QVRManager::enqueueKeyPressEvent(int pi, int wi, const QRect& wG, const QRect& sG, const float* f, const QMatrix4x4& vM, QKeyEvent* event)
+void QVRManager::enqueueKeyPressEvent(const QVRRenderContext& c, QKeyEvent* event)
 {
-    eventQueue->enqueue(QVREvent(pi, wi, wG, sG, f, vM, QVR_Event_KeyPress, *event));
+    eventQueue->enqueue(QVREvent(QVR_Event_KeyPress, c, *event));
 }
 
-void QVRManager::enqueueKeyReleaseEvent(int pi, int wi, const QRect& wG, const QRect& sG, const float* f, const QMatrix4x4& vM, QKeyEvent* event)
+void QVRManager::enqueueKeyReleaseEvent(const QVRRenderContext& c, QKeyEvent* event)
 {
-    eventQueue->enqueue(QVREvent(pi, wi, wG, sG, f, vM, QVR_Event_KeyRelease, *event));
+    eventQueue->enqueue(QVREvent(QVR_Event_KeyRelease, c, *event));
 }
 
-void QVRManager::enqueueMouseMoveEvent(int pi, int wi, const QRect& wG, const QRect& sG, const float* f, const QMatrix4x4& vM, QMouseEvent* event)
+void QVRManager::enqueueMouseMoveEvent(const QVRRenderContext& c, QMouseEvent* event)
 {
-    eventQueue->enqueue(QVREvent(pi, wi, wG, sG, f, vM, QVR_Event_MouseMove, *event));
+    eventQueue->enqueue(QVREvent(QVR_Event_MouseMove, c, *event));
 }
 
-void QVRManager::enqueueMousePressEvent(int pi, int wi, const QRect& wG, const QRect& sG, const float* f, const QMatrix4x4& vM, QMouseEvent* event)
+void QVRManager::enqueueMousePressEvent(const QVRRenderContext& c, QMouseEvent* event)
 {
-    eventQueue->enqueue(QVREvent(pi, wi, wG, sG, f, vM, QVR_Event_MousePress, *event));
+    eventQueue->enqueue(QVREvent(QVR_Event_MousePress, c, *event));
 }
 
-void QVRManager::enqueueMouseReleaseEvent(int pi, int wi, const QRect& wG, const QRect& sG, const float* f, const QMatrix4x4& vM, QMouseEvent* event)
+void QVRManager::enqueueMouseReleaseEvent(const QVRRenderContext& c, QMouseEvent* event)
 {
-    eventQueue->enqueue(QVREvent(pi, wi, wG, sG, f, vM, QVR_Event_MouseRelease, *event));
+    eventQueue->enqueue(QVREvent(QVR_Event_MouseRelease, c, *event));
 }
 
-void QVRManager::enqueueMouseDoubleClickEvent(int pi, int wi, const QRect& wG, const QRect& sG, const float* f, const QMatrix4x4& vM, QMouseEvent* event)
+void QVRManager::enqueueMouseDoubleClickEvent(const QVRRenderContext& c, QMouseEvent* event)
 {
-    eventQueue->enqueue(QVREvent(pi, wi, wG, sG, f, vM, QVR_Event_MouseDoubleClick, *event));
+    eventQueue->enqueue(QVREvent(QVR_Event_MouseDoubleClick, c, *event));
 }
 
-void QVRManager::enqueueWheelEvent(int pi, int wi, const QRect& wG, const QRect& sG, const float* f, const QMatrix4x4& vM, QWheelEvent* event)
+void QVRManager::enqueueWheelEvent(const QVRRenderContext& c, QWheelEvent* event)
 {
-    eventQueue->enqueue(QVREvent(pi, wi, wG, sG, f, vM, QVR_Event_Wheel, *event));
+    eventQueue->enqueue(QVREvent(QVR_Event_Wheel, c, *event));
 }
 
 void QVRManager::processEventQueue()
@@ -701,7 +701,7 @@ void QVRManager::processEventQueue()
         QVREvent e = eventQueue->front();
         eventQueue->dequeue();
         if (_haveWasdqeObservers
-                && observerConfig(windowConfig(e.processIndex, e.windowIndex)
+                && observerConfig(windowConfig(e.context.processIndex(), e.context.windowIndex())
                     .observerIndex()).type() == QVR_Observer_WASDQE) {
             bool consumed = false;
             if (e.type == QVR_Event_KeyPress) {
@@ -768,27 +768,27 @@ void QVRManager::processEventQueue()
                     break;
                 }
             } else if (e.type == QVR_Event_MousePress) {
-                _wasdqeMouseProcessIndex = e.processIndex;
-                _wasdqeMouseWindowIndex = e.windowIndex;
+                _wasdqeMouseProcessIndex = e.context.processIndex();
+                _wasdqeMouseWindowIndex = e.context.windowIndex();
                 _wasdqeMouseInitialized = false;
                 consumed = true;
             } else if (e.type == QVR_Event_MouseMove) {
                 if (_wasdqeMouseInitialized
-                        && _wasdqeMouseProcessIndex == e.processIndex
-                        && _wasdqeMouseWindowIndex == e.windowIndex) {
+                        && _wasdqeMouseProcessIndex == e.context.processIndex()
+                        && _wasdqeMouseWindowIndex == e.context.windowIndex()) {
                     // Horizontal angle
                     float x = e.mouseEvent.pos().x();
-                    float w = e.windowGeometry.width();
+                    float w = e.context.windowRect().width();
                     float xf = x / w * 2.0f - 1.0f;
                     _wasdqeHorzAngle = -xf * 180.0f;
                     // Vertical angle
                     // For HMDs, up/down views are realized via head movements. Additional
                     // mouse-based up/down views should be disabled since they lead to
                     // sickness fast ;)
-                    if (windowConfig(e.processIndex, e.windowIndex).outputMode()
+                    if (windowConfig(e.context.processIndex(), e.context.windowIndex()).outputMode()
                             != QVR_Output_Stereo_Oculus) {
                         float y = e.mouseEvent.pos().y();
-                        float h = e.windowGeometry.height();
+                        float h = e.context.windowRect().height();
                         float yf = y / h * 2.0f - 1.0f;
                         _wasdqeVertAngle = -yf * 90.0f;
                     }
@@ -801,25 +801,25 @@ void QVRManager::processEventQueue()
         }
         switch (e.type) {
         case QVR_Event_KeyPress:
-            _app->keyPressEvent(e.processIndex, e.windowIndex, e.windowGeometry, e.screenGeometry, e.frustum, e.viewMatrix, &e.keyEvent);
+            _app->keyPressEvent(e.context, &e.keyEvent);
             break;
         case QVR_Event_KeyRelease:
-            _app->keyReleaseEvent(e.processIndex, e.windowIndex, e.windowGeometry, e.screenGeometry, e.frustum, e.viewMatrix, &e.keyEvent);
+            _app->keyReleaseEvent(e.context, &e.keyEvent);
             break;
         case QVR_Event_MouseMove:
-            _app->mouseMoveEvent(e.processIndex, e.windowIndex, e.windowGeometry, e.screenGeometry, e.frustum, e.viewMatrix, &e.mouseEvent);
+            _app->mouseMoveEvent(e.context, &e.mouseEvent);
             break;
         case QVR_Event_MousePress:
-            _app->mousePressEvent(e.processIndex, e.windowIndex, e.windowGeometry, e.screenGeometry, e.frustum, e.viewMatrix, &e.mouseEvent);
+            _app->mousePressEvent(e.context, &e.mouseEvent);
             break;
         case QVR_Event_MouseRelease:
-            _app->mouseReleaseEvent(e.processIndex, e.windowIndex, e.windowGeometry, e.screenGeometry, e.frustum, e.viewMatrix, &e.mouseEvent);
+            _app->mouseReleaseEvent(e.context, &e.mouseEvent);
             break;
         case QVR_Event_MouseDoubleClick:
-            _app->mouseDoubleClickEvent(e.processIndex, e.windowIndex, e.windowGeometry, e.screenGeometry, e.frustum, e.viewMatrix, &e.mouseEvent);
+            _app->mouseDoubleClickEvent(e.context, &e.mouseEvent);
             break;
         case QVR_Event_Wheel:
-            _app->wheelEvent(e.processIndex, e.windowIndex, e.windowGeometry, e.screenGeometry, e.frustum, e.viewMatrix, &e.wheelEvent);
+            _app->wheelEvent(e.context, &e.wheelEvent);
             break;
         }
     }

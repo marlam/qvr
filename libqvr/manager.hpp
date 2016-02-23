@@ -42,6 +42,7 @@ class QVRConfig;
 class QVRObserver;
 class QVRWindow;
 class QVRProcess;
+class QVRRenderContext;
 
 typedef enum {
     QVR_Log_Level_Fatal = 0,    // print only fatal errors
@@ -114,13 +115,13 @@ public:
     static const QVRProcessConfig& processConfig(int processIndex = processIndex());
     static const QVRWindowConfig& windowConfig(int processIndex, int windowIndex);
 
-    static void enqueueKeyPressEvent(int pi, int wi, const QRect& wG, const QRect& sG, const float* f, const QMatrix4x4& vM, QKeyEvent* event);
-    static void enqueueKeyReleaseEvent(int pi, int wi, const QRect& wG, const QRect& sG, const float* f, const QMatrix4x4& vM, QKeyEvent* event);
-    static void enqueueMouseMoveEvent(int pi, int wi, const QRect& wG, const QRect& sG, const float* f, const QMatrix4x4& vM, QMouseEvent* event);
-    static void enqueueMousePressEvent(int pi, int wi, const QRect& wG, const QRect& sG, const float* f, const QMatrix4x4& vM, QMouseEvent* event);
-    static void enqueueMouseReleaseEvent(int pi, int wi, const QRect& wG, const QRect& sG, const float* f, const QMatrix4x4& vM, QMouseEvent* event);
-    static void enqueueMouseDoubleClickEvent(int pi, int wi, const QRect& wG, const QRect& sG, const float* f, const QMatrix4x4& vM, QMouseEvent* event);
-    static void enqueueWheelEvent(int pi, int wi, const QRect& wG, const QRect& sG, const float* f, const QMatrix4x4& vM, QWheelEvent* event);
+    static void enqueueKeyPressEvent(const QVRRenderContext& c, QKeyEvent* event);
+    static void enqueueKeyReleaseEvent(const QVRRenderContext& c, QKeyEvent* event);
+    static void enqueueMouseMoveEvent(const QVRRenderContext& c, QMouseEvent* event);
+    static void enqueueMousePressEvent(const QVRRenderContext& c, QMouseEvent* event);
+    static void enqueueMouseReleaseEvent(const QVRRenderContext& c, QMouseEvent* event);
+    static void enqueueMouseDoubleClickEvent(const QVRRenderContext& c, QMouseEvent* event);
+    static void enqueueWheelEvent(const QVRRenderContext& c, QWheelEvent* event);
 };
 
 #endif

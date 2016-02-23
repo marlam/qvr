@@ -59,10 +59,7 @@ public:
             const float* frustumLrbtnf,
             const QMatrix4x4& viewMatrix) override;
 
-    void keyPressEvent(int processIndex, int windowIndex,
-            const QRect& windowGeometry, const QRect& screenGeometry,
-            const float* frustumLrbtnf, const QMatrix4x4& viewMatrix,
-            QKeyEvent* event) override;
+    void keyPressEvent(const QVRRenderContext& /* context */, QKeyEvent* event) override;
 };
 
 #endif

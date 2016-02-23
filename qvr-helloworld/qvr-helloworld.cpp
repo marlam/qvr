@@ -24,11 +24,8 @@
 #include <iostream>
 
 #include <QApplication>
-#include <QQuaternion>
 #include <QKeyEvent>
-#include <QMouseEvent>
 #include <QImage>
-#include <QCursor>
 
 #include <qvr/manager.hpp>
 #include <qvr/window.hpp>
@@ -289,10 +286,7 @@ void QVRHelloWorld::render(QVRWindow* /* w */,
     }
 }
 
-void QVRHelloWorld::keyPressEvent(int /* processIndex */, int /* windowIndex */,
-        const QRect& /* windowGeometry */, const QRect& /* screenGeometry */,
-        const float* /* frustumLrbtnf */, const QMatrix4x4& /* viewMatrix */,
-        QKeyEvent* event)
+void QVRHelloWorld::keyPressEvent(const QVRRenderContext& /* context */, QKeyEvent* event)
 {
     switch (event->key())
     {

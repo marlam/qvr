@@ -27,9 +27,6 @@
 
 #include <QApplication>
 #include <QKeyEvent>
-#include <QMouseEvent>
-#include <QMatrix4x4>
-#include <QCursor>
 #include <QtMath>
 
 #include <qvr/manager.hpp>
@@ -384,10 +381,7 @@ void QVRVNCViewer::render(QVRWindow* /* w */,
     glDrawElements(GL_TRIANGLES, _screenIndices, GL_UNSIGNED_INT, 0);
 }
 
-void QVRVNCViewer::keyPressEvent(int /* processIndex */, int /* windowIndex */,
-        const QRect& /* windowGeometry */, const QRect& /* screenGeometry */,
-        const float* /* frustumLrbtnf */, const QMatrix4x4& /* viewMatrix */,
-        QKeyEvent* event)
+void QVRVNCViewer::keyPressEvent(const QVRRenderContext& /* context */, QKeyEvent* event)
 {
     switch (event->key())
     {

@@ -28,9 +28,7 @@
 
 void QVREvent::serialize(QDataStream& ds) const
 {
-    ds << processIndex << windowIndex << windowGeometry << screenGeometry;
-    ds << frustum[0] << frustum[1] << frustum[2] << frustum[3] << frustum[4] << frustum[5];
-    ds << viewMatrix;
+    context.serialize(ds);
     ds << static_cast<int>(type);
     ds << static_cast<int>(keyEvent.type()) << keyEvent.key() << static_cast<int>(keyEvent.modifiers());
     ds << static_cast<int>(mouseEvent.type()) << mouseEvent.localPos()
@@ -46,9 +44,7 @@ void QVREvent::deserialize(QDataStream& ds)
     int x[4];
     QPoint p[2];
     QPointF pf[2];
-    ds >> processIndex >> windowIndex >> windowGeometry >> screenGeometry;
-    ds >> frustum[0] >> frustum[1] >> frustum[2] >> frustum[3] >> frustum[4] >> frustum[5];
-    ds >> viewMatrix;
+    context.deserialize(ds);
     ds >> x[0];
     type = static_cast<QVREventType>(x[0]);
     ds >> x[0] >> x[1] >> x[2];
@@ -65,40 +61,32 @@ void QVREvent::deserialize(QDataStream& ds)
 }
 
 QVREvent::QVREvent() :
-    processIndex(-1), windowIndex(-1), windowGeometry(), screenGeometry(),
-    frustum { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
-    viewMatrix(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f),
     type(QVR_Event_KeyPress),
+    context(),
     keyEvent(QEvent::None, 0, Qt::NoModifier),
     mouseEvent(QEvent::None, QPointF(), Qt::NoButton, Qt::NoButton, Qt::NoModifier),
     wheelEvent(QPointF(), QPointF(), QPoint(), QPoint(), 0, Qt::Horizontal, Qt::NoButton, Qt::NoModifier)
 {}
 
-QVREvent::QVREvent(int pi, int wi, const QRect& wG, const QRect& sG, const float* f, const QMatrix4x4& vM, QVREventType t, QKeyEvent e) :
-    processIndex(pi), windowIndex(wi), windowGeometry(wG), screenGeometry(sG),
-    frustum { f[0], f[1], f[2], f[3], f[4], f[5] },
-    viewMatrix(vM),
+QVREvent::QVREvent(QVREventType t, const QVRRenderContext& c, QKeyEvent e) :
     type(t),
+    context(c),
     keyEvent(e),
     mouseEvent(QEvent::None, QPointF(), Qt::NoButton, Qt::NoButton, Qt::NoModifier),
     wheelEvent(QPointF(), QPointF(), QPoint(), QPoint(), 0, Qt::Horizontal, Qt::NoButton, Qt::NoModifier)
 {}
 
-QVREvent::QVREvent(int pi, int wi, const QRect& wG, const QRect& sG, const float* f, const QMatrix4x4& vM, QVREventType t, QMouseEvent e) :
-    processIndex(pi), windowIndex(wi), windowGeometry(wG), screenGeometry(sG),
-    frustum { f[0], f[1], f[2], f[3], f[4], f[5] },
-    viewMatrix(vM),
+QVREvent::QVREvent(QVREventType t, const QVRRenderContext& c, QMouseEvent e) :
     type(t),
+    context(c),
     keyEvent(QEvent::None, 0, Qt::NoModifier),
     mouseEvent(e),
     wheelEvent(QPointF(), QPointF(), QPoint(), QPoint(), 0, Qt::Horizontal, Qt::NoButton, Qt::NoModifier)
 {}
 
-QVREvent::QVREvent(int pi, int wi, const QRect& wG, const QRect& sG, const float* f, const QMatrix4x4& vM, QVREventType t, QWheelEvent e) :
-    processIndex(pi), windowIndex(wi), windowGeometry(wG), screenGeometry(sG),
-    frustum { f[0], f[1], f[2], f[3], f[4], f[5] },
-    viewMatrix(vM),
+QVREvent::QVREvent(QVREventType t, const QVRRenderContext& c, QWheelEvent e) :
     type(t),
+    context(c),
     keyEvent(QEvent::None, 0, Qt::NoModifier),
     mouseEvent(QEvent::None, QPointF(), Qt::NoButton, Qt::NoButton, Qt::NoModifier),
     wheelEvent(e)

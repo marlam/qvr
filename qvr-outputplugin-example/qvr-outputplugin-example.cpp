@@ -113,19 +113,11 @@ void QVROutputPluginExample::exit()
     delete _prg;
 }
 
-void QVROutputPluginExample::output(
-        unsigned int    tex0   , const float* /* frustumLrbtnf0 */, const QMatrix4x4& /* viewMatrix0 */,
-        unsigned int /* tex1 */, const float* /* frustumLrbtnf1 */, const QMatrix4x4& /* viewMatrix1 */)
+void QVROutputPluginExample::output(const QVRRenderContext& /* context */,
+        unsigned int tex0, unsigned int /* tex1 */)
 {
-    // If _window->outputMode() is a single-view mode (one of QVR_Output_Center,
-    // QVR_Output_Left, QVR_Output_Right), then the first set of texture,
-    // frustum, and view matrix contains the information for that view, and the
-    // second set is undefined.
-    // If _window->outputMode() is QVR_Output_Stereo_Custom, then the first set
-    // contains the information about the left view, and the second set abount
-    // the right view.
-    // This toy example plugin only uses the first view regardless of output
-    // mode.
+    // This toy example plugin only uses the texture of the first view pass
+    // regardless of output mode information in the render context.
     glViewport(0, 0, _window->width(), _window->height());
     glUseProgram(_prg->programId());
     glActiveTexture(GL_TEXTURE0);
@@ -157,9 +149,8 @@ extern "C" void QVROutputPluginExit(QVRWindow* window)
 }
 
 extern "C" void QVROutputPlugin(QVRWindow* window,
-        unsigned int tex0, const float* frustumLrbtnf0, const QMatrix4x4& viewMatrix0,
-        unsigned int tex1, const float* frustumLrbtnf1, const QMatrix4x4& viewMatrix1)
+        const QVRRenderContext& context,
+        unsigned int tex0, unsigned int tex1)
 {
-    instanceMap[window->id()]->output(tex0, frustumLrbtnf0, viewMatrix0,
-                                      tex1, frustumLrbtnf1, viewMatrix1);
+    instanceMap[window->id()]->output(context, tex0, tex1);
 }

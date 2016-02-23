@@ -23,9 +23,6 @@
 
 #include <QApplication>
 #include <QKeyEvent>
-#include <QMouseEvent>
-#include <QMatrix4x4>
-#include <QCursor>
 
 #include <qvr/manager.hpp>
 #include <qvr/window.hpp>
@@ -160,10 +157,7 @@ void QVRVTKExample::render(QVRWindow* /* w */,
     _vtkRenderWindow->Render();
 }
 
-void QVRVTKExample::keyPressEvent(int /* processIndex */, int /* windowIndex */,
-        const QRect& /* windowGeometry */, const QRect& /* screenGeometry */,
-        const float* /* frustumLrbtnf */, const QMatrix4x4& /* viewMatrix */,
-        QKeyEvent* event)
+void QVRVTKExample::keyPressEvent(const QVRRenderContext& /* context */, QKeyEvent* event)
 {
     switch (event->key())
     {

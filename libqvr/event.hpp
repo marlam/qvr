@@ -29,6 +29,8 @@
 #include <QWheelEvent>
 #include <QMatrix4x4>
 
+#include "rendercontext.hpp"
+
 class QDataStream;
 
 typedef enum {
@@ -44,13 +46,8 @@ typedef enum {
 class QVREvent
 {
 public:
-    int processIndex;
-    int windowIndex;
-    QRect windowGeometry;
-    QRect screenGeometry;
-    float frustum[6];
-    QMatrix4x4 viewMatrix;
     QVREventType type;
+    QVRRenderContext context;
     QKeyEvent keyEvent;
     QMouseEvent mouseEvent;
     QWheelEvent wheelEvent;
@@ -59,9 +56,9 @@ public:
     void deserialize(QDataStream& ds);
 
     QVREvent();
-    QVREvent(int pi, int wi, const QRect& wG, const QRect& sG, const float* f, const QMatrix4x4& vM, QVREventType t, QKeyEvent e);
-    QVREvent(int pi, int wi, const QRect& wG, const QRect& sG, const float* f, const QMatrix4x4& vM, QVREventType t, QMouseEvent e);
-    QVREvent(int pi, int wi, const QRect& wG, const QRect& sG, const float* f, const QMatrix4x4& vM, QVREventType t, QWheelEvent e);
+    QVREvent(QVREventType t, const QVRRenderContext& c, QKeyEvent e);
+    QVREvent(QVREventType t, const QVRRenderContext& c, QMouseEvent e);
+    QVREvent(QVREventType t, const QVRRenderContext& c, QWheelEvent e);
 };
 
 #endif

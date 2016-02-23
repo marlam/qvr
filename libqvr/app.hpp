@@ -109,34 +109,13 @@ public:
      *
      * These functions do not have valid OpenGL contexts.
      */
-    virtual void keyPressEvent(int /* processIndex */, int /* windowIndex */,
-            const QRect& /* windowGeometry */, const QRect& /* screenGeometry */,
-            const float* /* frustumLrbtnf */, const QMatrix4x4& /* viewMatrix */,
-            QKeyEvent* /* event */) {}
-    virtual void keyReleaseEvent(int /* processIndex */, int /* windowIndex */,
-            const QRect& /* windowGeometry */, const QRect& /* screenGeometry */,
-            const float* /* frustumLrbtnf */, const QMatrix4x4& /* viewMatrix */,
-            QKeyEvent* /* event */) {}
-    virtual void mouseMoveEvent(int /* processIndex */, int /* windowIndex */,
-            const QRect& /* windowGeometry */, const QRect& /* screenGeometry */,
-            const float* /* frustumLrbtnf */, const QMatrix4x4& /* viewMatrix */,
-            QMouseEvent* /* event */) {}
-    virtual void mousePressEvent(int /* processIndex */, int /* windowIndex */,
-            const QRect& /* windowGeometry */, const QRect& /* screenGeometry */,
-            const float* /* frustumLrbtnf */, const QMatrix4x4& /* viewMatrix */,
-            QMouseEvent* /* event */) {}
-    virtual void mouseReleaseEvent(int /* processIndex */, int /* windowIndex */,
-            const QRect& /* windowGeometry */, const QRect& /* screenGeometry */,
-            const float* /* frustumLrbtnf */, const QMatrix4x4& /* viewMatrix */,
-            QMouseEvent* /* event */) {}
-    virtual void mouseDoubleClickEvent(int /* processIndex */, int /* windowIndex */,
-            const QRect& /* windowGeometry */, const QRect& /* screenGeometry */,
-            const float* /* frustumLrbtnf */, const QMatrix4x4& /* viewMatrix */,
-            QMouseEvent* /* event */) {}
-    virtual void wheelEvent(int /* processIndex */, int /* windowIndex */,
-            const QRect& /* windowGeometry */, const QRect& /* screenGeometry */,
-            const float* /* frustumLrbtnf */, const QMatrix4x4& /* viewMatrix */,
-            QWheelEvent* /* event */) {}
+    virtual void keyPressEvent(const QVRRenderContext& /* context */, QKeyEvent* /* event */) {}
+    virtual void keyReleaseEvent(const QVRRenderContext& /* context */, QKeyEvent* /* event */) {}
+    virtual void mouseMoveEvent(const QVRRenderContext& /* context */, QMouseEvent* /* event */) {}
+    virtual void mousePressEvent(const QVRRenderContext& /* context */, QMouseEvent* /* event */) {}
+    virtual void mouseReleaseEvent(const QVRRenderContext& /* context */, QMouseEvent* /* event */) {}
+    virtual void mouseDoubleClickEvent(const QVRRenderContext& /* context */, QMouseEvent* /* event */) {}
+    virtual void wheelEvent(const QVRRenderContext& /* context */, QWheelEvent* /* event */) {}
 };
 
 #endif

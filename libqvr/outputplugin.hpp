@@ -26,11 +26,12 @@
 
 class QStringList;
 class QVRWindow;
+class QVRRenderContext;
 
 extern "C" bool QVROutputPluginInit(QVRWindow* window, const QStringList& args);
 extern "C" void QVROutputPluginExit(QVRWindow* window);
 extern "C" void QVROutputPlugin(QVRWindow* window,
-        unsigned int tex0, const float* frustumLrbtnf0, const QMatrix4x4& viewMatrix0,
-        unsigned int tex1, const float* frustumLrbtnf1, const QMatrix4x4& viewMatrix1);
+        const QVRRenderContext& context,
+        unsigned int tex0, unsigned int tex1);
 
 #endif
