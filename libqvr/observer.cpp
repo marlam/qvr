@@ -32,8 +32,8 @@ static void vrpnPosChangeHandler(void* userdata, const vrpn_TRACKERCB info)
 {
     QVRObserver* o = reinterpret_cast<QVRObserver*>(userdata);
     QMatrix4x4 m;
-    m.rotate(QQuaternion(info.quat[3], info.quat[0], info.quat[1], info.quat[2]));
     m.translate(QVector3D(info.pos[0], info.pos[1], info.pos[2]));
+    m.rotate(QQuaternion(info.quat[3], info.quat[0], info.quat[1], info.quat[2]));
     o->setEyeMatrices(m);
 }
 #endif
