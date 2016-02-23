@@ -1,7 +1,8 @@
 # for qvr-vncviewer, use --cylinder 0,1.55,0,0,1,0,2.4912,0,56.145,43.6
 
 observer default
-	type custom
+	type vrpn
+	parameters DTrack@localhost 0
 	position 0 1.78 0
 	up 0 1 0
 	forward 0 0 -1
