@@ -16,7 +16,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 # Required libraries
-find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Widgets 5.5.0 REQUIRED)
 
 # Optional libraries
 find_package(VRPN)
