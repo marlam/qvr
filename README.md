@@ -24,6 +24,8 @@ external rendering engines. Examples are provided.
 Build and install the QVR library `libqvr` first. After that, you can build
 and try the example applications.
 
+See the [full library documentation](https://marlam.github.io/qvr/html/).
+
 ## Example applications
 
 - `qvr-helloworld`:
