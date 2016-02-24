@@ -257,7 +257,7 @@ void QVRVNCViewer::deserializeDynamicData(QDataStream& ds)
     }
 }
 
-void QVRVNCViewer::update(const QList<QVRObserver*>& /* customObservers */)
+void QVRVNCViewer::update()
 {
     _vncDirtyRectangles.clear();
     int i = WaitForMessage(_vncClient, 1);
@@ -350,29 +350,25 @@ void QVRVNCViewer::preRenderProcess(QVRProcess* /* p */)
 }
 
 void QVRVNCViewer::render(QVRWindow* /* w */,
-        unsigned int fboTex,
-        const float* frustumLrbtnf,
-        const QMatrix4x4& viewMatrix)
+        const QVRRenderContext& context, int viewPass, unsigned int texture)
 {
     // Set up framebuffer object to render into
     GLint width, height;
-    glBindTexture(GL_TEXTURE_2D, fboTex);
+    glBindTexture(GL_TEXTURE_2D, texture);
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
     glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, fboTex, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture, 0);
 
     // Set up view
     glViewport(0, 0, width, height);
     glClear(GL_COLOR_BUFFER_BIT);
-    QMatrix4x4 projectionMatrix;
-    projectionMatrix.frustum(frustumLrbtnf[0], frustumLrbtnf[1],
-            frustumLrbtnf[2], frustumLrbtnf[3], frustumLrbtnf[4],
-            frustumLrbtnf[5]);
+    QMatrix4x4 P = context.frustum(viewPass).toMatrix4x4();
+    QMatrix4x4 V = context.viewMatrix(viewPass);
 
     // Set up shader program
     glUseProgram(_prg.programId());
-    _prg.setUniformValue("pmv_matrix", projectionMatrix * viewMatrix);
+    _prg.setUniformValue("pmv_matrix", P * V);
     _prg.setUniformValue("vnc_tex", 0);
 
     // Render

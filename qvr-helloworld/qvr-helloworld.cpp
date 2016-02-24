@@ -137,7 +137,7 @@ void QVRHelloWorld::deserializeDynamicData(QDataStream& ds)
     ds >> _objectRotationAngle;
 }
 
-void QVRHelloWorld::update(const QList<QVRObserver*>& /* customObservers */)
+void QVRHelloWorld::update()
 {
     float seconds = _timer.elapsed() / 1000.0f;
     _objectRotationAngle = seconds * 20.0f;
@@ -228,28 +228,25 @@ bool QVRHelloWorld::initProcess(QVRProcess* /* p */)
 }
 
 void QVRHelloWorld::render(QVRWindow* /* w */,
-        unsigned int fboTex,
-        const float* frustumLrbtnf,
-        const QMatrix4x4& viewMatrix)
+        const QVRRenderContext& context, int viewPass,
+        unsigned int texture)
 {
     // Set up framebuffer object to render into
     GLint width, height;
-    glBindTexture(GL_TEXTURE_2D, fboTex);
+    glBindTexture(GL_TEXTURE_2D, texture);
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
     glBindTexture(GL_TEXTURE_2D, _fboDepthTex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height,
             0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, fboTex, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture, 0);
 
     // Set up view
     glViewport(0, 0, width, height);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    QMatrix4x4 projectionMatrix;
-    projectionMatrix.frustum(frustumLrbtnf[0], frustumLrbtnf[1],
-            frustumLrbtnf[2], frustumLrbtnf[3], frustumLrbtnf[4],
-            frustumLrbtnf[5]);
+    QMatrix4x4 projectionMatrix = context.frustum(viewPass).toMatrix4x4();
+    QMatrix4x4 viewMatrix = context.viewMatrix(viewPass);
 
     // Set up shader program
     glUseProgram(_prg.programId());

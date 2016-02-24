@@ -71,29 +71,27 @@ bool QVROSGViewer::initProcess(QVRProcess* /* p */)
 }
 
 void QVROSGViewer::render(QVRWindow* /* w */,
-        unsigned int fboTex,
-        const float* frustumLrbtnf,
-        const QMatrix4x4& viewMatrix)
+        const QVRRenderContext& context, int viewPass, unsigned int texture)
 {
     // Set up framebuffer object to render into
     GLint width, height;
-    glBindTexture(GL_TEXTURE_2D, fboTex);
+    glBindTexture(GL_TEXTURE_2D, texture);
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
     glBindTexture(GL_TEXTURE_2D, _fboDepthTex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height,
             0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, fboTex, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture, 0);
 
     // Set up OSG graphics window
     _graphicsWindow->resized(0, 0, width, height);
 
     // Set up OSG camera
-    _viewer.getCamera()->setProjectionMatrixAsFrustum(
-            frustumLrbtnf[0], frustumLrbtnf[1], frustumLrbtnf[2], frustumLrbtnf[3],
-            frustumLrbtnf[4], frustumLrbtnf[5]);
-    _viewer.getCamera()->setViewMatrix(osg::Matrix(viewMatrix.constData()));
+    QMatrix4x4 P = context.frustum(viewPass).toMatrix4x4();
+    _viewer.getCamera()->setProjectionMatrix(osg::Matrix(P.constData()));
+    QMatrix4x4 V = context.viewMatrix(viewPass);
+    _viewer.getCamera()->setViewMatrix(osg::Matrix(V.constData()));
 
     // Render
     _viewer.frame();

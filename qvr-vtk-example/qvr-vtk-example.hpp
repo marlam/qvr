@@ -54,10 +54,8 @@ public:
 
     bool initProcess(QVRProcess* p) override;
 
-    void render(QVRWindow* w,
-            unsigned int fboTex,
-            const float* frustumLrbtnf,
-            const QMatrix4x4& viewMatrix) override;
+    void render(QVRWindow* w, const QVRRenderContext& context,
+            int viewPass, unsigned int texture) override;
 
     void keyPressEvent(const QVRRenderContext& /* context */, QKeyEvent* event) override;
 };

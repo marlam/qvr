@@ -29,6 +29,7 @@
 #include <QMatrix4x4>
 
 #include "config.hpp"
+#include "frustum.hpp"
 
 class QDataStream;
 
@@ -44,7 +45,7 @@ private:
     int _viewPasses;
     QVREye _eye[2];
     QMatrix4x4 _eyeMatrix[2];
-    float _frustum[2][6];
+    QVRFrustum _frustum[2];
     QMatrix4x4 _viewMatrix[2];
 
 public:
@@ -59,10 +60,10 @@ public:
     QVector3D screenWallTopLeft() const { return _screenWall[2]; }
     QVROutputMode outputMode() const { return _outputMode; }
     int viewPasses() const { return _viewPasses; }
-    QVREye eye(int viewPass = 0) const { return _eye[viewPass]; }
-    QMatrix4x4 eyeMatrix(int viewPass = 0) const { return _eyeMatrix[viewPass]; }
-    const float* frustumLrbtnf(int viewPass = 0) const { return _frustum[viewPass]; }
-    QMatrix4x4 viewMatrix(int viewPass = 0) const { return _viewMatrix[viewPass]; }
+    QVREye eye(int viewPass) const { return _eye[viewPass]; }
+    const QMatrix4x4& eyeMatrix(int viewPass) const { return _eyeMatrix[viewPass]; }
+    const QVRFrustum& frustum(int viewPass) const { return _frustum[viewPass]; }
+    const QMatrix4x4& viewMatrix(int viewPass) const { return _viewMatrix[viewPass]; }
 
     void setProcessIndex(int pi) { _processIndex = pi; }
     void setWindowIndex(int wi) { _windowIndex = wi; }
@@ -72,9 +73,7 @@ public:
     { _screenWall[0] = bl; _screenWall[1]= br; _screenWall[2] = tl; }
     void setOutputConf(QVROutputMode om);
     void setEyeMatrix(int vp, const QMatrix4x4& em) { _eyeMatrix[vp] = em; }
-    void setFrustum(int vp, float l, float r, float b, float t, float n, float f)
-    { _frustum[vp][0] = l; _frustum[vp][1] = r; _frustum[vp][2] = b;
-      _frustum[vp][3] = t; _frustum[vp][4] = n; _frustum[vp][5] = f; }
+    void setFrustum(int vp, const QVRFrustum f) { _frustum[vp] = f; }
     void setViewMatrix(int vp, const QMatrix4x4& vm) { _viewMatrix[vp] = vm; }
 
     void serialize(QDataStream& ds) const;

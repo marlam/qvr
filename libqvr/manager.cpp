@@ -314,7 +314,8 @@ bool QVRManager::init(QVRApp* app)
     if (_masterWindow)
         _masterWindow->winContext()->doneCurrent();
     if (_processIndex == 0) {
-        _app->update(_customObservers);
+        _app->update();
+        _app->updateObservers(_customObservers);
     }
 
     // Initialize FPS printing
@@ -419,6 +420,8 @@ void QVRManager::masterLoop()
         }
     }
 
+    _app->getNearFar(_near, _far);
+
     if (_slaveProcesses.size() > 0) {
         if (_haveWasdqeObservers) {
             QByteArray serializedWasdqeState;
@@ -444,7 +447,7 @@ void QVRManager::masterLoop()
         _app->serializeDynamicData(serializationDataStream);
         QVR_FIREHOSE("  ... sending dynamic application data (%d bytes) to slave processes", serializedDynData.size());
         for (int p = 0; p < _slaveProcesses.size(); p++) {
-            _slaveProcesses[p]->sendCmdRender(serializedDynData);
+            _slaveProcesses[p]->sendCmdRender(_near, _far, serializedDynData);
             _slaveProcesses[p]->flush();
         }
     }
@@ -454,7 +457,8 @@ void QVRManager::masterLoop()
     // process events and run application updates while the windows wait for the buffer swap
     QVR_FIREHOSE("  ... app update");
     processEventQueue();
-    _app->update(_customObservers);
+    _app->update();
+    _app->updateObservers(_customObservers);
 
     // now wait for windows to finish buffer swap...
     waitForBufferSwaps();
@@ -492,7 +496,7 @@ void QVRManager::slaveLoop()
         _thisProcess->receiveCmdObserver(&o);
         *(_observers.at(o.index())) = o;
     } else if (cmd == 'r') {
-        _thisProcess->receiveCmdRender(_app);
+        _thisProcess->receiveCmdRender(&_near, &_far, _app);
         render();
         while (!eventQueue->empty()) {
             QVR_FIREHOSE("  ... sending event to master process");
@@ -537,14 +541,10 @@ void QVRManager::render()
     if (_masterWindow)
         _masterWindow->winContext()->makeCurrent(_masterWindow);
 
-    float near, far;
-    _app->getNearFar(&near, &far);
-
     if (_windows.size() > 0) {
         QVR_FIREHOSE("  ... preRenderProcess()");
         _app->preRenderProcess(_thisProcess);
         // render
-        GLuint textures[_windows.size()][2];
         for (int w = 0; w < _windows.size(); w++) {
             QVR_FIREHOSE("  ... preRenderWindow(%d)", w);
             if (!_wasdqeMouseInitialized) {
@@ -559,29 +559,27 @@ void QVRManager::render()
             }
             _app->preRenderWindow(_windows[w]);
             QVR_FIREHOSE("  ... render(%d)", w);
-            _windows[w]->getTextures(textures[w]);
-            QVR_FIREHOSE("  ...   pass 0");
-            float frustum[6];
-            QMatrix4x4 viewMatrix = _windows[w]->getFrustumAndViewMatrix(0, near, far, frustum);
-            QVR_FIREHOSE("  ... frustum: l=%g r=%g b=%g t=%g n=%g f=%g",
-                    frustum[0], frustum[1], frustum[2], frustum[3], frustum[4], frustum[5]);
-            QVR_FIREHOSE("  ...   viewmatrix: [%g %g %g %g] [%g %g %g %g] [%g %g %g %g] [%g %g %g %g]",
-                    viewMatrix(0, 0), viewMatrix(0, 1), viewMatrix(0, 2), viewMatrix(0, 3),
-                    viewMatrix(1, 0), viewMatrix(1, 1), viewMatrix(1, 2), viewMatrix(1, 3),
-                    viewMatrix(2, 0), viewMatrix(2, 1), viewMatrix(2, 2), viewMatrix(2, 3),
-                    viewMatrix(3, 0), viewMatrix(3, 1), viewMatrix(3, 2), viewMatrix(3, 3));
-            _app->render(_windows[w], textures[w][0], frustum, viewMatrix);
-            if (textures[w][1] != 0) {
-                QVR_FIREHOSE("  ...   pass 1");
-                viewMatrix = _windows[w]->getFrustumAndViewMatrix(1, near, far, frustum);
-                QVR_FIREHOSE("  ... frustum: l=%g r=%g b=%g t=%g n=%g f=%g",
-                        frustum[0], frustum[1], frustum[2], frustum[3], frustum[4], frustum[5]);
+            unsigned int textures[2];
+            const QVRRenderContext& renderContext = _windows[w]->computeRenderContext(_near, _far, textures);
+            for (int i = 0; i < renderContext.viewPasses(); i++) {
+                QVR_FIREHOSE("  ... pass %d", i);
+                QVR_FIREHOSE("  ...   frustum: l=%g r=%g b=%g t=%g n=%g f=%g",
+                        renderContext.frustum(i).left(),
+                        renderContext.frustum(i).right(),
+                        renderContext.frustum(i).bottom(),
+                        renderContext.frustum(i).top(),
+                        renderContext.frustum(i).near(),
+                        renderContext.frustum(i).far());
                 QVR_FIREHOSE("  ...   viewmatrix: [%g %g %g %g] [%g %g %g %g] [%g %g %g %g] [%g %g %g %g]",
-                        viewMatrix(0, 0), viewMatrix(0, 1), viewMatrix(0, 2), viewMatrix(0, 3),
-                        viewMatrix(1, 0), viewMatrix(1, 1), viewMatrix(1, 2), viewMatrix(1, 3),
-                        viewMatrix(2, 0), viewMatrix(2, 1), viewMatrix(2, 2), viewMatrix(2, 3),
-                        viewMatrix(3, 0), viewMatrix(3, 1), viewMatrix(3, 2), viewMatrix(3, 3));
-                _app->render(_windows[w], textures[w][1], frustum, viewMatrix);
+                        renderContext.viewMatrix(i)(0, 0), renderContext.viewMatrix(i)(0, 1),
+                        renderContext.viewMatrix(i)(0, 2), renderContext.viewMatrix(i)(0, 3),
+                        renderContext.viewMatrix(i)(1, 0), renderContext.viewMatrix(i)(1, 1),
+                        renderContext.viewMatrix(i)(1, 2), renderContext.viewMatrix(i)(1, 3),
+                        renderContext.viewMatrix(i)(2, 0), renderContext.viewMatrix(i)(2, 1),
+                        renderContext.viewMatrix(i)(2, 2), renderContext.viewMatrix(i)(2, 3),
+                        renderContext.viewMatrix(i)(3, 0), renderContext.viewMatrix(i)(3, 1),
+                        renderContext.viewMatrix(i)(3, 2), renderContext.viewMatrix(i)(3, 3));
+                _app->render(_windows[w], renderContext, i, textures[i]);
             }
             QVR_FIREHOSE("  ... postRenderWindow(%d)", w);
             _app->postRenderWindow(_windows[w]);

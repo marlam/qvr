@@ -101,8 +101,7 @@ void QVRRenderContext::serialize(QDataStream& ds) const
         << _viewPasses
         << static_cast<int>(_eye[0]) << static_cast<int>(_eye[1])
         << _eyeMatrix[0] << _eyeMatrix[1]
-        << _frustum[0][0] << _frustum[0][1] << _frustum[0][2] << _frustum[0][3] << _frustum[0][4] << _frustum[0][5]
-        << _frustum[1][0] << _frustum[1][1] << _frustum[1][2] << _frustum[1][3] << _frustum[1][4] << _frustum[1][5]
+        << _frustum[0] << _frustum[1]
         << _viewMatrix[0] << _viewMatrix[1];
 }
 
@@ -116,8 +115,7 @@ void QVRRenderContext::deserialize(QDataStream& ds)
         >> _viewPasses
         >> e0 >> e1
         >> _eyeMatrix[0] >> _eyeMatrix[1]
-        >> _frustum[0][0] >> _frustum[0][1] >> _frustum[0][2] >> _frustum[0][3] >> _frustum[0][4] >> _frustum[0][5]
-        >> _frustum[1][0] >> _frustum[1][1] >> _frustum[1][2] >> _frustum[1][3] >> _frustum[1][4] >> _frustum[1][5]
+        >> _frustum[0] >> _frustum[1]
         >> _viewMatrix[0] >> _viewMatrix[1];
     _outputMode = static_cast<QVROutputMode>(om);
     _eye[0] = static_cast<QVREye>(e0);

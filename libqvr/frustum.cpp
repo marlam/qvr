@@ -21,40 +21,60 @@
  * SOFTWARE.
  */
 
-#ifndef QVR_OSGVIEWER_HPP
-#define QVR_OSGVIEWER_HPP
+#include <QDataStream>
 
-#include <QOpenGLFunctions_3_3_Core>
-
-#include <qvr/app.hpp>
-
-#include <osgViewer/Viewer>
+#include "frustum.hpp"
 
 
-class QVROSGViewer : public QVRApp, protected QOpenGLFunctions_3_3_Core
+QVRFrustum::QVRFrustum() : _lrbtnf { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f }
 {
-public:
-    QVROSGViewer(osg::ref_ptr<osg::Node> model);
+}
 
-private:
-    bool _wantExit;
-    // OSG objects
-    osg::ref_ptr<osg::Node> _model;
-    osgViewer::Viewer _viewer;
-    osg::ref_ptr<osgViewer::GraphicsWindowEmbedded> _graphicsWindow;
-    // OpenGL objects
-    unsigned int _fbo;
-    unsigned int _fboDepthTex;
+QVRFrustum::QVRFrustum(float l, float r, float b, float t, float n, float f) :
+    _lrbtnf { l, r, b, t, n, f }
+{
+}
 
-public:
-    bool wantExit() override;
+QVRFrustum::QVRFrustum(const float* lrbtnf)
+{
+    for (int i = 0; i < 6; i++)
+        _lrbtnf[i] = lrbtnf[i];
+}
 
-    bool initProcess(QVRProcess* p) override;
+QMatrix4x4 QVRFrustum::toMatrix4x4() const
+{
+    QMatrix4x4 m;
+    m.frustum(left(), right(), bottom(), top(), near(), far());
+    return m;
+}
 
-    void render(QVRWindow* w, const QVRRenderContext& context,
-            int viewPass, unsigned int texture) override;
+void QVRFrustum::adjustNear(float n)
+{
+    float q = n / near();
+    setLeft(left() * q);
+    setRight(right() * q);
+    setBottom(bottom() * q);
+    setTop(top() * q);
+    setNear(n);
+}
 
-    void keyPressEvent(const QVRRenderContext& context, QKeyEvent* event) override;
-};
+QDataStream &operator<<(QDataStream& ds, const QVRFrustum& frustum)
+{
+    ds << frustum.left() << frustum.right()
+        << frustum.bottom() << frustum.top()
+        << frustum.near() << frustum.far();
+    return ds;
+}
 
-#endif
+QDataStream &operator>>(QDataStream& ds, QVRFrustum& frustum)
+{
+    float l, r, b, t, n, f;
+    ds >> l >> r >> b >> t >> n >> f;
+    frustum.setLeft(l);
+    frustum.setRight(r);
+    frustum.setBottom(b);
+    frustum.setTop(t);
+    frustum.setNear(n);
+    frustum.setFar(f);
+    return ds;
+}

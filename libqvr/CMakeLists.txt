@@ -11,6 +11,16 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR} ${CMAKE_MODULE_PATH})
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+# Project
+project(QVR)
+set(QVR_VERSION "0.0.0")
+set(QVR_LIBVERSION "0.0.0")
+set(QVR_SOVERSION "0")
+
+# Build options
+option(QVR_BUILD_DOCUMENTATION "Build API reference documentation (requires Doxygen)" OFF)
+
+# Compiler
 if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -Wall -Wextra")
 endif()
@@ -22,7 +32,7 @@ find_package(Qt5Widgets 5.5.0 REQUIRED)
 find_package(VRPN)
 find_package(Oculus)
 
-# The library
+# The QVR library
 qt5_add_resources(QVRRESOURCES qvr.qrc)
 add_library(libqvr SHARED
     manager.hpp manager.cpp
@@ -33,10 +43,11 @@ add_library(libqvr SHARED
     logging.hpp logging.cpp
     event.hpp event.cpp
     rendercontext.hpp rendercontext.cpp
+    frustum.hpp frustum.cpp
     ${QVRRESOURCES})
 set_target_properties(libqvr PROPERTIES OUTPUT_NAME qvr)
-set_target_properties(libqvr PROPERTIES VERSION "0.0.0")  
-set_target_properties(libqvr PROPERTIES SOVERSION "0")  
+set_target_properties(libqvr PROPERTIES VERSION ${QVR_LIBVERSION})
+set_target_properties(libqvr PROPERTIES SOVERSION ${QVR_SOVERSION})
 target_link_libraries(libqvr Qt5::Widgets)
 if(VRPN_FOUND)
     add_definitions(-DHAVE_VRPN)
@@ -62,4 +73,29 @@ install(FILES
     process.hpp
     rendercontext.hpp
     outputplugin.hpp
+    frustum.hpp
     DESTINATION include/qvr)
+
+# Optional target: reference documentation
+if(QVR_BUILD_DOCUMENTATION)
+  find_package(Doxygen REQUIRED)
+  configure_file("${CMAKE_SOURCE_DIR}/Doxyfile.in" "${CMAKE_BINARY_DIR}/Doxyfile" @ONLY)
+  file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/html")
+  add_custom_command(OUTPUT "${CMAKE_BINARY_DIR}/html/index.html"
+    COMMAND ${DOXYGEN_EXECUTABLE} "${CMAKE_BINARY_DIR}/Doxyfile"
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+    DEPENDS "${CMAKE_SOURCE_DIR}/Doxyfile.in"
+            "${CMAKE_SOURCE_DIR}/app.hpp"
+	    "${CMAKE_SOURCE_DIR}/manager.hpp"
+	    "${CMAKE_SOURCE_DIR}/config.hpp"
+	    "${CMAKE_SOURCE_DIR}/observer.hpp"
+	    "${CMAKE_SOURCE_DIR}/window.hpp"
+	    "${CMAKE_SOURCE_DIR}/process.hpp"
+	    "${CMAKE_SOURCE_DIR}/rendercontext.hpp"
+	    "${CMAKE_SOURCE_DIR}/outputplugin.hpp"
+            "${CMAKE_SOURCE_DIR}/frustum.hpp"
+    COMMENT "Generating API documentation with Doxygen" VERBATIM
+  )
+  add_custom_target(doc ALL DEPENDS "${CMAKE_BINARY_DIR}/html/index.html")
+  install(DIRECTORY "${CMAKE_BINARY_DIR}/html" DESTINATION share/doc/libqvr)
+endif()

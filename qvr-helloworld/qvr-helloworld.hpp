@@ -98,16 +98,14 @@ public:
     void serializeDynamicData(QDataStream& ds) const override;
     void deserializeDynamicData(QDataStream& ds) override;
 
-    void update(const QList<QVRObserver*>& customObservers) override;
+    void update() override;
 
     bool wantExit() override;
 
     bool initProcess(QVRProcess* p) override;
 
-    void render(QVRWindow* w,
-            unsigned int fboTex,
-            const float* frustumLrbtnf,
-            const QMatrix4x4& viewMatrix) override;
+    void render(QVRWindow* w, const QVRRenderContext& c,
+            int viewPass, unsigned int texture) override;
 
     void keyPressEvent(const QVRRenderContext& context, QKeyEvent* event) override;
 };

@@ -77,6 +77,7 @@ private:
     QList<QVRWindow*> _windows;
     QVRProcess* _thisProcess;
     QList<QVRProcess*> _slaveProcesses;
+    float _near, _far;
     bool _wantExit;
     bool _haveWasdqeObservers;    // WASDQE observers: do we have at least one?
     bool _wasdqeIsPressed[6];     // WASDQE observers: keys

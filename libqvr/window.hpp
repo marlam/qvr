@@ -66,8 +66,7 @@ private:
 
     // to be called by QVRManager from the main thread:
     bool isValid() const { return _isValid; }
-    void getTextures(unsigned int textures[2]);
-    QMatrix4x4 getFrustumAndViewMatrix(int viewPass, float near, float far, float frustum[6]);
+    const QVRRenderContext& computeRenderContext(float near, float far, unsigned int textures[2]);
     void exitGL();
     void renderToScreen();
     void asyncSwapBuffers();

@@ -644,22 +644,67 @@ void QVRWindow::exitGL()
     }
 }
 
-void QVRWindow::getTextures(unsigned int textures[2])
+const QVRRenderContext& QVRWindow::computeRenderContext(float near, float far, unsigned int textures[2])
 {
     Q_ASSERT(!isMaster());
     Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
     Q_ASSERT(QOpenGLContext::currentContext() != _winContext);
 
+    /* Compute the render context */
+
+    _renderContext.setWindowRect(geometry());
+    _renderContext.setScreenRect(screen()->geometry());
+    _renderContext.setOutputConf(config().outputMode());
+    QVector3D wallBl, wallBr, wallTl;
+    if (config().outputMode() != QVR_Output_Stereo_Oculus)
+        screenWall(wallBl, wallBr, wallTl);
+    _renderContext.setScreenWall(wallBl, wallBr, wallTl);
+    for (int i = 0; i < _renderContext.viewPasses(); i++) {
+        QVREye eye = _renderContext.eye(i);
+        _renderContext.setEyeMatrix(i, _observer->eyeMatrix(eye));
+        if (config().outputMode() == QVR_Output_Stereo_Oculus) {
+            _renderContext.setFrustum(i, QVRFrustum(
+                        -_hmdLRBTTan[0][i] * near,
+                         _hmdLRBTTan[1][i] * near,
+                        -_hmdLRBTTan[2][i] * near,
+                         _hmdLRBTTan[3][i] * near,
+                        near, far));
+            _renderContext.setViewMatrix(i, _renderContext.eyeMatrix(i).inverted());
+        } else {
+            // Determine the eye position
+            QVector3D eyePosition = _observer->eyePosition(eye);
+            // Get the geometry of the screen area relative to the eye
+            QVector3D bl = wallBl - eyePosition;
+            QVector3D br = wallBr - eyePosition;
+            QVector3D tl = wallTl - eyePosition;
+            // Compute the HNF of the screen plane
+            QVector3D planeRight = (br - bl).normalized();
+            QVector3D planeUp = (tl - bl).normalized();
+            QVector3D planeNormal = QVector3D::crossProduct(planeUp, planeRight);
+            float planeDistance = QVector3D::dotProduct(planeNormal, bl);
+            // Compute the frustum
+            float width = (br - bl).length();
+            float height = (tl - bl).length();
+            float l = -QVector3D::dotProduct(-bl, planeRight);
+            float r = width + l;
+            float b = -QVector3D::dotProduct(-bl, planeUp);
+            float t = height + b;
+            float q = near / planeDistance;
+            _renderContext.setFrustum(i, QVRFrustum(l * q, r * q, b * q, t * q, near, far));
+            // Compute the view matrix
+            QVector3D eyeProjection = -QVector3D::dotProduct(-bl, planeNormal) * planeNormal;
+            QMatrix4x4 viewMatrix;
+            viewMatrix.lookAt(eyePosition, eyePosition + eyeProjection, planeUp);
+            _renderContext.setViewMatrix(i, viewMatrix);
+        }
+    }
+
+    /* Get the textures that the application needs to render into */
+
     GLint textureBinding2dBak;
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &textureBinding2dBak);
 
-    bool wantTwoTextures = false;
-    if (config().outputMode() != QVR_Output_Center
-            && config().outputMode() != QVR_Output_Left
-            && config().outputMode() != QVR_Output_Right) {
-        wantTwoTextures = true;
-    }
-    for (int i = 0; i < (wantTwoTextures ? 2 : 1); i++) {
+    for (int i = 0; i < _renderContext.viewPasses(); i++) {
         int tw = -1, th = -1;
         if (_textures[i] == 0) {
             glGenTextures(1, &(_textures[i]));
@@ -703,7 +748,7 @@ void QVRWindow::getTextures(unsigned int textures[2])
                     GL_BGRA, GL_UNSIGNED_BYTE, NULL);
         }
     }
-    if (!wantTwoTextures && _textures[1] != 0) {
+    if (_renderContext.viewPasses() == 1 && _textures[1] != 0) {
         glDeleteTextures(1, &(_textures[1]));
         _textures[1] = 0;
     }
@@ -711,71 +756,8 @@ void QVRWindow::getTextures(unsigned int textures[2])
     textures[1] = _textures[1];
 
     glBindTexture(GL_TEXTURE_2D, textureBinding2dBak);
-}
 
-QMatrix4x4 QVRWindow::getFrustumAndViewMatrix(int viewPass, float near, float far, float frustum[6])
-{
-    Q_ASSERT(!isMaster());
-    Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
-    Q_ASSERT(QOpenGLContext::currentContext() != _winContext);
-
-    if (viewPass == 0) {
-        // these render context properties do not change between view passes
-        _renderContext.setWindowRect(geometry());
-        _renderContext.setScreenRect(screen()->geometry());
-        _renderContext.setOutputConf(config().outputMode());
-        QVector3D bl, br, tl;
-        screenWall(bl, br, tl);
-        _renderContext.setScreenWall(bl, br, tl);
-    }
-
-    QVREye eye = _renderContext.eye(viewPass);
-    _renderContext.setEyeMatrix(viewPass, _observer->eyeMatrix(eye));
-
-    /* Compute frustum and view matrix for this eye */
-    if (config().outputMode() == QVR_Output_Stereo_Oculus) {
-        _renderContext.setFrustum(viewPass,
-                -_hmdLRBTTan[0][viewPass] * near,
-                 _hmdLRBTTan[1][viewPass] * near,
-                -_hmdLRBTTan[2][viewPass] * near,
-                 _hmdLRBTTan[3][viewPass] * near,
-                near, far);
-        _renderContext.setViewMatrix(viewPass,
-                _renderContext.eyeMatrix(viewPass).inverted());
-    } else {
-        // Determine the eye position
-        QVector3D eyePosition = _observer->eyePosition(eye);
-        // Get the geometry of the screen area relative to the eye
-        QVector3D bl = _renderContext.screenWallBottomLeft();
-        QVector3D br = _renderContext.screenWallBottomRight();
-        QVector3D tl = _renderContext.screenWallTopLeft();
-        bl -= eyePosition;
-        br -= eyePosition;
-        tl -= eyePosition;
-        // Compute the HNF of the screen plane
-        QVector3D planeRight = (br - bl).normalized();
-        QVector3D planeUp = (tl - bl).normalized();
-        QVector3D planeNormal = QVector3D::crossProduct(planeUp, planeRight);
-        float planeDistance = QVector3D::dotProduct(planeNormal, bl);
-        // Compute the frustum
-        float width = (br - bl).length();
-        float height = (tl - bl).length();
-        float l = -QVector3D::dotProduct(-bl, planeRight);
-        float r = width + l;
-        float b = -QVector3D::dotProduct(-bl, planeUp);
-        float t = height + b;
-        float q = near / planeDistance;
-        _renderContext.setFrustum(viewPass, l * q, r * q, b * q, t * q, near, far);
-        // Compute the view matrix
-        QVector3D eyeProjection = -QVector3D::dotProduct(-bl, planeNormal) * planeNormal;
-        QMatrix4x4 viewMatrix;
-        viewMatrix.lookAt(eyePosition, eyePosition + eyeProjection, planeUp);
-        _renderContext.setViewMatrix(viewPass, viewMatrix);
-    }
-
-    for (int i = 0; i < 6; i++)
-        frustum[i] = _renderContext.frustumLrbtnf(viewPass)[i];
-    return _renderContext.viewMatrix(viewPass);
+    return _renderContext;
 }
 
 void QVRWindow::renderOutput()

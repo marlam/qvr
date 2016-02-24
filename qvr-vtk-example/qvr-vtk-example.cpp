@@ -115,43 +115,33 @@ bool QVRVTKExample::initProcess(QVRProcess* /* p */)
 
 static void qMatrixToVtkMatrix(const QMatrix4x4& qM, double vtkM[16])
 {
-    //QMatrix4x4 M = qM.transposed();
-    QMatrix4x4 M = qM;
     for (int i = 0; i < 16; i++)
-        vtkM[i] = M.constData()[i];
+        vtkM[i] = qM.constData()[i];
 }
 
 void QVRVTKExample::render(QVRWindow* /* w */,
-        unsigned int fboTex,
-        const float* frustumLrbtnf,
-        const QMatrix4x4& viewMatrix)
+        const QVRRenderContext& context, int viewPass, unsigned int texture)
 {
     // Set up framebuffer object to render into
     GLint width, height;
-    glBindTexture(GL_TEXTURE_2D, fboTex);
+    glBindTexture(GL_TEXTURE_2D, texture);
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
     glBindTexture(GL_TEXTURE_2D, _fboDepthTex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height,
             0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, fboTex, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture, 0);
 
     // Set up VTK render window
     _vtkRenderWindow->SetSize(width, height);
 
-    // Set up VTK camera view matrix
-    double vtkViewTransformMatrix[16];
-    qMatrixToVtkMatrix(viewMatrix, vtkViewTransformMatrix);
-    _vtkCamera->SetViewTransformMatrix(vtkViewTransformMatrix);
-
-    // Set up VTK camera projection matrix
-    QMatrix4x4 projectionMatrix;
-    projectionMatrix.frustum(frustumLrbtnf[0], frustumLrbtnf[1], frustumLrbtnf[2],
-            frustumLrbtnf[3], frustumLrbtnf[4], frustumLrbtnf[5]);
-    double vtkProjectionTransformMatrix[16];
-    qMatrixToVtkMatrix(projectionMatrix, vtkProjectionTransformMatrix);
-    _vtkCamera->SetProjectionTransformMatrix(vtkProjectionTransformMatrix);
+    // Set up VTK camera view and projection matrix
+    double vtkMatrix[16];
+    qMatrixToVtkMatrix(context.frustum(viewPass).toMatrix4x4(), vtkMatrix);
+    _vtkCamera->SetProjectionTransformMatrix(vtkMatrix);
+    qMatrixToVtkMatrix(context.viewMatrix(viewPass), vtkMatrix);
+    _vtkCamera->SetViewTransformMatrix(vtkMatrix);
 
     // Render
     _vtkRenderWindow->Render();

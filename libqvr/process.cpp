@@ -141,10 +141,11 @@ void QVRProcess::sendCmdObserver(const QByteArray& serializedObserver)
     write(serializedObserver);
 }
 
-void QVRProcess::sendCmdRender(const QByteArray& serializedDynData)
+void QVRProcess::sendCmdRender(float near, float far, const QByteArray& serializedDynData)
 {
     Q_ASSERT(processId());
     putChar('r');
+    { QDataStream ds(this); ds << near << far; }
     write(serializedDynData);
 }
 
@@ -224,9 +225,10 @@ void QVRProcess::receiveCmdObserver(QVRObserver* obs)
     obs->deserialize(ds);
 }
 
-void QVRProcess::receiveCmdRender(QVRApp* app)
+void QVRProcess::receiveCmdRender(float* near, float* far, QVRApp* app)
 {
     QDataStream ds(_stdin);
+    ds >> *near >> *far;
     app->deserializeDynamicData(ds);
 }
 
