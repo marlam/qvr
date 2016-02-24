@@ -789,7 +789,8 @@ INPUT                  = @CMAKE_SOURCE_DIR@/app.hpp \
                          @CMAKE_SOURCE_DIR@/process.hpp \
                          @CMAKE_SOURCE_DIR@/rendercontext.hpp \
                          @CMAKE_SOURCE_DIR@/outputplugin.hpp \
-                         @CMAKE_SOURCE_DIR@/frustum.hpp
+                         @CMAKE_SOURCE_DIR@/frustum.hpp \
+                         @CMAKE_SOURCE_DIR@/documentation.hpp \
 			
 
 # This tag can be used to specify the character encoding of the source files
