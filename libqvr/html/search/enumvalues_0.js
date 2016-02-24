@@ -1,0 +1,25 @@
+var searchData=
+[
+  ['qvr_5feye_5fcenter',['QVR_Eye_Center',['../config_8hpp.html#ae66050fd3a370d877a255d712f401fb2a36f2a659aef038d92dbeab0a52541a47',1,'config.hpp']]],
+  ['qvr_5feye_5fleft',['QVR_Eye_Left',['../config_8hpp.html#ae66050fd3a370d877a255d712f401fb2abdc044ce03e08562f295c51930881504',1,'config.hpp']]],
+  ['qvr_5feye_5fright',['QVR_Eye_Right',['../config_8hpp.html#ae66050fd3a370d877a255d712f401fb2adc56fbe15961687ef790ac947d8568aa',1,'config.hpp']]],
+  ['qvr_5flog_5flevel_5fdebug',['QVR_Log_Level_Debug',['../manager_8hpp.html#ab9ae1737164d307244b79f924f588f72a307e37eed38705acd776f28e04b4ce6a',1,'manager.hpp']]],
+  ['qvr_5flog_5flevel_5ffatal',['QVR_Log_Level_Fatal',['../manager_8hpp.html#ab9ae1737164d307244b79f924f588f72a063e3f5bd256f423bce292408776fb48',1,'manager.hpp']]],
+  ['qvr_5flog_5flevel_5ffirehose',['QVR_Log_Level_Firehose',['../manager_8hpp.html#ab9ae1737164d307244b79f924f588f72a40b20ebe5f9fa22f4c40fd58751438cb',1,'manager.hpp']]],
+  ['qvr_5flog_5flevel_5finfo',['QVR_Log_Level_Info',['../manager_8hpp.html#ab9ae1737164d307244b79f924f588f72af859abf4ffb6d3c002c9ef0050f15b78',1,'manager.hpp']]],
+  ['qvr_5flog_5flevel_5fwarning',['QVR_Log_Level_Warning',['../manager_8hpp.html#ab9ae1737164d307244b79f924f588f72aa449a51d7e501217b81a500d4a5e2a37',1,'manager.hpp']]],
+  ['qvr_5fobserver_5fcustom',['QVR_Observer_Custom',['../config_8hpp.html#abfe5fac51532dadeab434d3225361410a4ac2bbf2fb73516ef8317189ed7907e4',1,'config.hpp']]],
+  ['qvr_5fobserver_5foculus',['QVR_Observer_Oculus',['../config_8hpp.html#abfe5fac51532dadeab434d3225361410ad2c0d5c9653635ad0784c6f8744b74bb',1,'config.hpp']]],
+  ['qvr_5fobserver_5fstationary',['QVR_Observer_Stationary',['../config_8hpp.html#abfe5fac51532dadeab434d3225361410ab00dfb567688d82472f263c750a64696',1,'config.hpp']]],
+  ['qvr_5fobserver_5fvrpn',['QVR_Observer_VRPN',['../config_8hpp.html#abfe5fac51532dadeab434d3225361410aaf0faf066a506623c4068a6cfb39a68e',1,'config.hpp']]],
+  ['qvr_5fobserver_5fwasdqe',['QVR_Observer_WASDQE',['../config_8hpp.html#abfe5fac51532dadeab434d3225361410a0d59a16e67ef263a39f6f6e43628c2c6',1,'config.hpp']]],
+  ['qvr_5foutput_5fcenter',['QVR_Output_Center',['../config_8hpp.html#ad8cb348ba654a1504085369172146314ae0a45f780a3b5c3b6af426b4e322619d',1,'config.hpp']]],
+  ['qvr_5foutput_5fleft',['QVR_Output_Left',['../config_8hpp.html#ad8cb348ba654a1504085369172146314af83b72a359a3e7e68335ae2eb0bd48ae',1,'config.hpp']]],
+  ['qvr_5foutput_5fright',['QVR_Output_Right',['../config_8hpp.html#ad8cb348ba654a1504085369172146314a035359f41f27276cdf2a52e974b74d04',1,'config.hpp']]],
+  ['qvr_5foutput_5fstereo_5famber_5fblue',['QVR_Output_Stereo_Amber_Blue',['../config_8hpp.html#ad8cb348ba654a1504085369172146314a7d95c2d308e3dd7fddce796c3d43ef99',1,'config.hpp']]],
+  ['qvr_5foutput_5fstereo_5fcustom',['QVR_Output_Stereo_Custom',['../config_8hpp.html#ad8cb348ba654a1504085369172146314a60750653a0a249084ad2a8fe4ef6901d',1,'config.hpp']]],
+  ['qvr_5foutput_5fstereo_5fgl',['QVR_Output_Stereo_GL',['../config_8hpp.html#ad8cb348ba654a1504085369172146314a13a44a18d3ac01974b8b7e1998ddaefb',1,'config.hpp']]],
+  ['qvr_5foutput_5fstereo_5fgreen_5fmagenta',['QVR_Output_Stereo_Green_Magenta',['../config_8hpp.html#ad8cb348ba654a1504085369172146314a44481bc68e1b8a87e400c5907bf12a86',1,'config.hpp']]],
+  ['qvr_5foutput_5fstereo_5foculus',['QVR_Output_Stereo_Oculus',['../config_8hpp.html#ad8cb348ba654a1504085369172146314ae54819ad9e659c20a4060daeff27f235',1,'config.hpp']]],
+  ['qvr_5foutput_5fstereo_5fred_5fcyan',['QVR_Output_Stereo_Red_Cyan',['../config_8hpp.html#ad8cb348ba654a1504085369172146314addb3d6860ed259ce1639443229423000',1,'config.hpp']]]
+];
