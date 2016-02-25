@@ -2,12 +2,20 @@ var indexSectionsWithContent =
 {
   0: "abcdefgiklmnopqrstuvw~",
   1: "q",
+<<<<<<< HEAD
   2: "acfmoprw",
+=======
+  2: "acdfmoprw",
+>>>>>>> 25ea10d16ed69043417b330980980417c5926455
   3: "abcdefgiklmnopqrstuvw~",
   4: "d",
   5: "q",
   6: "q",
+<<<<<<< HEAD
   7: "oq",
+=======
+  7: "q",
+>>>>>>> 25ea10d16ed69043417b330980980417c5926455
   8: "q"
 };
 

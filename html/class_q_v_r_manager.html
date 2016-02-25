@@ -94,7 +94,11 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
+<<<<<<< HEAD
 <p>Manager of the QVR application's control flow and its processes and windows.  
+=======
+<p>This class manages the QVR application's control flow and its processes and windows.  
+>>>>>>> 25ea10d16ed69043417b330980980417c5926455
  <a href="class_q_v_r_manager.html#details">More...</a></p>
 
 <p>Inherits QObject.</p>
@@ -120,7 +124,11 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memdesc:a735027dc2364649e75275e0483c80356"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the log level.  <a href="#a735027dc2364649e75275e0483c80356">More...</a><br /></td></tr>
 <tr class="separator:a735027dc2364649e75275e0483c80356"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af8b2e4785d8e7cc4988ce197e7fc2608"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_manager.html#af8b2e4785d8e7cc4988ce197e7fc2608">processIndex</a> ()</td></tr>
+<<<<<<< HEAD
 <tr class="memdesc:af8b2e4785d8e7cc4988ce197e7fc2608"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the index of this <em><a class="el" href="class_q_v_r_process.html" title="Application process. ">QVRProcess</a></em> in the active configuration.  <a href="#af8b2e4785d8e7cc4988ce197e7fc2608">More...</a><br /></td></tr>
+=======
+<tr class="memdesc:af8b2e4785d8e7cc4988ce197e7fc2608"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the index of this <em><a class="el" href="class_q_v_r_process.html">QVRProcess</a></em> in the active configuration.  <a href="#af8b2e4785d8e7cc4988ce197e7fc2608">More...</a><br /></td></tr>
+>>>>>>> 25ea10d16ed69043417b330980980417c5926455
 <tr class="separator:af8b2e4785d8e7cc4988ce197e7fc2608"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6e0739e65d2c36165d7eb192583cb858"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="class_q_v_r_config.html">QVRConfig</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_manager.html#a6e0739e65d2c36165d7eb192583cb858">config</a> ()</td></tr>
 <tr class="memdesc:a6e0739e65d2c36165d7eb192583cb858"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the active configuration.  <a href="#a6e0739e65d2c36165d7eb192583cb858">More...</a><br /></td></tr>
@@ -136,8 +144,13 @@ Static Public Member Functions</h2></td></tr>
 <tr class="separator:a751434c1d1a7e232a73424dbbf9d0ed0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<<<<<<< HEAD
 <div class="textblock"><p>Manager of the QVR application's control flow and its processes and windows. </p>
 <p>The <a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a> object is typically created right after the QApplication object. Afterwards, the application typically sets its preferred OpenGL context properties, and then initializes the <a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a> object: </p><div class="fragment"><div class="line">QApplication app(argc, argv);</div><div class="line"><a class="code" href="class_q_v_r_manager.html">QVRManager</a> manager(argc, argv);</div><div class="line"><span class="comment">// Set OpenGL context properties:</span></div><div class="line">QSurfaceFormat format;</div><div class="line">format.setProfile(QSurfaceFormat::CoreProfile);</div><div class="line">format.setVersion(3, 3);</div><div class="line">QSurfaceFormat::setDefaultFormat(format);</div><div class="line"><span class="comment">// Start the QVR application</span></div><div class="line">MyQVRApp myqvrapp;</div><div class="line"><span class="keywordflow">if</span> (!manager.init(&amp;myqvrapp))</div><div class="line">    <span class="keywordflow">return</span> 1;</div><div class="line"><span class="keywordflow">return</span> app.exec();</div></div><!-- fragment --> </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+=======
+<div class="textblock"><p>This class manages the QVR application's control flow and its processes and windows. </p>
+<p>The <a class="el" href="class_q_v_r_manager.html" title="This class manages the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a> object is typically created right after the QApplication object. Afterwards, the application typically sets its preferred OpenGL context properties, and then initializes the <a class="el" href="class_q_v_r_manager.html" title="This class manages the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a> object: </p><div class="fragment"><div class="line">QApplication app(argc, argv);</div><div class="line"><a class="code" href="class_q_v_r_manager.html">QVRManager</a> manager(argc, argv);</div><div class="line"><span class="comment">// Set OpenGL context properties:</span></div><div class="line">QSurfaceFormat format;</div><div class="line">format.setProfile(QSurfaceFormat::CoreProfile);</div><div class="line">format.setVersion(3, 3);</div><div class="line">QSurfaceFormat::setDefaultFormat(format);</div><div class="line"><span class="comment">// Start the QVR application</span></div><div class="line">MyQVRApp myqvrapp;</div><div class="line"><span class="keywordflow">if</span> (!manager.init(&amp;myqvrapp))</div><div class="line">    <span class="keywordflow">return</span> 1;</div><div class="line"><span class="keywordflow">return</span> app.exec();</div></div><!-- fragment --> </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+>>>>>>> 25ea10d16ed69043417b330980980417c5926455
 <a class="anchor" id="a468c9240024bf4a2bb1da057e0a52ece"></a>
 <div class="memitem">
 <div class="memproto">
@@ -262,7 +275,11 @@ Static Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Return the QVR manager instance. </p>
+<<<<<<< HEAD
 <p>There can be only one instance of <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>. This function returns it. </p>
+=======
+<p>There can be only one instance of <em><a class="el" href="class_q_v_r_manager.html" title="This class manages the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>. This function returns it. </p>
+>>>>>>> 25ea10d16ed69043417b330980980417c5926455
 
 </div>
 </div>
@@ -366,8 +383,12 @@ Static Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<<<<<<< HEAD
 <p>Return the index of this <em><a class="el" href="class_q_v_r_process.html" title="Application process. ">QVRProcess</a></em> in the active configuration. </p>
 <p>The process with index 0 is the master process.</p>
+=======
+<p>Return the index of this <em><a class="el" href="class_q_v_r_process.html">QVRProcess</a></em> in the active configuration. </p>
+>>>>>>> 25ea10d16ed69043417b330980980417c5926455
 <p>See <em><a class="el" href="class_q_v_r_manager.html#a6e0739e65d2c36165d7eb192583cb858" title="Return the active configuration. ">config()</a></em>. </p>
 
 </div>

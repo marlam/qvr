@@ -93,7 +93,11 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
+<<<<<<< HEAD
 <p>QVR application interface.  
+=======
+<p>The QVR application interface.  
+>>>>>>> 25ea10d16ed69043417b330980980417c5926455
  <a href="class_q_v_r_app.html#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
@@ -172,7 +176,11 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:abf50d5cad7857a5855a12625492cf754"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<<<<<<< HEAD
 <div class="textblock"><p>QVR application interface. </p>
+=======
+<div class="textblock"><p>The QVR application interface. </p>
+>>>>>>> 25ea10d16ed69043417b330980980417c5926455
 <p>This is the central interface that VR applications must implement. Most functions provide a default implementation. The only function that <em>must</em> be implemented is <a class="el" href="class_q_v_r_app.html#ac497d29bb127c848af1a048f9a74cb60" title="Render the current frame. ">render()</a>.</p>
 <p>Overview:</p><ul>
 <li>For rendering, implement <a class="el" href="class_q_v_r_app.html#ac497d29bb127c848af1a048f9a74cb60" title="Render the current frame. ">render()</a>.</li>
@@ -285,7 +293,11 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <p>This function cleans up process-specific data.</p>
+<<<<<<< HEAD
 <p>It is called by <a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a> when the application is terminated.</p>
+=======
+<p>It is called by <a class="el" href="class_q_v_r_manager.html" title="This class manages the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a> when the application is terminated.</p>
+>>>>>>> 25ea10d16ed69043417b330980980417c5926455
 <p>Called once per process at termination time. </p>
 
 </div>
@@ -320,7 +332,11 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <p>This function cleans up window-specific data (this is usually unnecessary).</p>
+<<<<<<< HEAD
 <p>It is called by <a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a> when the application is terminated.</p>
+=======
+<p>It is called by <a class="el" href="class_q_v_r_manager.html" title="This class manages the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a> when the application is terminated.</p>
+>>>>>>> 25ea10d16ed69043417b330980980417c5926455
 <p>Called once per window at termination time. </p>
 
 </div>
@@ -399,7 +415,11 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <p>This function typically sets up process-specific data for rendering, e.g. OpenGL textures and vertex array buffers.</p>
+<<<<<<< HEAD
 <p>This function is called from <a class="el" href="class_q_v_r_manager.html#ad3ecf90e5586d68375d038dac94e2c47" title="Initialize the QVR application. ">QVRManager::init()</a>. If it returns false, then <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> initialization will fail.</p>
+=======
+<p>This function is called from <a class="el" href="class_q_v_r_manager.html#ad3ecf90e5586d68375d038dac94e2c47" title="Initialize the QVR application. ">QVRManager::init()</a>. If it returns false, then <em><a class="el" href="class_q_v_r_manager.html" title="This class manages the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> initialization will fail.</p>
+>>>>>>> 25ea10d16ed69043417b330980980417c5926455
 <p>Called once per process at initialization time. </p>
 
 </div>
@@ -434,7 +454,11 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <p>This function may set up window-specific data. This is usually unnecessary.</p>
+<<<<<<< HEAD
 <p>This function is called from <a class="el" href="class_q_v_r_manager.html#ad3ecf90e5586d68375d038dac94e2c47" title="Initialize the QVR application. ">QVRManager::init()</a>. If it returns false, then <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> initialization will fail.</p>
+=======
+<p>This function is called from <a class="el" href="class_q_v_r_manager.html#ad3ecf90e5586d68375d038dac94e2c47" title="Initialize the QVR application. ">QVRManager::init()</a>. If it returns false, then <em><a class="el" href="class_q_v_r_manager.html" title="This class manages the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> initialization will fail.</p>
+>>>>>>> 25ea10d16ed69043417b330980980417c5926455
 <p>Called once per window at initialization time. </p>
 
 </div>
@@ -479,7 +503,11 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
+<<<<<<< HEAD
 <p>All events from all windows on all processes are gathered by the <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>.</p>
+=======
+<p>All events from all windows on all processes are gathered by the <em><a class="el" href="class_q_v_r_manager.html" title="This class manages the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>.</p>
+>>>>>>> 25ea10d16ed69043417b330980980417c5926455
 <p>This function is called once before each frame on the master process, before <a class="el" href="class_q_v_r_app.html#af5c07b4602e772e2f78437499d08ada6" title="Update scene state. ">update()</a> and <a class="el" href="class_q_v_r_app.html#a46676b19d13b4fedf57bcf66c7bbe861" title="Update observers for custom tracking implementations. ">updateObservers()</a>. </p>
 
 </div>
@@ -524,7 +552,11 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
+<<<<<<< HEAD
 <p>All events from all windows on all processes are gathered by the <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>.</p>
+=======
+<p>All events from all windows on all processes are gathered by the <em><a class="el" href="class_q_v_r_manager.html" title="This class manages the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>.</p>
+>>>>>>> 25ea10d16ed69043417b330980980417c5926455
 <p>This function is called once before each frame on the master process, before <a class="el" href="class_q_v_r_app.html#af5c07b4602e772e2f78437499d08ada6" title="Update scene state. ">update()</a> and <a class="el" href="class_q_v_r_app.html#a46676b19d13b4fedf57bcf66c7bbe861" title="Update observers for custom tracking implementations. ">updateObservers()</a>. </p>
 
 </div>
@@ -569,7 +601,11 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
+<<<<<<< HEAD
 <p>All events from all windows on all processes are gathered by the <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>.</p>
+=======
+<p>All events from all windows on all processes are gathered by the <em><a class="el" href="class_q_v_r_manager.html" title="This class manages the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>.</p>
+>>>>>>> 25ea10d16ed69043417b330980980417c5926455
 <p>This function is called once before each frame on the master process, before <a class="el" href="class_q_v_r_app.html#af5c07b4602e772e2f78437499d08ada6" title="Update scene state. ">update()</a> and <a class="el" href="class_q_v_r_app.html#a46676b19d13b4fedf57bcf66c7bbe861" title="Update observers for custom tracking implementations. ">updateObservers()</a>. </p>
 
 </div>
@@ -614,7 +650,11 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
+<<<<<<< HEAD
 <p>All events from all windows on all processes are gathered by the <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>.</p>
+=======
+<p>All events from all windows on all processes are gathered by the <em><a class="el" href="class_q_v_r_manager.html" title="This class manages the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>.</p>
+>>>>>>> 25ea10d16ed69043417b330980980417c5926455
 <p>This function is called once before each frame on the master process, before <a class="el" href="class_q_v_r_app.html#af5c07b4602e772e2f78437499d08ada6" title="Update scene state. ">update()</a> and <a class="el" href="class_q_v_r_app.html#a46676b19d13b4fedf57bcf66c7bbe861" title="Update observers for custom tracking implementations. ">updateObservers()</a>. </p>
 
 </div>
@@ -659,7 +699,11 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
+<<<<<<< HEAD
 <p>All events from all windows on all processes are gathered by the <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>.</p>
+=======
+<p>All events from all windows on all processes are gathered by the <em><a class="el" href="class_q_v_r_manager.html" title="This class manages the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>.</p>
+>>>>>>> 25ea10d16ed69043417b330980980417c5926455
 <p>This function is called once before each frame on the master process, before <a class="el" href="class_q_v_r_app.html#af5c07b4602e772e2f78437499d08ada6" title="Update scene state. ">update()</a> and <a class="el" href="class_q_v_r_app.html#a46676b19d13b4fedf57bcf66c7bbe861" title="Update observers for custom tracking implementations. ">updateObservers()</a>. </p>
 
 </div>
@@ -704,7 +748,11 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
+<<<<<<< HEAD
 <p>All events from all windows on all processes are gathered by the <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>.</p>
+=======
+<p>All events from all windows on all processes are gathered by the <em><a class="el" href="class_q_v_r_manager.html" title="This class manages the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>.</p>
+>>>>>>> 25ea10d16ed69043417b330980980417c5926455
 <p>This function is called once before each frame on the master process, before <a class="el" href="class_q_v_r_app.html#af5c07b4602e772e2f78437499d08ada6" title="Update scene state. ">update()</a> and <a class="el" href="class_q_v_r_app.html#a46676b19d13b4fedf57bcf66c7bbe861" title="Update observers for custom tracking implementations. ">updateObservers()</a>. </p>
 
 </div>
@@ -1051,7 +1099,11 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Indicate if the application wants to exit. </p>
+<<<<<<< HEAD
 <p>When this function returns true, the application will be terminated by the <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>. Typically an application returns true when ESC is pressed.</p>
+=======
+<p>When this function returns true, the application will be terminated by the <em><a class="el" href="class_q_v_r_manager.html" title="This class manages the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>. Typically an application returns true when ESC is pressed.</p>
+>>>>>>> 25ea10d16ed69043417b330980980417c5926455
 <p>Called once before each frame on the master process. </p>
 
 </div>
@@ -1096,7 +1148,11 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
+<<<<<<< HEAD
 <p>All events from all windows on all processes are gathered by the <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>.</p>
+=======
+<p>All events from all windows on all processes are gathered by the <em><a class="el" href="class_q_v_r_manager.html" title="This class manages the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>.</p>
+>>>>>>> 25ea10d16ed69043417b330980980417c5926455
 <p>This function is called once before each frame on the master process, before <a class="el" href="class_q_v_r_app.html#af5c07b4602e772e2f78437499d08ada6" title="Update scene state. ">update()</a> and <a class="el" href="class_q_v_r_app.html#a46676b19d13b4fedf57bcf66c7bbe861" title="Update observers for custom tracking implementations. ">updateObservers()</a>. </p>
 
 </div>
