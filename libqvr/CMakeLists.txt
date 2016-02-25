@@ -94,7 +94,6 @@ if(QVR_BUILD_DOCUMENTATION)
 	    "${CMAKE_SOURCE_DIR}/rendercontext.hpp"
 	    "${CMAKE_SOURCE_DIR}/outputplugin.hpp"
             "${CMAKE_SOURCE_DIR}/frustum.hpp"
-            "${CMAKE_SOURCE_DIR}/documentation.hpp"
     COMMENT "Generating API documentation with Doxygen" VERBATIM
   )
   add_custom_target(doc ALL DEPENDS "${CMAKE_BINARY_DIR}/html/index.html")

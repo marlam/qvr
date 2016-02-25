@@ -1,3 +1,3 @@
 # QVR: a library for Virtual Reality applications
 
-See the [full library documentation](https://marlam.github.io/qvr/html/).
+See the [library documentation](https://marlam.github.io/qvr/html/).
