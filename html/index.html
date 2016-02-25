@@ -83,7 +83,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="contents">
 <div class="textblock"><h1><a class="anchor" id="Overview"></a>
 Overview</h1>
-<<<<<<< HEAD
 <p>QVR provides the base class <em><a class="el" href="class_q_v_r_app.html" title="QVR application interface. ">QVRApp</a></em> for Virtual Reality applications. An application implements the subset of <em><a class="el" href="class_q_v_r_app.html" title="QVR application interface. ">QVRApp</a></em> functions that it needs. See <em><a class="el" href="class_q_v_r_app.html" title="QVR application interface. ">QVRApp</a></em> for function descriptions.</p>
 <p>To run a QVR application, the main() function creates and initializes a <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> instances and then calls QApplication::exec() as usual. See <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> for a minimal code example.</p>
 <p>The <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> manages three basic types of objects: observers, processes, and windows:</p><ul>
@@ -98,31 +97,11 @@ Overview</h1>
 Configuration files</h1>
 <p>A configuration file defines the observers, processes, and windows that the <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> will manage.</p>
 <p>Each observer, process, and window definition is mapped directly to the <em><a class="el" href="class_q_v_r_observer_config.html" title="Configuration of a QVRObserver. ">QVRObserverConfig</a></em>, <em><a class="el" href="class_q_v_r_process_config.html" title="Configuration of a QVRProcess. ">QVRProcessConfig</a></em>, or <em><a class="el" href="class_q_v_r_window_config.html" title="Configuration of a QVRWindow. ">QVRWindowConfig</a></em> classes.</p>
-=======
-<p>QVR provides the base class <em><a class="el" href="class_q_v_r_app.html" title="The QVR application interface. ">QVRApp</a></em> for Virtual Reality applications. An application implements the subset of <em><a class="el" href="class_q_v_r_app.html" title="The QVR application interface. ">QVRApp</a></em> functions that it needs. See <em><a class="el" href="class_q_v_r_app.html" title="The QVR application interface. ">QVRApp</a></em> for function descriptions.</p>
-<p>To run a QVR application, the main() function creates and initializes a <em><a class="el" href="class_q_v_r_manager.html" title="This class manages the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> instances and then calls QApplication::exec() as usual. See <em><a class="el" href="class_q_v_r_manager.html" title="This class manages the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> for a minimal code example.</p>
-<p>The <em><a class="el" href="class_q_v_r_manager.html" title="This class manages the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> manages three basic types of objects: observers, processes, and windows:</p><ul>
-<li>Observers view the virtual scene. Often there is only one observer. Observers are configured via <em><a class="el" href="class_q_v_r_observer_config.html" title="The configuration of a QVRObserver. ">QVRObserverConfig</a></em> and implemented as <em><a class="el" href="class_q_v_r_observer.html">QVRObserver</a></em>.</li>
-<li>Processes all run the same application binary. The first process initially run by the user is the master process. Slave processes are automatically launched by <a class="el" href="class_q_v_r_manager.html" title="This class manages the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a> as needed. Each process is connected to one display which can have multiple screens attached. Processes can run on the same host or across a network. Often there is only the master process. Processes are configured via <em><a class="el" href="class_q_v_r_process_config.html" title="The configuration of a QVRProcess. ">QVRProcessConfig</a></em> and implemented as <em><a class="el" href="class_q_v_r_process.html">QVRProcess</a></em>.</li>
-<li>Windows belong to processes and appear on the display that their process is connected to. They can have different positions and sizes on different screens attached to that display. Each window shows a view for exactly one observer (typically that observer views multiple windows). Windows are configured via <em><a class="el" href="class_q_v_r_window_config.html" title="The configuration of a QVRWindow. ">QVRWindowConfig</a></em> and implemented as <em><a class="el" href="class_q_v_r_window.html">QVRWindow</a></em>.</li>
-</ul>
-<p>All QVR applications support a set of command line options. The most important option lets the user choose a configuration file. See <a class="el" href="class_q_v_r_manager.html#a468c9240024bf4a2bb1da057e0a52ece" title="This constructor creates the manager object. ">QVRManager::QVRManager()</a>. The same application binary can run on different Virtual Reality display setups by specifying different configuration files.</p>
-<p>To get started, see the main descriptions of <em><a class="el" href="class_q_v_r_manager.html" title="This class manages the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> and <em><a class="el" href="class_q_v_r_app.html" title="The QVR application interface. ">QVRApp</a></em>, and then look at the source code of an example application to understand how it is implemented.</p>
-<p>Note: your application must not write to stdout and must not read from stdin. These streams are used by the QVR library for inter-process communication. Of course, writing messages to stderr is still possible.</p>
-<h1><a class="anchor" id="conffile"></a>
-Configuration files</h1>
-<p>A configuration file defines the observers, processes, and windows that the <em><a class="el" href="class_q_v_r_manager.html" title="This class manages the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> will manage.</p>
-<p>Each observer, process, and window definition is mapped directly to the <em><a class="el" href="class_q_v_r_observer_config.html" title="The configuration of a QVRObserver. ">QVRObserverConfig</a></em>, <em><a class="el" href="class_q_v_r_process_config.html" title="The configuration of a QVRProcess. ">QVRProcessConfig</a></em>, or <em><a class="el" href="class_q_v_r_window_config.html" title="The configuration of a QVRWindow. ">QVRWindowConfig</a></em> classes.</p>
->>>>>>> 25ea10d16ed69043417b330980980417c5926455
 <p>A configuration file starts with a list of observers and their properties.</p>
 <p>After that, the list of processes starts. There is always at least one process: the master process. The master process is connected to the display that Qt initially uses (this can be changed with the -display option or DISPLAY environment variable). Slave processes can connect to different displays. Optionally, a launcher command can be specified, e.g. to run a slave process on a different host using ssh.</p>
 <p>Each process definition contains a list of windows for that process. Since windows provide views into the virtual world, the geometry of the screen wall represented by a window must be known. This geometry is either given by screen wall center coordinates, or by coordinates for three of its corners.</p>
 <p>Please see the configuration file examples distributed with QVR to understand how typical configurations look like.</p>
-<<<<<<< HEAD
 <p>Observer definition (see <em><a class="el" href="class_q_v_r_observer_config.html" title="Configuration of a QVRObserver. ">QVRObserverConfig</a></em>):</p><ul>
-=======
-<p>Observer definition (see <em><a class="el" href="class_q_v_r_observer_config.html" title="The configuration of a QVRObserver. ">QVRObserverConfig</a></em>):</p><ul>
->>>>>>> 25ea10d16ed69043417b330980980417c5926455
 <li><code>observer &lt;id&gt;</code><br />
  Start a new observer definition with the given unique id.</li>
 <li><code>type &lt;static|wasdqe|vrpn|oculus|custom&gt;</code><br />
@@ -138,11 +117,7 @@ Configuration files</h1>
 <li><code>up &lt;x&gt; &lt;y&gt; &lt;z&gt;</code><br />
  Set the initial up direction.</li>
 </ul>
-<<<<<<< HEAD
 <p>Process definition (see <em><a class="el" href="class_q_v_r_process_config.html" title="Configuration of a QVRProcess. ">QVRProcessConfig</a></em>):</p><ul>
-=======
-<p>Process definition (see <em><a class="el" href="class_q_v_r_process_config.html" title="The configuration of a QVRProcess. ">QVRProcessConfig</a></em>):</p><ul>
->>>>>>> 25ea10d16ed69043417b330980980417c5926455
 <li><code>process &lt;id&gt;</code><br />
  Start a new process definition with the given unique id.</li>
 <li><code>display &lt;name&gt;</code><br />
@@ -150,21 +125,13 @@ Configuration files</h1>
 <li><code>launcher &lt;prg-and-args&gt;</code><br />
  Launcher commando used to start this process.</li>
 </ul>
-<<<<<<< HEAD
 <p>Window definition (see <em><a class="el" href="class_q_v_r_window_config.html" title="Configuration of a QVRWindow. ">QVRWindowConfig</a></em>):</p><ul>
-=======
-<p>Window definition (see <em><a class="el" href="class_q_v_r_window_config.html" title="The configuration of a QVRWindow. ">QVRWindowConfig</a></em>):</p><ul>
->>>>>>> 25ea10d16ed69043417b330980980417c5926455
 <li><code>window &lt;id&gt;</code><br />
  Start a new window definition with the given unique id, within the current process definition.</li>
 <li><code>observer &lt;id&gt;</code><br />
  Set the observer that this window provides a view for.</li>
 <li><code>output &lt;center|left|right|stereo&gt; &lt;gl|red_cyan|green_magenta|amber_blue|oculus|plugin&gt;</code><br />
-<<<<<<< HEAD
  Set the output mode. Center, left, and right are monoscopic views, stereo is a stereoscopic view with one of the builtin types gl, red_cyan, green_magenta, amber_blue, oculus. Both monoscopic and stereoscopic views can also be handled by an output plugin. See <em><a class="el" href="outputplugin_8hpp.html#a014e82f9b613115213b617206a30c0d6" title="Output the rendered content. ">QVROutputPlugin()</a></em>.</li>
-=======
- Set the output mode. Center, left, and right are monoscopic views, stereo is a stereoscopic view with one of the builtin types gl, red_cyan, green_magenta, amber_blue, oculus. Both monoscopic and stereoscopic views can also be handled by an output plugin. See <em><a class="el" href="outputplugin_8hpp.html#a014e82f9b613115213b617206a30c0d6">QVROutputPlugin()</a></em>.</li>
->>>>>>> 25ea10d16ed69043417b330980980417c5926455
 <li><code>display_screen &lt;screen&gt;</code><br />
  Select the Qt screen index on the Qt display that this process is connected to.<br />
 </li>
@@ -187,15 +154,9 @@ Configuration files</h1>
 </ul>
 <h1><a class="anchor" id="Implementation"></a>
 Implementation</h1>
-<<<<<<< HEAD
 <p>The <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> creates an invisible main OpenGL context for each process. This context is used for all calls to <em><a class="el" href="class_q_v_r_app.html" title="QVR application interface. ">QVRApp</a></em> application functions: the application only has to deal with this one context. The rendering results are directed into a set of textures that cover all the windows of the process.</p>
 <p>When all window textures have been rendered, they are put on screen by the actual visible windows who all have access to the textures from the main window. The windows themselves render in separate rendering threads. On buffer swap, only these rendering threads block. The main thread fills the waiting time with CPU work such as processing events and calling the <em><a class="el" href="class_q_v_r_app.html#af5c07b4602e772e2f78437499d08ada6" title="Update scene state. ">QVRApp::update()</a></em> function of the application.</p>
 <p>The process initially started by the user is the master process. <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> launch slave processes as required by the configuration file, and it will handle all necessary synchronization and data exchange with these slave processes.</p>
-=======
-<p>The <em><a class="el" href="class_q_v_r_manager.html" title="This class manages the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> creates an invisible main OpenGL context for each process. This context is used for all calls to <em><a class="el" href="class_q_v_r_app.html" title="The QVR application interface. ">QVRApp</a></em> application functions: the application only has to deal with this one context. The rendering results are directed into a set of textures that cover all the windows of the process.</p>
-<p>When all window textures have been rendered, they are put on screen by the actual visible windows who all have access to the textures from the main window. The windows themselves render in separate rendering threads. On buffer swap, only these rendering threads block. The main thread fills the waiting time with CPU work such as processing events and calling the <em><a class="el" href="class_q_v_r_app.html#af5c07b4602e772e2f78437499d08ada6" title="Update scene state. ">QVRApp::update()</a></em> function of the application.</p>
-<p>The process initially started by the user is the master process. <em><a class="el" href="class_q_v_r_manager.html" title="This class manages the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> launch slave processes as required by the configuration file, and it will handle all necessary synchronization and data exchange with these slave processes.</p>
->>>>>>> 25ea10d16ed69043417b330980980417c5926455
 <h1><a class="anchor" id="Notes"></a>
 Notes</h1>
 <ul>
