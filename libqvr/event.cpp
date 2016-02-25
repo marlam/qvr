@@ -26,40 +26,6 @@
 #include "event.hpp"
 
 
-void QVREvent::serialize(QDataStream& ds) const
-{
-    context.serialize(ds);
-    ds << static_cast<int>(type);
-    ds << static_cast<int>(keyEvent.type()) << keyEvent.key() << static_cast<int>(keyEvent.modifiers());
-    ds << static_cast<int>(mouseEvent.type()) << mouseEvent.localPos()
-        << static_cast<int>(mouseEvent.button()) << static_cast<int>(mouseEvent.buttons())
-        << static_cast<int>(mouseEvent.modifiers());
-    ds << wheelEvent.posF() << wheelEvent.globalPosF()
-        << wheelEvent.pixelDelta() << wheelEvent.angleDelta()
-        << static_cast<int>(wheelEvent.buttons()) << static_cast<int>(wheelEvent.modifiers());
-}
-
-void QVREvent::deserialize(QDataStream& ds)
-{
-    int x[4];
-    QPoint p[2];
-    QPointF pf[2];
-    context.deserialize(ds);
-    ds >> x[0];
-    type = static_cast<QVREventType>(x[0]);
-    ds >> x[0] >> x[1] >> x[2];
-    keyEvent = QKeyEvent(static_cast<QEvent::Type>(x[0]), x[1], static_cast<Qt::KeyboardModifier>(x[2]));
-    ds >> x[0];
-    ds >> pf[0];
-    ds >> x[1] >> x[2] >> x[3];
-    mouseEvent = QMouseEvent(static_cast<QEvent::Type>(x[0]), pf[0],
-            static_cast<Qt::MouseButton>(x[1]), static_cast<Qt::MouseButtons>(x[2]),
-            static_cast<Qt::KeyboardModifier>(x[3]));
-    ds >> pf[0] >> pf[1] >> p[0] >> p[1] >> x[0] >> x[1];
-    wheelEvent = QWheelEvent(pf[0], pf[1], p[0], p[1], 0, Qt::Horizontal,
-            static_cast<Qt::MouseButtons>(x[0]), static_cast<Qt::KeyboardModifier>(x[1]));
-}
-
 QVREvent::QVREvent() :
     type(QVR_Event_KeyPress),
     context(),
@@ -91,3 +57,62 @@ QVREvent::QVREvent(QVREventType t, const QVRRenderContext& c, QWheelEvent e) :
     mouseEvent(QEvent::None, QPointF(), Qt::NoButton, Qt::NoButton, Qt::NoModifier),
     wheelEvent(e)
 {}
+
+QDataStream &operator<<(QDataStream& ds, const QVREvent& e)
+{
+    ds << static_cast<int>(e.type)
+        << e.context
+        << static_cast<int>(e.keyEvent.type())
+        << e.keyEvent.key()
+        << static_cast<int>(e.keyEvent.modifiers())
+        << static_cast<int>(e.mouseEvent.type())
+        << e.mouseEvent.localPos()
+        << static_cast<int>(e.mouseEvent.button())
+        << static_cast<int>(e.mouseEvent.buttons())
+        << static_cast<int>(e.mouseEvent.modifiers())
+        << e.wheelEvent.posF()
+        << e.wheelEvent.globalPosF()
+        << e.wheelEvent.pixelDelta()
+        << e.wheelEvent.angleDelta()
+        << static_cast<int>(e.wheelEvent.buttons())
+        << static_cast<int>(e.wheelEvent.modifiers());
+    return ds;
+}
+
+QDataStream &operator>>(QDataStream& ds, QVREvent& e)
+{
+    int type;
+    int ke[3];
+    int me[4];
+    QPointF mepf;
+    QPointF wepf[2];
+    QPoint wep[2];
+    int we[2];
+
+    ds >> type
+        >> e.context
+        >> ke[0]
+        >> ke[1]
+        >> ke[2]
+        >> me[0]
+        >> mepf
+        >> me[1]
+        >> me[2]
+        >> me[3]
+        >> wepf[0]
+        >> wepf[1]
+        >> wep[0]
+        >> wep[1]
+        >> we[0]
+        >> we[1];
+
+    e.type = static_cast<QVREventType>(type);
+    e.keyEvent = QKeyEvent(static_cast<QEvent::Type>(ke[0]), ke[1], static_cast<Qt::KeyboardModifier>(ke[2]));
+    e.mouseEvent = QMouseEvent(static_cast<QEvent::Type>(me[0]), mepf,
+            static_cast<Qt::MouseButton>(me[1]), static_cast<Qt::MouseButtons>(me[2]),
+            static_cast<Qt::KeyboardModifier>(me[3]));
+    e.wheelEvent = QWheelEvent(wepf[0], wepf[1], wep[0], wep[1], 0, Qt::Horizontal,
+            static_cast<Qt::MouseButtons>(we[0]), static_cast<Qt::KeyboardModifier>(we[1]));
+
+    return ds;
+}

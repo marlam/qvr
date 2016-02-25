@@ -38,6 +38,9 @@ class QVRFrustum
 private:
     float _lrbtnf[6];
 
+    friend QDataStream &operator<<(QDataStream& ds, const QVRFrustum& f);
+    friend QDataStream &operator>>(QDataStream& ds, QVRFrustum& f);
+
 public:
     /*!
      * \brief Constructs an invalid frustum, where all values are zero.

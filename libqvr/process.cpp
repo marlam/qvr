@@ -169,7 +169,7 @@ bool QVRProcess::receiveCmdEvent(QVREvent* e)
     if (getChar(&c)) {
         if (c == 'e') {
             QDataStream ds(this);
-            e->deserialize(ds);
+            ds >> *e;
             r = true;
         } else {
             ungetChar(c);
@@ -193,7 +193,7 @@ void QVRProcess::sendCmdEvent(const QVREvent* e)
 {
     _stdout->putChar('e');
     QDataStream ds(_stdout);
-    e->serialize(ds);
+    ds << *e;
 }
 
 void QVRProcess::sendCmdSync()

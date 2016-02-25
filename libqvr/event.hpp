@@ -52,13 +52,13 @@ public:
     QMouseEvent mouseEvent;
     QWheelEvent wheelEvent;
 
-    void serialize(QDataStream& ds) const;
-    void deserialize(QDataStream& ds);
-
     QVREvent();
     QVREvent(QVREventType t, const QVRRenderContext& c, QKeyEvent e);
     QVREvent(QVREventType t, const QVRRenderContext& c, QMouseEvent e);
     QVREvent(QVREventType t, const QVRRenderContext& c, QWheelEvent e);
 };
+
+QDataStream &operator<<(QDataStream& ds, const QVREvent& e);
+QDataStream &operator>>(QDataStream& ds, QVREvent& e);
 
 #endif

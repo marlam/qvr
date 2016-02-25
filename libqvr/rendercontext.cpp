@@ -92,32 +92,34 @@ void QVRRenderContext::setOutputConf(QVROutputMode om)
     }
 }
 
-void QVRRenderContext::serialize(QDataStream& ds) const
+QDataStream &operator<<(QDataStream& ds, const QVRRenderContext& rc)
 {
-    ds << _processIndex << _windowIndex
-        << _windowRect << _screenRect
-        << _screenWall[0] << _screenWall[1] << _screenWall[2]
-        << static_cast<int>(_outputMode)
-        << _viewPasses
-        << static_cast<int>(_eye[0]) << static_cast<int>(_eye[1])
-        << _eyeMatrix[0] << _eyeMatrix[1]
-        << _frustum[0] << _frustum[1]
-        << _viewMatrix[0] << _viewMatrix[1];
+    ds << rc._processIndex << rc._windowIndex
+        << rc._windowRect << rc._screenRect
+        << rc._screenWall[0] << rc._screenWall[1] << rc._screenWall[2]
+        << static_cast<int>(rc._outputMode)
+        << rc._viewPasses
+        << static_cast<int>(rc._eye[0]) << static_cast<int>(rc._eye[1])
+        << rc._eyeMatrix[0] << rc._eyeMatrix[1]
+        << rc._frustum[0] << rc._frustum[1]
+        << rc._viewMatrix[0] << rc._viewMatrix[1];
+    return ds;
 }
 
-void QVRRenderContext::deserialize(QDataStream& ds)
+QDataStream &operator>>(QDataStream& ds, QVRRenderContext& rc)
 {
     int om, e0, e1;
-    ds >> _processIndex >> _windowIndex
-        >> _windowRect >> _screenRect
-        >> _screenWall[0] >> _screenWall[1] >> _screenWall[2]
+    ds >> rc._processIndex >> rc._windowIndex
+        >> rc._windowRect >> rc._screenRect
+        >> rc._screenWall[0] >> rc._screenWall[1] >> rc._screenWall[2]
         >> om
-        >> _viewPasses
+        >> rc._viewPasses
         >> e0 >> e1
-        >> _eyeMatrix[0] >> _eyeMatrix[1]
-        >> _frustum[0] >> _frustum[1]
-        >> _viewMatrix[0] >> _viewMatrix[1];
-    _outputMode = static_cast<QVROutputMode>(om);
-    _eye[0] = static_cast<QVREye>(e0);
-    _eye[1] = static_cast<QVREye>(e1);
+        >> rc._eyeMatrix[0] >> rc._eyeMatrix[1]
+        >> rc._frustum[0] >> rc._frustum[1]
+        >> rc._viewMatrix[0] >> rc._viewMatrix[1];
+    rc._outputMode = static_cast<QVROutputMode>(om);
+    rc._eye[0] = static_cast<QVREye>(e0);
+    rc._eye[1] = static_cast<QVREye>(e1);
+    return ds;
 }

@@ -120,9 +120,11 @@ void QVRObserver::update()
 QDataStream &operator<<(QDataStream& ds, const QVRObserver& o)
 {
     ds << o._index << o._matrix[0] << o._matrix[1] << o._matrix[2];
+    return ds;
 }
 
 QDataStream &operator>>(QDataStream& ds, QVRObserver& o)
 {
     ds >> o._index >> o._matrix[0] >> o._matrix[1] >> o._matrix[2];
+    return ds;
 }

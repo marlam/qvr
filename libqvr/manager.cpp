@@ -436,7 +436,7 @@ void QVRManager::masterLoop()
             if (obs->config().type() != QVR_Observer_Stationary) {
                 QByteArray serializedObserver;
                 QDataStream serializationDataStream(&serializedObserver, QIODevice::WriteOnly);
-                serializationDataStream << _observers[o];
+                serializationDataStream << (*_observers[o]);
                 QVR_FIREHOSE("  ... sending observer %d (%d bytes) to slave processes", o, serializedObserver.size());
                 for (int p = 0; p < _slaveProcesses.size(); p++)
                     _slaveProcesses[p]->sendCmdObserver(serializedObserver);

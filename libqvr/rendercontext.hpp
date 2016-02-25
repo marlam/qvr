@@ -48,6 +48,9 @@ private:
     QVRFrustum _frustum[2];
     QMatrix4x4 _viewMatrix[2];
 
+    friend QDataStream &operator<<(QDataStream& ds, const QVRRenderContext& rc);
+    friend QDataStream &operator>>(QDataStream& ds, QVRRenderContext& rc);
+
 public:
     QVRRenderContext();
 
@@ -75,9 +78,9 @@ public:
     void setEyeMatrix(int vp, const QMatrix4x4& em) { _eyeMatrix[vp] = em; }
     void setFrustum(int vp, const QVRFrustum f) { _frustum[vp] = f; }
     void setViewMatrix(int vp, const QMatrix4x4& vm) { _viewMatrix[vp] = vm; }
-
-    void serialize(QDataStream& ds) const;
-    void deserialize(QDataStream& ds);
 };
+
+QDataStream &operator<<(QDataStream& ds, const QVRRenderContext& rc);
+QDataStream &operator>>(QDataStream& ds, QVRRenderContext& rc);
 
 #endif

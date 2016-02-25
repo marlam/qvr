@@ -58,23 +58,14 @@ void QVRFrustum::adjustNear(float n)
     setNear(n);
 }
 
-QDataStream &operator<<(QDataStream& ds, const QVRFrustum& frustum)
+QDataStream &operator<<(QDataStream& ds, const QVRFrustum& f)
 {
-    ds << frustum.left() << frustum.right()
-        << frustum.bottom() << frustum.top()
-        << frustum.near() << frustum.far();
+    ds << f._lrbtnf[0] << f._lrbtnf[1] << f._lrbtnf[2] << f._lrbtnf[3] << f._lrbtnf[4] << f._lrbtnf[5];
     return ds;
 }
 
-QDataStream &operator>>(QDataStream& ds, QVRFrustum& frustum)
+QDataStream &operator>>(QDataStream& ds, QVRFrustum& f)
 {
-    float l, r, b, t, n, f;
-    ds >> l >> r >> b >> t >> n >> f;
-    frustum.setLeft(l);
-    frustum.setRight(r);
-    frustum.setBottom(b);
-    frustum.setTop(t);
-    frustum.setNear(n);
-    frustum.setFar(f);
+    ds >> f._lrbtnf[0] >> f._lrbtnf[1] >> f._lrbtnf[2] >> f._lrbtnf[3] >> f._lrbtnf[4] >> f._lrbtnf[5];
     return ds;
 }
