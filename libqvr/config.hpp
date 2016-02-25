@@ -59,7 +59,7 @@ typedef enum {
 } QVRObserverType;
 
 /*!
- * \brief The eye of an observer.
+ * \brief Eye of an observer.
  */
 typedef enum {
     /*! \brief The center between left and right eye. */
@@ -71,7 +71,7 @@ typedef enum {
 } QVREye;
 
 /*!
- * \brief The output mode of a \a QVRWindow.
+ * \brief Output mode of a \a QVRWindow.
  */
 typedef enum {
     // these values are re-used in a GLSL shader; keep them in sync
@@ -96,7 +96,7 @@ typedef enum {
 } QVROutputMode;
 
 /*!
- * \brief The configuration of a \a QVRObserver.
+ * \brief Configuration of a \a QVRObserver.
  */
 class QVRObserverConfig
 {
@@ -160,7 +160,7 @@ public:
 };
 
 /*!
- * \brief The configuration of a \a QVRWindow.
+ * \brief Configuration of a \a QVRWindow.
  *
  * A window is displayed on a display screen (in Qt terminology)
  * and has a position and size on that display screen.
@@ -257,7 +257,7 @@ public:
 };
 
 /*!
- * \brief The configuration of a \a QVRProcess.
+ * \brief Configuration of a \a QVRProcess.
  *
  * Each process works with only one display. The master process (which is the
  * application process that is started first) always talks to the display that
@@ -306,7 +306,7 @@ public:
 };
 
 /*!
- * \brief The configuration of a Virtual Reality display setup.
+ * \brief QVR configuration of a Virtual Reality display setup.
  *
  * The configuration consists of a list of observer configurations
  * and a list of process configurations. The process configurations

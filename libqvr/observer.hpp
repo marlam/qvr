@@ -35,7 +35,7 @@
 class QDataStream;
 
 /*!
- * \brief Representation of an observer of the virtual world
+ * \brief Observer of the virtual world
  *
  * An observer typically has two eyes (left and right). This class additionally
  * handles an imaginary third eye at the center between left and right eye.
@@ -67,7 +67,7 @@ public:
     /*! \brief Destructor. */
     ~QVRObserver();
 
-    /*! \brief Returns the observer index in the QVR configuration. */
+    /*! \brief Returns the index of the observer in the QVR configuration. */
     int index() const;
     /*! \brief Returns the unique id. */
     const QString& id() const;

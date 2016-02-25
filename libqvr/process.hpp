@@ -34,6 +34,22 @@ class QVREvent;
 class QVRWindowConfig;
 class QVRProcessConfig;
 
+/*!
+ * \brief Application process.
+ *
+ * A process is connected to exactly one Qt display, which typically represents
+ * one GPU. A display can contain multiple screens, which typically correspond
+ * to multiple monitors or projectors.
+ *
+ * A process can drive multiple \a QVRWindow windows with different screens,
+ * positions, and sizes.
+ *
+ * The first process started by the user is the master process and has index 0.
+ * Slave processes, if configured in the QVR configuration, are launched by the
+ * \a QVRManager.
+ *
+ * A process is configured via \a QVRProcessConfig.
+ */
 class QVRProcess : public QProcess
 {
 private:
@@ -69,17 +85,31 @@ private:
     // explicit flushing of stdout
     void flush();
 
+    /*! \cond
+     * This is internal information. */
     friend class QVRManager;
+    /*! \endcond */
 
 public:
+    /*! \brief Constructor for the process with the given \a index in the QVR configuration. */
     QVRProcess(int index);
+    /*! \brief Destructor. */
     ~QVRProcess();
 
+    /*! \brief Returns the index of the process in the QVR configuration.
+     *
+     * The process with index 0 is the master process.
+     */
     int index() const;
+
+    /*! \brief Returns the unique id. */
     const QString& id() const;
+    /*! \brief Returns the configuration. */
     const QVRProcessConfig& config() const;
 
+    /*! \brief Returns the unique id of the window with the given index. */
     const QString& windowId(int windowIndex) const;
+    /*! \brief Returns the configuration of the window with the given index. */
     const QVRWindowConfig& windowConfig(int windowIndex) const;
 };
 

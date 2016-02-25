@@ -39,7 +39,7 @@ class QVRProcess;
 #include "rendercontext.hpp"
 
 /*!
- * \brief The QVR application interface.
+ * \brief QVR application interface.
  *
  * This is the central interface that VR applications must implement.
  * Most functions provide a default implementation.

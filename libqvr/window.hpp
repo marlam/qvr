@@ -36,6 +36,32 @@ class QOpenGLShaderProgram;
 class QOpenGLContext;
 class QStringList;
 
+/*!
+ * \brief A Qt window on a screen and a window into the virtual world
+ *
+ * From the Qt point of view, a \a QVRWindow is a QWindow with an associated
+ * position and size on a Qt display screen.
+ *
+ * From the Virtual Reality point of view, a \a QVRWindow is a window into
+ * the virtual world, and thus has an associated rectangle geometry in the
+ * virtual world. This rectangle is called the screen wall.
+ *
+ * It is important not to confuse the Qt meaning of screen and the VR meaning
+ * of screen wall.
+ *
+ * A window provides a view of the virtual world for a \a QVRObserver. The
+ * rendered images displayed by a window thus depend on the virtual world
+ * geometry of the screen wall and on the position of the observer.
+ *
+ * Sometimes the virtual world screen wall is fixed to the observer (e.g. for
+ * head-mounted displays), and sometimes it is fixed in the virtual world (e.g.
+ * for stationary projection screens).
+ *
+ * The view may either be monoscopic (for a single eye) or stereoscopic (for
+ * both left and right eye), depending on the output mode.
+ *
+ * An window is configured via \a QVRWindowConfig.
+ */
 class QVRWindow : public QWindow, protected QOpenGLFunctions_3_3_Core
 {
 private:
@@ -79,10 +105,15 @@ private:
     // to be called from the constructor:
     bool initGL();
 
+    /*! \cond
+     * This is internal information. */
     friend class QVRWindowThread;
     friend class QVRManager;
+    /*! \endcond */
 
 protected:
+    /*! \cond
+     * These are only used internally. */
     void keyPressEvent(QKeyEvent* event) override;
     void keyReleaseEvent(QKeyEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
@@ -90,22 +121,39 @@ protected:
     void mouseReleaseEvent(QMouseEvent* e) override;
     void mouseDoubleClickEvent(QMouseEvent* e) override;
     void wheelEvent(QWheelEvent* event) override;
+    /*! \endcond */
 
 public:
+    /*! \brief Constructor.
+     * @param masterContext     The master OpenGL context of the process
+     * @param observer          The observer to provide a view for
+     * @param processIndex      The index of the process
+     * @param windowIndex       The index of this window
+     */
     QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer,
             int processIndex, int windowIndex);
+    /*! \brief Destructor. */
     virtual ~QVRWindow();
 
+    /*! \brief Returns the index of the window in the process configuration. */
     int index() const;
+    /*! \brief Returns the unique id. */
     const QString& id() const;
+    /*! \brief Returns the configuration. */
     const QVRWindowConfig& config() const;
 
+    /*! \brief Returns the index of the process that this window belongs to. */
     int processIndex() const;
+    /*! \brief Returns the unique id of the process that this window belongs to. */
     const QString& processId() const;
+    /*! \brief Returns the configuration of the process that this window belongs to. */
     const QVRProcessConfig& processConfig() const;
 
+    /*! \brief Returns the index of the window observer in the QVR configuration. */
     int observerIndex() const;
+    /*! \brief Returns the unique id of the window observer in the QVR configuration. */
     const QString& observerId() const;
+    /*! \brief Returns the configuration of the window observer in the QVR configuration. */
     const QVRObserverConfig& observerConfig() const;
 };
 

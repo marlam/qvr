@@ -45,7 +45,7 @@ class QVRProcess;
 class QVRRenderContext;
 
 /*!
- * \brief The level of logging of the QVR framework
+ * \brief Level of logging of the QVR framework
  *
  * You can use the command line or an environment variable to set
  * the log level:
@@ -68,7 +68,7 @@ typedef enum {
 } QVRLogLevel;
 
 /*!
- * \brief This class manages the QVR application's control flow and its processes and windows.
+ * \brief Manager of the QVR application's control flow and its processes and windows.
  *
  * The QVRManager object is typically created right after the QApplication object.
  * Afterwards, the application typically sets its preferred OpenGL context properties,
