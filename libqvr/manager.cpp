@@ -776,7 +776,7 @@ void QVRManager::processEventQueue()
                         && _wasdqeMouseWindowIndex == e.context.windowIndex()) {
                     // Horizontal angle
                     float x = e.mouseEvent.pos().x();
-                    float w = e.context.windowRect().width();
+                    float w = e.context.windowGeometry().width();
                     float xf = x / w * 2.0f - 1.0f;
                     _wasdqeHorzAngle = -xf * 180.0f;
                     // Vertical angle
@@ -786,7 +786,7 @@ void QVRManager::processEventQueue()
                     if (windowConfig(e.context.processIndex(), e.context.windowIndex()).outputMode()
                             != QVR_Output_Stereo_Oculus) {
                         float y = e.mouseEvent.pos().y();
-                        float h = e.context.windowRect().height();
+                        float h = e.context.windowGeometry().height();
                         float yf = y / h * 2.0f - 1.0f;
                         _wasdqeVertAngle = -yf * 90.0f;
                     }

@@ -29,8 +29,8 @@
 QVRRenderContext::QVRRenderContext() :
     _processIndex(-1),
     _windowIndex(-1),
-    _windowRect(),
-    _screenRect(),
+    _windowGeometry(),
+    _screenGeometry(),
     _screenWall { QVector3D(), QVector3D(), QVector3D() },
     _outputMode(QVR_Output_Center),
     _viewPasses(0),
@@ -95,7 +95,7 @@ void QVRRenderContext::setOutputConf(QVROutputMode om)
 QDataStream &operator<<(QDataStream& ds, const QVRRenderContext& rc)
 {
     ds << rc._processIndex << rc._windowIndex
-        << rc._windowRect << rc._screenRect
+        << rc._windowGeometry << rc._screenGeometry
         << rc._screenWall[0] << rc._screenWall[1] << rc._screenWall[2]
         << static_cast<int>(rc._outputMode)
         << rc._viewPasses
@@ -110,7 +110,7 @@ QDataStream &operator>>(QDataStream& ds, QVRRenderContext& rc)
 {
     int om, e0, e1;
     ds >> rc._processIndex >> rc._windowIndex
-        >> rc._windowRect >> rc._screenRect
+        >> rc._windowGeometry >> rc._screenGeometry
         >> rc._screenWall[0] >> rc._screenWall[1] >> rc._screenWall[2]
         >> om
         >> rc._viewPasses

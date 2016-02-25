@@ -652,8 +652,8 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float near, float far, u
 
     /* Compute the render context */
 
-    _renderContext.setWindowRect(geometry());
-    _renderContext.setScreenRect(screen()->geometry());
+    _renderContext.setWindowGeometry(geometry());
+    _renderContext.setScreenGeometry(screen()->geometry());
     _renderContext.setOutputConf(config().outputMode());
     QVector3D wallBl, wallBr, wallTl;
     if (config().outputMode() != QVR_Output_Stereo_Oculus)
