@@ -222,7 +222,7 @@ void QVRProcess::receiveCmdWasdqeState(int* wasdqeMouseProcessIndex, int* wasdqe
 void QVRProcess::receiveCmdObserver(QVRObserver* obs)
 {
     QDataStream ds(_stdin);
-    obs->deserialize(ds);
+    ds >> *obs;
 }
 
 void QVRProcess::receiveCmdRender(float* near, float* far, QVRApp* app)

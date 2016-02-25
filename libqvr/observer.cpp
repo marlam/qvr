@@ -54,7 +54,7 @@ QVRObserver::QVRObserver(int observerIndex) :
     _matrix[QVR_Eye_Left] = config().initialEyeMatrix(QVR_Eye_Left);
     _matrix[QVR_Eye_Right] = config().initialEyeMatrix(QVR_Eye_Right);
 #ifdef HAVE_VRPN
-    if (config().type() == QVR_Observer_VRPN) {
+    if (config().type() == QVR_Observer_VRPN && QVRManager::processIndex() == 0) {
         QStringList args = config().parameters().split(' ', QString::SkipEmptyParts);
         QString name = (args.length() >= 2 ? args[0] : config().parameters());
         int sensor = (args.length() >= 2 ? args[1].toInt() : vrpn_ALL_SENSORS);
@@ -89,18 +89,9 @@ const QVRObserverConfig& QVRObserver::config() const
     return QVRManager::config().observerConfigs().at(index());
 }
 
-void QVRObserver::serialize(QDataStream& ds) const
+void QVRObserver::setEyeMatrices(const QMatrix4x4& centerMatrix)
 {
-    ds << _index << _matrix[0] << _matrix[1] << _matrix[2];
-}
-
-void QVRObserver::deserialize(QDataStream& ds)
-{
-    ds >> _index >> _matrix[0] >> _matrix[1] >> _matrix[2];
-}
-
-void QVRObserver::setEyeMatrices(const QMatrix4x4& centerMatrix, float eyeDistance)
-{
+    float eyeDistance = config().eyeDistance();
     _matrix[QVR_Eye_Center] = centerMatrix;
     _matrix[QVR_Eye_Left] = centerMatrix;
     _matrix[QVR_Eye_Left].translate(-0.5f * eyeDistance, 0.0f, 0.0f);
@@ -124,4 +115,14 @@ void QVRObserver::update()
     if (_vrpnTracker)
         _vrpnTracker->mainloop();
 #endif
+}
+
+QDataStream &operator<<(QDataStream& ds, const QVRObserver& o)
+{
+    ds << o._index << o._matrix[0] << o._matrix[1] << o._matrix[2];
+}
+
+QDataStream &operator>>(QDataStream& ds, QVRObserver& o)
+{
+    ds >> o._index >> o._matrix[0] >> o._matrix[1] >> o._matrix[2];
 }

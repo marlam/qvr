@@ -108,12 +108,12 @@ private:
     QVRObserverType _type;
     // Parameters of observer, for observer types that need this.
     QString _parameters;
-    // Initial position and orientation for the center between
-    // left and right eye, and eye distance
+    // Distance between left and right eye
+    float _eyeDistance;
+    // Initial position and orientation for the center eye
     QVector3D _initialPosition;
     QVector3D _initialForwardDirection;
     QVector3D _initialUpDirection;
-    float _initialEyeDistance;
 
     friend class QVRConfig;
 
@@ -143,6 +143,9 @@ public:
      */
     const QString& parameters() const { return _parameters; }
 
+    /*! \brief Returns the eye distance (interpupillary distance). */
+    float eyeDistance() const { return _eyeDistance; }
+
     /*! \brief Returns the initial position. */
     const QVector3D& initialPosition() const { return _initialPosition; }
 
@@ -151,9 +154,6 @@ public:
 
     /*! \brief Returns the initial upward direction. */
     const QVector3D& initialUpDirection() const { return _initialUpDirection; }
-
-    /*! \brief Returns the initial eye distance. */
-    float initialEyeDistance() const { return _initialEyeDistance; }
 
     /*! \brief Returns the initial \a eye matrix. */
     QMatrix4x4 initialEyeMatrix(QVREye eye) const;

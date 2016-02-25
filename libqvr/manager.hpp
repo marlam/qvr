@@ -180,6 +180,8 @@ public:
     /*!
      * \brief Return the index of this \a QVRProcess in the active configuration.
      *
+     * The process with index 0 is the master process.
+     *
      * See \a config().
      */
     static int processIndex();

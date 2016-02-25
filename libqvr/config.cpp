@@ -40,10 +40,10 @@ QVRObserverConfig::QVRObserverConfig() :
     _id(),
     _type(QVR_Observer_Stationary),
     _parameters(),
+    _eyeDistance(defaultEyeDistance),
     _initialPosition(QVector3D(0.0f, defaultEyeHeight, 0.0f)),
     _initialForwardDirection(QVector3D(0.0f, 0.0f, -1.0f)),
-    _initialUpDirection(QVector3D(0.0f, 1.0f, 0.0f)),
-    _initialEyeDistance(defaultEyeDistance)
+    _initialUpDirection(QVector3D(0.0f, 1.0f, 0.0f))
 {
 }
 
@@ -53,9 +53,9 @@ QMatrix4x4 QVRObserverConfig::initialEyeMatrix(QVREye eye) const
     viewMatrix.lookAt(initialPosition(), initialPosition() + initialForwardDirection(), initialUpDirection());
     QMatrix4x4 eyeMatrix = viewMatrix.inverted();
     if (eye == QVR_Eye_Left) {
-        eyeMatrix.translate(-0.5f * initialEyeDistance(), 0.0f, 0.0f);
+        eyeMatrix.translate(-0.5f * eyeDistance(), 0.0f, 0.0f);
     } else if (eye == QVR_Eye_Right) {
-        eyeMatrix.translate(+0.5f * initialEyeDistance(), 0.0f, 0.0f);
+        eyeMatrix.translate(+0.5f * eyeDistance(), 0.0f, 0.0f);
     }
     return eyeMatrix;
 }
@@ -213,6 +213,9 @@ bool QVRConfig::readFromFile(const QString& filename)
             } else if (cmd == "parameters") {
                 observerConfig._parameters = arg;
                 continue;
+            } else if (cmd == "eye_distance" && arglist.length() == 1) {
+                observerConfig._eyeDistance = arg.toFloat();
+                continue;
             } else if (cmd == "position" && arglist.size() == 3) {
                 observerConfig._initialPosition.setX(arglist[0].toFloat());
                 observerConfig._initialPosition.setY(arglist[1].toFloat());
@@ -227,9 +230,6 @@ bool QVRConfig::readFromFile(const QString& filename)
                 observerConfig._initialUpDirection.setX(arglist[0].toFloat());
                 observerConfig._initialUpDirection.setY(arglist[1].toFloat());
                 observerConfig._initialUpDirection.setZ(arglist[2].toFloat());
-                continue;
-            } else if (cmd == "eye_distance" && arglist.length() == 1) {
-                observerConfig._initialEyeDistance = arg.toFloat();
                 continue;
             }
         }

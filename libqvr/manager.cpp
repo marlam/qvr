@@ -399,7 +399,7 @@ void QVRManager::masterLoop()
                     QMatrix4x4 eyeMatrix = obs->config().initialEyeMatrix(QVR_Eye_Center);
                     eyeMatrix.translate(_wasdqePos);
                     eyeMatrix.rotate(QQuaternion::fromEulerAngles(_wasdqeVertAngle, _wasdqeHorzAngle, 0.0f));
-                    obs->setEyeMatrices(eyeMatrix, obs->config().initialEyeDistance());
+                    obs->setEyeMatrices(eyeMatrix);
                 }
                 break;
             case QVR_Observer_VRPN:
@@ -436,7 +436,7 @@ void QVRManager::masterLoop()
             if (obs->config().type() != QVR_Observer_Stationary) {
                 QByteArray serializedObserver;
                 QDataStream serializationDataStream(&serializedObserver, QIODevice::WriteOnly);
-                _observers[o]->serialize(serializationDataStream);
+                serializationDataStream << _observers[o];
                 QVR_FIREHOSE("  ... sending observer %d (%d bytes) to slave processes", o, serializedObserver.size());
                 for (int p = 0; p < _slaveProcesses.size(); p++)
                     _slaveProcesses[p]->sendCmdObserver(serializedObserver);
