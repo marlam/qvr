@@ -4,7 +4,6 @@ var searchData=
   ['index',['index',['../class_q_v_r_observer.html#a88cbd2d76dc4271d16c18a47e13989a8',1,'QVRObserver::index()'],['../class_q_v_r_window.html#a5f0dd1aa346d486eb27fa6768ac6c0c7',1,'QVRWindow::index()'],['../class_q_v_r_process.html#a772d1d2309be1a0bbb808c77c70e406e',1,'QVRProcess::index()']]],
   ['init',['init',['../class_q_v_r_manager.html#ad3ecf90e5586d68375d038dac94e2c47',1,'QVRManager']]],
   ['initialdisplayscreen',['initialDisplayScreen',['../class_q_v_r_window_config.html#ab56ecf58aa80bfcf185617c8b7a5df7a',1,'QVRWindowConfig']]],
-  ['initialeyedistance',['initialEyeDistance',['../class_q_v_r_observer_config.html#a8fb91c5a1c918b71091d1d4237babad0',1,'QVRObserverConfig']]],
   ['initialeyematrix',['initialEyeMatrix',['../class_q_v_r_observer_config.html#a500eefcd13727922030f8c20f03a319c',1,'QVRObserverConfig']]],
   ['initialforwarddirection',['initialForwardDirection',['../class_q_v_r_observer_config.html#a14b9c14d2714a8fd5a97e84a71376f55',1,'QVRObserverConfig']]],
   ['initialfullscreen',['initialFullscreen',['../class_q_v_r_window_config.html#a6ff3a61a1d0e8ce1da5d197d26eeab58',1,'QVRWindowConfig']]],

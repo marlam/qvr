@@ -28,7 +28,7 @@ var searchData=
   ['qvreye',['QVREye',['../config_8hpp.html#ae66050fd3a370d877a255d712f401fb2',1,'config.hpp']]],
   ['qvrfrustum',['QVRFrustum',['../class_q_v_r_frustum.html',1,'QVRFrustum'],['../class_q_v_r_frustum.html#ac7167f74975f0db36d63cf17625913d2',1,'QVRFrustum::QVRFrustum()'],['../class_q_v_r_frustum.html#aa1903017eb4e2ffec16f41a508241ddd',1,'QVRFrustum::QVRFrustum(float l, float r, float b, float t, float n, float f)'],['../class_q_v_r_frustum.html#a3a3ad90413be1f3282b1998641ca795f',1,'QVRFrustum::QVRFrustum(const float *lrbtnf)']]],
   ['qvrloglevel',['QVRLogLevel',['../manager_8hpp.html#ab9ae1737164d307244b79f924f588f72',1,'manager.hpp']]],
-  ['qvrmanager',['QVRManager',['../class_q_v_r_manager.html',1,'QVRManager'],['../class_q_v_r_window.html#a6fe0ea4ab55b4ef733469911233fef15',1,'QVRWindow::QVRManager()'],['../class_q_v_r_process.html#a6fe0ea4ab55b4ef733469911233fef15',1,'QVRProcess::QVRManager()'],['../class_q_v_r_manager.html#a468c9240024bf4a2bb1da057e0a52ece',1,'QVRManager::QVRManager()']]],
+  ['qvrmanager',['QVRManager',['../class_q_v_r_manager.html',1,'QVRManager'],['../class_q_v_r_manager.html#a468c9240024bf4a2bb1da057e0a52ece',1,'QVRManager::QVRManager()']]],
   ['qvrobserver',['QVRObserver',['../class_q_v_r_observer.html',1,'QVRObserver'],['../class_q_v_r_observer.html#aaae21bea63dce5f0427c0610eccfefbe',1,'QVRObserver::QVRObserver()'],['../class_q_v_r_observer.html#a8214c14086a65eb4c3a6d665eb9ab08f',1,'QVRObserver::QVRObserver(int index)']]],
   ['qvrobserverconfig',['QVRObserverConfig',['../class_q_v_r_observer_config.html',1,'QVRObserverConfig'],['../class_q_v_r_observer_config.html#aadc65997bf813b45bf951cd2ce6b8561',1,'QVRObserverConfig::QVRObserverConfig()']]],
   ['qvrobservertype',['QVRObserverType',['../config_8hpp.html#abfe5fac51532dadeab434d3225361410',1,'config.hpp']]],
@@ -40,6 +40,5 @@ var searchData=
   ['qvrprocessconfig',['QVRProcessConfig',['../class_q_v_r_process_config.html',1,'QVRProcessConfig'],['../class_q_v_r_process_config.html#aa7938d66f4810806a5d5dfab6f48281f',1,'QVRProcessConfig::QVRProcessConfig()']]],
   ['qvrrendercontext',['QVRRenderContext',['../class_q_v_r_render_context.html',1,'QVRRenderContext'],['../class_q_v_r_render_context.html#af624784863a772c4a0ddb85bf4981588',1,'QVRRenderContext::QVRRenderContext()']]],
   ['qvrwindow',['QVRWindow',['../class_q_v_r_window.html',1,'QVRWindow'],['../class_q_v_r_window.html#a6fd65ea3719545ab9aeb0ad80b76fa34',1,'QVRWindow::QVRWindow()']]],
-  ['qvrwindowconfig',['QVRWindowConfig',['../class_q_v_r_window_config.html',1,'QVRWindowConfig'],['../class_q_v_r_window_config.html#a4342a65f2fd16d33ef38e0990c48a511',1,'QVRWindowConfig::QVRWindowConfig()']]],
-  ['qvrwindowthread',['QVRWindowThread',['../class_q_v_r_window.html#a071c6a3b92bac850f3d363b905d9ac6b',1,'QVRWindow']]]
+  ['qvrwindowconfig',['QVRWindowConfig',['../class_q_v_r_window_config.html',1,'QVRWindowConfig'],['../class_q_v_r_window_config.html#a4342a65f2fd16d33ef38e0990c48a511',1,'QVRWindowConfig::QVRWindowConfig()']]]
 ];

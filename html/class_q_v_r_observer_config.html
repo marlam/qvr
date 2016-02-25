@@ -95,7 +95,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>The configuration of a <em><a class="el" href="class_q_v_r_observer.html">QVRObserver</a></em>.  
+<p>Configuration of a <em><a class="el" href="class_q_v_r_observer.html" title="Observer of the virtual world. ">QVRObserver</a></em>.  
  <a href="class_q_v_r_observer_config.html#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
@@ -112,6 +112,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aa1bd9e6067a4b408d4a66b6358e46602"><td class="memItemLeft" align="right" valign="top">const QString &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer_config.html#aa1bd9e6067a4b408d4a66b6358e46602">parameters</a> () const </td></tr>
 <tr class="memdesc:aa1bd9e6067a4b408d4a66b6358e46602"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns parameters (may be empty).  <a href="#aa1bd9e6067a4b408d4a66b6358e46602">More...</a><br /></td></tr>
 <tr class="separator:aa1bd9e6067a4b408d4a66b6358e46602"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5a25104db25552558885843fd374591c"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer_config.html#a5a25104db25552558885843fd374591c">eyeDistance</a> () const </td></tr>
+<tr class="memdesc:a5a25104db25552558885843fd374591c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the eye distance (interpupillary distance).  <a href="#a5a25104db25552558885843fd374591c">More...</a><br /></td></tr>
+<tr class="separator:a5a25104db25552558885843fd374591c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad722d03d844c62fde72a76dea4371ccb"><td class="memItemLeft" align="right" valign="top">const QVector3D &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer_config.html#ad722d03d844c62fde72a76dea4371ccb">initialPosition</a> () const </td></tr>
 <tr class="memdesc:ad722d03d844c62fde72a76dea4371ccb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the initial position.  <a href="#ad722d03d844c62fde72a76dea4371ccb">More...</a><br /></td></tr>
 <tr class="separator:ad722d03d844c62fde72a76dea4371ccb"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -121,9 +124,6 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:af8e1bc3a5e0773e88dd2b0226dc2226d"><td class="memItemLeft" align="right" valign="top">const QVector3D &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer_config.html#af8e1bc3a5e0773e88dd2b0226dc2226d">initialUpDirection</a> () const </td></tr>
 <tr class="memdesc:af8e1bc3a5e0773e88dd2b0226dc2226d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the initial upward direction.  <a href="#af8e1bc3a5e0773e88dd2b0226dc2226d">More...</a><br /></td></tr>
 <tr class="separator:af8e1bc3a5e0773e88dd2b0226dc2226d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8fb91c5a1c918b71091d1d4237babad0"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer_config.html#a8fb91c5a1c918b71091d1d4237babad0">initialEyeDistance</a> () const </td></tr>
-<tr class="memdesc:a8fb91c5a1c918b71091d1d4237babad0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the initial eye distance.  <a href="#a8fb91c5a1c918b71091d1d4237babad0">More...</a><br /></td></tr>
-<tr class="separator:a8fb91c5a1c918b71091d1d4237babad0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a500eefcd13727922030f8c20f03a319c"><td class="memItemLeft" align="right" valign="top">QMatrix4x4&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer_config.html#a500eefcd13727922030f8c20f03a319c">initialEyeMatrix</a> (<a class="el" href="config_8hpp.html#ae66050fd3a370d877a255d712f401fb2">QVREye</a> eye) const </td></tr>
 <tr class="memdesc:a500eefcd13727922030f8c20f03a319c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the initial <em>eye</em> matrix.  <a href="#a500eefcd13727922030f8c20f03a319c">More...</a><br /></td></tr>
 <tr class="separator:a500eefcd13727922030f8c20f03a319c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -143,7 +143,7 @@ Friends</h2></td></tr>
 <tr class="separator:a498c26fb31ddc6616461e2d77f84172c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>The configuration of a <em><a class="el" href="class_q_v_r_observer.html">QVRObserver</a></em>. </p>
+<div class="textblock"><p>Configuration of a <em><a class="el" href="class_q_v_r_observer.html" title="Observer of the virtual world. ">QVRObserver</a></em>. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="aadc65997bf813b45bf951cd2ce6b8561"></a>
 <div class="memitem">
@@ -163,6 +163,31 @@ Friends</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a5a25104db25552558885843fd374591c"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">float QVRObserverConfig::eyeDistance </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the eye distance (interpupillary distance). </p>
+
+</div>
+</div>
 <a class="anchor" id="a13e80cb91c04dae81deac68ac4e1569e"></a>
 <div class="memitem">
 <div class="memproto">
@@ -185,31 +210,6 @@ Friends</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Returns the unique id. </p>
-
-</div>
-</div>
-<a class="anchor" id="a8fb91c5a1c918b71091d1d4237babad0"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">float QVRObserverConfig::initialEyeDistance </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Returns the initial eye distance. </p>
 
 </div>
 </div>

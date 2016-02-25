@@ -87,66 +87,78 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#friends">Friends</a> &#124;
 <a href="class_q_v_r_render_context-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">QVRRenderContext Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Context for rendering a view.  
+ <a href="class_q_v_r_render_context.html#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:af624784863a772c4a0ddb85bf4981588"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#af624784863a772c4a0ddb85bf4981588">QVRRenderContext</a> ()</td></tr>
+<tr class="memdesc:af624784863a772c4a0ddb85bf4981588"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor.  <a href="#af624784863a772c4a0ddb85bf4981588">More...</a><br /></td></tr>
 <tr class="separator:af624784863a772c4a0ddb85bf4981588"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa7dce53e4acb18876fb058e9d5b8707f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#aa7dce53e4acb18876fb058e9d5b8707f">processIndex</a> () const </td></tr>
+<tr class="memdesc:aa7dce53e4acb18876fb058e9d5b8707f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the index of the process that the window displaying the view belongs to.  <a href="#aa7dce53e4acb18876fb058e9d5b8707f">More...</a><br /></td></tr>
 <tr class="separator:aa7dce53e4acb18876fb058e9d5b8707f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acdcee403a2629dd7ba4e75754c36afbc"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#acdcee403a2629dd7ba4e75754c36afbc">windowIndex</a> () const </td></tr>
+<tr class="memdesc:acdcee403a2629dd7ba4e75754c36afbc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the index of the window displaying the view, relative to the process it belongs to.  <a href="#acdcee403a2629dd7ba4e75754c36afbc">More...</a><br /></td></tr>
 <tr class="separator:acdcee403a2629dd7ba4e75754c36afbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa0522145e21f265fdb55dc722a493029"><td class="memItemLeft" align="right" valign="top">QRect&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#aa0522145e21f265fdb55dc722a493029">windowRect</a> () const </td></tr>
-<tr class="separator:aa0522145e21f265fdb55dc722a493029"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3ed8d154df2df153faa5d730be49e8b0"><td class="memItemLeft" align="right" valign="top">QRect&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a3ed8d154df2df153faa5d730be49e8b0">screenRect</a> () const </td></tr>
-<tr class="separator:a3ed8d154df2df153faa5d730be49e8b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6bad4bf1d9e5b6a3de4b8419416bed87"><td class="memItemLeft" align="right" valign="top">QRect&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a6bad4bf1d9e5b6a3de4b8419416bed87">windowGeometry</a> () const </td></tr>
+<tr class="memdesc:a6bad4bf1d9e5b6a3de4b8419416bed87"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the pixel-based geometry of window on the Qt display screen (from <em>QWindow::geometry()</em>).  <a href="#a6bad4bf1d9e5b6a3de4b8419416bed87">More...</a><br /></td></tr>
+<tr class="separator:a6bad4bf1d9e5b6a3de4b8419416bed87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7e258b7b9829ccf4031471d8cc27ada3"><td class="memItemLeft" align="right" valign="top">QRect&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a7e258b7b9829ccf4031471d8cc27ada3">screenGeometry</a> () const </td></tr>
+<tr class="memdesc:a7e258b7b9829ccf4031471d8cc27ada3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the pixel-based geometry of the Qt screen that the window is displayed on (from <em>QScreen::geometry()</em>).  <a href="#a7e258b7b9829ccf4031471d8cc27ada3">More...</a><br /></td></tr>
+<tr class="separator:a7e258b7b9829ccf4031471d8cc27ada3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a51f1f69b39482284c7026e3f30cb5b6b"><td class="memItemLeft" align="right" valign="top">QVector3D&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a51f1f69b39482284c7026e3f30cb5b6b">screenWallBottomLeft</a> () const </td></tr>
+<tr class="memdesc:a51f1f69b39482284c7026e3f30cb5b6b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the virtual world coordinates of the bottom left corner of the screen wall.  <a href="#a51f1f69b39482284c7026e3f30cb5b6b">More...</a><br /></td></tr>
 <tr class="separator:a51f1f69b39482284c7026e3f30cb5b6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a032f92578e7789e492c3186f5a3ad9c6"><td class="memItemLeft" align="right" valign="top">QVector3D&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a032f92578e7789e492c3186f5a3ad9c6">screenWallBottomRight</a> () const </td></tr>
+<tr class="memdesc:a032f92578e7789e492c3186f5a3ad9c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the virtual world coordinates of the bottom right corner of the screen wall.  <a href="#a032f92578e7789e492c3186f5a3ad9c6">More...</a><br /></td></tr>
 <tr class="separator:a032f92578e7789e492c3186f5a3ad9c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3262c90815c8c8939a7a0d66b761094e"><td class="memItemLeft" align="right" valign="top">QVector3D&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a3262c90815c8c8939a7a0d66b761094e">screenWallTopLeft</a> () const </td></tr>
+<tr class="memdesc:a3262c90815c8c8939a7a0d66b761094e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the virtual world coordinates of the top left corner of the screen wall.  <a href="#a3262c90815c8c8939a7a0d66b761094e">More...</a><br /></td></tr>
 <tr class="separator:a3262c90815c8c8939a7a0d66b761094e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a925097e422d0dd98f63ea884d196cb83"><td class="memItemLeft" align="right" valign="top"><a class="el" href="config_8hpp.html#ad8cb348ba654a1504085369172146314">QVROutputMode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a925097e422d0dd98f63ea884d196cb83">outputMode</a> () const </td></tr>
+<tr class="memdesc:a925097e422d0dd98f63ea884d196cb83"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the output mode of the window displaying the view.  <a href="#a925097e422d0dd98f63ea884d196cb83">More...</a><br /></td></tr>
 <tr class="separator:a925097e422d0dd98f63ea884d196cb83"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afd9a688590fe9da7b0a304c1362ad821"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#afd9a688590fe9da7b0a304c1362ad821">viewPasses</a> () const </td></tr>
+<tr class="memdesc:afd9a688590fe9da7b0a304c1362ad821"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of rendering passes necessary to produce the view.  <a href="#afd9a688590fe9da7b0a304c1362ad821">More...</a><br /></td></tr>
 <tr class="separator:afd9a688590fe9da7b0a304c1362ad821"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac36885cc0d176ab4905c5379b33c901d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="config_8hpp.html#ae66050fd3a370d877a255d712f401fb2">QVREye</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#ac36885cc0d176ab4905c5379b33c901d">eye</a> (int viewPass) const </td></tr>
+<tr class="memdesc:ac36885cc0d176ab4905c5379b33c901d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the eye for rendering pass <em>viewPass</em>.  <a href="#ac36885cc0d176ab4905c5379b33c901d">More...</a><br /></td></tr>
 <tr class="separator:ac36885cc0d176ab4905c5379b33c901d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3107eb7ae862243fade87ef573257fd4"><td class="memItemLeft" align="right" valign="top">const QMatrix4x4 &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a3107eb7ae862243fade87ef573257fd4">eyeMatrix</a> (int viewPass) const </td></tr>
+<tr class="memdesc:a3107eb7ae862243fade87ef573257fd4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the eye matrix for rendering pass <em>viewPass</em>.  <a href="#a3107eb7ae862243fade87ef573257fd4">More...</a><br /></td></tr>
 <tr class="separator:a3107eb7ae862243fade87ef573257fd4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a53ea20c260ceb593ade96fda18425942"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="class_q_v_r_frustum.html">QVRFrustum</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a53ea20c260ceb593ade96fda18425942">frustum</a> (int viewPass) const </td></tr>
+<tr class="memdesc:a53ea20c260ceb593ade96fda18425942"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the frustum for rendering pass <em>viewPass</em>.  <a href="#a53ea20c260ceb593ade96fda18425942">More...</a><br /></td></tr>
 <tr class="separator:a53ea20c260ceb593ade96fda18425942"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae24847acee4756ed60cead0169ff22b6"><td class="memItemLeft" align="right" valign="top">const QMatrix4x4 &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#ae24847acee4756ed60cead0169ff22b6">viewMatrix</a> (int viewPass) const </td></tr>
+<tr class="memdesc:ae24847acee4756ed60cead0169ff22b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the view matrix for rendering pass <em>viewPass</em>.  <a href="#ae24847acee4756ed60cead0169ff22b6">More...</a><br /></td></tr>
 <tr class="separator:ae24847acee4756ed60cead0169ff22b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9f20783e8162dcd696472c6705a3f2f6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a9f20783e8162dcd696472c6705a3f2f6">setProcessIndex</a> (int pi)</td></tr>
-<tr class="separator:a9f20783e8162dcd696472c6705a3f2f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aba8341e82deba6692a6c6af4199c2ccb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#aba8341e82deba6692a6c6af4199c2ccb">setWindowIndex</a> (int wi)</td></tr>
-<tr class="separator:aba8341e82deba6692a6c6af4199c2ccb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a52d07e913c019724493d0198bba98404"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a52d07e913c019724493d0198bba98404">setWindowRect</a> (const QRect &amp;r)</td></tr>
-<tr class="separator:a52d07e913c019724493d0198bba98404"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a60ade79a0f01dafd9d9f9760488371a2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a60ade79a0f01dafd9d9f9760488371a2">setScreenRect</a> (const QRect &amp;r)</td></tr>
-<tr class="separator:a60ade79a0f01dafd9d9f9760488371a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a16a959e9b954343419ecfa4e62fb8f22"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a16a959e9b954343419ecfa4e62fb8f22">setScreenWall</a> (const QVector3D &amp;bl, const QVector3D &amp;br, const QVector3D &amp;tl)</td></tr>
-<tr class="separator:a16a959e9b954343419ecfa4e62fb8f22"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaf4a7f5950d7da7cb09c3a975dae2a30"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#aaf4a7f5950d7da7cb09c3a975dae2a30">setOutputConf</a> (<a class="el" href="config_8hpp.html#ad8cb348ba654a1504085369172146314">QVROutputMode</a> om)</td></tr>
-<tr class="separator:aaf4a7f5950d7da7cb09c3a975dae2a30"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a04f3b49689745b3e54f4f3dbc5caa79d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a04f3b49689745b3e54f4f3dbc5caa79d">setEyeMatrix</a> (int vp, const QMatrix4x4 &amp;em)</td></tr>
-<tr class="separator:a04f3b49689745b3e54f4f3dbc5caa79d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a32eea49ca5b1290b76f0fbd538c93182"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a32eea49ca5b1290b76f0fbd538c93182">setFrustum</a> (int vp, const <a class="el" href="class_q_v_r_frustum.html">QVRFrustum</a> f)</td></tr>
-<tr class="separator:a32eea49ca5b1290b76f0fbd538c93182"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac80230d57398cc2f0765a4adbef0b4ad"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#ac80230d57398cc2f0765a4adbef0b4ad">setViewMatrix</a> (int vp, const QMatrix4x4 &amp;vm)</td></tr>
-<tr class="separator:ac80230d57398cc2f0765a4adbef0b4ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a448477c02ae3a491b988f9b39be609eb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a448477c02ae3a491b988f9b39be609eb">serialize</a> (QDataStream &amp;ds) const </td></tr>
-<tr class="separator:a448477c02ae3a491b988f9b39be609eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ada10ad2841650240b39020e149983ddf"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#ada10ad2841650240b39020e149983ddf">deserialize</a> (QDataStream &amp;ds)</td></tr>
-<tr class="separator:ada10ad2841650240b39020e149983ddf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a4e842e6c6735428201b938dff71547c6"><td class="memItemLeft" align="right" valign="top">QDataStream &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a4e842e6c6735428201b938dff71547c6">operator&lt;&lt;</a> (QDataStream &amp;ds, const <a class="el" href="class_q_v_r_render_context.html">QVRRenderContext</a> &amp;rc)</td></tr>
+<tr class="separator:a4e842e6c6735428201b938dff71547c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a43d6e584e1a77480374003168883ef3a"><td class="memItemLeft" align="right" valign="top">QDataStream &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a43d6e584e1a77480374003168883ef3a">operator&gt;&gt;</a> (QDataStream &amp;ds, <a class="el" href="class_q_v_r_render_context.html">QVRRenderContext</a> &amp;rc)</td></tr>
+<tr class="separator:a43d6e584e1a77480374003168883ef3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Context for rendering a view. </p>
+<p>A render context provides information about a view into the virtual world.</p>
+<p>This information depends on the <em><a class="el" href="class_q_v_r_window.html" title="A Qt window on a screen and a window into the virtual world. ">QVRWindow</a></em> that the view is produced for and on the <em><a class="el" href="class_q_v_r_observer.html" title="Observer of the virtual world. ">QVRObserver</a></em> that observes this window.</p>
+<p>The render context is used in various places:</p><ul>
+<li>In <em><a class="el" href="class_q_v_r_app.html#ac497d29bb127c848af1a048f9a74cb60" title="Render the current frame. ">QVRApp::render()</a></em>, it provides the information necessary for the application to render the view.</li>
+<li>In the event handling functions of <em><a class="el" href="class_q_v_r_app.html" title="QVR application interface. ">QVRApp</a></em>, it provides information about the view displayed in the window that generated the event.</li>
+<li>In the output plugin function <em><a class="el" href="outputplugin_8hpp.html#a014e82f9b613115213b617206a30c0d6" title="Output the rendered content. ">QVROutputPlugin()</a></em>, the context provides information useful for a plugin to decide how to process the view before displaying it. </li>
+</ul>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="af624784863a772c4a0ddb85bf4981588"></a>
 <div class="memitem">
 <div class="memproto">
@@ -160,25 +172,11 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-</div>
-</div>
-<h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="ada10ad2841650240b39020e149983ddf"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void QVRRenderContext::deserialize </td>
-          <td>(</td>
-          <td class="paramtype">QDataStream &amp;&#160;</td>
-          <td class="paramname"><em>ds</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
+<p>Constructor. </p>
 
 </div>
 </div>
+<h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="ac36885cc0d176ab4905c5379b33c901d"></a>
 <div class="memitem">
 <div class="memproto">
@@ -200,6 +198,8 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Returns the eye for rendering pass <em>viewPass</em>. </p>
 
 </div>
 </div>
@@ -225,6 +225,8 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Returns the eye matrix for rendering pass <em>viewPass</em>. </p>
+
 </div>
 </div>
 <a class="anchor" id="a53ea20c260ceb593ade96fda18425942"></a>
@@ -249,6 +251,8 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Returns the frustum for rendering pass <em>viewPass</em>. </p>
+
 </div>
 </div>
 <a class="anchor" id="a925097e422d0dd98f63ea884d196cb83"></a>
@@ -271,6 +275,8 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Returns the output mode of the window displaying the view. </p>
 
 </div>
 </div>
@@ -295,9 +301,11 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Returns the index of the process that the window displaying the view belongs to. </p>
+
 </div>
 </div>
-<a class="anchor" id="a3ed8d154df2df153faa5d730be49e8b0"></a>
+<a class="anchor" id="a7e258b7b9829ccf4031471d8cc27ada3"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -305,7 +313,7 @@ Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">QRect QVRRenderContext::screenRect </td>
+          <td class="memname">QRect QVRRenderContext::screenGeometry </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -317,6 +325,8 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Returns the pixel-based geometry of the Qt screen that the window is displayed on (from <em>QScreen::geometry()</em>). </p>
 
 </div>
 </div>
@@ -341,6 +351,8 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Returns the virtual world coordinates of the bottom left corner of the screen wall. </p>
+
 </div>
 </div>
 <a class="anchor" id="a032f92578e7789e492c3186f5a3ad9c6"></a>
@@ -363,6 +375,8 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Returns the virtual world coordinates of the bottom right corner of the screen wall. </p>
 
 </div>
 </div>
@@ -387,275 +401,7 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-</div>
-</div>
-<a class="anchor" id="a448477c02ae3a491b988f9b39be609eb"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void QVRRenderContext::serialize </td>
-          <td>(</td>
-          <td class="paramtype">QDataStream &amp;&#160;</td>
-          <td class="paramname"><em>ds</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="a04f3b49689745b3e54f4f3dbc5caa79d"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void QVRRenderContext::setEyeMatrix </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>vp</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const QMatrix4x4 &amp;&#160;</td>
-          <td class="paramname"><em>em</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="a32eea49ca5b1290b76f0fbd538c93182"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void QVRRenderContext::setFrustum </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>vp</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="class_q_v_r_frustum.html">QVRFrustum</a>&#160;</td>
-          <td class="paramname"><em>f</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="aaf4a7f5950d7da7cb09c3a975dae2a30"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void QVRRenderContext::setOutputConf </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="config_8hpp.html#ad8cb348ba654a1504085369172146314">QVROutputMode</a>&#160;</td>
-          <td class="paramname"><em>om</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="a9f20783e8162dcd696472c6705a3f2f6"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void QVRRenderContext::setProcessIndex </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>pi</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="a60ade79a0f01dafd9d9f9760488371a2"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void QVRRenderContext::setScreenRect </td>
-          <td>(</td>
-          <td class="paramtype">const QRect &amp;&#160;</td>
-          <td class="paramname"><em>r</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="a16a959e9b954343419ecfa4e62fb8f22"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void QVRRenderContext::setScreenWall </td>
-          <td>(</td>
-          <td class="paramtype">const QVector3D &amp;&#160;</td>
-          <td class="paramname"><em>bl</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const QVector3D &amp;&#160;</td>
-          <td class="paramname"><em>br</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const QVector3D &amp;&#160;</td>
-          <td class="paramname"><em>tl</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="ac80230d57398cc2f0765a4adbef0b4ad"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void QVRRenderContext::setViewMatrix </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>vp</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const QMatrix4x4 &amp;&#160;</td>
-          <td class="paramname"><em>vm</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="aba8341e82deba6692a6c6af4199c2ccb"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void QVRRenderContext::setWindowIndex </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>wi</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="a52d07e913c019724493d0198bba98404"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void QVRRenderContext::setWindowRect </td>
-          <td>(</td>
-          <td class="paramtype">const QRect &amp;&#160;</td>
-          <td class="paramname"><em>r</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
+<p>Returns the virtual world coordinates of the top left corner of the screen wall. </p>
 
 </div>
 </div>
@@ -681,6 +427,8 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Returns the view matrix for rendering pass <em>viewPass</em>. </p>
+
 </div>
 </div>
 <a class="anchor" id="afd9a688590fe9da7b0a304c1362ad821"></a>
@@ -703,6 +451,33 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Returns the number of rendering passes necessary to produce the view. </p>
+
+</div>
+</div>
+<a class="anchor" id="a6bad4bf1d9e5b6a3de4b8419416bed87"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">QRect QVRRenderContext::windowGeometry </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the pixel-based geometry of window on the Qt display screen (from <em>QWindow::geometry()</em>). </p>
 
 </div>
 </div>
@@ -727,9 +502,12 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Returns the index of the window displaying the view, relative to the process it belongs to. </p>
+
 </div>
 </div>
-<a class="anchor" id="aa0522145e21f265fdb55dc722a493029"></a>
+<h2 class="groupheader">Friends And Related Function Documentation</h2>
+<a class="anchor" id="a4e842e6c6735428201b938dff71547c6"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -737,15 +515,60 @@ Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">QRect QVRRenderContext::windowRect </td>
+          <td class="memname">QDataStream&amp; operator&lt;&lt; </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
+          <td class="paramtype">QDataStream &amp;&#160;</td>
+          <td class="paramname"><em>ds</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="class_q_v_r_render_context.html">QVRRenderContext</a> &amp;&#160;</td>
+          <td class="paramname"><em>rc</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a43d6e584e1a77480374003168883ef3a"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">QDataStream&amp; operator&gt;&gt; </td>
+          <td>(</td>
+          <td class="paramtype">QDataStream &amp;&#160;</td>
+          <td class="paramname"><em>ds</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_q_v_r_render_context.html">QVRRenderContext</a> &amp;&#160;</td>
+          <td class="paramname"><em>rc</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
