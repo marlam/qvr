@@ -60,7 +60,7 @@ private:
 
     // functions for the master to manage slave processes
     bool launch(const QString& configFilename, QVRLogLevel logLevel, int processIndex,
-            const QStringList& appArgs);
+            bool syncToVblank, const QStringList& appArgs);
     bool exit();
 
     // communication functions to be called by the master to apply to slave processes

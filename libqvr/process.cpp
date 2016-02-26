@@ -76,7 +76,7 @@ const QVRWindowConfig& QVRProcess::windowConfig(int windowIndex) const
 }
 
 bool QVRProcess::launch(const QString& configFilename, QVRLogLevel logLevel, int processIndex,
-        const QStringList& appArgs)
+        bool syncToVblank, const QStringList& appArgs)
 {
     QString prg = QCoreApplication::applicationFilePath();
     QStringList args;
@@ -93,6 +93,7 @@ bool QVRProcess::launch(const QString& configFilename, QVRLogLevel logLevel, int
     args << QString("--qvr-wd=%1").arg(QDir::currentPath());
     args << QString("--qvr-config=%1").arg(configFilename);
     args << QString("--qvr-process=%1").arg(processIndex);
+    args << QString("--qvr-sync-to-vblank=%1").arg(syncToVblank ? 1 : 0);
     args << appArgs;
     if (!processConf.launcher().isEmpty()) {
         QStringList ll = processConf.launcher().split(' ', QString::SkipEmptyParts);

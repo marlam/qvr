@@ -255,6 +255,7 @@ private:
     QVRLogLevel _logLevel;
     QString _workingDir;
     int _processIndex;
+    bool _syncToVblank;
     unsigned int _fpsMsecs;
     unsigned int _fpsCounter;
     QString _configFilename;
@@ -298,11 +299,13 @@ public:
      *
      * The following command line options are intereted by the QVR manager
      * and removed from \a argc and \a argv:
-     * - --qvr-config=\<config.qvr\>
+     * - \-\-qvr-config=\<config.qvr\><br>
      *   Specify a QVR configuration file.
-     * - --qvr-log-level=\<level\>
+     * - \-\-qvr-log-level=\<level\><br>
      *   See \a QVRLogLevel.
-     * - --qvr-fps=\<n\>
+     * - \-\-qvr-sync-to-vblank=<0|1><br>
+     *   Disable (0) or enable (1) sync-to-vblank. Default is enable.
+     * - \-\-qvr-fps=\<n\><br>
      *   Make QVR report frames per second measurements every n milliseconds.
      */
     QVRManager(int& argc, char* argv[]);

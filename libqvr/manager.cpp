@@ -80,6 +80,7 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
     _logLevel(QVR_Log_Level_Warning),
     _workingDir(),
     _processIndex(0),
+    _syncToVblank(true),
     _fpsMsecs(0),
     _fpsCounter(0),
     _configFilename(),
@@ -127,6 +128,19 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
     for (int i = 1; i < argc; i++) {
         if (strncmp(argv[i], "--qvr-process=", 14) == 0) {
             _processIndex = ::atoi(argv[i] + 14);
+            removeArg(argc, argv, i);
+            break;
+        }
+    }
+
+    // set sync-to-vblank
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--qvr-sync-to-vblank") == 0 && i < argc - 1) {
+            _syncToVblank = ::atoi(argv[i + 1]);
+            removeTwoArgs(argc, argv, i);
+            break;
+        } else if (strncmp(argv[i], "--qvr-sync-to-vblank=", 21) == 0) {
+            _syncToVblank = ::atoi(argv[i] + 21);
             removeArg(argc, argv, i);
             break;
         }
@@ -244,7 +258,7 @@ bool QVRManager::init(QVRApp* app)
                 QVRProcess* process = new QVRProcess(p);
                 _slaveProcesses.append(process);
                 QVR_INFO("launching slave process %s (index %d) ...", qPrintable(process->id()), p);
-                if (!process->launch(_configFilename, _logLevel, p, _appArgs))
+                if (!process->launch(_configFilename, _logLevel, p, _syncToVblank, _appArgs))
                     return false;
                 QVR_INFO("... initializing with %d bytes of static application data ...", serializedStatData.size());
                 process->sendCmdInit(serializedStatData);
@@ -277,6 +291,9 @@ bool QVRManager::init(QVRApp* app)
     }
 
     // Create windows
+    QSurfaceFormat format = QSurfaceFormat::defaultFormat();
+    format.setSwapInterval(_syncToVblank ? 1 : 0);
+    QSurfaceFormat::setDefaultFormat(format);
     QVR_INFO("process %s (index %d) creating %d windows",
             qPrintable(processConfig().id()), _processIndex,
             processConfig().windowConfigs().size());
