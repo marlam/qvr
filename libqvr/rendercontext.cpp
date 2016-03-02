@@ -31,12 +31,14 @@ QVRRenderContext::QVRRenderContext() :
     _windowIndex(-1),
     _windowGeometry(),
     _screenGeometry(),
+    _navigationPosition(0.0f, 0.0f, 0.0f),
+    _navigationOrientation(0.0f, 0.0f, 0.0f, 0.0f),
     _screenWall { QVector3D(), QVector3D(), QVector3D() },
     _outputMode(QVR_Output_Center),
     _viewPasses(0),
     _eye { QVR_Eye_Center, QVR_Eye_Center },
-    _eyeMatrix { QMatrix4x4(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f),
-                 QMatrix4x4(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f) },
+    _trackingPosition { QVector3D(0.0f, 0.0f, 0.0f), QVector3D(0.0f, 0.0f, 0.0f) },
+    _trackingOrientation { QQuaternion(0.0f, 0.0f, 0.0f, 0.0f), QQuaternion(0.0f, 0.0f, 0.0f, 0.0f) },
     _frustum { { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f } },
     _viewMatrix { QMatrix4x4(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f),
                   QMatrix4x4(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f) }
@@ -96,11 +98,13 @@ QDataStream &operator<<(QDataStream& ds, const QVRRenderContext& rc)
 {
     ds << rc._processIndex << rc._windowIndex
         << rc._windowGeometry << rc._screenGeometry
+        << rc._navigationPosition << rc._navigationOrientation
         << rc._screenWall[0] << rc._screenWall[1] << rc._screenWall[2]
         << static_cast<int>(rc._outputMode)
         << rc._viewPasses
         << static_cast<int>(rc._eye[0]) << static_cast<int>(rc._eye[1])
-        << rc._eyeMatrix[0] << rc._eyeMatrix[1]
+        << rc._trackingPosition[0] << rc._trackingPosition[1]
+        << rc._trackingOrientation[0] << rc._trackingOrientation[1]
         << rc._frustum[0] << rc._frustum[1]
         << rc._viewMatrix[0] << rc._viewMatrix[1];
     return ds;
@@ -111,11 +115,13 @@ QDataStream &operator>>(QDataStream& ds, QVRRenderContext& rc)
     int om, e0, e1;
     ds >> rc._processIndex >> rc._windowIndex
         >> rc._windowGeometry >> rc._screenGeometry
+        >> rc._navigationPosition >> rc._navigationOrientation
         >> rc._screenWall[0] >> rc._screenWall[1] >> rc._screenWall[2]
         >> om
         >> rc._viewPasses
         >> e0 >> e1
-        >> rc._eyeMatrix[0] >> rc._eyeMatrix[1]
+        >> rc._trackingPosition[0] >> rc._trackingPosition[1]
+        >> rc._trackingOrientation[0] >> rc._trackingOrientation[1]
         >> rc._frustum[0] >> rc._frustum[1]
         >> rc._viewMatrix[0] >> rc._viewMatrix[1];
     rc._outputMode = static_cast<QVROutputMode>(om);

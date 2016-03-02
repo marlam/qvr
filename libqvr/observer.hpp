@@ -24,10 +24,14 @@
 #ifndef QVR_OBSERVER_HPP
 #define QVR_OBSERVER_HPP
 
+#include <QVector3D>
 #include <QMatrix4x4>
+#include <QQuaternion>
 
 #ifdef HAVE_VRPN
 # include <vrpn_Tracker.h>
+# include <vrpn_Analog.h>
+# include <vrpn_Button.h>
 #endif
 
 #include "config.hpp"
@@ -37,11 +41,24 @@ class QDataStream;
 /*!
  * \brief Observer of the virtual world
  *
+ * Imagine your Virtual Reality setup is the cockpit of an UFO flying through
+ * the virtual world. Inside the cockpit is a UFO crew member. This crew member
+ * looks through the cockpit windows onto the virtual world. In QVR, this means
+ * one or more windows (\a QVRWindow) are viewed by a \a QVRObserver.
+ *
+ * What a crew member will see in the cockpit windows depends on two things:
+ * - The pose of the UFO in the virtual world. In QVR, this means an observer
+ *   can navigate: a navigation transformation matrix will be applied to all
+ *   the windows he views.
+ * - The pose of the crew member, or more specifically the crew member's eyes,
+ *   inside the UFO cockpit. In QVR, this is the tracking of an observer inside
+ *   a restricted space. This determines the eye transformation matrices, which
+ *   are relative to the navigation matrix.
+ *
  * An observer typically has two eyes (left and right). This class additionally
  * handles an imaginary third eye at the center between left and right eye.
- *
- * Each eye has a position and an orientation in the virtual world. Both are
- * represented together in a transformation matrix.
+ * Each eye has a pose in the virtual world relative to the navigation pose.
+ * All poses are represented as transformation matrices.
  *
  * A \a QVRWindow provides a view of the virtual world for exactly one observer.
  * An observer can view multiple windows, e.g. in multi-projector setups.
@@ -52,10 +69,34 @@ class QVRObserver
 {
 private:
     int _index;
-    QMatrix4x4 _matrix[3];
+    QVector3D _navigationPosition;
+    QQuaternion _navigationOrientation;
+    float _eyeDistance;
+    QVector3D _trackingPosition[3];
+    QQuaternion _trackingOrientation[3];
 #ifdef HAVE_VRPN
-    vrpn_Tracker_Remote* _vrpnTracker;
+    // Navigation
+    vrpn_Tracker_Remote* _vrpnNavigationTrackerRemote;
+    vrpn_Analog_Remote* _vrpnNavigationAnalogRemote;
+    vrpn_Button_Remote* _vrpnNavigationButtonRemote;
+    int _vrpnNavigationAnalog[2];
+    int _vrpnNavigationButton[4];
+    QQuaternion _vrpnNavigationOrientation;
+    float _vrpnNavigationAnalogState[2];
+    bool _vrpnNavigationButtonState[4];
+    QVector3D _vrpnNavigationPos;
+    float _vrpnNavigationRotY;
+    // Tracking
+    vrpn_Tracker_Remote* _vrpnTrackingTrackerRemote;
 #endif
+
+    /*! \cond
+     * Used for VRPN-based navigation. The user does not need to know about these. */
+    friend void QVRVrpnNavigationTrackerChangeHandler(void* userdata, const vrpn_TRACKERCB info);
+    friend void QVRVrpnNavigationAnalogChangeHandler(void* userdata, const vrpn_ANALOGCB info);
+    friend void QVRVrpnNavigationButtonChangeHandler(void* userdata, const vrpn_BUTTONCB info);
+    /*! \endcond */
+
     friend QDataStream &operator<<(QDataStream& ds, const QVRObserver& o);
     friend QDataStream &operator>>(QDataStream& ds, QVRObserver& o);
 
@@ -74,47 +115,112 @@ public:
     /*! \brief Returns the configuration. */
     const QVRObserverConfig& config() const;
 
-    /*! \brief Returns the transformation matrix of \a eye. */
-    const QMatrix4x4& eyeMatrix(QVREye eye) const
+    /*! \brief Returns the navigation position. */
+    const QVector3D& navigationPosition() const
     {
-        return _matrix[eye];
+        return _navigationPosition;
     }
 
-    /*! \brief Returns the position of \a eye (extracted from the transformation matrix). */
-    QVector3D eyePosition(QVREye eye) const
+    /*! \brief Returns the navigation orientation. */
+    const QQuaternion& navigationOrientation() const
     {
-        return eyeMatrix(eye).column(3).toVector3D();
+        return _navigationOrientation;
+    }
+
+    /*! \brief Returns the navigation position and orientation as a matrix. */
+    QMatrix4x4 navigationMatrix() const
+    {
+        QMatrix4x4 m;
+        m.translate(navigationPosition());
+        m.rotate(navigationOrientation());
+        return m;
+    }
+
+    /*! \brief Returns the eye distance (interpupillary distance). */
+    float eyeDistance() const
+    {
+        return _eyeDistance;
+    }
+
+    /*! \brief Returns the tracking position of \a eye. */
+    const QVector3D& trackingPosition(QVREye eye = QVR_Eye_Center) const
+    {
+        return _trackingPosition[eye];
+    }
+
+    /*! \brief Returns the tracking orientation of \a eye. */
+    const QQuaternion& trackingOrientation(QVREye eye = QVR_Eye_Center) const
+    {
+        return _trackingOrientation[eye];
+    }
+
+    /*! \brief Returns the tracking position and orientation of \a eye as a matrix. */
+    QMatrix4x4 trackingMatrix(QVREye eye = QVR_Eye_Center) const
+    {
+        QMatrix4x4 m;
+        m.translate(trackingPosition(eye));
+        m.rotate(trackingOrientation(eye));
+        return m;
     }
 
     /*!
-     * \brief Sets the transformation matrix for all three eyes.
-     * @param centerMatrix      Transformation matrix for the center eye
-     *
-     * The matrices for the left and right eye are computed from \a centerMatrix
-     * and the eye distance. See QObserverConfig::eyeDistance().
+     * \brief Sets the navigation position and orientation.
+     * @param pos      Navigation position
+     * @param rot      Navigation orientation
      *
      * This function is called internally by QVR except for custom observers,
      * which may be modified from \a QVRApp::updateObservers().
      */
-    void setEyeMatrices(const QMatrix4x4& centerMatrix);
+    void setNavigation(const QVector3D& pos, const QQuaternion& rot)
+    {
+        _navigationPosition = pos;
+        _navigationOrientation = rot;
+    }
+
+    /*! \brief Sets the eye distance (interpupillary distance) to \a d.
+     *
+     * Note that this only takes effect once \a setTracking() with arguments
+     * for the center eye is called.
+     *
+     * A call to \a setTracking() with arguments for left and right eye will
+     * set a new value for the eye distance.
+     */
+    void setEyeDistance(float d)
+    {
+        _eyeDistance = d;
+    }
 
     /*!
-     * \brief Sets the transformation matrix for all three eyes.
-     * @param leftMatrix        Transformation matrix for the left eye
-     * @param rightMatrix       Transformation matrix for the right eye
+     * \brief Sets the tracking position and orientation for all three eyes.
+     * @param pos       Position of the center eye
+     * @param rot       Orientation of the center eye
      *
-     * The matrix for the center eye is computed from \a leftMatrix and \a rightMatrix.
-     * For this purpose, it is assumed that both left and right eye have the same
-     * orientation and only their position differs.
+     * The position and orientation for the left and right eye are computed
+     * using \a eyeDistance().
      *
      * This function is called internally by QVR except for custom observers,
      * which may be modified from \a QVRApp::updateObservers().
      */
-    void setEyeMatrices(const QMatrix4x4& leftMatrix, const QMatrix4x4& rightMatrix);
+    void setTracking(const QVector3D& pos, const QQuaternion& rot);
+
+    /*!
+     * \brief Sets the tracking position and orientation for all three eyes.
+     * @param posLeft   Position of the left eye
+     * @param rotLeft   Orientation of the left eye
+     * @param posRight  Position of the right eye
+     * @param rotRight  Orientation of the right eye
+     *
+     * The position and orientation for the center eye and the eye distance is computed
+     * from the information for the left and right eyes.
+     *
+     * This function is called internally by QVR except for custom observers,
+     * which may be modified from \a QVRApp::updateObservers().
+     */
+    void setTracking(const QVector3D& posLeft, const QQuaternion& rotLeft, const QVector3D& posRight, const QQuaternion& rotRight);
 
     /*! \cond
-     * This function is only used internally. It updates the eye matrices for
-     * certain types of observers. Note that some types of observers are updated
+     * This function is only used internally. It updates the navigation and/or tracking
+     * matrices for certain types of observers. Note that some types of observers are updated
      * from QVRManager or QVRWindow instead. */
     void update();
     /*! \endcond */

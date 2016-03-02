@@ -25,7 +25,7 @@
 #define QVR_CONFIG_HPP
 
 #include <QString>
-#include <QMatrix4x4>
+#include <QQuaternion>
 #include <QPoint>
 #include <QSize>
 #include <QRect>
@@ -33,11 +33,19 @@
 
 
 /*!
- * \brief Observer type.
+ * \brief Observer navigation type.
  */
 typedef enum {
-    /*! \brief An observer that never moves. */
-    QVR_Observer_Stationary,
+    /*! \brief An observer that never navigates anywhere. */
+    QVR_Navigation_Stationary,
+    /*! \brief An observer that navigates via a <a href="https://github.com/vrpn/vrpn/wiki">VRPN</a> wand.
+     *
+     * A VRPN wand navigates in the x/z plane in the direction in which it points.
+     * Movement is activated with analog buttons. Two additional digital buttons
+     * allow movement along the y axis.
+     * Use the \a navigationParameters() property to configure the VRPN wand.
+     */
+    QVR_Navigation_VRPN,
     /*! \brief An observer with keyboard and mouse navigation (WASD+QE and lookaround).
      *
      * WASDQE observers navigate via a common keyboard and mouse mapping: the keys
@@ -45,18 +53,27 @@ typedef enum {
      * keys QE move up and down. Mouse movements for looking left/right/up/down are
      * activated by clicking in a window and deactivated by pressing ESC.
      */
-    QVR_Observer_WASDQE,
-    /*! \brief An observer that is attached to a <a href="https://github.com/vrpn/vrpn/wiki">VRPN</a> tracker.
+    QVR_Navigation_WASDQE,
+    /*! \brief An observer with navigation implemented by QVRApp::updateObservers(). */
+    QVR_Navigation_Custom
+} QVRNavigationType;
+
+/*!
+ * \brief Observer tracking type.
+ */
+typedef enum {
+    /*! \brief An observer that never moves. */
+    QVR_Tracking_Stationary,
+    /*! \brief An observer that is tracked via a <a href="https://github.com/vrpn/vrpn/wiki">VRPN</a> tracker.
      *
-     * VRPN observers are bound to a VRPN tracker that will determine their position
-     * and orientation. Use the \a parameters() property to configure the VRPN tracker.
+     * Use the \a trackingParameters() property to configure the VRPN tracker.
      */
-    QVR_Observer_VRPN,
+    QVR_Tracking_VRPN,
     /*! \brief An observer that wears the Oculus Rift head mounted display. */
-    QVR_Observer_Oculus,
+    QVR_Tracking_Oculus,
     /*! \brief An observer with tracking implemented by QVRApp::updateObservers(). */
-    QVR_Observer_Custom
-} QVRObserverType;
+    QVR_Tracking_Custom
+} QVRTrackingType;
 
 /*!
  * \brief Eye of an observer.
@@ -103,17 +120,21 @@ class QVRObserverConfig
 private:
     // Unique identification string
     QString _id;
-    // Type of observer. If stationary, the transformation matrix will be
-    // constant. Otherwise, it will be updated for each frame.
-    QVRObserverType _type;
-    // Parameters of observer, for observer types that need this.
-    QString _parameters;
-    // Distance between left and right eye
-    float _eyeDistance;
+    // Types and parameters for navigation and tracking
+    QVRNavigationType _navigationType;
+    QString _navigationParameters;
+    QVRTrackingType _trackingType;
+    QString _trackingParameters;
+    // Initial navigation position and orientation
+    QVector3D _initialNavigationPosition;
+    QVector3D _initialNavigationForwardDirection;
+    QVector3D _initialNavigationUpDirection;
+    // Initial distance between left and right eye
+    float _initialEyeDistance;
     // Initial position and orientation for the center eye
-    QVector3D _initialPosition;
-    QVector3D _initialForwardDirection;
-    QVector3D _initialUpDirection;
+    QVector3D _initialTrackingPosition;
+    QVector3D _initialTrackingForwardDirection;
+    QVector3D _initialTrackingUpDirection;
 
     friend class QVRConfig;
 
@@ -129,34 +150,63 @@ public:
     /*! \brief Returns the unique id. */
     const QString& id() const { return _id; }
 
-    /*! \brief Returns the type. */
-    QVRObserverType type() const { return _type; }
-    
-    /*! \brief Returns parameters (may be empty).
+    /*! \brief Returns the navigation type. */
+    QVRNavigationType navigationType() const { return _navigationType; }
+
+    /*! \brief Returns navigation parameters (may be empty).
      *
-     * Specific observer types may require parameters.
+     * Specific navigation types may require parameters.
      *
-     * For VRPN observers, this is currently a string of the form <code>\<name\> [\<sensor\>]</code>,
-     * where <code>\<name\></code> is the VRPN tracker name, e.g. Tracker0\@localhost,
-     * and <code>\<sensor\></code> is the sensor number to be used. 
-     * The sensor number can be omitted.
+     * For VRPN navigation, this is currently a string of the form
+     * `<name> <sensor> <analog0> <analog1> <digital0> <digital1> <digital2> <digital3>`
+     * where `<name>` is the VRPN tracker name, e.g. Tracker0\@localhost, `<sensor>`
+     * is the number of the sensor to be used (or -1 for all), `<analog0>` and `<analog1>`
+     * are the analog buttons corresponding to z and x axis movement, `<digital0>`
+     * and `<digital1>` are the digital buttons for y axis movement, and `<digital2>` and
+     * `<digital3>` are the digital buttons for rotations around the y axis.
      */
-    const QString& parameters() const { return _parameters; }
+    const QString& navigationParameters() const { return _navigationParameters; }
+
+    /*! \brief Returns the tracking type. */
+    QVRTrackingType trackingType() const { return _trackingType; }
+
+    /*! \brief Returns tracking parameters (may be empty).
+     *
+     * Specific tracking types may require parameters.
+     *
+     * For VRPN tracking, this is currently a string of the form
+     * `<name> <sensor>` where `<name>` is the VRPN tracker name, e.g.
+     * Tracker0\@localhost, and `<sensor>` is the number of the sensor to be used
+     * (or -1 for all).
+     */
+    const QString& trackingParameters() const { return _trackingParameters; }
+
+    /*! \brief Returns the initial navigation position. */
+    const QVector3D& initialNavigationPosition() const { return _initialNavigationPosition; }
+
+    /*! \brief Returns the initial navigation forward direction. */
+    const QVector3D& initialNavigationForwardDirection() const { return _initialNavigationForwardDirection; }
+
+    /*! \brief Returns the initial navigation upward direction. */
+    const QVector3D& initialNavigationUpDirection() const { return _initialNavigationUpDirection; }
+
+    /*! \brief Returns the initial navigation orientation, computed from forward and up direction. */
+    QQuaternion initialNavigationOrientation() const { return QQuaternion::fromDirection(-initialNavigationForwardDirection(), initialNavigationUpDirection()); }
 
     /*! \brief Returns the eye distance (interpupillary distance). */
-    float eyeDistance() const { return _eyeDistance; }
+    float initialEyeDistance() const { return _initialEyeDistance; }
 
-    /*! \brief Returns the initial position. */
-    const QVector3D& initialPosition() const { return _initialPosition; }
+    /*! \brief Returns the initial tracking position. */
+    const QVector3D& initialTrackingPosition() const { return _initialTrackingPosition; }
 
-    /*! \brief Returns the initial forward direction. */
-    const QVector3D& initialForwardDirection() const { return _initialForwardDirection; }
+    /*! \brief Returns the initial tracking forward direction. */
+    const QVector3D& initialTrackingForwardDirection() const { return _initialTrackingForwardDirection; }
 
-    /*! \brief Returns the initial upward direction. */
-    const QVector3D& initialUpDirection() const { return _initialUpDirection; }
+    /*! \brief Returns the initial tracking upward direction. */
+    const QVector3D& initialTrackingUpDirection() const { return _initialTrackingUpDirection; }
 
-    /*! \brief Returns the initial \a eye matrix. */
-    QMatrix4x4 initialEyeMatrix(QVREye eye) const;
+    /*! \brief Returns the initial tracking orientation, computed from forward and up direction. */
+    QQuaternion initialTrackingOrientation() const { return QQuaternion::fromDirection(-initialTrackingForwardDirection(), initialTrackingUpDirection()); }
 };
 
 /*!
@@ -191,7 +241,7 @@ private:
     QPoint _initialPosition;
     QSize _initialSize;
     // Virtual world geometry of the screen area covered by this window.
-    // This may change at runtime if the screen is fixed to the observer.
+    // This changes at runtime if the observer navigates.
     bool _screenIsFixedToObserver;
     QVector3D _screenCornerBottomLeft;
     QVector3D _screenCornerBottomRight;

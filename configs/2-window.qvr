@@ -1,5 +1,6 @@
 observer o0
-	type wasdqe
+	navigation wasdqe
+	tracking custom
 
 process master
 	window 0

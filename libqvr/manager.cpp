@@ -26,7 +26,6 @@
 #include <QDesktopWidget>
 #include <QApplication>
 #include <QTimer>
-#include <QQuaternion>
 
 #include "manager.hpp"
 #include "event.hpp"
@@ -222,11 +221,13 @@ bool QVRManager::init(QVRApp* app)
     _haveVrpnObservers = false;
     for (int o = 0; o < _config->observerConfigs().size(); o++) {
         _observers.append(new QVRObserver(o));
-        if (_config->observerConfigs()[o].type() == QVR_Observer_Custom)
+        if (_config->observerConfigs()[o].navigationType() == QVR_Navigation_Custom
+                || _config->observerConfigs()[o].trackingType() == QVR_Tracking_Custom)
             _customObservers.append(_observers[o]);
-        if (_config->observerConfigs()[o].type() == QVR_Observer_WASDQE)
+        if (_config->observerConfigs()[o].navigationType() == QVR_Navigation_WASDQE)
             _haveWasdqeObservers = true;
-        if (_config->observerConfigs()[o].type() == QVR_Observer_VRPN)
+        if (_config->observerConfigs()[o].navigationType() == QVR_Navigation_VRPN
+                || _config->observerConfigs()[o].trackingType() == QVR_Tracking_VRPN)
             _haveVrpnObservers = true;
     }
     if (_haveWasdqeObservers) {
@@ -381,59 +382,43 @@ void QVRManager::masterLoop()
 
     for (int o = 0; o < _observers.size(); o++) {
         QVRObserver* obs = _observers[o];
-        if (obs->config().type() != QVR_Observer_Stationary) {
-            QVR_FIREHOSE("  ... updating observer %d", o);
-            switch (obs->config().type()) {
-            case QVR_Observer_Stationary:
-                // nothing to do
-                break;
-            case QVR_Observer_WASDQE:
-                if (_wasdqeIsPressed[0] || _wasdqeIsPressed[1] || _wasdqeIsPressed[2] || _wasdqeIsPressed[3]) {
-                    QMatrix4x4 viewerMatrix = obs->eyeMatrix(QVR_Eye_Center).inverted();
-                    QVector3D dir;
-                    if (_wasdqeIsPressed[0])
-                        dir = -viewerMatrix.row(2).toVector3D();
-                    else if (_wasdqeIsPressed[1])
-                        dir = -viewerMatrix.row(0).toVector3D();
-                    else if (_wasdqeIsPressed[2])
-                        dir = viewerMatrix.row(2).toVector3D();
-                    else if (_wasdqeIsPressed[3])
-                        dir = viewerMatrix.row(0).toVector3D();
-                    dir.setY(0.0f);
-                    dir.normalize();
-                    _wasdqePos += dir * 0.04f;
-                }
-                if (_wasdqeIsPressed[4] || _wasdqeIsPressed[5]) {
-                    QVector3D dir;
-                    if (_wasdqeIsPressed[4]) {
-                        dir = QVector3D(0.0f, +1.0f, 0.0f);
-                    } else if (_wasdqeIsPressed[5]) {
-                        dir = QVector3D(0.0f, -1.0f, 0.0f);
-                    }
-                    _wasdqePos += dir * 0.04f;
-                }
-                {
-                    QMatrix4x4 eyeMatrix = obs->config().initialEyeMatrix(QVR_Eye_Center);
-                    eyeMatrix.translate(_wasdqePos);
-                    eyeMatrix.rotate(QQuaternion::fromEulerAngles(_wasdqeVertAngle, _wasdqeHorzAngle, 0.0f));
-                    obs->setEyeMatrices(eyeMatrix);
-                }
-                break;
-            case QVR_Observer_VRPN:
-                obs->update();
-                break;
-            case QVR_Observer_Oculus:
-                for (int w = 0; w < _windows.size(); w++) {
-                    if (_windows[w]->observerId() == obs->id())
-                        _windows[w]->updateObserver();
-                }
-                break;
-            case QVR_Observer_Custom:
-                // We already got updated observer information after the
-                // last frame was rendered, via app->update() below.
-                // There is nothing more to do now.
-                break;
+        QVR_FIREHOSE("  ... updating observer %d", o);
+        if (obs->config().navigationType() == QVR_Navigation_WASDQE) {
+            const float speed = 0.04f; // TODO: make this configurable?
+            if (_wasdqeIsPressed[0] || _wasdqeIsPressed[1] || _wasdqeIsPressed[2] || _wasdqeIsPressed[3]) {
+                QQuaternion viewerRot = obs->trackingOrientation() * obs->navigationOrientation();
+                QVector3D dir;
+                if (_wasdqeIsPressed[0])
+                    dir = viewerRot * QVector3D(0.0f, 0.0f, -1.0f);
+                else if (_wasdqeIsPressed[1])
+                    dir = viewerRot * QVector3D(-1.0f, 0.0f, 0.0f);
+                else if (_wasdqeIsPressed[2])
+                    dir = viewerRot * QVector3D(0.0f, 0.0f, +1.0f);
+                else if (_wasdqeIsPressed[3])
+                    dir = viewerRot * QVector3D(+1.0f, 0.0f, 0.0f);
+                dir.setY(0.0f);
+                dir.normalize();
+                _wasdqePos += speed * dir;
             }
+            if (_wasdqeIsPressed[4]) {
+                _wasdqePos += speed * QVector3D(0.0f, +1.0f, 0.0f);
+            }
+            if (_wasdqeIsPressed[5]) {
+                _wasdqePos += speed * QVector3D(0.0f, -1.0f, 0.0f);
+            }
+            obs->setNavigation(_wasdqePos + obs->config().initialNavigationPosition(),
+                    QQuaternion::fromEulerAngles(_wasdqeVertAngle, _wasdqeHorzAngle, 0.0f)
+                    * obs->config().initialNavigationOrientation());
+        }
+        if (obs->config().trackingType() == QVR_Tracking_Oculus) {
+            for (int w = 0; w < _windows.size(); w++) {
+                if (_windows[w]->observerId() == obs->id())
+                    _windows[w]->updateObserver();
+            }
+        }
+        if (obs->config().navigationType() == QVR_Navigation_VRPN
+                || obs->config().trackingType() == QVR_Tracking_VRPN) {
+            obs->update();
         }
     }
 
@@ -450,7 +435,8 @@ void QVRManager::masterLoop()
         }
         for (int o = 0; o < _observers.size(); o++) {
             QVRObserver* obs = _observers[o];
-            if (obs->config().type() != QVR_Observer_Stationary) {
+            if (obs->config().navigationType() != QVR_Navigation_Stationary
+                    || obs->config().trackingType() != QVR_Tracking_Stationary) {
                 QByteArray serializedObserver;
                 QDataStream serializationDataStream(&serializedObserver, QIODevice::WriteOnly);
                 serializationDataStream << (*_observers[o]);
@@ -717,7 +703,7 @@ void QVRManager::processEventQueue()
         eventQueue->dequeue();
         if (_haveWasdqeObservers
                 && observerConfig(windowConfig(e.context.processIndex(), e.context.windowIndex())
-                    .observerIndex()).type() == QVR_Observer_WASDQE) {
+                    .observerIndex()).navigationType() == QVR_Navigation_WASDQE) {
             bool consumed = false;
             if (e.type == QVR_Event_KeyPress) {
                 switch (e.keyEvent.key()) {

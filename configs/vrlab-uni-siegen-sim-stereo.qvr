@@ -1,8 +1,9 @@
 observer default
-	type wasdqe
-	position 0 1.78 0
-	up 0 1 0
-	forward 0 0 -1
+	navigation wasdqe
+	tracking custom
+	tracking_position 0 1.78 0
+	tracking_up 0 1 0
+	tracking_forward 0 0 -1
 
 process master
 	window wall1

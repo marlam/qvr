@@ -1,6 +1,6 @@
 observer o0
-	type vrpn
-	parameters Tracker0@localhost
+	navigation vrpn Tracker1@localhost 0 0 1 0 1 2 3
+	tracking vrpn Tracker0@localhost 0
 
 process master
 	window 0

@@ -1,11 +1,16 @@
 # for qvr-vncviewer, use --cylinder 0,1.55,0,0,1,0,2.4912,0,56.145,43.6
 
 observer default
-	type vrpn
-	parameters DTrack@localhost 0
-	position 0 1.78 0
-	up 0 1 0
-	forward 0 0 -1
+	# We use the glasses orientation to steer navigation (id 0).
+	# If you want to use Flystick orientation instead, use id 14.
+	navigation vrpn DTrack@localhost 0 1 0 4 1 3 2
+	navigation_position 0 0 0
+	navigation_up       0 1 0
+	navigation_forward  0 0 -1
+	tracking vrpn DTrack@localhost 0
+	tracking_position 0 1.78 0
+	tracking_up       0 1 0
+	tracking_forward  0 0 -1
 
 process x-display-1
 	#display :1

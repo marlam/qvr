@@ -1,5 +1,6 @@
 observer default
-	type wasdqe
+	navigation wasdqe
+	tracking custom
 
 process master
 	window wall1

@@ -82,7 +82,6 @@ private:
     void* _hmdHandle;
     float _hmdLRBTTan[4][2];
     float _hmdToEyeViewOffset[3][2];
-    QMatrix4x4 _hmdInitialObserverMatrix;
 
     bool isMaster() const;
     void screenWall(QVector3D& cornerBottomLeft, QVector3D& cornerBottomRight, QVector3D& cornerTopLeft);

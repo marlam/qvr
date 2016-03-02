@@ -1,8 +1,10 @@
 observer o0
-	type stationary
+	navigation stationary
+	tracking stationary
 
 observer o1
-	type wasdqe
+	navigation wasdqe
+	tracking custom
 
 process master
 	window 0

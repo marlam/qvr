@@ -4,7 +4,8 @@
 # small control window on the main screen :0.0.
 
 observer oculus
-	type oculus
+	navigation wasdqe
+	tracking oculus
 
 process master
 	window oculus

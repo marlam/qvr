@@ -27,6 +27,7 @@
 #include <QRect>
 #include <QVector3D>
 #include <QMatrix4x4>
+#include <QQuaternion>
 
 #include "config.hpp"
 #include "frustum.hpp"
@@ -57,11 +58,14 @@ private:
     int _windowIndex;
     QRect _windowGeometry;
     QRect _screenGeometry;
+    QVector3D _navigationPosition;
+    QQuaternion _navigationOrientation;
     QVector3D _screenWall[3];
     QVROutputMode _outputMode;
     int _viewPasses;
     QVREye _eye[2];
-    QMatrix4x4 _eyeMatrix[2];
+    QVector3D _trackingPosition[2];
+    QQuaternion _trackingOrientation[2];
     QVRFrustum _frustum[2];
     QMatrix4x4 _viewMatrix[2];
 
@@ -77,9 +81,15 @@ public:
     /*! \brief Returns the index of the window displaying the view, relative to the process it belongs to. */
     int windowIndex() const { return _windowIndex; }
     /*! \brief Returns the pixel-based geometry of window on the Qt display screen (from \a QWindow::geometry()). */
-    QRect windowGeometry() const { return _windowGeometry; }
+    const QRect& windowGeometry() const { return _windowGeometry; }
     /*! \brief Returns the pixel-based geometry of the Qt screen that the window is displayed on (from \a QScreen::geometry()). */
-    QRect screenGeometry() const { return _screenGeometry; }
+    const QRect& screenGeometry() const { return _screenGeometry; }
+    /*! \brief Returns the observer navigation position. */
+    const QVector3D& navigationPosition() const { return _navigationPosition; }
+    /*! \brief Returns the observer navigation orientation. */
+    const QQuaternion& navigationOrientation() const { return _navigationOrientation; }
+    /*! \brief Returns the observer navigation matrix. */
+    QMatrix4x4 navigationMatrix() const { QMatrix4x4 m; m.translate(navigationPosition()); m.rotate(navigationOrientation()); return m; }
     /*! \brief Returns the virtual world coordinates of the bottom left corner of the screen wall. */
     QVector3D screenWallBottomLeft() const { return _screenWall[0]; }
     /*! \brief Returns the virtual world coordinates of the bottom right corner of the screen wall. */
@@ -92,8 +102,12 @@ public:
     int viewPasses() const { return _viewPasses; }
     /*! \brief Returns the eye for rendering pass \a viewPass. */
     QVREye eye(int viewPass) const { return _eye[viewPass]; }
-    /*! \brief Returns the eye matrix for rendering pass \a viewPass. */
-    const QMatrix4x4& eyeMatrix(int viewPass) const { return _eyeMatrix[viewPass]; }
+    /*! \brief Returns the observer tracking position for rendering pass \a viewPass. */
+    const QVector3D& trackingPosition(int viewPass) const { return _trackingPosition[viewPass]; }
+    /*! \brief Returns the observer tracking orientation for rendering pass \a viewPass. */
+    const QQuaternion& trackingOrientation(int viewPass) const { return _trackingOrientation[viewPass]; }
+    /*! \brief Returns the observer tracking matrix for rendering pass \a viewPass. */
+    QMatrix4x4 trackingMatrix(int viewPass) const { QMatrix4x4 m; m.translate(trackingPosition(viewPass)); m.rotate(trackingOrientation(viewPass)); return m; }
     /*! \brief Returns the frustum for rendering pass \a viewPass. */
     const QVRFrustum& frustum(int viewPass) const { return _frustum[viewPass]; }
     /*! \brief Returns the view matrix for rendering pass \a viewPass. */
@@ -106,10 +120,11 @@ public:
     void setWindowIndex(int wi) { _windowIndex = wi; }
     void setWindowGeometry(const QRect& r) { _windowGeometry = r; }
     void setScreenGeometry(const QRect& r) { _screenGeometry = r; }
+    void setNavigation(const QVector3D& p, const QQuaternion& r) { _navigationPosition = p; _navigationOrientation = r; }
     void setScreenWall(const QVector3D& bl, const QVector3D& br, const QVector3D& tl)
     { _screenWall[0] = bl; _screenWall[1]= br; _screenWall[2] = tl; }
     void setOutputConf(QVROutputMode om);
-    void setEyeMatrix(int vp, const QMatrix4x4& em) { _eyeMatrix[vp] = em; }
+    void setTracking(int vp, const QVector3D& p, const QQuaternion& r) { _trackingPosition[vp] = p; _trackingOrientation[vp] = r; }
     void setFrustum(int vp, const QVRFrustum f) { _frustum[vp] = f; }
     void setViewMatrix(int vp, const QMatrix4x4& vm) { _viewMatrix[vp] = vm; }
     /*! \endcond */

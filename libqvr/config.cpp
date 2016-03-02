@@ -38,26 +38,18 @@
 
 QVRObserverConfig::QVRObserverConfig() :
     _id(),
-    _type(QVR_Observer_Stationary),
-    _parameters(),
-    _eyeDistance(defaultEyeDistance),
-    _initialPosition(QVector3D(0.0f, defaultEyeHeight, 0.0f)),
-    _initialForwardDirection(QVector3D(0.0f, 0.0f, -1.0f)),
-    _initialUpDirection(QVector3D(0.0f, 1.0f, 0.0f))
+    _navigationType(QVR_Navigation_Stationary),
+    _navigationParameters(),
+    _trackingType(QVR_Tracking_Stationary),
+    _trackingParameters(),
+    _initialNavigationPosition(QVector3D(0.0f, 0.0f, 0.0f)),
+    _initialNavigationForwardDirection(QVector3D(0.0f, 0.0f, -1.0f)),
+    _initialNavigationUpDirection(QVector3D(0.0f, 1.0f, 0.0f)),
+    _initialEyeDistance(defaultEyeDistance),
+    _initialTrackingPosition(QVector3D(0.0f, defaultEyeHeight, 0.0f)),
+    _initialTrackingForwardDirection(QVector3D(0.0f, 0.0f, -1.0f)),
+    _initialTrackingUpDirection(QVector3D(0.0f, 1.0f, 0.0f))
 {
-}
-
-QMatrix4x4 QVRObserverConfig::initialEyeMatrix(QVREye eye) const
-{
-    QMatrix4x4 viewMatrix;
-    viewMatrix.lookAt(initialPosition(), initialPosition() + initialForwardDirection(), initialUpDirection());
-    QMatrix4x4 eyeMatrix = viewMatrix.inverted();
-    if (eye == QVR_Eye_Left) {
-        eyeMatrix.translate(-0.5f * eyeDistance(), 0.0f, 0.0f);
-    } else if (eye == QVR_Eye_Right) {
-        eyeMatrix.translate(+0.5f * eyeDistance(), 0.0f, 0.0f);
-    }
-    return eyeMatrix;
 }
 
 QVRWindowConfig::QVRWindowConfig() :
@@ -106,7 +98,8 @@ void QVRConfig::createDefault()
         // One observer
         QVRObserverConfig observerConf;
         observerConf._id = "default";
-        observerConf._type = QVR_Observer_Oculus;
+        observerConf._navigationType = QVR_Navigation_WASDQE;
+        observerConf._trackingType = QVR_Tracking_Oculus;
         // One window
         QVRWindowConfig windowConf;
         windowConf._id = "default";
@@ -123,7 +116,8 @@ void QVRConfig::createDefault()
         // One observer
         QVRObserverConfig observerConf;
         observerConf._id = "default";
-        observerConf._type = QVR_Observer_WASDQE;
+        observerConf._navigationType = QVR_Navigation_WASDQE;
+        observerConf._trackingType = QVR_Tracking_Custom;
         // One window
         QVRWindowConfig windowConf;
         windowConf._id = "default";
@@ -200,36 +194,58 @@ bool QVRConfig::readFromFile(const QString& filename)
                 continue;
             }
             // ... or observer properties.
-            if (cmd == "type" && arglist.length() == 1
-                    && (arg == "stationary" || arg == "wasdqe"
-                        || arg == "vrpn" || arg == "oculus" || arg == "custom")) {
-                observerConfig._type = (
-                        arg == "stationary" ? QVR_Observer_Stationary
-                        : arg == "wasdqe" ? QVR_Observer_WASDQE
-                        : arg == "vrpn" ? QVR_Observer_VRPN
-                        : arg == "oculus" ? QVR_Observer_Oculus
-                        : QVR_Observer_Custom);
+            if (cmd == "navigation" && arglist.length() >= 1
+                    && (arglist[0] == "stationary" || arglist[0] == "vrpn"
+                        || arglist[0] == "wasdqe" || arglist[0] == "custom")) {
+                observerConfig._navigationType = (
+                        arglist[0] == "stationary" ? QVR_Navigation_Stationary
+                        : arglist[0] == "vrpn" ? QVR_Navigation_VRPN
+                        : arglist[0] == "wasdqe" ? QVR_Navigation_WASDQE
+                        : QVR_Navigation_Custom);
+                observerConfig._navigationParameters = QStringList(arglist.mid(1)).join(' ');
                 continue;
-            } else if (cmd == "parameters") {
-                observerConfig._parameters = arg;
+            } else if (cmd == "tracking" && arglist.length() >= 1
+                    && (arglist[0] == "stationary" || arglist[0] == "vrpn"
+                        || arglist[0] == "oculus" || arglist[0] == "custom")) {
+                observerConfig._trackingType = (
+                        arglist[0] == "stationary" ? QVR_Tracking_Stationary
+                        : arglist[0] == "vrpn" ? QVR_Tracking_VRPN
+                        : arglist[0] == "oculus" ? QVR_Tracking_Oculus
+                        : QVR_Tracking_Custom);
+                observerConfig._trackingParameters = QStringList(arglist.mid(1)).join(' ');
+                continue;
+            } else if (cmd == "navigation_position" && arglist.size() == 3) {
+                observerConfig._initialNavigationPosition.setX(arglist[0].toFloat());
+                observerConfig._initialNavigationPosition.setY(arglist[1].toFloat());
+                observerConfig._initialNavigationPosition.setZ(arglist[2].toFloat());
+                continue;
+            } else if (cmd == "navigation_forward" && arglist.size() == 3) {
+                observerConfig._initialNavigationForwardDirection.setX(arglist[0].toFloat());
+                observerConfig._initialNavigationForwardDirection.setY(arglist[1].toFloat());
+                observerConfig._initialNavigationForwardDirection.setZ(arglist[2].toFloat());
+                continue;
+            } else if (cmd == "navigation_up" && arglist.size() == 3) {
+                observerConfig._initialNavigationUpDirection.setX(arglist[0].toFloat());
+                observerConfig._initialNavigationUpDirection.setY(arglist[1].toFloat());
+                observerConfig._initialNavigationUpDirection.setZ(arglist[2].toFloat());
                 continue;
             } else if (cmd == "eye_distance" && arglist.length() == 1) {
-                observerConfig._eyeDistance = arg.toFloat();
+                observerConfig._initialEyeDistance = arg.toFloat();
                 continue;
-            } else if (cmd == "position" && arglist.size() == 3) {
-                observerConfig._initialPosition.setX(arglist[0].toFloat());
-                observerConfig._initialPosition.setY(arglist[1].toFloat());
-                observerConfig._initialPosition.setZ(arglist[2].toFloat());
+            } else if (cmd == "tracking_position" && arglist.size() == 3) {
+                observerConfig._initialTrackingPosition.setX(arglist[0].toFloat());
+                observerConfig._initialTrackingPosition.setY(arglist[1].toFloat());
+                observerConfig._initialTrackingPosition.setZ(arglist[2].toFloat());
                 continue;
-            } else if (cmd == "forward" && arglist.size() == 3) {
-                observerConfig._initialForwardDirection.setX(arglist[0].toFloat());
-                observerConfig._initialForwardDirection.setY(arglist[1].toFloat());
-                observerConfig._initialForwardDirection.setZ(arglist[2].toFloat());
+            } else if (cmd == "tracking_forward" && arglist.size() == 3) {
+                observerConfig._initialTrackingForwardDirection.setX(arglist[0].toFloat());
+                observerConfig._initialTrackingForwardDirection.setY(arglist[1].toFloat());
+                observerConfig._initialTrackingForwardDirection.setZ(arglist[2].toFloat());
                 continue;
-            } else if (cmd == "up" && arglist.size() == 3) {
-                observerConfig._initialUpDirection.setX(arglist[0].toFloat());
-                observerConfig._initialUpDirection.setY(arglist[1].toFloat());
-                observerConfig._initialUpDirection.setZ(arglist[2].toFloat());
+            } else if (cmd == "tracking_up" && arglist.size() == 3) {
+                observerConfig._initialTrackingUpDirection.setX(arglist[0].toFloat());
+                observerConfig._initialTrackingUpDirection.setY(arglist[1].toFloat());
+                observerConfig._initialTrackingUpDirection.setZ(arglist[2].toFloat());
                 continue;
             }
         }
@@ -444,7 +460,7 @@ bool QVRConfig::readFromFile(const QString& filename)
                         qPrintable(filename), qPrintable(_processConfigs[i]._windowConfigs[j]._id));
                 return false;
             }
-            if (_observerConfigs[_processConfigs[i]._windowConfigs[j]._observerIndex]._type == QVR_Observer_Oculus
+            if (_observerConfigs[_processConfigs[i]._windowConfigs[j]._observerIndex]._trackingType == QVR_Tracking_Oculus
                     && _processConfigs[i]._windowConfigs[j]._outputMode != QVR_Output_Stereo_Oculus) {
                     QVR_FATAL("config file %s: process %s: "
                             "only windows with output stereo oculus can have observers of type oculus",

@@ -27,6 +27,7 @@
 #include <QMutex>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLContext>
+#include <QQuaternion>
 #include <QCoreApplication>
 #include <QApplication>
 #include <QDesktopWidget>
@@ -293,11 +294,6 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext,
             showFullScreen();
             QVR_DEBUG("    ... done");
             _hmdHandle = const_cast<void*>(reinterpret_cast<const void*>(oculusHmd));
-            _hmdInitialObserverMatrix.lookAt(
-                    _observer->config().initialPosition(),
-                    _observer->config().initialPosition() + _observer->config().initialForwardDirection(),
-                    _observer->config().initialUpDirection());
-            _hmdInitialObserverMatrix = _hmdInitialObserverMatrix.inverted();
 #else
             QVR_FATAL("Oculus HMD support not available in this version of QVR");
             _isValid = false;
@@ -395,24 +391,21 @@ void QVRWindow::waitForSwapBuffers()
     _thread->swapbuffersMutex.lock();
 }
 
-#ifdef HAVE_OCULUS
-static QMatrix4x4 poseToMatrix(const ovrPosef& pose)
-{
-    QQuaternion rot(pose.Orientation.w, pose.Orientation.x, pose.Orientation.y, pose.Orientation.z);
-    QVector3D trans(pose.Position.x, pose.Position.y, pose.Position.z);
-    QMatrix4x4 mat(rot.toRotationMatrix());
-    mat.translate(trans);
-    return mat;
-}
-#endif
-
 void QVRWindow::updateObserver()
 {
     if (config().outputMode() == QVR_Output_Stereo_Oculus) {
 #ifdef HAVE_OCULUS
-        _observer->setEyeMatrices(
-                _hmdInitialObserverMatrix * poseToMatrix(_thread->oculusRenderPoses[0]),
-                _hmdInitialObserverMatrix * poseToMatrix(_thread->oculusRenderPoses[1]));
+        const ovrPosef& L = _thread->oculusRenderPoses[0];
+        const ovrPosef& R = _thread->oculusRenderPoses[1];
+        _observer->setTracking(
+                QVector3D(L.Position.x, L.Position.y, L.Position.z)
+                + _observer->config().initialTrackingPosition(),
+                QQuaternion(L.Orientation.w, L.Orientation.x, L.Orientation.y, L.Orientation.z)
+                * _observer->config().initialTrackingOrientation(),
+                QVector3D(R.Position.x, R.Position.y, R.Position.z)
+                + _observer->config().initialTrackingPosition(),
+                QQuaternion(R.Orientation.w, R.Orientation.x, R.Orientation.y, R.Orientation.z)
+                * _observer->config().initialTrackingOrientation());
 #endif
     }
 }
@@ -465,62 +458,6 @@ const QString& QVRWindow::observerId() const
 const QVRObserverConfig& QVRWindow::observerConfig() const
 {
     return _observer->config();
-}
-
-void QVRWindow::screenWall(QVector3D& cornerBottomLeft, QVector3D& cornerBottomRight, QVector3D& cornerTopLeft)
-{
-    Q_ASSERT(!isMaster());
-    Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
-    Q_ASSERT(QOpenGLContext::currentContext() != _winContext);
-    Q_ASSERT(config().outputMode() != QVR_Output_Stereo_Oculus);
-
-    if (config().screenIsGivenByCenter()) {
-        // Get geometry (in meter) of the screen
-        QDesktopWidget* desktop = QApplication::desktop();
-        QRect monitorGeom = desktop->screenGeometry(config().initialDisplayScreen());
-        float monitorWidth = monitorGeom.width() / desktop->logicalDpiX() * 0.0254f;
-        float monitorHeight = monitorGeom.height() / desktop->logicalDpiY() * 0.0254f;
-        cornerBottomLeft.setX(-monitorWidth / 2.0f);
-        cornerBottomLeft.setY(-monitorHeight / 2.0f);
-        cornerBottomLeft.setZ(0.0f);
-        cornerBottomRight.setX(+monitorWidth / 2.0f);
-        cornerBottomRight.setY(-monitorHeight / 2.0f);
-        cornerBottomRight.setZ(0.0f);
-        cornerTopLeft.setX(-monitorWidth / 2.0f);
-        cornerTopLeft.setY(+monitorHeight / 2.0f);
-        cornerTopLeft.setZ(0.0f);
-        QVector3D cornerTopRight = cornerBottomRight + (cornerTopLeft - cornerBottomLeft);
-        // Apply the window geometry (subset of screen)
-        QRect windowGeom = geometry();
-        float windowX = static_cast<float>(windowGeom.x() - monitorGeom.x()) / monitorGeom.width();
-        float windowY = 1.0f - static_cast<float>(windowGeom.y() + windowGeom.height() - monitorGeom.y()) / monitorGeom.height();
-        float windowW = static_cast<float>(windowGeom.width()) / monitorGeom.width();
-        float windowH = static_cast<float>(windowGeom.height()) / monitorGeom.height();
-        QVector3D l0 = (1.0f - windowX) * cornerBottomLeft + windowX * cornerBottomRight;
-        QVector3D l1 = (1.0f - windowX) * cornerTopLeft  + windowX * cornerTopRight;
-        QVector3D bl = (1.0f - windowY) * l0 + windowY * l1;
-        QVector3D tl = (1.0f - windowY - windowH) * l0 + (windowY + windowH) * l1;
-        QVector3D r0 = (1.0f - windowX - windowW) * cornerBottomLeft + (windowX + windowW) * cornerBottomRight;
-        QVector3D r1 = (1.0f - windowX - windowW) * cornerTopLeft + (windowX + windowW) * cornerTopRight;
-        QVector3D br = (1.0f - windowY) * r0 + windowY * r1;
-        cornerBottomLeft = bl;
-        cornerBottomRight = br;
-        cornerTopLeft = tl;
-        // Translate according to screen center position
-        cornerBottomLeft += config().screenCenter();
-        cornerBottomRight += config().screenCenter();
-        cornerTopLeft += config().screenCenter();
-    } else {
-        cornerBottomLeft = config().screenCornerBottomLeft();
-        cornerBottomRight = config().screenCornerBottomRight();
-        cornerTopLeft = config().screenCornerTopLeft();
-    }
-    if (config().screenIsFixedToObserver()) {
-        QMatrix4x4 o = _observer->eyeMatrix(QVR_Eye_Center);
-        cornerBottomLeft = o * cornerBottomLeft;
-        cornerBottomRight = o * cornerBottomRight;
-        cornerTopLeft = o * cornerTopLeft;
-    }
 }
 
 bool QVRWindow::initGL()
@@ -644,6 +581,62 @@ void QVRWindow::exitGL()
     }
 }
 
+void QVRWindow::screenWall(QVector3D& cornerBottomLeft, QVector3D& cornerBottomRight, QVector3D& cornerTopLeft)
+{
+    Q_ASSERT(!isMaster());
+    Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
+    Q_ASSERT(QOpenGLContext::currentContext() != _winContext);
+    Q_ASSERT(config().outputMode() != QVR_Output_Stereo_Oculus);
+
+    if (config().screenIsGivenByCenter()) {
+        // Get geometry (in meter) of the screen
+        QDesktopWidget* desktop = QApplication::desktop();
+        QRect monitorGeom = desktop->screenGeometry(config().initialDisplayScreen());
+        float monitorWidth = monitorGeom.width() / desktop->logicalDpiX() * 0.0254f;
+        float monitorHeight = monitorGeom.height() / desktop->logicalDpiY() * 0.0254f;
+        cornerBottomLeft.setX(-monitorWidth / 2.0f);
+        cornerBottomLeft.setY(-monitorHeight / 2.0f);
+        cornerBottomLeft.setZ(0.0f);
+        cornerBottomRight.setX(+monitorWidth / 2.0f);
+        cornerBottomRight.setY(-monitorHeight / 2.0f);
+        cornerBottomRight.setZ(0.0f);
+        cornerTopLeft.setX(-monitorWidth / 2.0f);
+        cornerTopLeft.setY(+monitorHeight / 2.0f);
+        cornerTopLeft.setZ(0.0f);
+        QVector3D cornerTopRight = cornerBottomRight + (cornerTopLeft - cornerBottomLeft);
+        // Apply the window geometry (subset of screen)
+        QRect windowGeom = geometry();
+        float windowX = static_cast<float>(windowGeom.x() - monitorGeom.x()) / monitorGeom.width();
+        float windowY = 1.0f - static_cast<float>(windowGeom.y() + windowGeom.height() - monitorGeom.y()) / monitorGeom.height();
+        float windowW = static_cast<float>(windowGeom.width()) / monitorGeom.width();
+        float windowH = static_cast<float>(windowGeom.height()) / monitorGeom.height();
+        QVector3D l0 = (1.0f - windowX) * cornerBottomLeft + windowX * cornerBottomRight;
+        QVector3D l1 = (1.0f - windowX) * cornerTopLeft  + windowX * cornerTopRight;
+        QVector3D bl = (1.0f - windowY) * l0 + windowY * l1;
+        QVector3D tl = (1.0f - windowY - windowH) * l0 + (windowY + windowH) * l1;
+        QVector3D r0 = (1.0f - windowX - windowW) * cornerBottomLeft + (windowX + windowW) * cornerBottomRight;
+        QVector3D r1 = (1.0f - windowX - windowW) * cornerTopLeft + (windowX + windowW) * cornerTopRight;
+        QVector3D br = (1.0f - windowY) * r0 + windowY * r1;
+        cornerBottomLeft = bl;
+        cornerBottomRight = br;
+        cornerTopLeft = tl;
+        // Translate according to screen center position
+        cornerBottomLeft += config().screenCenter();
+        cornerBottomRight += config().screenCenter();
+        cornerTopLeft += config().screenCenter();
+    } else {
+        cornerBottomLeft = config().screenCornerBottomLeft();
+        cornerBottomRight = config().screenCornerBottomRight();
+        cornerTopLeft = config().screenCornerTopLeft();
+    }
+    if (config().screenIsFixedToObserver()) {
+        QMatrix4x4 o = _observer->trackingMatrix();
+        cornerBottomLeft = o * cornerBottomLeft;
+        cornerBottomRight = o * cornerBottomRight;
+        cornerTopLeft = o * cornerTopLeft;
+    }
+}
+
 const QVRRenderContext& QVRWindow::computeRenderContext(float near, float far, unsigned int textures[2])
 {
     Q_ASSERT(!isMaster());
@@ -654,6 +647,7 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float near, float far, u
 
     _renderContext.setWindowGeometry(geometry());
     _renderContext.setScreenGeometry(screen()->geometry());
+    _renderContext.setNavigation(_observer->navigationPosition(), _observer->navigationOrientation());
     _renderContext.setOutputConf(config().outputMode());
     QVector3D wallBl, wallBr, wallTl;
     if (config().outputMode() != QVR_Output_Stereo_Oculus)
@@ -661,7 +655,9 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float near, float far, u
     _renderContext.setScreenWall(wallBl, wallBr, wallTl);
     for (int i = 0; i < _renderContext.viewPasses(); i++) {
         QVREye eye = _renderContext.eye(i);
-        _renderContext.setEyeMatrix(i, _observer->eyeMatrix(eye));
+        _renderContext.setTracking(i, _observer->trackingPosition(eye), _observer->trackingOrientation(eye));
+        QVector3D viewPos;
+        QQuaternion viewRot;
         if (config().outputMode() == QVR_Output_Stereo_Oculus) {
             _renderContext.setFrustum(i, QVRFrustum(
                         -_hmdLRBTTan[0][i] * near,
@@ -669,10 +665,11 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float near, float far, u
                         -_hmdLRBTTan[2][i] * near,
                          _hmdLRBTTan[3][i] * near,
                         near, far));
-            _renderContext.setViewMatrix(i, _renderContext.eyeMatrix(i).inverted());
+            viewPos = _renderContext.trackingPosition(i);
+            viewRot = _renderContext.trackingOrientation(i);
         } else {
             // Determine the eye position
-            QVector3D eyePosition = _observer->eyePosition(eye);
+            QVector3D eyePosition = _observer->trackingPosition(eye);
             // Get the geometry of the screen area relative to the eye
             QVector3D bl = wallBl - eyePosition;
             QVector3D br = wallBr - eyePosition;
@@ -693,10 +690,23 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float near, float far, u
             _renderContext.setFrustum(i, QVRFrustum(l * q, r * q, b * q, t * q, near, far));
             // Compute the view matrix
             QVector3D eyeProjection = -QVector3D::dotProduct(-bl, planeNormal) * planeNormal;
-            QMatrix4x4 viewMatrix;
-            viewMatrix.lookAt(eyePosition, eyePosition + eyeProjection, planeUp);
-            _renderContext.setViewMatrix(i, viewMatrix);
+            viewPos = eyePosition;
+            viewRot = QQuaternion::fromDirection(-eyeProjection, planeUp);
         }
+        QMatrix4x4 viewMatrix;
+        if (config().screenIsFixedToObserver()) {
+            // XXX why is this special case necessary?? the code below should always work!
+            viewMatrix.rotate(viewRot.inverted());
+            viewMatrix.rotate(_renderContext.navigationOrientation().inverted());
+            viewMatrix.translate(-viewPos);
+            viewMatrix.translate(-_renderContext.navigationPosition());
+        } else {
+            viewMatrix.rotate(viewRot.inverted());
+            viewMatrix.translate(-viewPos);
+            viewMatrix.rotate(_renderContext.navigationOrientation().inverted());
+            viewMatrix.translate(-_renderContext.navigationPosition());
+        }
+        _renderContext.setViewMatrix(i, viewMatrix);
     }
 
     /* Get the textures that the application needs to render into */
