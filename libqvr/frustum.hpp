@@ -65,6 +65,22 @@ public:
     QVRFrustum(const float* lrbtnf);
 
     /*!
+     * \brief Returns the clipping plane values \a l, \a r, \a b, \a t, \a n, \a f.
+     */
+    void getClippingPlanes(float* l, float* r, float* b, float* t, float* n, float* f) const
+    {
+        *l = left(); *r = right(); *b = bottom(); *t = top(); *n = near(); *f = far();
+    }
+
+    /*!
+     * \brief Returns the clipping plane values l, r, b, t, n, f in an array \a lrbtnf.
+     */
+    void getClippingPlanes(float* lrbtnf) const
+    {
+        lrbtnf[0] = left(); lrbtnf[1] = right(); lrbtnf[2] = bottom(); lrbtnf[3] = top(); lrbtnf[4] = near(); lrbtnf[5] = far();
+    }
+
+    /*!
      * \brief Creates a 4x4 matrix from this frustum
      * \return The matrix
      */
