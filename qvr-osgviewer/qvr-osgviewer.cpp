@@ -114,14 +114,14 @@ int main(int argc, char* argv[])
 
     /* Load the model file */
     if (argc != 2) {
-        std::cerr << argv[0] <<": requires model filename argument." << std::endl;
+        std::cerr << argv[0] << ": requires model filename argument." << std::endl;
         return 1;
     }
     osg::ref_ptr<osgDB::ReaderWriter::Options> options = new osgDB::ReaderWriter::Options();
     options->setOptionString("noRotation");
     osg::ref_ptr<osg::Node> model = osgDB::readNodeFile(argv[1], options);
     if (!model) {
-        std::cerr << argv[0] <<": no data loaded." << std::endl;
+        std::cerr << argv[0] << ": no data loaded." << std::endl;
         return 1;
     }
 
