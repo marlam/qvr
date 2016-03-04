@@ -305,8 +305,8 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext,
                 setScreen(QApplication::screens().at(config().initialDisplayScreen()));
             }
             if (config().initialFullscreen()) {
-                QVR_DEBUG("      fullscreen: %s", config().initialFullscreen() ? "yes" : "no");
                 QRect screenGeom = QApplication::desktop()->screenGeometry(config().initialDisplayScreen());
+                QVR_DEBUG("      fullscreen geometry: %d %d %dx%d", screenGeom.x(), screenGeom.y(), screenGeom.width(), screenGeom.height());
                 setGeometry(screenGeom);
                 setCursor(Qt::BlankCursor);
                 show(); // Apparently this must be called before showFullScreen()

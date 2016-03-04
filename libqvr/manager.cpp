@@ -287,8 +287,6 @@ bool QVRManager::init(QVRApp* app)
     for (int i = 0; i < desktop->screenCount(); i++) {
         QRect r = desktop->screenGeometry(i);
         QVR_INFO("  screen %d geometry: %d %d %dx%d", i, r.x(), r.y(), r.width(), r.height());
-        float ar = static_cast<float>(desktop->logicalDpiY()) / desktop->logicalDpiX();
-        QVR_INFO("  screen %d pixel aspect ratio: %g", i, ar);
     }
 
     // Create windows
