@@ -83,13 +83,14 @@ void main(void)
         normal = TBN * normal;
     }
 
-    const vec3 light_color = vec3(1.0);
+    const vec3 light_color = vec3(1.2);
     vec3 light = normalize(vlight);
     vec3 view = normalize(vview);
     vec3 halfv = normalize(light + view);
+    vec3 ambient = vec3(0.2);
     vec3 diffuse = kd * light_color * max(dot(light, normal), 0.0);
     vec3 specular = ks * light_color * pow(max(dot(halfv, normal), 0.0), material_shininess);
-    color *= diffuse + specular;
+    color *= ambient + diffuse + specular;
 
     fcolor = vec4(color, 1.0);
 }
