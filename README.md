@@ -29,11 +29,13 @@ See the [library documentation](https://marlam.github.io/qvr/html/).
 ## Example applications
 
 - `qvr-helloworld`:
-  a simple OpenGL-based demo with WASD-style navigation.
+  a simple demo based on OpenGL.
+
+- `qvr-sceneviewer`:
+  a viewer for 3D models and scenes in many file formats.
 
 - `qvr-osgviewer`:
-  a full-featured [OpenSceneGraph](http://www.openscenegraph.com)
-  viewer with WASD-style navigation.
+  a full-featured [OpenSceneGraph](http://www.openscenegraph.com) viewer.
 
 - `qvr-vtk-example`:
   a simple example of a [VTK](http://www.vtk.org) visualization pipeline within
