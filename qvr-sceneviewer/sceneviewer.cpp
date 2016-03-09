@@ -188,7 +188,7 @@ bool SceneViewer::init(const aiScene* s, const QString& baseDirectory, const QMa
         light.position[1] = tp.y();
         light.position[2] = tp.z();
         QVector3D d = QVector3D(l->mDirection[0], l->mDirection[1], l->mDirection[2]);
-        QVector3D td = transformationMatrix * d;
+        QVector3D td = (transformationMatrix * QVector4D(d, 0.0f)).toVector3D();
         light.direction[0] = td.x();
         light.direction[1] = td.y();
         light.direction[2] = td.z();
