@@ -74,10 +74,8 @@ uniform sampler2D material_normal_tex;
 
 smooth in vec3 vpos;
 smooth in vec3 vnormal;
-smooth in vec3 vlight[light_sources];
-smooth in float vlightdist[light_sources];
-smooth in float vspotlightangle[light_sources];
-smooth in vec3 vview;
+smooth in vec3 vlightpos[light_sources];
+smooth in vec3 vlightdir[light_sources];
 smooth in vec2 vtexcoord;
 
 layout(location = 0) out vec4 fcolor;
@@ -145,7 +143,7 @@ void main(void)
         vec3 normal = normalize(vnormal);
         if (normalmapping && (material_have_bump_tex || material_have_normal_tex)) {
             // Matrix to transform from eye space to tangent space
-            mat3 TBN = cotangent_frame(normal, -vview, vtexcoord);
+            mat3 TBN = cotangent_frame(normal, vpos, vtexcoord);
             if (material_have_normal_tex) {
                 // Get normal from normal map
                 normal = texture(material_normal_tex, vtexcoord).rgb;
@@ -166,31 +164,41 @@ void main(void)
         }
         if (material_twosided && normal.z < 0.0)
             normal = -normal;
-        vec3 view = normalize(vview);
+        vec3 view = normalize(-vpos);
         // Lighting
         vec3 ambient_light = vec3(0.0, 0.0, 0.0);
         vec3 diffuse_light = vec3(0.0, 0.0, 0.0);
         vec3 specular_light = vec3(0.0, 0.0, 0.0);
         for (int i = 0; i < light_sources; i++) {
             float attenuation = 1.0;
-            if (light_type[i] != light_type_dirlight)
+            if (light_type[i] != light_type_dirlight) {
+                float dist = length(vpos - vlightpos[i]);
                 attenuation = 1.0 / (light_attenuation[i].x
-                        + light_attenuation[i].y * vlightdist[i]
-                        + light_attenuation[i].z * vlightdist[i] * vlightdist[i]);
+                        + light_attenuation[i].y * dist
+                        + light_attenuation[i].z * dist * dist);
+            }
             float spot = 1.0;
             if (light_type[i] == light_type_spotlight) {
-                if (vspotlightangle[i] > light_outer_cone_angle[i]) {
+                float angle = acos(dot(normalize(vlightdir[i]), normalize(vpos - vlightpos[i])));
+                if (angle > light_outer_cone_angle[i]) {
                     spot = 0.0;
-                } else if (vspotlightangle[i] > light_inner_cone_angle[i]) {
-                    spot = cos(0.5 * pi * (vspotlightangle[i] - light_inner_cone_angle[i])
+                } else if (angle > light_inner_cone_angle[i]) {
+                    spot = cos(0.5 * pi * (angle - light_inner_cone_angle[i])
                             / (light_outer_cone_angle[i] - light_inner_cone_angle[i]));
                 }
             }
-            vec3 light = normalize(vlight[i]);
+            vec3 light;
+            if (light_type[i] == light_type_dirlight)
+                light = -vlightdir[i];
+            else
+                light = vlightpos[i] - vpos;
+            light = normalize(light);
             vec3 halfway = normalize(light + view);
             ambient_light += attenuation * spot * light_ambient[i];
-            diffuse_light += attenuation * spot * light_diffuse[i] * max(dot(light, normal), 0.0);
-            specular_light += attenuation * spot * light_specular[i] * pow(max(dot(halfway, normal), 0.0), material_shininess);
+            float D = max(dot(light, normal), 0.0);
+            diffuse_light += attenuation * spot * light_diffuse[i] * D;
+            if (D > 0.0)
+                specular_light += attenuation * spot * light_specular[i] * pow(max(dot(halfway, normal), 0.0), material_shininess);
         }
         ambient_color *= ambient_light;
         diffuse_color *= diffuse_light;

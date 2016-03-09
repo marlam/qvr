@@ -182,12 +182,16 @@ bool SceneViewer::init(const aiScene* s, const QString& baseDirectory, const QMa
             std::cerr << "Ignoring light " << i << std::endl;
             continue;
         }
-        light.position[0] = l->mPosition[0];
-        light.position[1] = l->mPosition[1];
-        light.position[2] = l->mPosition[2];
-        light.direction[0] = l->mDirection[0];
-        light.direction[1] = l->mDirection[1];
-        light.direction[2] = l->mDirection[2];
+        QVector3D p = QVector3D(l->mPosition[0], l->mPosition[1], l->mPosition[2]);
+        QVector3D tp = transformationMatrix * p;
+        light.position[0] = tp.x();
+        light.position[1] = tp.y();
+        light.position[2] = tp.z();
+        QVector3D d = QVector3D(l->mDirection[0], l->mDirection[1], l->mDirection[2]);
+        QVector3D td = transformationMatrix * d;
+        light.direction[0] = td.x();
+        light.direction[1] = td.y();
+        light.direction[2] = td.z();
         light.inner_cone_angle = l->mAngleInnerCone;
         light.outer_cone_angle = l->mAngleOuterCone;
         light.attenuation_constant = l->mAttenuationConstant;

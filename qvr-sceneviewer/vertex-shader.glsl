@@ -43,9 +43,8 @@ layout(location = 2) in vec2 texcoord;
 
 smooth out vec3 vpos;                            // position in eye space
 smooth out vec3 vnormal;                         // normal vector in eye space
-smooth out vec3 vlight[light_sources];           // light vector in eye space
-smooth out float vlightdist[light_sources];      // distance to light source
-smooth out float vspotlightangle[light_sources]; // angle for spot lights
+smooth out vec3 vlightpos[light_sources];        // light position in eye space
+smooth out vec3 vlightdir[light_sources];        // light direction in eye space
 smooth out vec3 vview;                           // view vector in eye space
 smooth out vec2 vtexcoord;
 
@@ -55,25 +54,17 @@ void main(void)
 
     vpos = pos;
     vnormal = mat3(normal_matrix) * normal;
-    vview = -pos;
     vtexcoord = texcoord;
 
     for (int i = 0; i < light_sources; i++) {
-        if (light_type[i] == light_type_dirlight) {
-            vlight[i] = (modelview_matrix * vec4(light_direction[i], 1.0)).xyz;
-        } else {
-            vec3 lp = light_position[i];
-            if (!light_relative_to_camera[i])
-                lp = (modelview_matrix * vec4(lp, 1.0)).xyz;
-            vlight[i] = lp - pos;
-            vlightdist[i] = length(lp - pos);
-            if (light_type[i] == light_type_spotlight) {
-                vec3 ld = light_direction[i];
-                if (!light_relative_to_camera[i])
-                    ld = (modelview_matrix * vec4(ld, 1.0)).xyz;
-                vspotlightangle[i] = acos(dot(normalize(ld), normalize(pos - lp)));
-            }
+        vec3 lp = light_position[i];
+        vec3 ld = light_direction[i];
+        if (!light_relative_to_camera[i]) {
+            lp = (modelview_matrix * vec4(lp, 1.0)).xyz;
+            ld = mat3(modelview_matrix) * ld;
         }
+        vlightpos[i] = lp;
+        vlightdir[i] = ld;
     }
 
     gl_Position = projection_modelview_matrix * position;
