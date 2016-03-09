@@ -142,12 +142,13 @@ void main(void)
                 normal = normalize(2.0 * normal - 1.0);
             } else {
                 // Get normal from bump map
+                const float bumpscaling = 4.0; // TODO: read AI_MATKEY_BUMPSCALING? or make this adjustable?
                 float height_t = textureOffset(material_bump_tex, vtexcoord, ivec2(0, +1)).r;
                 float height_b = textureOffset(material_bump_tex, vtexcoord, ivec2(0, -1)).r;
                 float height_l = textureOffset(material_bump_tex, vtexcoord, ivec2(-1, 0)).r;
                 float height_r = textureOffset(material_bump_tex, vtexcoord, ivec2(+1, 0)).r;
-                vec3 tx = normalize(vec3(2.0, 0.0, height_r - height_l));
-                vec3 ty = normalize(vec3(0.0, 2.0, height_t - height_b));
+                vec3 tx = normalize(vec3(2.0, 0.0, bumpscaling * (height_r - height_l)));
+                vec3 ty = normalize(vec3(0.0, 2.0, bumpscaling * (height_t - height_b)));
                 normal = normalize(cross(tx, ty));
             }
             normal = TBN * normal;
