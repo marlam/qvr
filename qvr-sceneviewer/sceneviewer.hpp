@@ -66,6 +66,7 @@ public:
     float emissive[3];
     float shininess;
     float opacity;
+    float bumpscaling;
     unsigned int ambient_tex;
     unsigned int diffuse_tex;
     unsigned int specular_tex;

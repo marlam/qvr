@@ -55,6 +55,7 @@ Material::Material() :
     emissive { 0.0f, 0.0f, 0.0f },
     shininess(100.0f),
     opacity(1.0f),
+    bumpscaling(1.0f),
     ambient_tex(0),
     diffuse_tex(0),
     specular_tex(0),
@@ -235,6 +236,9 @@ bool SceneViewer::init(const aiScene* s, const QString& baseDirectory, const QMa
         float opacity = 1.0f;
         m->Get(AI_MATKEY_OPACITY, opacity);
         mat.opacity = opacity;
+        float bumpscaling = 0.5f;
+        m->Get(AI_MATKEY_OPACITY, bumpscaling);
+        mat.bumpscaling = bumpscaling;
         if (m->GetTextureCount(aiTextureType_AMBIENT) > 0)
             mat.ambient_tex = createTex(baseDirectory, texturemap, m, aiTextureType_AMBIENT, 0, false);
         if (m->GetTextureCount(aiTextureType_DIFFUSE) > 0)
@@ -415,6 +419,7 @@ void SceneViewer::render(const float* frustum, const QMatrix4x4& viewMatrix)
         std::cerr << "  emissive:      " << material.emissive[0] << " " << material.emissive[1] << " " << material.emissive[2] << std::endl;
         std::cerr << "  shininess:     " << material.shininess << std::endl;
         std::cerr << "  opacity:       " << material.opacity << std::endl;
+        std::cerr << "  bumpscaling:   " << material.bumpscaling << std::endl;
         std::cerr << "  ambient tex:   " << material.ambient_tex << std::endl;
         std::cerr << "  diffuse tex:   " << material.diffuse_tex << std::endl;
         std::cerr << "  specular tex:  " << material.specular_tex << std::endl;
@@ -432,6 +437,7 @@ void SceneViewer::render(const float* frustum, const QMatrix4x4& viewMatrix)
         _prg.setUniformValueArray("material_emissive", material.emissive, 1, 3);
         _prg.setUniformValue("material_shininess", material.shininess);
         _prg.setUniformValue("material_opacity", material.opacity);
+        _prg.setUniformValue("material_bumpscaling", material.bumpscaling);
         _prg.setUniformValue("material_have_ambient_tex", material.ambient_tex > 0 ? 1 : 0);
         _prg.setUniformValue("material_ambient_tex", 0);
         _prg.setUniformValue("material_have_diffuse_tex", material.diffuse_tex > 0 ? 1 : 0);
