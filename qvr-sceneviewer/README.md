@@ -13,6 +13,8 @@ Features:
 
 Current limitations (these might be removed in future versions):
 * Only one set of texture coordinates can be used.
+* Only simple transparencies are supported; no blending of semi-transparent
+  materials takes place.
 * Animations are not currently supported.
 
 Scenes can be pretransformed with a matrix defined on the command line:
