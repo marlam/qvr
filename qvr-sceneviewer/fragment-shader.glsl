@@ -63,8 +63,8 @@ uniform bool material_have_emissive_tex;
 uniform sampler2D material_emissive_tex;
 uniform bool material_have_shininess_tex;
 uniform sampler2D material_shininess_tex;
-uniform bool material_have_ambocc_tex;
-uniform sampler2D material_ambocc_tex;
+uniform bool material_have_lightness_tex;
+uniform sampler2D material_lightness_tex;
 uniform bool material_have_opacity_tex;
 uniform sampler2D material_opacity_tex;
 uniform bool material_have_bump_tex;
@@ -110,6 +110,9 @@ void main(void)
     vec3 emissive_color = material_emissive;
     float shininess = material_shininess;
     float opacity = material_opacity;
+    float lightness = 1.0;
+    if (material_have_lightness_tex)
+        lightness = texture(material_lightness_tex, vtexcoord).r;
 
     // Texture color
     if (material_have_ambient_tex) {
@@ -165,9 +168,6 @@ void main(void)
             normal = -normal;
         vec3 view = normalize(vview);
         // Lighting
-        float ambocc = 1.0;
-        if (material_have_ambocc_tex)
-            ambocc = texture(material_ambocc_tex, vtexcoord).r;
         vec3 ambient_light = vec3(0.0, 0.0, 0.0);
         vec3 diffuse_light = vec3(0.0, 0.0, 0.0);
         vec3 specular_light = vec3(0.0, 0.0, 0.0);
@@ -188,9 +188,9 @@ void main(void)
             }
             vec3 light = normalize(vlight[i]);
             vec3 halfway = normalize(light + view);
-            ambient_light += ambocc * attenuation * spot * light_ambient[i];
-            diffuse_light += ambocc * attenuation * spot * light_diffuse[i] * max(dot(light, normal), 0.0);
-            specular_light += ambocc * attenuation * spot * light_specular[i] * pow(max(dot(halfway, normal), 0.0), material_shininess);
+            ambient_light += attenuation * spot * light_ambient[i];
+            diffuse_light += attenuation * spot * light_diffuse[i] * max(dot(light, normal), 0.0);
+            specular_light += attenuation * spot * light_specular[i] * pow(max(dot(halfway, normal), 0.0), material_shininess);
         }
         ambient_color *= ambient_light;
         diffuse_color *= diffuse_light;
@@ -198,7 +198,7 @@ void main(void)
     }
 
     // Resulting color at this fragment
-    vec3 color = emissive_color + ambient_color + diffuse_color + specular_color;
+    vec3 color = lightness * (emissive_color + ambient_color + diffuse_color + specular_color);
 
     fcolor = vec4(color, opacity);
 }

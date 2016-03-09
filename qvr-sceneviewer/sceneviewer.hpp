@@ -72,7 +72,7 @@ public:
     unsigned int specular_tex;
     unsigned int emissive_tex;
     unsigned int shininess_tex;
-    unsigned int ambocc_tex;
+    unsigned int lightness_tex;
     unsigned int opacity_tex;
     unsigned int bump_tex;
     unsigned int normal_tex;

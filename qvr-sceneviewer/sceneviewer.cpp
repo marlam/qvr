@@ -61,7 +61,7 @@ Material::Material() :
     specular_tex(0),
     emissive_tex(0),
     shininess_tex(0),
-    ambocc_tex(0),
+    lightness_tex(0),
     opacity_tex(0),
     bump_tex(0),
     normal_tex(0)
@@ -250,7 +250,7 @@ bool SceneViewer::init(const aiScene* s, const QString& baseDirectory, const QMa
         if (m->GetTextureCount(aiTextureType_SHININESS) > 0)
             mat.shininess_tex = createTex(baseDirectory, texturemap, m, aiTextureType_SHININESS, 0, true);
         if (m->GetTextureCount(aiTextureType_LIGHTMAP) > 0)
-            mat.ambocc_tex = createTex(baseDirectory, texturemap, m, aiTextureType_LIGHTMAP, 0, true);
+            mat.lightness_tex = createTex(baseDirectory, texturemap, m, aiTextureType_LIGHTMAP, 0, true);
         if (m->GetTextureCount(aiTextureType_OPACITY) > 0)
             mat.opacity_tex = createTex(baseDirectory, texturemap, m, aiTextureType_OPACITY, 0, true);
         if (m->GetTextureCount(aiTextureType_HEIGHT) > 0)
@@ -425,7 +425,7 @@ void SceneViewer::render(const float* frustum, const QMatrix4x4& viewMatrix)
         std::cerr << "  specular tex:  " << material.specular_tex << std::endl;
         std::cerr << "  emissive tex:  " << material.emissive_tex << std::endl;
         std::cerr << "  shininess tex: " << material.shininess_tex << std::endl;
-        std::cerr << "  ambocc tex:    " << material.ambocc_tex << std::endl;
+        std::cerr << "  lightness tex: " << material.lightness_tex << std::endl;
         std::cerr << "  opacity tex:   " << material.opacity_tex << std::endl;
         std::cerr << "  bump tex:      " << material.bump_tex << std::endl;
         std::cerr << "  normal tex:    " << material.normal_tex << std::endl;
@@ -448,8 +448,8 @@ void SceneViewer::render(const float* frustum, const QMatrix4x4& viewMatrix)
         _prg.setUniformValue("material_emissive_tex", 3);
         _prg.setUniformValue("material_have_shininess_tex", material.shininess_tex > 0 ? 1 : 0);
         _prg.setUniformValue("material_shininess_tex", 4);
-        _prg.setUniformValue("material_have_ambocc_tex", material.ambocc_tex > 0 ? 1 : 0);
-        _prg.setUniformValue("material_ambocc_tex", 5);
+        _prg.setUniformValue("material_have_lightness_tex", material.lightness_tex > 0 ? 1 : 0);
+        _prg.setUniformValue("material_lightness_tex", 5);
         _prg.setUniformValue("material_have_opacity_tex", material.opacity_tex > 0 ? 1 : 0);
         _prg.setUniformValue("material_opacity_tex", 6);
         _prg.setUniformValue("material_have_bump_tex", material.bump_tex > 0 ? 1 : 0);
@@ -458,7 +458,7 @@ void SceneViewer::render(const float* frustum, const QMatrix4x4& viewMatrix)
         _prg.setUniformValue("material_normal_tex", 8);
         /* Bind textures */
         unsigned int textures[9] = { material.ambient_tex, material.diffuse_tex, material.specular_tex,
-            material.emissive_tex, material.shininess_tex, material.ambocc_tex, material.opacity_tex,
+            material.emissive_tex, material.shininess_tex, material.lightness_tex, material.opacity_tex,
             material.bump_tex, material.normal_tex };
         for (int i = 0; i < 9; i++) {
             glActiveTexture(GL_TEXTURE0 + i);

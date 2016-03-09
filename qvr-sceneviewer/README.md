@@ -8,8 +8,8 @@ Features:
 * Fast rendering using an OpenGL core context.
 * Support for spot lights, point lights, and directional lights in the scene.
 * Materials can have ambient maps, diffuse maps, specular maps, emissive maps,
-  shininess maps, opacity maps, ambient occulusion maps, bump maps, and normal
-  maps.
+  shininess maps, opacity maps, lightness maps (e.g. for ambient occlusion),
+  bump maps, and normal maps.
 
 Current limitations (these might be removed in future versions):
 * Only one set of texture coordinates can be used.
