@@ -63,11 +63,13 @@ public:
     float ambient[3];
     float diffuse[3];
     float specular[3];
+    float emissive[3];
     float shininess;
     float opacity;
     unsigned int ambient_tex;
     unsigned int diffuse_tex;
     unsigned int specular_tex;
+    unsigned int emissive_tex;
     unsigned int shininess_tex;
     unsigned int ambocc_tex;
     unsigned int opacity_tex;

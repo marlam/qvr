@@ -49,6 +49,7 @@ uniform bool material_twosided;
 uniform vec3 material_ambient;
 uniform vec3 material_diffuse;
 uniform vec3 material_specular;
+uniform vec3 material_emissive;
 uniform float material_shininess;
 uniform float material_opacity;
 uniform bool material_have_ambient_tex;
@@ -57,6 +58,8 @@ uniform bool material_have_diffuse_tex;
 uniform sampler2D material_diffuse_tex;
 uniform bool material_have_specular_tex;
 uniform sampler2D material_specular_tex;
+uniform bool material_have_emissive_tex;
+uniform sampler2D material_emissive_tex;
 uniform bool material_have_shininess_tex;
 uniform sampler2D material_shininess_tex;
 uniform bool material_have_ambocc_tex;
@@ -103,6 +106,7 @@ void main(void)
     vec3 ambient_color = material_ambient;
     vec3 diffuse_color = material_diffuse;
     vec3 specular_color = material_specular;
+    vec3 emissive_color = material_emissive;
     float shininess = material_shininess;
     float opacity = material_opacity;
 
@@ -121,6 +125,8 @@ void main(void)
     }
     if (material_have_specular_tex)
         specular_color *= texture(material_specular_tex, vtexcoord).rgb;
+    if (material_have_emissive_tex)
+        emissive_color = texture(material_emissive_tex, vtexcoord).rgb;
     if (material_have_shininess_tex)
         shininess *= texture(material_shininess_tex, vtexcoord).r;
     if (transparency && material_have_opacity_tex)
@@ -190,7 +196,7 @@ void main(void)
     }
 
     // Resulting color at this fragment
-    vec3 color = ambient_color + diffuse_color + specular_color;
+    vec3 color = emissive_color + ambient_color + diffuse_color + specular_color;
 
     fcolor = vec4(color, opacity);
 }

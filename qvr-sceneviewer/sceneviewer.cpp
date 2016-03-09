@@ -52,11 +52,13 @@ Material::Material() :
     ambient { 0.0f, 0.0f, 0.0f },
     diffuse { 0.5f, 0.5f, 0.5f },
     specular { 0.5f, 0.5f, 0.5f },
+    emissive { 0.0f, 0.0f, 0.0f },
     shininess(100.0f),
     opacity(1.0f),
     ambient_tex(0),
     diffuse_tex(0),
     specular_tex(0),
+    emissive_tex(0),
     shininess_tex(0),
     ambocc_tex(0),
     opacity_tex(0),
@@ -222,6 +224,11 @@ bool SceneViewer::init(const aiScene* s, const QString& baseDirectory, const QMa
         mat.specular[0] = specular[0];
         mat.specular[1] = specular[1];
         mat.specular[2] = specular[2];
+        aiColor3D emissive(0.0f, 0.0f, 0.0f);
+        m->Get(AI_MATKEY_COLOR_EMISSIVE, emissive);
+        mat.emissive[0] = emissive[0];
+        mat.emissive[1] = emissive[1];
+        mat.emissive[2] = emissive[2];
         float shininess = 100.0f;
         m->Get(AI_MATKEY_SHININESS, shininess);
         mat.shininess = shininess;
@@ -234,6 +241,8 @@ bool SceneViewer::init(const aiScene* s, const QString& baseDirectory, const QMa
             mat.diffuse_tex = createTex(baseDirectory, texturemap, m, aiTextureType_DIFFUSE, 0, false);
         if (m->GetTextureCount(aiTextureType_SPECULAR) > 0)
             mat.specular_tex = createTex(baseDirectory, texturemap, m, aiTextureType_SPECULAR, 0, false);
+        if (m->GetTextureCount(aiTextureType_EMISSIVE) > 0)
+            mat.emissive_tex = createTex(baseDirectory, texturemap, m, aiTextureType_EMISSIVE, 0, false);
         if (m->GetTextureCount(aiTextureType_SHININESS) > 0)
             mat.shininess_tex = createTex(baseDirectory, texturemap, m, aiTextureType_SHININESS, 0, true);
         if (m->GetTextureCount(aiTextureType_LIGHTMAP) > 0)
@@ -403,11 +412,13 @@ void SceneViewer::render(const float* frustum, const QMatrix4x4& viewMatrix)
         std::cerr << "  ambient:       " << material.ambient[0] << " " << material.ambient[1] << " " << material.ambient[2] << std::endl;
         std::cerr << "  diffuse:       " << material.diffuse[0] << " " << material.diffuse[1] << " " << material.diffuse[2] << std::endl;
         std::cerr << "  specular:      " << material.specular[0] << " " << material.specular[1] << " " << material.specular[2] << std::endl;
+        std::cerr << "  emissive:      " << material.emissive[0] << " " << material.emissive[1] << " " << material.emissive[2] << std::endl;
         std::cerr << "  shininess:     " << material.shininess << std::endl;
         std::cerr << "  opacity:       " << material.opacity << std::endl;
         std::cerr << "  ambient tex:   " << material.ambient_tex << std::endl;
         std::cerr << "  diffuse tex:   " << material.diffuse_tex << std::endl;
         std::cerr << "  specular tex:  " << material.specular_tex << std::endl;
+        std::cerr << "  emissive tex:  " << material.emissive_tex << std::endl;
         std::cerr << "  shininess tex: " << material.shininess_tex << std::endl;
         std::cerr << "  ambocc tex:    " << material.ambocc_tex << std::endl;
         std::cerr << "  opacity tex:   " << material.opacity_tex << std::endl;
@@ -418,6 +429,7 @@ void SceneViewer::render(const float* frustum, const QMatrix4x4& viewMatrix)
         _prg.setUniformValueArray("material_ambient", material.ambient, 1, 3);
         _prg.setUniformValueArray("material_diffuse", material.diffuse, 1, 3);
         _prg.setUniformValueArray("material_specular", material.specular, 1, 3);
+        _prg.setUniformValueArray("material_emissive", material.emissive, 1, 3);
         _prg.setUniformValue("material_shininess", material.shininess);
         _prg.setUniformValue("material_opacity", material.opacity);
         _prg.setUniformValue("material_have_ambient_tex", material.ambient_tex > 0 ? 1 : 0);
@@ -426,21 +438,23 @@ void SceneViewer::render(const float* frustum, const QMatrix4x4& viewMatrix)
         _prg.setUniformValue("material_diffuse_tex", 1);
         _prg.setUniformValue("material_have_specular_tex", material.specular_tex > 0 ? 1 : 0);
         _prg.setUniformValue("material_specular_tex", 2);
+        _prg.setUniformValue("material_have_emissive_tex", material.emissive_tex > 0 ? 1 : 0);
+        _prg.setUniformValue("material_emissive_tex", 3);
         _prg.setUniformValue("material_have_shininess_tex", material.shininess_tex > 0 ? 1 : 0);
-        _prg.setUniformValue("material_shininess_tex", 3);
+        _prg.setUniformValue("material_shininess_tex", 4);
         _prg.setUniformValue("material_have_ambocc_tex", material.ambocc_tex > 0 ? 1 : 0);
-        _prg.setUniformValue("material_ambocc_tex", 4);
+        _prg.setUniformValue("material_ambocc_tex", 5);
         _prg.setUniformValue("material_have_opacity_tex", material.opacity_tex > 0 ? 1 : 0);
-        _prg.setUniformValue("material_opacity_tex", 5);
+        _prg.setUniformValue("material_opacity_tex", 6);
         _prg.setUniformValue("material_have_bump_tex", material.bump_tex > 0 ? 1 : 0);
-        _prg.setUniformValue("material_bump_tex", 6);
+        _prg.setUniformValue("material_bump_tex", 7);
         _prg.setUniformValue("material_have_normal_tex", material.normal_tex > 0 ? 1 : 0);
-        _prg.setUniformValue("material_normal_tex", 7);
+        _prg.setUniformValue("material_normal_tex", 8);
         /* Bind textures */
-        unsigned int textures[8] = { material.ambient_tex, material.diffuse_tex, material.specular_tex,
-            material.shininess_tex, material.ambocc_tex, material.opacity_tex,
+        unsigned int textures[9] = { material.ambient_tex, material.diffuse_tex, material.specular_tex,
+            material.emissive_tex, material.shininess_tex, material.ambocc_tex, material.opacity_tex,
             material.bump_tex, material.normal_tex };
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 9; i++) {
             glActiveTexture(GL_TEXTURE0 + i);
             glBindTexture(GL_TEXTURE_2D, textures[i]);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
