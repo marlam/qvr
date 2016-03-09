@@ -225,7 +225,7 @@ bool SceneViewer::init(const aiScene* s, const QString& baseDirectory, const QMa
         float shininess = 100.0f;
         m->Get(AI_MATKEY_SHININESS, shininess);
         mat.shininess = shininess;
-        float opacity;
+        float opacity = 1.0f;
         m->Get(AI_MATKEY_OPACITY, opacity);
         mat.opacity = opacity;
         if (m->GetTextureCount(aiTextureType_AMBIENT) > 0)
