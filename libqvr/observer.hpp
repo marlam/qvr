@@ -92,9 +92,11 @@ private:
 
     /*! \cond
      * Used for VRPN-based navigation. The user does not need to know about these. */
+#ifdef HAVE_VRPN
     friend void QVRVrpnNavigationTrackerChangeHandler(void* userdata, const vrpn_TRACKERCB info);
     friend void QVRVrpnNavigationAnalogChangeHandler(void* userdata, const vrpn_ANALOGCB info);
     friend void QVRVrpnNavigationButtonChangeHandler(void* userdata, const vrpn_BUTTONCB info);
+#endif
     /*! \endcond */
 
     friend QDataStream &operator<<(QDataStream& ds, const QVRObserver& o);
