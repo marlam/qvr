@@ -25,7 +25,7 @@
   <td id="projectlogo"><img alt="Logo" src="cg-logo-small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">QVR
-   &#160;<span id="projectnumber">0.9.0</span>
+   &#160;<span id="projectnumber">0.9.1</span>
    </div>
    <div id="projectbrief">A library to build Virtual Reality applications</div>
   </td>
@@ -164,9 +164,14 @@ Static Public Member Functions</h2></td></tr>
 
 <p>This constructor creates the manager object. </p>
 <p>The following command line options are intereted by the QVR manager and removed from <em>argc</em> and <em>argv:</em> </p><ul>
-<li>&ndash;qvr-config=&lt;config.qvr&gt; Specify a QVR configuration file.</li>
-<li>&ndash;qvr-log-level=&lt;level&gt; See <em>QVRLogLevel</em>.</li>
-<li>&ndash;qvr-fps=&lt;n&gt; Make QVR report frames per second measurements every n milliseconds. </li>
+<li>--qvr-config=&lt;config.qvr&gt;<br />
+ Specify a QVR configuration file.</li>
+<li>--qvr-log-level=&lt;level&gt;<br />
+ See <em>QVRLogLevel</em>.</li>
+<li>--qvr-sync-to-vblank=&lt;0|1&gt;<br />
+ Disable (0) or enable (1) sync-to-vblank. Default is enable.</li>
+<li>--qvr-fps=&lt;n&gt;<br />
+ Make QVR report frames per second measurements every n milliseconds. </li>
 </ul>
 
 </div>

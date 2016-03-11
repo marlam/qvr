@@ -25,7 +25,7 @@
   <td id="projectlogo"><img alt="Logo" src="cg-logo-small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">QVR
-   &#160;<span id="projectnumber">0.9.0</span>
+   &#160;<span id="projectnumber">0.9.1</span>
    </div>
    <div id="projectbrief">A library to build Virtual Reality applications</div>
   </td>
@@ -108,6 +108,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a3a3ad90413be1f3282b1998641ca795f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_frustum.html#a3a3ad90413be1f3282b1998641ca795f">QVRFrustum</a> (const float *lrbtnf)</td></tr>
 <tr class="memdesc:a3a3ad90413be1f3282b1998641ca795f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a view frustum.  <a href="#a3a3ad90413be1f3282b1998641ca795f">More...</a><br /></td></tr>
 <tr class="separator:a3a3ad90413be1f3282b1998641ca795f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a38fe38601574dc91ecee249a2c28960a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_frustum.html#a38fe38601574dc91ecee249a2c28960a">getClippingPlanes</a> (float *l, float *r, float *b, float *t, float *n, float *f) const </td></tr>
+<tr class="memdesc:a38fe38601574dc91ecee249a2c28960a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the clipping plane values <em>l</em>, <em>r</em>, <em>b</em>, <em>t</em>, <em>n</em>, <em>f</em>.  <a href="#a38fe38601574dc91ecee249a2c28960a">More...</a><br /></td></tr>
+<tr class="separator:a38fe38601574dc91ecee249a2c28960a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c05e45d26313f4ec0bf1325c4a95295"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_frustum.html#a2c05e45d26313f4ec0bf1325c4a95295">getClippingPlanes</a> (float *lrbtnf) const </td></tr>
+<tr class="memdesc:a2c05e45d26313f4ec0bf1325c4a95295"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the clipping plane values l, r, b, t, n, f in an array <em>lrbtnf</em>.  <a href="#a2c05e45d26313f4ec0bf1325c4a95295">More...</a><br /></td></tr>
+<tr class="separator:a2c05e45d26313f4ec0bf1325c4a95295"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab254d7ac38110454e6b58b62f584acc0"><td class="memItemLeft" align="right" valign="top">QMatrix4x4&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_frustum.html#ab254d7ac38110454e6b58b62f584acc0">toMatrix4x4</a> () const </td></tr>
 <tr class="memdesc:ab254d7ac38110454e6b58b62f584acc0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a 4x4 matrix from this frustum.  <a href="#ab254d7ac38110454e6b58b62f584acc0">More...</a><br /></td></tr>
 <tr class="separator:ab254d7ac38110454e6b58b62f584acc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -342,6 +348,92 @@ Friends</h2></td></tr>
 
 <p>Returns the far clipping plane. </p>
 <dl class="section return"><dt>Returns</dt><dd>The far clipping plane </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a38fe38601574dc91ecee249a2c28960a"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void QVRFrustum::getClippingPlanes </td>
+          <td>(</td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>l</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>r</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>t</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>f</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the clipping plane values <em>l</em>, <em>r</em>, <em>b</em>, <em>t</em>, <em>n</em>, <em>f</em>. </p>
+
+</div>
+</div>
+<a class="anchor" id="a2c05e45d26313f4ec0bf1325c4a95295"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void QVRFrustum::getClippingPlanes </td>
+          <td>(</td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>lrbtnf</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the clipping plane values l, r, b, t, n, f in an array <em>lrbtnf</em>. </p>
 
 </div>
 </div>

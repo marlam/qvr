@@ -25,7 +25,7 @@
   <td id="projectlogo"><img alt="Logo" src="cg-logo-small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">QVR
-   &#160;<span id="projectnumber">0.9.0</span>
+   &#160;<span id="projectnumber">0.9.1</span>
    </div>
    <div id="projectbrief">A library to build Virtual Reality applications</div>
   </td>
@@ -117,18 +117,39 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a12df7a05ff0b4e38fe8e654784921794"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="class_q_v_r_observer_config.html">QVRObserverConfig</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer.html#a12df7a05ff0b4e38fe8e654784921794">config</a> () const </td></tr>
 <tr class="memdesc:a12df7a05ff0b4e38fe8e654784921794"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the configuration.  <a href="#a12df7a05ff0b4e38fe8e654784921794">More...</a><br /></td></tr>
 <tr class="separator:a12df7a05ff0b4e38fe8e654784921794"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4aea92924601e7f3faa09061e08aeb5a"><td class="memItemLeft" align="right" valign="top">const QMatrix4x4 &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer.html#a4aea92924601e7f3faa09061e08aeb5a">eyeMatrix</a> (<a class="el" href="config_8hpp.html#ae66050fd3a370d877a255d712f401fb2">QVREye</a> eye) const </td></tr>
-<tr class="memdesc:a4aea92924601e7f3faa09061e08aeb5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the transformation matrix of <em>eye</em>.  <a href="#a4aea92924601e7f3faa09061e08aeb5a">More...</a><br /></td></tr>
-<tr class="separator:a4aea92924601e7f3faa09061e08aeb5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afbf529d2ca40c117b0faa7be54c34259"><td class="memItemLeft" align="right" valign="top">QVector3D&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer.html#afbf529d2ca40c117b0faa7be54c34259">eyePosition</a> (<a class="el" href="config_8hpp.html#ae66050fd3a370d877a255d712f401fb2">QVREye</a> eye) const </td></tr>
-<tr class="memdesc:afbf529d2ca40c117b0faa7be54c34259"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the position of <em>eye</em> (extracted from the transformation matrix).  <a href="#afbf529d2ca40c117b0faa7be54c34259">More...</a><br /></td></tr>
-<tr class="separator:afbf529d2ca40c117b0faa7be54c34259"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa1cde4c8fb2f6a5faa8c699b9fd4db5a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer.html#aa1cde4c8fb2f6a5faa8c699b9fd4db5a">setEyeMatrices</a> (const QMatrix4x4 &amp;centerMatrix)</td></tr>
-<tr class="memdesc:aa1cde4c8fb2f6a5faa8c699b9fd4db5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the transformation matrix for all three eyes.  <a href="#aa1cde4c8fb2f6a5faa8c699b9fd4db5a">More...</a><br /></td></tr>
-<tr class="separator:aa1cde4c8fb2f6a5faa8c699b9fd4db5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa4ada447407041ea2f407479f7716eae"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer.html#aa4ada447407041ea2f407479f7716eae">setEyeMatrices</a> (const QMatrix4x4 &amp;leftMatrix, const QMatrix4x4 &amp;rightMatrix)</td></tr>
-<tr class="memdesc:aa4ada447407041ea2f407479f7716eae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the transformation matrix for all three eyes.  <a href="#aa4ada447407041ea2f407479f7716eae">More...</a><br /></td></tr>
-<tr class="separator:aa4ada447407041ea2f407479f7716eae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae03c3c20140e09caf615ede8f03e1335"><td class="memItemLeft" align="right" valign="top">const QVector3D &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer.html#ae03c3c20140e09caf615ede8f03e1335">navigationPosition</a> () const </td></tr>
+<tr class="memdesc:ae03c3c20140e09caf615ede8f03e1335"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the navigation position.  <a href="#ae03c3c20140e09caf615ede8f03e1335">More...</a><br /></td></tr>
+<tr class="separator:ae03c3c20140e09caf615ede8f03e1335"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4697affd3ed2e76e0a181eca65d05237"><td class="memItemLeft" align="right" valign="top">const QQuaternion &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer.html#a4697affd3ed2e76e0a181eca65d05237">navigationOrientation</a> () const </td></tr>
+<tr class="memdesc:a4697affd3ed2e76e0a181eca65d05237"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the navigation orientation.  <a href="#a4697affd3ed2e76e0a181eca65d05237">More...</a><br /></td></tr>
+<tr class="separator:a4697affd3ed2e76e0a181eca65d05237"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2530cec782aaac50291a6cda7f77bca0"><td class="memItemLeft" align="right" valign="top">QMatrix4x4&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer.html#a2530cec782aaac50291a6cda7f77bca0">navigationMatrix</a> () const </td></tr>
+<tr class="memdesc:a2530cec782aaac50291a6cda7f77bca0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the navigation position and orientation as a matrix.  <a href="#a2530cec782aaac50291a6cda7f77bca0">More...</a><br /></td></tr>
+<tr class="separator:a2530cec782aaac50291a6cda7f77bca0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f04f53bd7fb90d09b716d40267b71cd"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer.html#a2f04f53bd7fb90d09b716d40267b71cd">eyeDistance</a> () const </td></tr>
+<tr class="memdesc:a2f04f53bd7fb90d09b716d40267b71cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the eye distance (interpupillary distance).  <a href="#a2f04f53bd7fb90d09b716d40267b71cd">More...</a><br /></td></tr>
+<tr class="separator:a2f04f53bd7fb90d09b716d40267b71cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a08aee816de0e39870b0466af95cb0d82"><td class="memItemLeft" align="right" valign="top">const QVector3D &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer.html#a08aee816de0e39870b0466af95cb0d82">trackingPosition</a> (<a class="el" href="config_8hpp.html#ae66050fd3a370d877a255d712f401fb2">QVREye</a> eye=<a class="el" href="config_8hpp.html#ae66050fd3a370d877a255d712f401fb2a36f2a659aef038d92dbeab0a52541a47">QVR_Eye_Center</a>) const </td></tr>
+<tr class="memdesc:a08aee816de0e39870b0466af95cb0d82"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the tracking position of <em>eye</em>.  <a href="#a08aee816de0e39870b0466af95cb0d82">More...</a><br /></td></tr>
+<tr class="separator:a08aee816de0e39870b0466af95cb0d82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a676b262ea427f675860b7790d881692f"><td class="memItemLeft" align="right" valign="top">const QQuaternion &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer.html#a676b262ea427f675860b7790d881692f">trackingOrientation</a> (<a class="el" href="config_8hpp.html#ae66050fd3a370d877a255d712f401fb2">QVREye</a> eye=<a class="el" href="config_8hpp.html#ae66050fd3a370d877a255d712f401fb2a36f2a659aef038d92dbeab0a52541a47">QVR_Eye_Center</a>) const </td></tr>
+<tr class="memdesc:a676b262ea427f675860b7790d881692f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the tracking orientation of <em>eye</em>.  <a href="#a676b262ea427f675860b7790d881692f">More...</a><br /></td></tr>
+<tr class="separator:a676b262ea427f675860b7790d881692f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a694828171048f6c1074b3f7fe7bcb410"><td class="memItemLeft" align="right" valign="top">QMatrix4x4&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer.html#a694828171048f6c1074b3f7fe7bcb410">trackingMatrix</a> (<a class="el" href="config_8hpp.html#ae66050fd3a370d877a255d712f401fb2">QVREye</a> eye=<a class="el" href="config_8hpp.html#ae66050fd3a370d877a255d712f401fb2a36f2a659aef038d92dbeab0a52541a47">QVR_Eye_Center</a>) const </td></tr>
+<tr class="memdesc:a694828171048f6c1074b3f7fe7bcb410"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the tracking position and orientation of <em>eye</em> as a matrix.  <a href="#a694828171048f6c1074b3f7fe7bcb410">More...</a><br /></td></tr>
+<tr class="separator:a694828171048f6c1074b3f7fe7bcb410"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a68c5922c5c01cb0bf76d89f6a70bc8c7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer.html#a68c5922c5c01cb0bf76d89f6a70bc8c7">setNavigation</a> (const QVector3D &amp;pos, const QQuaternion &amp;rot)</td></tr>
+<tr class="memdesc:a68c5922c5c01cb0bf76d89f6a70bc8c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the navigation position and orientation.  <a href="#a68c5922c5c01cb0bf76d89f6a70bc8c7">More...</a><br /></td></tr>
+<tr class="separator:a68c5922c5c01cb0bf76d89f6a70bc8c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6215eaff9d38477669b4dc1d991e10d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer.html#ab6215eaff9d38477669b4dc1d991e10d">setEyeDistance</a> (float d)</td></tr>
+<tr class="memdesc:ab6215eaff9d38477669b4dc1d991e10d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the eye distance (interpupillary distance) to <em>d</em>.  <a href="#ab6215eaff9d38477669b4dc1d991e10d">More...</a><br /></td></tr>
+<tr class="separator:ab6215eaff9d38477669b4dc1d991e10d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:affa690f070aa7f972b3c3fa232b78e32"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer.html#affa690f070aa7f972b3c3fa232b78e32">setTracking</a> (const QVector3D &amp;pos, const QQuaternion &amp;rot)</td></tr>
+<tr class="memdesc:affa690f070aa7f972b3c3fa232b78e32"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the tracking position and orientation for all three eyes.  <a href="#affa690f070aa7f972b3c3fa232b78e32">More...</a><br /></td></tr>
+<tr class="separator:affa690f070aa7f972b3c3fa232b78e32"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac35565fd37bc853ff8027a6be6c982b8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer.html#ac35565fd37bc853ff8027a6be6c982b8">setTracking</a> (const QVector3D &amp;posLeft, const QQuaternion &amp;rotLeft, const QVector3D &amp;posRight, const QQuaternion &amp;rotRight)</td></tr>
+<tr class="memdesc:ac35565fd37bc853ff8027a6be6c982b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the tracking position and orientation for all three eyes.  <a href="#ac35565fd37bc853ff8027a6be6c982b8">More...</a><br /></td></tr>
+<tr class="separator:ac35565fd37bc853ff8027a6be6c982b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
@@ -141,8 +162,12 @@ Friends</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Observer of the virtual world. </p>
-<p>An observer typically has two eyes (left and right). This class additionally handles an imaginary third eye at the center between left and right eye.</p>
-<p>Each eye has a position and an orientation in the virtual world. Both are represented together in a transformation matrix.</p>
+<p>Imagine your Virtual Reality setup is the cockpit of an UFO flying through the virtual world. Inside the cockpit is a UFO crew member. This crew member looks through the cockpit windows onto the virtual world. In QVR, this means one or more windows (<em><a class="el" href="class_q_v_r_window.html" title="A Qt window on a screen and a window into the virtual world. ">QVRWindow</a></em>) are viewed by a <em><a class="el" href="class_q_v_r_observer.html" title="Observer of the virtual world. ">QVRObserver</a></em>.</p>
+<p>What a crew member will see in the cockpit windows depends on two things:</p><ul>
+<li>The pose of the UFO in the virtual world. In QVR, this means an observer can navigate: a navigation transformation matrix will be applied to all the windows he views.</li>
+<li>The pose of the crew member, or more specifically the crew member's eyes, inside the UFO cockpit. In QVR, this is the tracking of an observer inside a restricted space. This determines the eye transformation matrices, which are relative to the navigation matrix.</li>
+</ul>
+<p>An observer typically has two eyes (left and right). This class additionally handles an imaginary third eye at the center between left and right eye. Each eye has a pose in the virtual world relative to the navigation pose. All poses are represented as transformation matrices.</p>
 <p>A <em><a class="el" href="class_q_v_r_window.html" title="A Qt window on a screen and a window into the virtual world. ">QVRWindow</a></em> provides a view of the virtual world for exactly one observer. An observer can view multiple windows, e.g. in multi-projector setups.</p>
 <p>An observer is configured via <em><a class="el" href="class_q_v_r_observer_config.html" title="Configuration of a QVRObserver. ">QVRObserverConfig</a></em>. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
@@ -216,7 +241,7 @@ Friends</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a4aea92924601e7f3faa09061e08aeb5a"></a>
+<a class="anchor" id="a2f04f53bd7fb90d09b716d40267b71cd"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -224,10 +249,9 @@ Friends</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const QMatrix4x4&amp; QVRObserver::eyeMatrix </td>
+          <td class="memname">float QVRObserver::eyeDistance </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="config_8hpp.html#ae66050fd3a370d877a255d712f401fb2">QVREye</a>&#160;</td>
-          <td class="paramname"><em>eye</em></td><td>)</td>
+          <td class="paramname"></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
@@ -238,33 +262,7 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Returns the transformation matrix of <em>eye</em>. </p>
-
-</div>
-</div>
-<a class="anchor" id="afbf529d2ca40c117b0faa7be54c34259"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">QVector3D QVRObserver::eyePosition </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="config_8hpp.html#ae66050fd3a370d877a255d712f401fb2">QVREye</a>&#160;</td>
-          <td class="paramname"><em>eye</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Returns the position of <em>eye</em> (extracted from the transformation matrix). </p>
+<p>Returns the eye distance (interpupillary distance). </p>
 
 </div>
 </div>
@@ -302,47 +300,168 @@ Friends</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="aa1cde4c8fb2f6a5faa8c699b9fd4db5a"></a>
+<a class="anchor" id="a2530cec782aaac50291a6cda7f77bca0"></a>
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void QVRObserver::setEyeMatrices </td>
+          <td class="memname">QMatrix4x4 QVRObserver::navigationMatrix </td>
           <td>(</td>
-          <td class="paramtype">const QMatrix4x4 &amp;&#160;</td>
-          <td class="paramname"><em>centerMatrix</em></td><td>)</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the navigation position and orientation as a matrix. </p>
+
+</div>
+</div>
+<a class="anchor" id="a4697affd3ed2e76e0a181eca65d05237"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const QQuaternion&amp; QVRObserver::navigationOrientation </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the navigation orientation. </p>
+
+</div>
+</div>
+<a class="anchor" id="ae03c3c20140e09caf615ede8f03e1335"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const QVector3D&amp; QVRObserver::navigationPosition </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the navigation position. </p>
+
+</div>
+</div>
+<a class="anchor" id="ab6215eaff9d38477669b4dc1d991e10d"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void QVRObserver::setEyeDistance </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>d</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Sets the transformation matrix for all three eyes. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">centerMatrix</td><td>Transformation matrix for the center eye</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>The matrices for the left and right eye are computed from <em>centerMatrix</em> and the eye distance. See QObserverConfig::eyeDistance().</p>
-<p>This function is called internally by QVR except for custom observers, which may be modified from <em><a class="el" href="class_q_v_r_app.html#a46676b19d13b4fedf57bcf66c7bbe861" title="Update observers for custom tracking implementations. ">QVRApp::updateObservers()</a></em>. </p>
+<p>Sets the eye distance (interpupillary distance) to <em>d</em>. </p>
+<p>Note that this only takes effect once <em><a class="el" href="class_q_v_r_observer.html#affa690f070aa7f972b3c3fa232b78e32" title="Sets the tracking position and orientation for all three eyes. ">setTracking()</a></em> with arguments for the center eye is called.</p>
+<p>A call to <em><a class="el" href="class_q_v_r_observer.html#affa690f070aa7f972b3c3fa232b78e32" title="Sets the tracking position and orientation for all three eyes. ">setTracking()</a></em> with arguments for left and right eye will set a new value for the eye distance. </p>
 
 </div>
 </div>
-<a class="anchor" id="aa4ada447407041ea2f407479f7716eae"></a>
+<a class="anchor" id="a68c5922c5c01cb0bf76d89f6a70bc8c7"></a>
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void QVRObserver::setEyeMatrices </td>
+          <td class="memname">void QVRObserver::setNavigation </td>
           <td>(</td>
-          <td class="paramtype">const QMatrix4x4 &amp;&#160;</td>
-          <td class="paramname"><em>leftMatrix</em>, </td>
+          <td class="paramtype">const QVector3D &amp;&#160;</td>
+          <td class="paramname"><em>pos</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const QMatrix4x4 &amp;&#160;</td>
-          <td class="paramname"><em>rightMatrix</em>&#160;</td>
+          <td class="paramtype">const QQuaternion &amp;&#160;</td>
+          <td class="paramname"><em>rot</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Sets the navigation position and orientation. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pos</td><td>Navigation position </td></tr>
+    <tr><td class="paramname">rot</td><td>Navigation orientation</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>This function is called internally by QVR except for custom observers, which may be modified from <em><a class="el" href="class_q_v_r_app.html#a46676b19d13b4fedf57bcf66c7bbe861" title="Update observers for custom tracking implementations. ">QVRApp::updateObservers()</a></em>. </p>
+
+</div>
+</div>
+<a class="anchor" id="affa690f070aa7f972b3c3fa232b78e32"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void QVRObserver::setTracking </td>
+          <td>(</td>
+          <td class="paramtype">const QVector3D &amp;&#160;</td>
+          <td class="paramname"><em>pos</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const QQuaternion &amp;&#160;</td>
+          <td class="paramname"><em>rot</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -352,16 +471,145 @@ Friends</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Sets the transformation matrix for all three eyes. </p>
+<p>Sets the tracking position and orientation for all three eyes. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">leftMatrix</td><td>Transformation matrix for the left eye </td></tr>
-    <tr><td class="paramname">rightMatrix</td><td>Transformation matrix for the right eye</td></tr>
+    <tr><td class="paramname">pos</td><td>Position of the center eye </td></tr>
+    <tr><td class="paramname">rot</td><td>Orientation of the center eye</td></tr>
   </table>
   </dd>
 </dl>
-<p>The matrix for the center eye is computed from <em>leftMatrix</em> and <em>rightMatrix</em>. For this purpose, it is assumed that both left and right eye have the same orientation and only their position differs.</p>
+<p>The position and orientation for the left and right eye are computed using <em><a class="el" href="class_q_v_r_observer.html#a2f04f53bd7fb90d09b716d40267b71cd" title="Returns the eye distance (interpupillary distance). ">eyeDistance()</a></em>.</p>
 <p>This function is called internally by QVR except for custom observers, which may be modified from <em><a class="el" href="class_q_v_r_app.html#a46676b19d13b4fedf57bcf66c7bbe861" title="Update observers for custom tracking implementations. ">QVRApp::updateObservers()</a></em>. </p>
+
+</div>
+</div>
+<a class="anchor" id="ac35565fd37bc853ff8027a6be6c982b8"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void QVRObserver::setTracking </td>
+          <td>(</td>
+          <td class="paramtype">const QVector3D &amp;&#160;</td>
+          <td class="paramname"><em>posLeft</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const QQuaternion &amp;&#160;</td>
+          <td class="paramname"><em>rotLeft</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const QVector3D &amp;&#160;</td>
+          <td class="paramname"><em>posRight</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const QQuaternion &amp;&#160;</td>
+          <td class="paramname"><em>rotRight</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sets the tracking position and orientation for all three eyes. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">posLeft</td><td>Position of the left eye </td></tr>
+    <tr><td class="paramname">rotLeft</td><td>Orientation of the left eye </td></tr>
+    <tr><td class="paramname">posRight</td><td>Position of the right eye </td></tr>
+    <tr><td class="paramname">rotRight</td><td>Orientation of the right eye</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>The position and orientation for the center eye and the eye distance is computed from the information for the left and right eyes.</p>
+<p>This function is called internally by QVR except for custom observers, which may be modified from <em><a class="el" href="class_q_v_r_app.html#a46676b19d13b4fedf57bcf66c7bbe861" title="Update observers for custom tracking implementations. ">QVRApp::updateObservers()</a></em>. </p>
+
+</div>
+</div>
+<a class="anchor" id="a694828171048f6c1074b3f7fe7bcb410"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">QMatrix4x4 QVRObserver::trackingMatrix </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="config_8hpp.html#ae66050fd3a370d877a255d712f401fb2">QVREye</a>&#160;</td>
+          <td class="paramname"><em>eye</em> = <code><a class="el" href="config_8hpp.html#ae66050fd3a370d877a255d712f401fb2a36f2a659aef038d92dbeab0a52541a47">QVR_Eye_Center</a></code></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the tracking position and orientation of <em>eye</em> as a matrix. </p>
+
+</div>
+</div>
+<a class="anchor" id="a676b262ea427f675860b7790d881692f"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const QQuaternion&amp; QVRObserver::trackingOrientation </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="config_8hpp.html#ae66050fd3a370d877a255d712f401fb2">QVREye</a>&#160;</td>
+          <td class="paramname"><em>eye</em> = <code><a class="el" href="config_8hpp.html#ae66050fd3a370d877a255d712f401fb2a36f2a659aef038d92dbeab0a52541a47">QVR_Eye_Center</a></code></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the tracking orientation of <em>eye</em>. </p>
+
+</div>
+</div>
+<a class="anchor" id="a08aee816de0e39870b0466af95cb0d82"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const QVector3D&amp; QVRObserver::trackingPosition </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="config_8hpp.html#ae66050fd3a370d877a255d712f401fb2">QVREye</a>&#160;</td>
+          <td class="paramname"><em>eye</em> = <code><a class="el" href="config_8hpp.html#ae66050fd3a370d877a255d712f401fb2a36f2a659aef038d92dbeab0a52541a47">QVR_Eye_Center</a></code></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the tracking position of <em>eye</em>. </p>
 
 </div>
 </div>
