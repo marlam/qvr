@@ -1,6 +1,0 @@
-<RCC>
-  <qresource prefix="/qvr-outputplugin-example">
-    <file>vertex-shader.glsl</file>
-    <file>fragment-shader.glsl</file>
-  </qresource>
-</RCC>

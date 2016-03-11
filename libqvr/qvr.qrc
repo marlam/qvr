@@ -1,7 +1,0 @@
-<RCC>
-  <qresource prefix="/libqvr">
-    <file>cg-logo.png</file>
-    <file>output-vs.glsl</file>
-    <file>output-fs.glsl</file>
-  </qresource>
-</RCC>
