@@ -92,23 +92,29 @@
  * Please see the configuration file examples distributed with QVR to understand
  * how typical configurations look like.
  *
- * Observer definition (see \a QVRObserverConfig):
+ * Observer definition (see \a QVRObserver and \a QVRObserverConfig):
  * - `observer <id>`<br>
  *   Start a new observer definition with the given unique id.
- * - `type <static|wasdqe|vrpn|oculus|custom>`<br>
- *   Set the observer type.
- * - `parameters ...`<br>
- *   Set parameters for specific observer types.
+ * - `navigation <stationary|vrpn|wasdqe|custom> [parameters...]`<br>
+ *   Set the navigation type and parameters.
+ * - `navigation_position <x> <y> <z>`<br>
+ *   Set the initial navigation position.
+ * - `navigation_forward <x> <y> <z>`<br>
+ *   Set the initial navigation forward (or viewing) direction.
+ * - `navigation_up <x> <y> <z>`<br>
+ *   Set the initial navigation up direction.
+ * - `tracking <stationary|vrpn|oculus|custom> [parameters...]`<br>
+ *   Set the tracking type and parameters.
  * - `eye_distance <meters>`<br>
  *   Set the interpupillary distance.
- * - `position <x> <y> <z>`<br>
- *   Set the initial position.
- * - `forward <x> <y> <z>`<br>
- *   Set the initial forward (or viewing) direction.
- * - `up <x> <y> <z>`<br>
- *   Set the initial up direction.
+ * - `tracking_position <x> <y> <z>`<br>
+ *   Set the initial tracking position.
+ * - `tracking_forward <x> <y> <z>`<br>
+ *   Set the initial tracking forward (or viewing) direction.
+ * - `tracking_up <x> <y> <z>`<br>
+ *   Set the initial tracking up direction.
  *
- * Process definition (see \a QVRProcessConfig):
+ * Process definition (see \a QVRProcess and \a QVRProcessConfig):
  * - `process <id>`<br>
  *   Start a new process definition with the given unique id.
  * - `display <name>`<br>
@@ -116,7 +122,7 @@
  * - `launcher <prg-and-args>`<br>
  *   Launcher commando used to start this process.
  *
- * Window definition (see \a QVRWindowConfig):
+ * Window definition (see \a QVRWindow and \a QVRWindowConfig):
  * - `window <id>`<br>
  *   Start a new window definition with the given unique id, within the current process definition.
  * - `observer <id>`<br>
@@ -172,12 +178,6 @@
  * - Oculus Rift: Currently the DK2 was tested on Linux with SDK 0.5. It should
  *   be configured as a separate X11 screen, and the orientation of that screen
  *   should be fixed with `xrandr -display :0.1 -o left`.
- * - Multiple screens on one Qt display: On Linux/X11, Qt can only show windows
- *   on additional display screens if those screens are part of the same virtual
- *   screen (the X11 display has one virtual screen that contains the actual
- *   screens; NVIDIA calls this TwinView). If you configured separate X11 screens
- *   (e.g. :0.0, :0.1, :0.2), then Qt cannot properly show windows on them.
- *   A workaround is to use multiple QVR processes, one for each screen.
  */
 
 #include <QObject>
