@@ -28,8 +28,11 @@ See the [library documentation](https://marlam.github.io/qvr/html/).
 
 ## Example applications
 
+- `qvr-minimal-example`:
+  a minimal example application that displays a rotating box.
+
 - `qvr-helloworld`:
-  a simple demo based on OpenGL.
+  a simple demo scene based on OpenGL.
 
 - `qvr-sceneviewer`:
   a viewer for 3D models and scenes in many file formats.
