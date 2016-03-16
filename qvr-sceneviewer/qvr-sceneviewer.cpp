@@ -21,8 +21,6 @@
  * SOFTWARE.
  */
 
-#include <iostream>
-
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -56,11 +54,11 @@ bool QVRSceneViewer::initProcess(QVRProcess* /* p */)
     initializeOpenGLFunctions();
 
     // Initialize the scene viewer
-    std::cerr << "Starting initialization of scene viewer..." << std::endl;
+    qInfo("Starting initialization of scene viewer...");
     QFileInfo fileInfo(_sceneFilename);
     if (!_sceneViewer.init(_aiScene, fileInfo.dir().path(), _M))
         return false;
-    std::cerr << "Initialization of scene viewer finished." << std::endl;
+    qInfo("Initialization of scene viewer finished.");
 
     // FBO
     glGenFramebuffers(1, &_fbo);
@@ -136,7 +134,7 @@ static void applyRotation(QMatrix4x4& M, const QString& s)
     if (ok[0] && ok[1] && ok[2] && ok[3]) {
         M.rotate(v[0], v[1], v[2], v[3]);
     } else {
-        std::cerr << "Ignoring invalid rotation " << qPrintable(s) << std::endl;
+        qWarning("Ignoring invalid rotation %s", qPrintable(s));
     }
 }
 
@@ -158,7 +156,7 @@ static void applyScaling(QMatrix4x4& M, const QString& s)
     if (ok[0] && ok[1] && ok[2])
         M.scale(v[0], v[1], v[2]);
     else
-        std::cerr << "Ignoring invalid scaling " << qPrintable(s) << std::endl;
+        qWarning("Ignoring invalid scaling %s", qPrintable(s));
 }
 
 static void applyTranslation(QMatrix4x4& M, const QString& s)
@@ -169,11 +167,10 @@ static void applyTranslation(QMatrix4x4& M, const QString& s)
     if (l.size() == 3)
         for (int i = 0; i < 3; i++)
             v[i] = l[i].toFloat(ok + i);
-    if (ok[0] && ok[1] && ok[2]) {
+    if (ok[0] && ok[1] && ok[2])
         M.translate(v[0], v[1], v[2]);
-    } else {
-        std::cerr << "Ignoring invalid translation " << qPrintable(s) << std::endl;
-    }
+    else
+        qWarning("Ignoring invalid translation %s", qPrintable(s));
 }
 
 static QMatrix4x4 getMatrix(int& argc, char* argv[])
@@ -230,10 +227,10 @@ int main(int argc, char* argv[])
 
     /* Load the scene file */
     if (argc != 2) {
-        std::cerr << argv[0] << ": requires scene filename argument." << std::endl;
+        qCritical("%s: requires scene filename argument.", argv[0]);
         return 1;
     }
-    std::cerr << "Starting scene import for " << argv[1] << " ..." << std::endl;
+    qInfo("Starting scene import for %s ...", argv[1]);
     Assimp::DefaultLogger::create("", Assimp::Logger::NORMAL, aiDefaultLogStream_STDERR);
     Assimp::Importer importer;
     importer.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS,
@@ -258,11 +255,10 @@ int main(int argc, char* argv[])
             | aiProcess_TransformUVCoords);
     Assimp::DefaultLogger::kill();
     if (!scene) {
-        std::cerr << "Scene import " << argv[1] << " failed: "
-            << importer.GetErrorString() << std::endl;
+        qCritical("Scene import for %s failed: %s", argv[1], importer.GetErrorString());
         return 1;
     }
-    std::cerr << "Scene import finished." << std::endl;
+    qInfo("Scene import finished.");
 
     /* First set the default surface format that all windows will use */
     QSurfaceFormat format;
@@ -273,7 +269,7 @@ int main(int argc, char* argv[])
     /* Then start QVR with your app */
     QVRSceneViewer qvrapp(argv[1], scene, matrix);
     if (!manager.init(&qvrapp)) {
-        std::cerr << "Cannot initialize QVR manager" << std::endl;
+        qCritical("Cannot initialize QVR manager");
         return 1;
     }
 

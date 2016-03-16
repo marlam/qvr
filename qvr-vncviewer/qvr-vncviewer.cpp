@@ -23,7 +23,6 @@
 
 #include <cmath>
 #include <cstring>
-#include <iostream>
 
 #include <QApplication>
 #include <QKeyEvent>
@@ -138,9 +137,9 @@ QVRVNCViewer::QVRVNCViewer(int& argc, char* argv[]) :
         }
     }
     if (!haveScreenDef)
-        std::cerr << "No screen geometry given; using default wall" << std::endl;
+        qWarning("No screen geometry given; using default wall");
     else if (!haveValidScreenDef)
-        std::cerr << "Screen geometry invalid; falling back to default wall" << std::endl;
+        qWarning("Screen geometry invalid; falling back to default wall");
     if (!haveScreenDef || !haveValidScreenDef) {
         _screenType = screenTypeWall;
         _screenWall[0] = -1.0f;
@@ -262,7 +261,7 @@ void QVRVNCViewer::update()
     _vncDirtyRectangles.clear();
     int i = WaitForMessage(_vncClient, 1);
     if (i > 0 && !HandleRFBServerMessage(_vncClient)) {
-        std::cerr << "VNC event handling failed" << std::endl;
+        qWarning("VNC event handling failed");
     }
 }
 
@@ -327,7 +326,7 @@ bool QVRVNCViewer::initProcess(QVRProcess* p)
         _vncClient->listen6Port = LISTEN_PORT_OFFSET;
 #endif
         if (!rfbInitClient(_vncClient, &_argc, _argv)) {
-            std::cerr << "Cannot initialize VNC client" << std::endl;
+            qCritical("Cannot initialize VNC client");
             return false;
         }
     }
@@ -401,7 +400,7 @@ int main(int argc, char* argv[])
     /* Then start QVR with your app */
     QVRVNCViewer qvrapp(argc, argv);
     if (!manager.init(&qvrapp)) {
-        std::cerr << "Cannot initialize QVR manager" << std::endl;
+        qCritical("Cannot initialize QVR manager");
         return 1;
     }
 

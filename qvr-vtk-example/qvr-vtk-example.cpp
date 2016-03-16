@@ -171,7 +171,7 @@ int main(int argc, char* argv[])
     /* Then start QVR with your app */
     QVRVTKExample qvrapp;
     if (!manager.init(&qvrapp)) {
-        std::cerr << "Cannot initialize QVR manager" << std::endl;
+        qCritical("Cannot initialize QVR manager");
         return 1;
     }
 

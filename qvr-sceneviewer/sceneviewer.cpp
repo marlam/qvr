@@ -21,8 +21,6 @@
  * SOFTWARE.
  */
 
-#include <iostream>
-
 #include <QImage>
 #include <QFile>
 #include <QTextStream>
@@ -110,7 +108,7 @@ unsigned int SceneViewer::createTex(
     } else {
         QImage img;
         if (!img.load(filename)) {
-            std::cerr << "Cannot load texture " << qPrintable(filename) << "; ignoring it" << std::endl;
+            qWarning("Cannot load texture %s; ignoring it", qPrintable(filename));
         } else {
             // Using Qt bindTexture() does not work for some reason, maybe it's
             // because we use a core context. So we do it ourselves.
@@ -179,7 +177,7 @@ bool SceneViewer::init(const aiScene* s, const QString& baseDirectory, const QMa
             light.type = Light::spotlight;
             break;
         default:
-            std::cerr << "Ignoring light " << i << std::endl;
+            qWarning("Ignoring light %u", i);
             continue;
         }
         QVector3D p = QVector3D(l->mPosition[0], l->mPosition[1], l->mPosition[2]);
@@ -332,7 +330,7 @@ bool SceneViewer::init(const aiScene* s, const QString& baseDirectory, const QMa
 
     /* Create default light source if there is none */
     if (_scene.lights.size() == 0) {
-        std::cerr << "Adding default light to scene" << std::endl;
+        qWarning("Adding default light to scene");
         Light defaultLight;
         _scene.lights.push_back(defaultLight);
     }
@@ -349,7 +347,7 @@ bool SceneViewer::init(const aiScene* s, const QString& baseDirectory, const QMa
 
     /* Set all uniforms that will not change between frames (i.e. light sources) */
 
-    std::cerr << "Using " << _scene.lights.size() << " light sources" << std::endl;
+    qInfo("Using %u light sources", static_cast<unsigned int>(_scene.lights.size()));
     glUseProgram(_prg.programId());
     int tmp_int[_scene.lights.size()];
     float tmp_vec3[3 * _scene.lights.size()];

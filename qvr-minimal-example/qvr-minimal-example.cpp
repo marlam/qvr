@@ -185,7 +185,7 @@ int main(int argc, char* argv[])
     /* Then start QVR with the app */
     QVRMinimalExample qvrapp;
     if (!manager.init(&qvrapp)) {
-        qFatal("Cannot initialize QVR manager");
+        qCritical("Cannot initialize QVR manager");
         return 1;
     }
 
