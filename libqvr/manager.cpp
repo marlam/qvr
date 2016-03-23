@@ -344,6 +344,7 @@ bool QVRManager::init(QVRApp* app)
     if (_processIndex == 0) {
         // Set up timer to trigger master loop
         QObject::connect(_triggerTimer, SIGNAL(timeout()), this, SLOT(masterLoop()));
+        _masterLoopFirstRun = true;
         _triggerTimer->start();
     } else {
         // Set up timer to trigger slave loop
@@ -360,8 +361,16 @@ void QVRManager::masterLoop()
 {
     Q_ASSERT(_processIndex == 0);
 
-    QApplication::processEvents();
     QVR_FIREHOSE("masterLoop() ...");
+
+    if (_masterLoopFirstRun) {
+        // XXX: without this ugly hack, some windows are still not exposed
+        // when rendering and swapping buffers (at least in multi-process
+        // configurations), even though we called
+        // QApplication::processEvents() at the end of init().
+        QApplication::processEvents();
+        _masterLoopFirstRun = false;
+    }
 
     if (_masterWindow)
         _masterWindow->winContext()->makeCurrent(_masterWindow);
@@ -456,8 +465,10 @@ void QVRManager::masterLoop()
     render();
 
     // process events and run application updates while the windows wait for the buffer swap
-    QVR_FIREHOSE("  ... app update");
+    QVR_FIREHOSE("  ... event processing");
+    QApplication::processEvents();
     processEventQueue();
+    QVR_FIREHOSE("  ... app update");
     _app->update();
     _app->updateObservers(_customObservers);
 
@@ -499,6 +510,7 @@ void QVRManager::slaveLoop()
     } else if (cmd == 'r') {
         _thisProcess->receiveCmdRender(&_near, &_far, _app);
         render();
+        QApplication::processEvents();
         while (!eventQueue->empty()) {
             QVR_FIREHOSE("  ... sending event to master process");
             _thisProcess->sendCmdEvent(&eventQueue->front());
@@ -536,7 +548,6 @@ void QVRManager::quit()
 
 void QVRManager::render()
 {
-    QApplication::processEvents();
     QVR_FIREHOSE("  render() ...");
 
     if (_masterWindow)
@@ -547,7 +558,6 @@ void QVRManager::render()
         _app->preRenderProcess(_thisProcess);
         // render
         for (int w = 0; w < _windows.size(); w++) {
-            QVR_FIREHOSE("  ... preRenderWindow(%d)", w);
             if (!_wasdqeMouseInitialized) {
                 if (_wasdqeMouseProcessIndex == _windows[w]->processIndex()
                         && _wasdqeMouseWindowIndex == _windows[w]->index()) {
@@ -558,6 +568,7 @@ void QVRManager::render()
                     _windows[w]->unsetCursor();
                 }
             }
+            QVR_FIREHOSE("  ... preRenderWindow(%d)", w);
             _app->preRenderWindow(_windows[w]);
             QVR_FIREHOSE("  ... render(%d)", w);
             unsigned int textures[2];
