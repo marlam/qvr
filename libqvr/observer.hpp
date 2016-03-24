@@ -37,6 +37,7 @@
 #include "config.hpp"
 
 class QDataStream;
+class QElapsedTimer;
 
 /*!
  * \brief Observer of the virtual world
@@ -76,6 +77,7 @@ private:
     QQuaternion _trackingOrientation[3];
 #ifdef HAVE_VRPN
     // Navigation
+    QElapsedTimer* _vrpnTimer;
     vrpn_Tracker_Remote* _vrpnNavigationTrackerRemote;
     vrpn_Analog_Remote* _vrpnNavigationAnalogRemote;
     vrpn_Button_Remote* _vrpnNavigationButtonRemote;

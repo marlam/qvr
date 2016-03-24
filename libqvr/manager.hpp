@@ -189,6 +189,7 @@ class QOpenGLContext;
 class QKeyEvent;
 class QMouseEvent;
 class QWheelEvent;
+class QElapsedTimer;
 
 class QVRApp;
 class QVRObserverConfig;
@@ -273,6 +274,7 @@ private:
     float _near, _far;
     bool _wantExit;
     bool _haveWasdqeObservers;    // WASDQE observers: do we have at least one?
+    QElapsedTimer* _wasdqeTimer;  // WASDQE observers: framerate-independent speed
     bool _wasdqeIsPressed[6];     // WASDQE observers: keys
     int _wasdqeMouseProcessIndex; // WASDQE observers: process with mouse grab
     int _wasdqeMouseWindowIndex;  // WASDQE observers: window with mouse grab

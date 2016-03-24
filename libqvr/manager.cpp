@@ -26,6 +26,7 @@
 #include <QDesktopWidget>
 #include <QApplication>
 #include <QTimer>
+#include <QElapsedTimer>
 
 #include "manager.hpp"
 #include "event.hpp"
@@ -193,6 +194,7 @@ QVRManager::~QVRManager()
     delete _config;
     delete _triggerTimer;
     delete _fpsTimer;
+    delete _wasdqeTimer;
     delete eventQueue;
     eventQueue = NULL;
     manager = NULL;
@@ -231,6 +233,7 @@ bool QVRManager::init(QVRApp* app)
             _haveVrpnObservers = true;
     }
     if (_haveWasdqeObservers) {
+        _wasdqeTimer = new QElapsedTimer;
         for (int i = 0; i < 6; i++)
             _wasdqeIsPressed[i] = false;
         _wasdqeMouseProcessIndex = -1;
@@ -239,6 +242,8 @@ bool QVRManager::init(QVRApp* app)
         _wasdqePos = QVector3D(0.0f, 0.0f, 0.0f);
         _wasdqeHorzAngle = 0.0f;
         _wasdqeVertAngle = 0.0f;
+    } else {
+        _wasdqeTimer = NULL;
     }
     if (_haveVrpnObservers) {
 #ifdef HAVE_VRPN
@@ -391,7 +396,14 @@ void QVRManager::masterLoop()
         QVRObserver* obs = _observers[o];
         QVR_FIREHOSE("  ... updating observer %d", o);
         if (obs->config().navigationType() == QVR_Navigation_WASDQE) {
-            const float speed = 0.04f; // TODO: make this configurable?
+            const float speed = 1.5f; // in meters per second; TODO: make this configurable?
+            float seconds = 0.0f;
+            if (_wasdqeTimer->isValid()) {
+                seconds = _wasdqeTimer->nsecsElapsed() / 1e9f;
+                _wasdqeTimer->restart();
+            } else {
+                _wasdqeTimer->start();
+            }
             if (_wasdqeIsPressed[0] || _wasdqeIsPressed[1] || _wasdqeIsPressed[2] || _wasdqeIsPressed[3]) {
                 QQuaternion viewerRot = obs->trackingOrientation() * obs->navigationOrientation();
                 QVector3D dir;
@@ -405,13 +417,13 @@ void QVRManager::masterLoop()
                     dir = viewerRot * QVector3D(+1.0f, 0.0f, 0.0f);
                 dir.setY(0.0f);
                 dir.normalize();
-                _wasdqePos += speed * dir;
+                _wasdqePos += speed * seconds * dir;
             }
             if (_wasdqeIsPressed[4]) {
-                _wasdqePos += speed * QVector3D(0.0f, +1.0f, 0.0f);
+                _wasdqePos += speed * seconds * QVector3D(0.0f, +1.0f, 0.0f);
             }
             if (_wasdqeIsPressed[5]) {
-                _wasdqePos += speed * QVector3D(0.0f, -1.0f, 0.0f);
+                _wasdqePos += speed * seconds * QVector3D(0.0f, -1.0f, 0.0f);
             }
             obs->setNavigation(_wasdqePos + obs->config().initialNavigationPosition(),
                     QQuaternion::fromEulerAngles(_wasdqeVertAngle, _wasdqeHorzAngle, 0.0f)
