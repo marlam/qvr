@@ -22,6 +22,7 @@
  */
 
 #include <QtMath>
+#include <QElapsedTimer>
 
 #include "manager.hpp"
 #include "observer.hpp"
@@ -63,6 +64,7 @@ QVRObserver::QVRObserver() :
     _index(-1)
 {
 #ifdef HAVE_VRPN
+    _vrpnTimer = NULL;
     _vrpnNavigationTrackerRemote = NULL;
     _vrpnNavigationAnalogRemote = NULL;
     _vrpnNavigationButtonRemote = NULL;
@@ -78,6 +80,7 @@ QVRObserver::QVRObserver(int observerIndex) :
     setTracking(config().initialTrackingPosition(), config().initialTrackingOrientation());
 #ifdef HAVE_VRPN
     if (config().navigationType() == QVR_Navigation_VRPN && QVRManager::processIndex() == 0) {
+        _vrpnTimer = new QElapsedTimer;
         QStringList args = config().navigationParameters().split(' ', QString::SkipEmptyParts);
         QString name = (args.length() == 8 ? args[0] : config().navigationParameters());
         int sensor = (args.length() == 8 ? args[1].toInt() : vrpn_ALL_SENSORS);
@@ -103,6 +106,7 @@ QVRObserver::QVRObserver(int observerIndex) :
         _vrpnNavigationPos = QVector3D(0.0f, 0.0f, 0.0f);
         _vrpnNavigationRotY = 0.0f;
     } else {
+        _vrpnTimer = NULL;
         _vrpnNavigationTrackerRemote = NULL;
         _vrpnNavigationAnalogRemote = NULL;
         _vrpnNavigationButtonRemote = NULL;
@@ -123,6 +127,7 @@ QVRObserver::QVRObserver(int observerIndex) :
 QVRObserver::~QVRObserver()
 {
 #ifdef HAVE_VRPN
+    delete _vrpnTimer;
     delete _vrpnNavigationTrackerRemote;
     delete _vrpnNavigationAnalogRemote;
     delete _vrpnNavigationButtonRemote;
@@ -173,7 +178,14 @@ void QVRObserver::update()
         _vrpnNavigationTrackerRemote->mainloop();
         _vrpnNavigationAnalogRemote->mainloop();
         _vrpnNavigationButtonRemote->mainloop();
-        const float speed = 0.04f; // TODO: make this configurable?
+        const float speed = 1.5f; // in meters per second; TODO: make this configurable?
+        float seconds = 0.0f;
+        if (_vrpnTimer->isValid()) {
+            seconds = _vrpnTimer->nsecsElapsed() / 1e9f;
+            _vrpnTimer->restart();
+        } else {
+            _vrpnTimer->start();
+        }
         if (std::abs(_vrpnNavigationAnalogState[0]) > 0.0f
                 || std::abs(_vrpnNavigationAnalogState[1]) > 0.0f) {
             QQuaternion wandRot = _vrpnNavigationOrientation * QQuaternion::fromEulerAngles(0.0f, _vrpnNavigationRotY, 0.0f);
@@ -183,13 +195,13 @@ void QVRObserver::update()
             QVector3D rightDir = wandRot * QVector3D(1.0f, 0.0f, 0.0f);
             rightDir.setY(0.0f);
             rightDir.normalize();
-            _vrpnNavigationPos += speed * (forwardDir * _vrpnNavigationAnalogState[0] + rightDir * _vrpnNavigationAnalogState[1]);
+            _vrpnNavigationPos += speed * seconds * (forwardDir * _vrpnNavigationAnalogState[0] + rightDir * _vrpnNavigationAnalogState[1]);
         }
         if (_vrpnNavigationButtonState[0]) {
-            _vrpnNavigationPos += speed * QVector3D(0.0f, +1.0f, 0.0f);
+            _vrpnNavigationPos += speed * seconds * QVector3D(0.0f, +1.0f, 0.0f);
         }
         if (_vrpnNavigationButtonState[1]) {
-            _vrpnNavigationPos += speed * QVector3D(0.0f, -1.0f, 0.0f);
+            _vrpnNavigationPos += speed * seconds * QVector3D(0.0f, -1.0f, 0.0f);
         }
         if (_vrpnNavigationButtonState[2]) {
             _vrpnNavigationRotY += 1.0f;

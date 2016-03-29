@@ -21,8 +21,6 @@
  * SOFTWARE.
  */
 
-#include <iostream>
-
 #include <QApplication>
 #include <QKeyEvent>
 #include <QImage>
@@ -307,7 +305,7 @@ int main(int argc, char* argv[])
     /* Then start QVR with your app */
     QVRHelloWorld qvrapp;
     if (!manager.init(&qvrapp)) {
-        std::cerr << "Cannot initialize QVR manager" << std::endl;
+        qCritical("Cannot initialize QVR manager");
         return 1;
     }
 

@@ -26,6 +26,7 @@
 #include <QDesktopWidget>
 #include <QApplication>
 #include <QTimer>
+#include <QElapsedTimer>
 
 #include "manager.hpp"
 #include "event.hpp"
@@ -193,6 +194,7 @@ QVRManager::~QVRManager()
     delete _config;
     delete _triggerTimer;
     delete _fpsTimer;
+    delete _wasdqeTimer;
     delete eventQueue;
     eventQueue = NULL;
     manager = NULL;
@@ -231,6 +233,7 @@ bool QVRManager::init(QVRApp* app)
             _haveVrpnObservers = true;
     }
     if (_haveWasdqeObservers) {
+        _wasdqeTimer = new QElapsedTimer;
         for (int i = 0; i < 6; i++)
             _wasdqeIsPressed[i] = false;
         _wasdqeMouseProcessIndex = -1;
@@ -239,6 +242,8 @@ bool QVRManager::init(QVRApp* app)
         _wasdqePos = QVector3D(0.0f, 0.0f, 0.0f);
         _wasdqeHorzAngle = 0.0f;
         _wasdqeVertAngle = 0.0f;
+    } else {
+        _wasdqeTimer = NULL;
     }
     if (_haveVrpnObservers) {
 #ifdef HAVE_VRPN
@@ -344,6 +349,7 @@ bool QVRManager::init(QVRApp* app)
     if (_processIndex == 0) {
         // Set up timer to trigger master loop
         QObject::connect(_triggerTimer, SIGNAL(timeout()), this, SLOT(masterLoop()));
+        _masterLoopFirstRun = true;
         _triggerTimer->start();
     } else {
         // Set up timer to trigger slave loop
@@ -360,8 +366,16 @@ void QVRManager::masterLoop()
 {
     Q_ASSERT(_processIndex == 0);
 
-    QApplication::processEvents();
     QVR_FIREHOSE("masterLoop() ...");
+
+    if (_masterLoopFirstRun) {
+        // XXX: without this ugly hack, some windows are still not exposed
+        // when rendering and swapping buffers (at least in multi-process
+        // configurations), even though we called
+        // QApplication::processEvents() at the end of init().
+        QApplication::processEvents();
+        _masterLoopFirstRun = false;
+    }
 
     if (_masterWindow)
         _masterWindow->winContext()->makeCurrent(_masterWindow);
@@ -382,7 +396,14 @@ void QVRManager::masterLoop()
         QVRObserver* obs = _observers[o];
         QVR_FIREHOSE("  ... updating observer %d", o);
         if (obs->config().navigationType() == QVR_Navigation_WASDQE) {
-            const float speed = 0.04f; // TODO: make this configurable?
+            const float speed = 1.5f; // in meters per second; TODO: make this configurable?
+            float seconds = 0.0f;
+            if (_wasdqeTimer->isValid()) {
+                seconds = _wasdqeTimer->nsecsElapsed() / 1e9f;
+                _wasdqeTimer->restart();
+            } else {
+                _wasdqeTimer->start();
+            }
             if (_wasdqeIsPressed[0] || _wasdqeIsPressed[1] || _wasdqeIsPressed[2] || _wasdqeIsPressed[3]) {
                 QQuaternion viewerRot = obs->trackingOrientation() * obs->navigationOrientation();
                 QVector3D dir;
@@ -396,13 +417,13 @@ void QVRManager::masterLoop()
                     dir = viewerRot * QVector3D(+1.0f, 0.0f, 0.0f);
                 dir.setY(0.0f);
                 dir.normalize();
-                _wasdqePos += speed * dir;
+                _wasdqePos += speed * seconds * dir;
             }
             if (_wasdqeIsPressed[4]) {
-                _wasdqePos += speed * QVector3D(0.0f, +1.0f, 0.0f);
+                _wasdqePos += speed * seconds * QVector3D(0.0f, +1.0f, 0.0f);
             }
             if (_wasdqeIsPressed[5]) {
-                _wasdqePos += speed * QVector3D(0.0f, -1.0f, 0.0f);
+                _wasdqePos += speed * seconds * QVector3D(0.0f, -1.0f, 0.0f);
             }
             obs->setNavigation(_wasdqePos + obs->config().initialNavigationPosition(),
                     QQuaternion::fromEulerAngles(_wasdqeVertAngle, _wasdqeHorzAngle, 0.0f)
@@ -456,8 +477,10 @@ void QVRManager::masterLoop()
     render();
 
     // process events and run application updates while the windows wait for the buffer swap
-    QVR_FIREHOSE("  ... app update");
+    QVR_FIREHOSE("  ... event processing");
+    QApplication::processEvents();
     processEventQueue();
+    QVR_FIREHOSE("  ... app update");
     _app->update();
     _app->updateObservers(_customObservers);
 
@@ -499,6 +522,7 @@ void QVRManager::slaveLoop()
     } else if (cmd == 'r') {
         _thisProcess->receiveCmdRender(&_near, &_far, _app);
         render();
+        QApplication::processEvents();
         while (!eventQueue->empty()) {
             QVR_FIREHOSE("  ... sending event to master process");
             _thisProcess->sendCmdEvent(&eventQueue->front());
@@ -536,7 +560,6 @@ void QVRManager::quit()
 
 void QVRManager::render()
 {
-    QApplication::processEvents();
     QVR_FIREHOSE("  render() ...");
 
     if (_masterWindow)
@@ -547,7 +570,6 @@ void QVRManager::render()
         _app->preRenderProcess(_thisProcess);
         // render
         for (int w = 0; w < _windows.size(); w++) {
-            QVR_FIREHOSE("  ... preRenderWindow(%d)", w);
             if (!_wasdqeMouseInitialized) {
                 if (_wasdqeMouseProcessIndex == _windows[w]->processIndex()
                         && _wasdqeMouseWindowIndex == _windows[w]->index()) {
@@ -558,6 +580,7 @@ void QVRManager::render()
                     _windows[w]->unsetCursor();
                 }
             }
+            QVR_FIREHOSE("  ... preRenderWindow(%d)", w);
             _app->preRenderWindow(_windows[w]);
             QVR_FIREHOSE("  ... render(%d)", w);
             unsigned int textures[2];

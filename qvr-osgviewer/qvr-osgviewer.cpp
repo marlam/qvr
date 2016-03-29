@@ -114,14 +114,14 @@ int main(int argc, char* argv[])
 
     /* Load the model file */
     if (argc != 2) {
-        std::cerr << argv[0] << ": requires model filename argument." << std::endl;
+        qCritical("%s: requires model filename argument.", argv[0]);
         return 1;
     }
     osg::ref_ptr<osgDB::ReaderWriter::Options> options = new osgDB::ReaderWriter::Options();
     options->setOptionString("noRotation");
     osg::ref_ptr<osg::Node> model = osgDB::readNodeFile(argv[1], options);
     if (!model) {
-        std::cerr << argv[0] << ": no data loaded." << std::endl;
+        qCritical("%s: no data loaded.", argv[0]);
         return 1;
     }
 
@@ -134,7 +134,7 @@ int main(int argc, char* argv[])
     /* Then start QVR with your app */
     QVROSGViewer qvrapp(model);
     if (!manager.init(&qvrapp)) {
-        std::cerr << "Cannot initialize QVR manager" << std::endl;
+        qCritical("Cannot initialize QVR manager");
         return 1;
     }
 
