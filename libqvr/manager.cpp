@@ -592,7 +592,7 @@ void QVRManager::render()
          * the current scene, otherwise artefacts are displayed when the window
          * threads render them. It seems that glFlush() is not enough for all
          * OpenGL implementations; to be safe, we use glFinish(). */
-        glFinish();
+        _masterWindow->glFinish();
         for (int w = 0; w < _windows.size(); w++) {
             QVR_FIREHOSE("  ... renderToScreen(%d)", w);
             _windows[w]->renderToScreen();
