@@ -44,18 +44,18 @@ QVRFrustum::QVRFrustum(const float* lrbtnf)
 QMatrix4x4 QVRFrustum::toMatrix4x4() const
 {
     QMatrix4x4 m;
-    m.frustum(left(), right(), bottom(), top(), near(), far());
+    m.frustum(leftPlane(), rightPlane(), bottomPlane(), topPlane(), nearPlane(), farPlane());
     return m;
 }
 
-void QVRFrustum::adjustNear(float n)
+void QVRFrustum::adjustNearPlane(float n)
 {
-    float q = n / near();
-    setLeft(left() * q);
-    setRight(right() * q);
-    setBottom(bottom() * q);
-    setTop(top() * q);
-    setNear(n);
+    float q = n / nearPlane();
+    setLeftPlane(leftPlane() * q);
+    setRightPlane(rightPlane() * q);
+    setBottomPlane(bottomPlane() * q);
+    setTopPlane(topPlane() * q);
+    setNearPlane(n);
 }
 
 QDataStream &operator<<(QDataStream& ds, const QVRFrustum& f)

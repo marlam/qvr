@@ -565,12 +565,12 @@ void QVRManager::render()
             for (int i = 0; i < renderContext.viewPasses(); i++) {
                 QVR_FIREHOSE("  ... pass %d", i);
                 QVR_FIREHOSE("  ...   frustum: l=%g r=%g b=%g t=%g n=%g f=%g",
-                        renderContext.frustum(i).left(),
-                        renderContext.frustum(i).right(),
-                        renderContext.frustum(i).bottom(),
-                        renderContext.frustum(i).top(),
-                        renderContext.frustum(i).near(),
-                        renderContext.frustum(i).far());
+                        renderContext.frustum(i).leftPlane(),
+                        renderContext.frustum(i).rightPlane(),
+                        renderContext.frustum(i).bottomPlane(),
+                        renderContext.frustum(i).topPlane(),
+                        renderContext.frustum(i).nearPlane(),
+                        renderContext.frustum(i).farPlane());
                 QVR_FIREHOSE("  ...   viewmatrix: [%g %g %g %g] [%g %g %g %g] [%g %g %g %g] [%g %g %g %g]",
                         renderContext.viewMatrix(i)(0, 0), renderContext.viewMatrix(i)(0, 1),
                         renderContext.viewMatrix(i)(0, 2), renderContext.viewMatrix(i)(0, 3),

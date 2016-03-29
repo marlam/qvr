@@ -67,7 +67,7 @@ private:
     void sendCmdInit(const QByteArray& serializedStatData);                         // starts with 'i'
     void sendCmdWasdqeState(const QByteArray& serializedWasdqeState);               // starts with 'w'
     void sendCmdObserver(const QByteArray& serializedObserver);                     // starts with 'o'
-    void sendCmdRender(float near, float far, const QByteArray& serializedDynData); // starts with 'r'
+    void sendCmdRender(float n, float f, const QByteArray& serializedDynData);      // starts with 'r'
     void sendCmdQuit();                                                             // is 'q'
     void waitForSlaveData();
     bool receiveCmdEvent(QVREvent* e);
@@ -80,7 +80,7 @@ private:
     void receiveCmdInit(QVRApp* app);
     void receiveCmdWasdqeState(int*, int*, bool*);
     void receiveCmdObserver(QVRObserver* obs);
-    void receiveCmdRender(float* near, float* far, QVRApp* app);
+    void receiveCmdRender(float* n, float* f, QVRApp* app);
 
     // explicit flushing of stdout
     void flush();

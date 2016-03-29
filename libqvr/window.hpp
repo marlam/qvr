@@ -91,7 +91,7 @@ private:
 
     // to be called by QVRManager from the main thread:
     bool isValid() const { return _isValid; }
-    const QVRRenderContext& computeRenderContext(float near, float far, unsigned int textures[2]);
+    const QVRRenderContext& computeRenderContext(float n, float f, unsigned int textures[2]);
     void exitGL();
     void renderToScreen();
     void asyncSwapBuffers();

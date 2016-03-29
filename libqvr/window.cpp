@@ -637,7 +637,7 @@ void QVRWindow::screenWall(QVector3D& cornerBottomLeft, QVector3D& cornerBottomR
     }
 }
 
-const QVRRenderContext& QVRWindow::computeRenderContext(float near, float far, unsigned int textures[2])
+const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsigned int textures[2])
 {
     Q_ASSERT(!isMaster());
     Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
@@ -660,11 +660,11 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float near, float far, u
         QQuaternion viewRot;
         if (config().outputMode() == QVR_Output_Stereo_Oculus) {
             _renderContext.setFrustum(i, QVRFrustum(
-                        -_hmdLRBTTan[0][i] * near,
-                         _hmdLRBTTan[1][i] * near,
-                        -_hmdLRBTTan[2][i] * near,
-                         _hmdLRBTTan[3][i] * near,
-                        near, far));
+                        -_hmdLRBTTan[0][i] * n,
+                         _hmdLRBTTan[1][i] * n,
+                        -_hmdLRBTTan[2][i] * n,
+                         _hmdLRBTTan[3][i] * n,
+                        n, f));
             viewPos = _renderContext.trackingPosition(i);
             viewRot = _renderContext.trackingOrientation(i);
         } else {
@@ -686,8 +686,8 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float near, float far, u
             float r = width + l;
             float b = -QVector3D::dotProduct(-bl, planeUp);
             float t = height + b;
-            float q = near / planeDistance;
-            _renderContext.setFrustum(i, QVRFrustum(l * q, r * q, b * q, t * q, near, far));
+            float q = n / planeDistance;
+            _renderContext.setFrustum(i, QVRFrustum(l * q, r * q, b * q, t * q, n, f));
             // Compute the view matrix
             QVector3D eyeProjection = -QVector3D::dotProduct(-bl, planeNormal) * planeNormal;
             viewPos = eyePosition;

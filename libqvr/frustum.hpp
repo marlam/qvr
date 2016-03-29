@@ -69,7 +69,12 @@ public:
      */
     void getClippingPlanes(float* l, float* r, float* b, float* t, float* n, float* f) const
     {
-        *l = left(); *r = right(); *b = bottom(); *t = top(); *n = near(); *f = far();
+        *l = leftPlane();
+        *r = rightPlane();
+        *b = bottomPlane();
+        *t = topPlane();
+        *n = nearPlane();
+        *f = farPlane();
     }
 
     /*!
@@ -77,7 +82,12 @@ public:
      */
     void getClippingPlanes(float* lrbtnf) const
     {
-        lrbtnf[0] = left(); lrbtnf[1] = right(); lrbtnf[2] = bottom(); lrbtnf[3] = top(); lrbtnf[4] = near(); lrbtnf[5] = far();
+        lrbtnf[0] = leftPlane();
+        lrbtnf[1] = rightPlane();
+        lrbtnf[2] = bottomPlane();
+        lrbtnf[3] = topPlane();
+        lrbtnf[4] = nearPlane();
+        lrbtnf[5] = farPlane();
     }
 
     /*!
@@ -90,79 +100,79 @@ public:
      * \brief Adjusts the near plane while preserving the frustum shape.
      * \param n         The new near clipping plane
      */
-    void adjustNear(float n);
+    void adjustNearPlane(float n);
 
     /*!
      * \brief Returns the left clipping plane.
      * \return The left clipping plane
      */
-    float left() const   { return _lrbtnf[0]; }
+    float leftPlane() const   { return _lrbtnf[0]; }
 
     /*!
      * \brief Returns the right clipping plane.
      * \return The right clipping plane
      */
-    float right() const  { return _lrbtnf[1]; }
+    float rightPlane() const  { return _lrbtnf[1]; }
 
     /*!
      * \brief Returns the bottom clipping plane.
      * \return The bottom clipping plane
      */
-    float bottom() const { return _lrbtnf[2]; }
+    float bottomPlane() const { return _lrbtnf[2]; }
 
     /*!
      * \brief Returns the top clipping plane.
      * \return The top clipping plane
      */
-    float top() const    { return _lrbtnf[3]; }
+    float topPlane() const    { return _lrbtnf[3]; }
 
     /*!
      * \brief Returns the near clipping plane.
      * \return The near clipping plane
      */
-    float near() const   { return _lrbtnf[4]; }
+    float nearPlane() const   { return _lrbtnf[4]; }
 
     /*!
      * \brief Returns the far clipping plane.
      * \return The far clipping plane
      */
-    float far() const    { return _lrbtnf[5]; }
+    float farPlane() const    { return _lrbtnf[5]; }
 
     /*!
      * \brief Sets the left clipping plane.
      * \param l         The left clipping plane
      */
-    void setLeft(float l)   { _lrbtnf[0] = l; }
+    void setLeftPlane(float l)   { _lrbtnf[0] = l; }
 
     /*!
      * \brief Sets the right clipping plane.
      * \param r         The right clipping plane
      */
-    void setRight(float r)  { _lrbtnf[1] = r; }
+    void setRightPlane(float r)  { _lrbtnf[1] = r; }
 
     /*!
      * \brief Sets the bottom clipping plane.
      * \param b         The bottom clipping plane
      */
-    void setBottom(float b) { _lrbtnf[2] = b; }
+    void setBottomPlane(float b) { _lrbtnf[2] = b; }
 
     /*!
      * \brief Sets the top clipping plane.
      * \param t         The top clipping plane
      */
-    void setTop(float t)    { _lrbtnf[3] = t; }
+    void setTopPlane(float t)    { _lrbtnf[3] = t; }
 
     /*!
      * \brief Sets the near clipping plane.
      * \param n         The near clipping plane
      */
-    void setNear(float n)   { _lrbtnf[4] = n; }
+    void setNearPlane(float n)   { _lrbtnf[4] = n; }
 
     /*!
      * \brief Sets the far clipping plane.
      * \param f         The far clipping plane
      */
-    void setFar(float f)    { _lrbtnf[5] = f; }
+    void setFarPlane(float f)    { _lrbtnf[5] = f; }
 };
 
 /*!

@@ -105,12 +105,12 @@ public:
 
     /*!
      * \brief Set the near and far clipping plane.
-     * \param near      Near clipping plane
-     * \param far       Far clipping plane
+     * \param nearPlane Near clipping plane
+     * \param farPlane  Far clipping plane
      *
      * Called once before each frame on the master process.
      */
-    virtual void getNearFar(float& near, float& far) { near = 0.05f; far = 100.0f; }
+    virtual void getNearFar(float& nearPlane, float& farPlane) { nearPlane = 0.05f; farPlane = 100.0f; }
 
     /*!
      * \brief Indicate if the application wants to exit.
