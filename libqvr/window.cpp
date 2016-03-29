@@ -462,92 +462,91 @@ const QVRObserverConfig& QVRWindow::observerConfig() const
 
 bool QVRWindow::initGL()
 {
-    if (isMaster())
-        return true;
-
     Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
 
     _winContext->makeCurrent(this);
-    if (!QOpenGLFunctions_3_3_Core::initializeOpenGLFunctions()) {
+    if (!initializeOpenGLFunctions()) {
         QVR_FATAL("Cannot initialize OpenGL functions");
         return false;
     }
 
-    if (config().outputPlugin().isEmpty()) {
-        // Initialize our own output code
-        static QVector3D quadPositions[] = {
-            QVector3D(-1.0f, -1.0f, 0.0f), QVector3D(+1.0f, -1.0f, 0.0f),
-            QVector3D(+1.0f, +1.0f, 0.0f), QVector3D(-1.0f, +1.0f, 0.0f)
-        };
-        static QVector2D quadTexcoords[] = {
-            QVector2D(0.0f, 0.0f), QVector2D(1.0f, 0.0f),
-            QVector2D(1.0f, 1.0f), QVector2D(0.0f, 1.0f)
-        };
-        static GLuint quadIndices[] = {
-            0, 1, 3, 1, 2, 3
-        };
-        glGenVertexArrays(1, &_outputQuadVao);
-        glBindVertexArray(_outputQuadVao);
-        GLuint positionBuffer;
-        glGenBuffers(1, &positionBuffer);
-        glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);
-        glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(QVector3D), quadPositions, GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-        glEnableVertexAttribArray(0);
-        GLuint texcoordBuffer;
-        glGenBuffers(1, &texcoordBuffer);
-        glBindBuffer(GL_ARRAY_BUFFER, texcoordBuffer);
-        glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(QVector2D), quadTexcoords, GL_STATIC_DRAW);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
-        glEnableVertexAttribArray(1);
-        GLuint indexBuffer;
-        glGenBuffers(1, &indexBuffer);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(GLuint), quadIndices, GL_STATIC_DRAW);
-        glBindVertexArray(0);
-        GLenum e = glGetError();
-        if (e != GL_NO_ERROR) {
-            QVR_FATAL("OpenGL error 0x%04X\n", e);
-            return false;
-        }
+    if (!isMaster()) {
+        if (config().outputPlugin().isEmpty()) {
+            // Initialize our own output code
+            static QVector3D quadPositions[] = {
+                QVector3D(-1.0f, -1.0f, 0.0f), QVector3D(+1.0f, -1.0f, 0.0f),
+                QVector3D(+1.0f, +1.0f, 0.0f), QVector3D(-1.0f, +1.0f, 0.0f)
+            };
+            static QVector2D quadTexcoords[] = {
+                QVector2D(0.0f, 0.0f), QVector2D(1.0f, 0.0f),
+                QVector2D(1.0f, 1.0f), QVector2D(0.0f, 1.0f)
+            };
+            static GLuint quadIndices[] = {
+                0, 1, 3, 1, 2, 3
+            };
+            glGenVertexArrays(1, &_outputQuadVao);
+            glBindVertexArray(_outputQuadVao);
+            GLuint positionBuffer;
+            glGenBuffers(1, &positionBuffer);
+            glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);
+            glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(QVector3D), quadPositions, GL_STATIC_DRAW);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+            glEnableVertexAttribArray(0);
+            GLuint texcoordBuffer;
+            glGenBuffers(1, &texcoordBuffer);
+            glBindBuffer(GL_ARRAY_BUFFER, texcoordBuffer);
+            glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(QVector2D), quadTexcoords, GL_STATIC_DRAW);
+            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+            glEnableVertexAttribArray(1);
+            GLuint indexBuffer;
+            glGenBuffers(1, &indexBuffer);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(GLuint), quadIndices, GL_STATIC_DRAW);
+            glBindVertexArray(0);
+            GLenum e = glGetError();
+            if (e != GL_NO_ERROR) {
+                QVR_FATAL("OpenGL error 0x%04X\n", e);
+                return false;
+            }
 
-        _outputPrg = new QOpenGLShaderProgram(this);
-        if (!_outputPrg->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/libqvr/output-vs.glsl")) {
-            QVR_FATAL("Cannot add output vertex shader");
-            return false;
-        }
-        if (!_outputPrg->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/libqvr/output-fs.glsl")) {
-            QVR_FATAL("Cannot add output fragment shader");
-            return false;
-        }
-        if (!_outputPrg->link()) {
-            QVR_FATAL("Cannot link output program");
-            return false;
-        }
-    } else {
-        // Initialize output plugin
-        QStringList pluginSpec = config().outputPlugin().split(' ', QString::SkipEmptyParts);
-        QString pluginPath = pluginSpec.at(0);
-        QStringList pluginArgs = pluginSpec.mid(1);
-        QLibrary plugin(pluginPath);
-        if (!plugin.load()) {
-            QVR_FATAL("Cannot load output plugin %s", qPrintable(pluginPath));
-            return false;
-        }
-        _outputPluginInitFunc = reinterpret_cast<bool (*)(QVRWindow*, const QStringList&)>
-            (plugin.resolve("QVROutputPluginInit"));
-        _outputPluginExitFunc = reinterpret_cast<void (*)(QVRWindow*)>
-            (plugin.resolve("QVROutputPluginExit"));
-        _outputPluginFunc = reinterpret_cast<void (*)(QVRWindow*, const QVRRenderContext&,
-                unsigned int, unsigned int)>
-            (plugin.resolve("QVROutputPlugin"));
-        if (!_outputPluginInitFunc || !_outputPluginExitFunc || !_outputPluginFunc) {
-            QVR_FATAL("Cannot resolve output plugin functions from plugin %s", qPrintable(pluginPath));
-            return false;
-        }
-        if (!_outputPluginInitFunc(this, pluginArgs)) {
-            QVR_FATAL("Cannot initialize output plugin %s", qPrintable(pluginPath));
-            return false;
+            _outputPrg = new QOpenGLShaderProgram(this);
+            if (!_outputPrg->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/libqvr/output-vs.glsl")) {
+                QVR_FATAL("Cannot add output vertex shader");
+                return false;
+            }
+            if (!_outputPrg->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/libqvr/output-fs.glsl")) {
+                QVR_FATAL("Cannot add output fragment shader");
+                return false;
+            }
+            if (!_outputPrg->link()) {
+                QVR_FATAL("Cannot link output program");
+                return false;
+            }
+        } else {
+            // Initialize output plugin
+            QStringList pluginSpec = config().outputPlugin().split(' ', QString::SkipEmptyParts);
+            QString pluginPath = pluginSpec.at(0);
+            QStringList pluginArgs = pluginSpec.mid(1);
+            QLibrary plugin(pluginPath);
+            if (!plugin.load()) {
+                QVR_FATAL("Cannot load output plugin %s", qPrintable(pluginPath));
+                return false;
+            }
+            _outputPluginInitFunc = reinterpret_cast<bool (*)(QVRWindow*, const QStringList&)>
+                (plugin.resolve("QVROutputPluginInit"));
+            _outputPluginExitFunc = reinterpret_cast<void (*)(QVRWindow*)>
+                (plugin.resolve("QVROutputPluginExit"));
+            _outputPluginFunc = reinterpret_cast<void (*)(QVRWindow*, const QVRRenderContext&,
+                    unsigned int, unsigned int)>
+                (plugin.resolve("QVROutputPlugin"));
+            if (!_outputPluginInitFunc || !_outputPluginExitFunc || !_outputPluginFunc) {
+                QVR_FATAL("Cannot resolve output plugin functions from plugin %s", qPrintable(pluginPath));
+                return false;
+            }
+            if (!_outputPluginInitFunc(this, pluginArgs)) {
+                QVR_FATAL("Cannot initialize output plugin %s", qPrintable(pluginPath));
+                return false;
+            }
         }
     }
 
