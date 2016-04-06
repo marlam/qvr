@@ -25,7 +25,7 @@
   <td id="projectlogo"><img alt="Logo" src="cg-logo-small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">QVR
-   &#160;<span id="projectnumber">0.9.2</span>
+   &#160;<span id="projectnumber">0.9.3</span>
    </div>
    <div id="projectbrief">A library to build Virtual Reality applications</div>
   </td>
@@ -104,9 +104,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:af5c07b4602e772e2f78437499d08ada6"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_app.html#af5c07b4602e772e2f78437499d08ada6">update</a> ()</td></tr>
 <tr class="memdesc:af5c07b4602e772e2f78437499d08ada6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update scene state.  <a href="#af5c07b4602e772e2f78437499d08ada6">More...</a><br /></td></tr>
 <tr class="separator:af5c07b4602e772e2f78437499d08ada6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab33553e1ff6d81d9d3b9ec64bd4dffb7"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_app.html#ab33553e1ff6d81d9d3b9ec64bd4dffb7">getNearFar</a> (float &amp;near, float &amp;far)</td></tr>
-<tr class="memdesc:ab33553e1ff6d81d9d3b9ec64bd4dffb7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the near and far clipping plane.  <a href="#ab33553e1ff6d81d9d3b9ec64bd4dffb7">More...</a><br /></td></tr>
-<tr class="separator:ab33553e1ff6d81d9d3b9ec64bd4dffb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6c9a78c15bbabaed8bad21baf3146991"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_app.html#a6c9a78c15bbabaed8bad21baf3146991">getNearFar</a> (float &amp;nearPlane, float &amp;farPlane)</td></tr>
+<tr class="memdesc:a6c9a78c15bbabaed8bad21baf3146991"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the near and far clipping plane.  <a href="#a6c9a78c15bbabaed8bad21baf3146991">More...</a><br /></td></tr>
+<tr class="separator:a6c9a78c15bbabaed8bad21baf3146991"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abd64fa10d6ba3a9e4d3614e48013f521"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_app.html#abd64fa10d6ba3a9e4d3614e48013f521">wantExit</a> ()</td></tr>
 <tr class="memdesc:abd64fa10d6ba3a9e4d3614e48013f521"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indicate if the application wants to exit.  <a href="#abd64fa10d6ba3a9e4d3614e48013f521">More...</a><br /></td></tr>
 <tr class="separator:abd64fa10d6ba3a9e4d3614e48013f521"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -177,7 +177,7 @@ Public Member Functions</h2></td></tr>
 <p>Overview:</p><ul>
 <li>For rendering, implement <a class="el" href="class_q_v_r_app.html#ac497d29bb127c848af1a048f9a74cb60" title="Render the current frame. ">render()</a>.</li>
 <li>To animate your scene, implement <a class="el" href="class_q_v_r_app.html#af5c07b4602e772e2f78437499d08ada6" title="Update scene state. ">update()</a>.</li>
-<li>To override the default near and far plane, implement <a class="el" href="class_q_v_r_app.html#ab33553e1ff6d81d9d3b9ec64bd4dffb7" title="Set the near and far clipping plane. ">getNearFar()</a>.</li>
+<li>To override the default near and far plane, implement <a class="el" href="class_q_v_r_app.html#a6c9a78c15bbabaed8bad21baf3146991" title="Set the near and far clipping plane. ">getNearFar()</a>.</li>
 <li>To singal when your application wants to quit, implement <a class="el" href="class_q_v_r_app.html#abd64fa10d6ba3a9e4d3614e48013f521" title="Indicate if the application wants to exit. ">wantExit()</a>.</li>
 <li>For special process-specific actions, implement <a class="el" href="class_q_v_r_app.html#a2f01acee4df19c7a6825fbf1ce8f2bce" title="Initialize an appplication process. ">initProcess()</a>, <a class="el" href="class_q_v_r_app.html#a1a5d980ea23e24f7f3d36be9e34180be" title="Cleanup an application process before exiting. ">exitProcess()</a>, <a class="el" href="class_q_v_r_app.html#a02d24e2f2a4ae01db8d2223404b69a39" title="Perform actions once before each frame on each process. ">preRenderProcess()</a>, or <a class="el" href="class_q_v_r_app.html#a30cc73473c718599b6b8068421ea7e46" title="Perform actions once after each frame on each process. ">postRenderProcess()</a>.</li>
 <li>For special window-specific actions, implement <a class="el" href="class_q_v_r_app.html#ab7acda3b040a34b1bac616b94d704336" title="Initialize a window. ">initWindow()</a>, <a class="el" href="class_q_v_r_app.html#a39d34f392ddc371831dff90af6d60847" title="Cleanup a window before exiting. ">exitWindow()</a>, <a class="el" href="class_q_v_r_app.html#a0cb4510e8ec4638e098f9ccd37459249" title="Perform actions once before each frame on each window. ">preRenderWindow()</a>, or <a class="el" href="class_q_v_r_app.html#adc536bc2a1427af0c846b2f45f50f087" title="Perform actions once after each frame on each window. ">postRenderWindow()</a>.</li>
@@ -325,7 +325,7 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ab33553e1ff6d81d9d3b9ec64bd4dffb7"></a>
+<a class="anchor" id="a6c9a78c15bbabaed8bad21baf3146991"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -336,13 +336,13 @@ Public Member Functions</h2></td></tr>
           <td class="memname">virtual void QVRApp::getNearFar </td>
           <td>(</td>
           <td class="paramtype">float &amp;&#160;</td>
-          <td class="paramname"><em>near</em>, </td>
+          <td class="paramname"><em>nearPlane</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">float &amp;&#160;</td>
-          <td class="paramname"><em>far</em>&#160;</td>
+          <td class="paramname"><em>farPlane</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -360,8 +360,8 @@ Public Member Functions</h2></td></tr>
 <p>Set the near and far clipping plane. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">near</td><td>Near clipping plane </td></tr>
-    <tr><td class="paramname">far</td><td>Far clipping plane</td></tr>
+    <tr><td class="paramname">nearPlane</td><td>Near clipping plane </td></tr>
+    <tr><td class="paramname">farPlane</td><td>Far clipping plane</td></tr>
   </table>
   </dd>
 </dl>
@@ -399,7 +399,7 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <p>This function typically sets up process-specific data for rendering, e.g. OpenGL textures and vertex array buffers.</p>
-<p>This function is called from <a class="el" href="class_q_v_r_manager.html#ad3ecf90e5586d68375d038dac94e2c47" title="Initialize the QVR application. ">QVRManager::init()</a>. If it returns false, then <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> initialization will fail.</p>
+<p>This function is called from <a class="el" href="class_q_v_r_manager.html#ad89c8f4b60e429272d2feca68cf93039" title="Initialize the QVR application. ">QVRManager::init()</a>. If it returns false, then <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> initialization will fail.</p>
 <p>Called once per process at initialization time. </p>
 
 </div>
@@ -434,7 +434,7 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <p>This function may set up window-specific data. This is usually unnecessary.</p>
-<p>This function is called from <a class="el" href="class_q_v_r_manager.html#ad3ecf90e5586d68375d038dac94e2c47" title="Initialize the QVR application. ">QVRManager::init()</a>. If it returns false, then <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> initialization will fail.</p>
+<p>This function is called from <a class="el" href="class_q_v_r_manager.html#ad89c8f4b60e429272d2feca68cf93039" title="Initialize the QVR application. ">QVRManager::init()</a>. If it returns false, then <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> initialization will fail.</p>
 <p>Called once per window at initialization time. </p>
 
 </div>

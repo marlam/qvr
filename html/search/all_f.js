@@ -4,5 +4,5 @@ var searchData=
   ['render',['render',['../class_q_v_r_app.html#ac497d29bb127c848af1a048f9a74cb60',1,'QVRApp']]],
   ['rendercontext_2ehpp',['rendercontext.hpp',['../rendercontext_8hpp.html',1,'']]],
   ['renderresolutionfactor',['renderResolutionFactor',['../class_q_v_r_window_config.html#abcdc48bf76b10fd7cd7c36ac3456c889',1,'QVRWindowConfig']]],
-  ['right',['right',['../class_q_v_r_frustum.html#a7865fa2c3ac47db05b7efea9b71960b0',1,'QVRFrustum']]]
+  ['rightplane',['rightPlane',['../class_q_v_r_frustum.html#a01bce38bdb7d87e403acb11289ec7301',1,'QVRFrustum']]]
 ];

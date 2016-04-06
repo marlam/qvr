@@ -25,7 +25,7 @@
   <td id="projectlogo"><img alt="Logo" src="cg-logo-small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">QVR
-   &#160;<span id="projectnumber">0.9.2</span>
+   &#160;<span id="projectnumber">0.9.3</span>
    </div>
    <div id="projectbrief">A library to build Virtual Reality applications</div>
   </td>
@@ -107,9 +107,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aa8fd753c503deb6dcfc85e2f8fbf54bd"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_manager.html#aa8fd753c503deb6dcfc85e2f8fbf54bd">~QVRManager</a> ()</td></tr>
 <tr class="memdesc:aa8fd753c503deb6dcfc85e2f8fbf54bd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor.  <a href="#aa8fd753c503deb6dcfc85e2f8fbf54bd">More...</a><br /></td></tr>
 <tr class="separator:aa8fd753c503deb6dcfc85e2f8fbf54bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad3ecf90e5586d68375d038dac94e2c47"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_manager.html#ad3ecf90e5586d68375d038dac94e2c47">init</a> (<a class="el" href="class_q_v_r_app.html">QVRApp</a> *app)</td></tr>
-<tr class="memdesc:ad3ecf90e5586d68375d038dac94e2c47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the QVR application.  <a href="#ad3ecf90e5586d68375d038dac94e2c47">More...</a><br /></td></tr>
-<tr class="separator:ad3ecf90e5586d68375d038dac94e2c47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad89c8f4b60e429272d2feca68cf93039"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_manager.html#ad89c8f4b60e429272d2feca68cf93039">init</a> (<a class="el" href="class_q_v_r_app.html">QVRApp</a> *app, <a class="el" href="config_8hpp.html#a5d27d86fb4fbad8044a0b36aabf5d9ed">QVRNavigationType</a> preferredNavigationType=<a class="el" href="config_8hpp.html#a5d27d86fb4fbad8044a0b36aabf5d9edaf127bc0ccfb21b133dd692e528732cca">QVR_Navigation_WASDQE</a>)</td></tr>
+<tr class="memdesc:ad89c8f4b60e429272d2feca68cf93039"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the QVR application.  <a href="#ad89c8f4b60e429272d2feca68cf93039">More...</a><br /></td></tr>
+<tr class="separator:ad89c8f4b60e429272d2feca68cf93039"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -219,7 +219,7 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ad3ecf90e5586d68375d038dac94e2c47"></a>
+<a class="anchor" id="ad89c8f4b60e429272d2feca68cf93039"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -227,8 +227,18 @@ Static Public Member Functions</h2></td></tr>
           <td class="memname">bool QVRManager::init </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="class_q_v_r_app.html">QVRApp</a> *&#160;</td>
-          <td class="paramname"><em>app</em></td><td>)</td>
+          <td class="paramname"><em>app</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="config_8hpp.html#a5d27d86fb4fbad8044a0b36aabf5d9ed">QVRNavigationType</a>&#160;</td>
+          <td class="paramname"><em>preferredNavigationType</em> = <code><a class="el" href="config_8hpp.html#a5d27d86fb4fbad8044a0b36aabf5d9edaf127bc0ccfb21b133dd692e528732cca">QVR_Navigation_WASDQE</a></code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -237,11 +247,13 @@ Static Public Member Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">app</td><td>The QVR application. </td></tr>
+    <tr><td class="paramname">preferredNavigationType</td><td>Preferred type of navigation for this app. </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>False on failure.</dd></dl>
-<p>This function will create all slave processes and all windows, depending on the QVR configuration, and it will call the initialization functions of <em>app</em>. </p>
+<p>This function will create all slave processes and all windows, depending on the QVR configuration, and it will call the initialization functions of <em>app</em>.</p>
+<p>The parameter <em>preferredNavigationType</em> chooses an observer property in case no configuration file was specified and QVR creates a default configuration. Note that there is no guarantee that QVR fulfills the request. The default is usually fine. </p>
 
 </div>
 </div>

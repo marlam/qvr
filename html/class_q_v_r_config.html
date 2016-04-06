@@ -25,7 +25,7 @@
   <td id="projectlogo"><img alt="Logo" src="cg-logo-small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">QVR
-   &#160;<span id="projectnumber">0.9.2</span>
+   &#160;<span id="projectnumber">0.9.3</span>
    </div>
    <div id="projectbrief">A library to build Virtual Reality applications</div>
   </td>
@@ -101,9 +101,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a57d4153a3b3686b7e921626804a40fe9"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_config.html#a57d4153a3b3686b7e921626804a40fe9">QVRConfig</a> ()</td></tr>
 <tr class="memdesc:a57d4153a3b3686b7e921626804a40fe9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor.  <a href="#a57d4153a3b3686b7e921626804a40fe9">More...</a><br /></td></tr>
 <tr class="separator:a57d4153a3b3686b7e921626804a40fe9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0a2d463448972a6d38b53b603d01a791"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_config.html#a0a2d463448972a6d38b53b603d01a791">createDefault</a> ()</td></tr>
-<tr class="memdesc:a0a2d463448972a6d38b53b603d01a791"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a default configuration.  <a href="#a0a2d463448972a6d38b53b603d01a791">More...</a><br /></td></tr>
-<tr class="separator:a0a2d463448972a6d38b53b603d01a791"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a90002bc537adb415be681f9f05b801cc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_config.html#a90002bc537adb415be681f9f05b801cc">createDefault</a> (<a class="el" href="config_8hpp.html#a5d27d86fb4fbad8044a0b36aabf5d9ed">QVRNavigationType</a> preferredNavigationType=<a class="el" href="config_8hpp.html#a5d27d86fb4fbad8044a0b36aabf5d9edaf127bc0ccfb21b133dd692e528732cca">QVR_Navigation_WASDQE</a>)</td></tr>
+<tr class="memdesc:a90002bc537adb415be681f9f05b801cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a default configuration.  <a href="#a90002bc537adb415be681f9f05b801cc">More...</a><br /></td></tr>
+<tr class="separator:a90002bc537adb415be681f9f05b801cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afc225c02ccf1f9bf7dfe929a437d313c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_config.html#afc225c02ccf1f9bf7dfe929a437d313c">readFromFile</a> (const QString &amp;filename)</td></tr>
 <tr class="memdesc:afc225c02ccf1f9bf7dfe929a437d313c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a configuration file.  <a href="#afc225c02ccf1f9bf7dfe929a437d313c">More...</a><br /></td></tr>
 <tr class="separator:afc225c02ccf1f9bf7dfe929a437d313c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -136,22 +136,30 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="a0a2d463448972a6d38b53b603d01a791"></a>
+<a class="anchor" id="a90002bc537adb415be681f9f05b801cc"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">void QVRConfig::createDefault </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype"><a class="el" href="config_8hpp.html#a5d27d86fb4fbad8044a0b36aabf5d9ed">QVRNavigationType</a>&#160;</td>
+          <td class="paramname"><em>preferredNavigationType</em> = <code><a class="el" href="config_8hpp.html#a5d27d86fb4fbad8044a0b36aabf5d9edaf127bc0ccfb21b133dd692e528732cca">QVR_Navigation_WASDQE</a></code></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Create a default configuration. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">preferredNavigationType</td><td>Preferred type of navigation for the default observer.</td></tr>
+  </table>
+  </dd>
+</dl>
 <p>This function will detect e.g. an Oculus Rift head mounted display and create a suitable configuration for it.</p>
-<p>If no special equipment is detected, the function will generate a single observer viewing a single window on the master process. </p>
+<p>If no special equipment is detected, the function will generate a single observer viewing a single window on the master process.</p>
+<p>The observer created will have the given preferred navigation type unless this conflicts with autodetected information about the VR system in use. </p>
 
 </div>
 </div>
