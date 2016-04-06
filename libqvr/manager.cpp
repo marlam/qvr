@@ -200,7 +200,7 @@ QVRManager::~QVRManager()
     manager = NULL;
 }
 
-bool QVRManager::init(QVRApp* app)
+bool QVRManager::init(QVRApp* app, QVRNavigationType preferredNavigationType)
 {
     Q_ASSERT(!_app);
 
@@ -211,7 +211,7 @@ bool QVRManager::init(QVRApp* app)
 
     _config = new QVRConfig;
     if (_configFilename.isEmpty()) {
-        _config->createDefault();
+        _config->createDefault(preferredNavigationType);
     } else {
         if (!_config->readFromFile(_configFilename)) {
             return false;

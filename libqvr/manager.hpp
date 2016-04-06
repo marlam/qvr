@@ -191,11 +191,9 @@ class QMouseEvent;
 class QWheelEvent;
 class QElapsedTimer;
 
+#include "config.hpp"
+
 class QVRApp;
-class QVRObserverConfig;
-class QVRProcessConfig;
-class QVRWindowConfig;
-class QVRConfig;
 class QVRObserver;
 class QVRWindow;
 class QVRProcess;
@@ -319,13 +317,20 @@ public:
     /*!
      * \brief Initialize the QVR application.
      * \param app       The QVR application.
+     * \param preferredNavigationType   Preferred type of navigation for this app.
      * \return  False on failure.
      *
      * This function will create all slave processes and all windows, depending
      * on the QVR configuration, and it will call the initialization functions
      * of \a app.
+     *
+     * The parameter \a preferredNavigationType chooses an observer property
+     * in case no configuration file was specified and QVR creates a default
+     * configuration. Note that there is no guarantee that QVR fulfills the
+     * request. The default is usually fine.
      */
-    bool init(QVRApp* app);
+    bool init(QVRApp* app,
+            QVRNavigationType preferredNavigationType = QVR_Navigation_WASDQE);
 
     /*!
      * \brief Return the QVR manager instance.

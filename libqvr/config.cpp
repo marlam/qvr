@@ -83,7 +83,7 @@ QVRConfig::QVRConfig()
 {
 }
 
-void QVRConfig::createDefault()
+void QVRConfig::createDefault(QVRNavigationType preferredNavigationType)
 {
     QVR_INFO("creating default configuration ...");
 
@@ -98,7 +98,7 @@ void QVRConfig::createDefault()
         // One observer
         QVRObserverConfig observerConf;
         observerConf._id = "default";
-        observerConf._navigationType = QVR_Navigation_WASDQE;
+        observerConf._navigationType = preferredNavigationType;
         observerConf._trackingType = QVR_Tracking_Oculus;
         // One window
         QVRWindowConfig windowConf;
@@ -116,7 +116,7 @@ void QVRConfig::createDefault()
         // One observer
         QVRObserverConfig observerConf;
         observerConf._id = "default";
-        observerConf._navigationType = QVR_Navigation_WASDQE;
+        observerConf._navigationType = preferredNavigationType;
         observerConf._trackingType = QVR_Tracking_Custom;
         // One window
         QVRWindowConfig windowConf;
