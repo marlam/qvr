@@ -12,4 +12,4 @@ process master
 		screen_is_fixed_to_observer true
 		screen_is_given_by_center true
 		screen_center 0 0 -1
-		render_resolution_factor 0.5
+		#render_resolution_factor 0.5
