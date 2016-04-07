@@ -13,9 +13,9 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Project
 project(QVR)
-set(QVR_VERSION "0.9.3")
-set(QVR_LIBVERSION "0.0.0")
-set(QVR_SOVERSION "0")
+set(QVR_VERSION 0.9.3)
+set(QVR_LIBVERSION 0.0.0)
+set(QVR_SOVERSION 0)
 
 # Build options
 option(QVR_BUILD_DOCUMENTATION "Build API reference documentation (requires Doxygen)" OFF)
@@ -61,8 +61,8 @@ if(OCULUS_FOUND)
 endif()
 install(TARGETS libqvr
     RUNTIME DESTINATION bin
-    LIBRARY DESTINATION "lib${LIB_SUFFIX}"
-    ARCHIVE DESTINATION "lib${LIB_SUFFIX}"
+    LIBRARY DESTINATION lib${LIB_SUFFIX}
+    ARCHIVE DESTINATION lib${LIB_SUFFIX}
 )
 install(FILES
     app.hpp
@@ -75,6 +75,25 @@ install(FILES
     outputplugin.hpp
     frustum.hpp
     DESTINATION include/qvr)
+include(CMakePackageConfigHelpers)
+set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/include)
+set(LIB_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
+configure_package_config_file(
+    QVRConfig.cmake.in ${CMAKE_BINARY_DIR}/QVRConfig.cmake
+    INSTALL_DESTINATION lib${LIB_SUFFIX}/cmake/QVR-{QVR_VERSION}
+    PATH_VARS INCLUDE_INSTALL_DIR LIB_INSTALL_DIR
+    NO_CHECK_REQUIRED_COMPONENTS_MACRO
+)
+write_basic_package_version_file(
+    ${CMAKE_BINARY_DIR}/QVRConfigVersion.cmake
+    VERSION ${QVR_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+install(FILES
+    ${CMAKE_BINARY_DIR}/QVRConfig.cmake
+    ${CMAKE_BINARY_DIR}/QVRConfigVersion.cmake
+    DESTINATION ${LIB_INSTALL_DIR}/cmake/QVR-${QVR_VERSION}
+)
 
 # Optional target: reference documentation
 if(QVR_BUILD_DOCUMENTATION)
