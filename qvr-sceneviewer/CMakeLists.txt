@@ -24,6 +24,6 @@ add_executable(qvr-sceneviewer
     qvr-sceneviewer.cpp qvr-sceneviewer.hpp
     sceneviewer.cpp sceneviewer.hpp
     ${RESOURCES})
-include_directories(${QVR_INCLUDE_DIRS} ${ASSIMP_INCLUDE_DIRS})
+include_directories(${ASSIMP_INCLUDE_DIRS} ${QVR_INCLUDE_DIRS})
 target_link_libraries(qvr-sceneviewer ${ASSIMP_LIBRARIES} ${QVR_LIBRARIES} Qt5::Widgets)
 install(TARGETS qvr-sceneviewer RUNTIME DESTINATION bin)

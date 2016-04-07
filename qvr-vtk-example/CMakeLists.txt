@@ -21,6 +21,6 @@ find_package(VTK 6.3 REQUIRED COMPONENTS vtkRenderingExternal NO_MODULE)
 include(${VTK_USE_FILE})
 
 add_executable(qvr-vtk-example qvr-vtk-example.cpp qvr-vtk-example.hpp)
-include_directories(${QVR_INCLUDE_DIRS})
-target_link_libraries(qvr-vtk-example ${QVR_LIBRARIES} Qt5::Widgets ${VTK_LIBRARIES})
+include_directories(${VTK_LIBRARIES} ${QVR_INCLUDE_DIRS})
+target_link_libraries(qvr-vtk-example ${VTK_LIBRARIES} ${QVR_LIBRARIES} Qt5::Widgets)
 install(TARGETS qvr-vtk-example RUNTIME DESTINATION bin)
