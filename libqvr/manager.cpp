@@ -93,7 +93,8 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
     _windows(),
     _thisProcess(NULL),
     _slaveProcesses(),
-    _wantExit(false)
+    _wantExit(false),
+    _wasdqeTimer(NULL)
 {
     Q_ASSERT(!manager);  // there can be only one
     manager = this;
