@@ -17,7 +17,7 @@ endif()
 
 find_package(Qt5Widgets REQUIRED)
 find_package(QVR REQUIRED)
-find_package(VTK 6.3 REQUIRED COMPONENTS vtkRenderingExternal NO_MODULE)
+find_package(VTK 6.2 REQUIRED COMPONENTS vtkRenderingExternal NO_MODULE)
 include(${VTK_USE_FILE})
 
 add_executable(qvr-vtk-example qvr-vtk-example.cpp qvr-vtk-example.hpp)
