@@ -13,7 +13,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Project
 project(QVR)
-set(QVR_VERSION 0.9.3)
+set(QVR_VERSION 0.9.4)
 set(QVR_LIBVERSION 0.0.0)
 set(QVR_SOVERSION 0)
 
