@@ -26,6 +26,11 @@ and try the example applications.
 
 See the [library documentation](https://marlam.github.io/qvr/html/).
 
+There is also an [introductory presentation](https://marlam.github.io/qvr/qvr-slides.pdf)
+explaining the concepts of libqvr and how to use it, and a
+[short paper](https://marlam.github.io/qvr/lambers2016qvr.pdf) from the Eurographics
+2016 Education track explaining the motivation behind it.
+
 ## Example applications
 
 - `qvr-minimal-example`:
