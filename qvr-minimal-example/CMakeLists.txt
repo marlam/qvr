@@ -23,5 +23,6 @@ add_executable(qvr-minimal-example
     qvr-minimal-example.cpp qvr-minimal-example.hpp
     ${RESOURCES})
 include_directories(${QVR_INCLUDE_DIRS})
+link_directories(${QVR_LIBRARY_DIRS})
 target_link_libraries(qvr-minimal-example ${QVR_LIBRARIES} Qt5::Widgets)
 install(TARGETS qvr-minimal-example RUNTIME DESTINATION bin)

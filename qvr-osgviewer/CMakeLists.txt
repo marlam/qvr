@@ -22,5 +22,6 @@ find_package(OpenSceneGraph REQUIRED COMPONENTS osgViewer osgDB)
 
 add_executable(qvr-osgviewer qvr-osgviewer.cpp qvr-osgviewer.hpp)
 include_directories(${OPENSCENEGRAPH_INCLUDE_DIRS} ${QVR_INCLUDE_DIRS})
+link_directories(${OPENSCENEGRAPH_LIBRARY_DIRS} ${QVR_LIBRARY_DIRS})
 target_link_libraries(qvr-osgviewer ${OPENSCENEGRAPH_LIBRARIES} ${QVR_LIBRARIES} Qt5::Widgets)
 install(TARGETS qvr-osgviewer RUNTIME DESTINATION bin)

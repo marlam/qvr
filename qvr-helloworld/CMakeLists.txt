@@ -24,5 +24,6 @@ add_executable(qvr-helloworld
     qvr-helloworld.cpp qvr-helloworld.hpp
     ${RESOURCES})
 include_directories(${QVR_INCLUDE_DIRS})
+link_directories(${QVR_LIBRARY_DIRS})
 target_link_libraries(qvr-helloworld ${QVR_LIBRARIES} Qt5::Widgets)
 install(TARGETS qvr-helloworld RUNTIME DESTINATION bin)
