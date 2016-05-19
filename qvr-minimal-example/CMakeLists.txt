@@ -18,11 +18,11 @@ endif()
 find_package(Qt5Widgets REQUIRED)
 find_package(QVR REQUIRED)
 
+include_directories(${QVR_INCLUDE_DIRS})
+link_directories(${QVR_LIBRARY_DIRS})
 qt5_add_resources(RESOURCES resources.qrc)
 add_executable(qvr-minimal-example
     qvr-minimal-example.cpp qvr-minimal-example.hpp
     ${RESOURCES})
-include_directories(${QVR_INCLUDE_DIRS})
-link_directories(${QVR_LIBRARY_DIRS})
 target_link_libraries(qvr-minimal-example ${QVR_LIBRARIES} Qt5::Widgets)
 install(TARGETS qvr-minimal-example RUNTIME DESTINATION bin)

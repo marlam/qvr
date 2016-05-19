@@ -18,9 +18,9 @@ endif()
 find_package(Qt5Widgets REQUIRED)
 find_package(QVR REQUIRED)
 
-qt5_add_resources(RESOURCES qvr-outputplugin-example.qrc)
 include_directories(${QVR_INCLUDE_DIRS})
 link_directories(${QVR_LIBRARY_DIRS})
+qt5_add_resources(RESOURCES qvr-outputplugin-example.qrc)
 add_library(libqvr-outputplugin-example SHARED
     qvr-outputplugin-example.cpp qvr-outputplugin-example.hpp ${RESOURCES})
 set_target_properties(libqvr-outputplugin-example

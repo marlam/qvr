@@ -19,12 +19,12 @@ find_package(Qt5Widgets REQUIRED)
 find_package(QVR REQUIRED)
 find_package(ASSIMP REQUIRED)
 
+include_directories(${ASSIMP_INCLUDE_DIRS} ${QVR_INCLUDE_DIRS})
+link_directories(${ASSIMP_LIBRARY_DIRS} ${QVR_LIBRARY_DIRS})
 qt5_add_resources(RESOURCES resources.qrc)
 add_executable(qvr-sceneviewer
     qvr-sceneviewer.cpp qvr-sceneviewer.hpp
     sceneviewer.cpp sceneviewer.hpp
     ${RESOURCES})
-include_directories(${ASSIMP_INCLUDE_DIRS} ${QVR_INCLUDE_DIRS})
-link_directories(${ASSIMP_LIBRARY_DIRS} ${QVR_LIBRARY_DIRS})
 target_link_libraries(qvr-sceneviewer ${ASSIMP_LIBRARIES} ${QVR_LIBRARIES} Qt5::Widgets)
 install(TARGETS qvr-sceneviewer RUNTIME DESTINATION bin)
