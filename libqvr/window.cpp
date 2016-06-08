@@ -22,6 +22,7 @@
  */
 
 #include <cstring>
+#include <cmath>
 
 #include <QThread>
 #include <QMutex>
