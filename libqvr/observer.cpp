@@ -21,8 +21,6 @@
  * SOFTWARE.
  */
 
-#include <QtMath>
-
 #include "manager.hpp"
 #include "observer.hpp"
 
