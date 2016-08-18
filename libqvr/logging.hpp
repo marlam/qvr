@@ -24,6 +24,8 @@
 #ifndef QVR_LOGGING_HPP
 #define QVR_LOGGING_HPP
 
+#include <cstdio>
+
 #include "manager.hpp"
 
 void QVRMsg(const char* s);

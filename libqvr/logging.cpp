@@ -21,7 +21,6 @@
  * SOFTWARE.
  */
 
-#include <cstdio>
 #include <algorithm>
 
 #include "manager.hpp"
