@@ -506,7 +506,7 @@ void QVRManager::masterLoop()
             } else {
                 _wandNavigationTimer->start();
             }
-            if (std::abs(dev->analog(0) > 0.0f) || std::abs(dev->analog(1) > 0.0f)) {
+            if (std::abs(dev->analog(0)) > 0.0f || std::abs(dev->analog(1)) > 0.0f) {
                 QQuaternion wandRot = dev->orientation() * QQuaternion::fromEulerAngles(0.0f, _wandNavigationRotY, 0.0f);
                 QVector3D forwardDir = wandRot * QVector3D(0.0f, 0.0f, -1.0f);
                 forwardDir.setY(0.0f);
