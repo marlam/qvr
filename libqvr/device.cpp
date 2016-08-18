@@ -113,7 +113,7 @@ QVRDevice::QVRDevice(int deviceIndex) :
         break;
     case QVR_Device_Buttons_VRPN:
 #ifdef HAVE_VRPN
-        if (QVRManager::processIndex() == 0) {
+        {
             QStringList args = config().buttonsParameters().split(' ', QString::SkipEmptyParts);
             QString name = (args.length() >= 1 ? args[0] : config().buttonsParameters());
             if (args.length() > 1) {
@@ -129,9 +129,11 @@ QVRDevice::QVRDevice(int deviceIndex) :
             }
             for (int i = 0; i < _buttons.length(); i++)
                 _buttons[i] = false;
-            _vrpnButtonRemote = new vrpn_Button_Remote(qPrintable(name));
-            vrpn_System_TextPrinter.set_ostream_to_use(stderr);
-            _vrpnButtonRemote->register_change_handler(this, QVRVrpnButtonChangeHandler);
+            if (QVRManager::processIndex() == 0) {
+                _vrpnButtonRemote = new vrpn_Button_Remote(qPrintable(name));
+                vrpn_System_TextPrinter.set_ostream_to_use(stderr);
+                _vrpnButtonRemote->register_change_handler(this, QVRVrpnButtonChangeHandler);
+            }
         }
 #endif
         break;
@@ -150,7 +152,7 @@ QVRDevice::QVRDevice(int deviceIndex) :
         break;
     case QVR_Device_Analogs_VRPN:
 #ifdef HAVE_VRPN
-        if (QVRManager::processIndex() == 0) {
+        {
             QStringList args = config().analogsParameters().split(' ', QString::SkipEmptyParts);
             QString name = (args.length() >= 1 ? args[0] : config().analogsParameters());
             if (args.length() > 1) {
@@ -166,9 +168,11 @@ QVRDevice::QVRDevice(int deviceIndex) :
             }
             for (int i = 0; i < _analogs.length(); i++)
                 _analogs[i] = 0.0f;
-            _vrpnAnalogRemote = new vrpn_Analog_Remote(qPrintable(name));
-            vrpn_System_TextPrinter.set_ostream_to_use(stderr);
-            _vrpnAnalogRemote->register_change_handler(this, QVRVrpnAnalogChangeHandler);
+            if (QVRManager::processIndex() == 0) {
+                _vrpnAnalogRemote = new vrpn_Analog_Remote(qPrintable(name));
+                vrpn_System_TextPrinter.set_ostream_to_use(stderr);
+                _vrpnAnalogRemote->register_change_handler(this, QVRVrpnAnalogChangeHandler);
+            }
         }
 #endif
         break;
