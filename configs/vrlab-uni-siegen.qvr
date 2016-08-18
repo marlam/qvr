@@ -42,7 +42,7 @@ device flystick
 	# Furthermore, we reorder the indices of the digital buttons and analog joystick
 	# elements to match expectations.
 	tracking vrpn DTrack@localhost 0
-	buttons  vrpn DTrack@localhost 4 1 3 2
+	buttons  vrpn DTrack@localhost 4 1 3 2 0
 	analogs  vrpn DTrack@localhost 1 0
 
 observer default
