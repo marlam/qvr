@@ -3,9 +3,44 @@
 device glasses
 	tracking vrpn DTrack@localhost 0
 
+device foot-left
+	tracking vrpn DTrack@localhost 1
+
+device foot-right
+	tracking vrpn DTrack@localhost 2
+
+device leg-left
+	tracking vrpn DTrack@localhost 3
+
+device leg-right
+	tracking vrpn DTrack@localhost 4
+
+device waist
+	tracking vrpn DTrack@localhost 5
+
+device upperarm-left
+	tracking vrpn DTrack@localhost 6
+
+device upperarm-right
+	tracking vrpn DTrack@localhost 7
+
+device forearm-left
+	tracking vrpn DTrack@localhost 8
+
+device forearm-right
+	tracking vrpn DTrack@localhost 9
+
+device hand-left
+	tracking vrpn DTrack@localhost 10
+
+device hand-right
+	tracking vrpn DTrack@localhost 11
+
 device flystick
 	# We use the glasses orientation to steer navigation (tracking sensor number 0).
 	# If you want to use Flystick orientation instead, use sensor number 14.
+	# Furthermore, we reorder the indices of the digital buttons and analog joystick
+	# elements to match expectations.
 	tracking vrpn DTrack@localhost 0
 	buttons  vrpn DTrack@localhost 4 1 3 2
 	analogs  vrpn DTrack@localhost 1 0
