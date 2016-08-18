@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['id',['id',['../class_q_v_r_device_config.html#a325ee788564e31bb9e0035ec1f62f548',1,'QVRDeviceConfig::id()'],['../class_q_v_r_observer_config.html#a13e80cb91c04dae81deac68ac4e1569e',1,'QVRObserverConfig::id()'],['../class_q_v_r_window_config.html#a8a2a07b519e420836fbf8fff3c8434f6',1,'QVRWindowConfig::id()'],['../class_q_v_r_process_config.html#a6502b98b5aca1414350ade7e3f0857c5',1,'QVRProcessConfig::id()'],['../class_q_v_r_observer.html#aff19f645dcfa3fdb715fad14fb414d9e',1,'QVRObserver::id()'],['../class_q_v_r_window.html#af43115c6ecfb20bf5cb86eedb38e7afa',1,'QVRWindow::id()'],['../class_q_v_r_process.html#a9e8a4590f00f4d9040a46ca3f6a2c4d5',1,'QVRProcess::id()']]],
-  ['index',['index',['../class_q_v_r_observer.html#a88cbd2d76dc4271d16c18a47e13989a8',1,'QVRObserver::index()'],['../class_q_v_r_window.html#a5f0dd1aa346d486eb27fa6768ac6c0c7',1,'QVRWindow::index()'],['../class_q_v_r_process.html#a772d1d2309be1a0bbb808c77c70e406e',1,'QVRProcess::index()']]],
+  ['id',['id',['../class_q_v_r_device_config.html#a325ee788564e31bb9e0035ec1f62f548',1,'QVRDeviceConfig::id()'],['../class_q_v_r_observer_config.html#a13e80cb91c04dae81deac68ac4e1569e',1,'QVRObserverConfig::id()'],['../class_q_v_r_window_config.html#a8a2a07b519e420836fbf8fff3c8434f6',1,'QVRWindowConfig::id()'],['../class_q_v_r_process_config.html#a6502b98b5aca1414350ade7e3f0857c5',1,'QVRProcessConfig::id()'],['../class_q_v_r_device.html#a494fbf8cce14a83418610eb1301964f9',1,'QVRDevice::id()'],['../class_q_v_r_observer.html#aff19f645dcfa3fdb715fad14fb414d9e',1,'QVRObserver::id()'],['../class_q_v_r_window.html#af43115c6ecfb20bf5cb86eedb38e7afa',1,'QVRWindow::id()'],['../class_q_v_r_process.html#a9e8a4590f00f4d9040a46ca3f6a2c4d5',1,'QVRProcess::id()']]],
+  ['index',['index',['../class_q_v_r_device.html#aaea9f3c6a377c9ced6d0d48b72937733',1,'QVRDevice::index()'],['../class_q_v_r_observer.html#a88cbd2d76dc4271d16c18a47e13989a8',1,'QVRObserver::index()'],['../class_q_v_r_window.html#a5f0dd1aa346d486eb27fa6768ac6c0c7',1,'QVRWindow::index()'],['../class_q_v_r_process.html#a772d1d2309be1a0bbb808c77c70e406e',1,'QVRProcess::index()']]],
   ['init',['init',['../class_q_v_r_manager.html#ad89c8f4b60e429272d2feca68cf93039',1,'QVRManager']]],
   ['initialdisplayscreen',['initialDisplayScreen',['../class_q_v_r_window_config.html#ab56ecf58aa80bfcf185617c8b7a5df7a',1,'QVRWindowConfig']]],
   ['initialeyedistance',['initialEyeDistance',['../class_q_v_r_observer_config.html#a8fb91c5a1c918b71091d1d4237babad0',1,'QVRObserverConfig']]],
@@ -19,5 +19,6 @@ var searchData=
   ['initialtrackingupdirection',['initialTrackingUpDirection',['../class_q_v_r_observer_config.html#a467710c8dc6d36a203da7a43204018cf',1,'QVRObserverConfig']]],
   ['initprocess',['initProcess',['../class_q_v_r_app.html#a2f01acee4df19c7a6825fbf1ce8f2bce',1,'QVRApp']]],
   ['initwindow',['initWindow',['../class_q_v_r_app.html#ab7acda3b040a34b1bac616b94d704336',1,'QVRApp']]],
-  ['instance',['instance',['../class_q_v_r_manager.html#a6edaea65e7b2dd1765225f3cff137486',1,'QVRManager']]]
+  ['instance',['instance',['../class_q_v_r_manager.html#a6edaea65e7b2dd1765225f3cff137486',1,'QVRManager']]],
+  ['istracked',['isTracked',['../class_q_v_r_device.html#aa70eca0efc9953b6ee36edc04ab4e6d1',1,'QVRDevice']]]
 ];

@@ -37,6 +37,7 @@ var searchData=
   ['qvr_5ftracking_5fstationary',['QVR_Tracking_Stationary',['../config_8hpp.html#a220d0309b7c2487178bb8bef2461a526a4582ea97e45ccdf8ce95612b9e55e246',1,'config.hpp']]],
   ['qvrapp',['QVRApp',['../class_q_v_r_app.html',1,'']]],
   ['qvrconfig',['QVRConfig',['../class_q_v_r_config.html',1,'QVRConfig'],['../class_q_v_r_device_config.html#a498c26fb31ddc6616461e2d77f84172c',1,'QVRDeviceConfig::QVRConfig()'],['../class_q_v_r_observer_config.html#a498c26fb31ddc6616461e2d77f84172c',1,'QVRObserverConfig::QVRConfig()'],['../class_q_v_r_window_config.html#a498c26fb31ddc6616461e2d77f84172c',1,'QVRWindowConfig::QVRConfig()'],['../class_q_v_r_process_config.html#a498c26fb31ddc6616461e2d77f84172c',1,'QVRProcessConfig::QVRConfig()'],['../class_q_v_r_config.html#a57d4153a3b3686b7e921626804a40fe9',1,'QVRConfig::QVRConfig()']]],
+  ['qvrdevice',['QVRDevice',['../class_q_v_r_device.html',1,'QVRDevice'],['../class_q_v_r_device.html#a6bd2b495016917b34a2aeb24436d007a',1,'QVRDevice::QVRDevice()'],['../class_q_v_r_device.html#a52c81593715e557536f2739e6cf8f6a3',1,'QVRDevice::QVRDevice(int index)']]],
   ['qvrdeviceanalogstype',['QVRDeviceAnalogsType',['../config_8hpp.html#a6d61ef8ef790aa7d800fb81cbec61ab7',1,'config.hpp']]],
   ['qvrdevicebuttonstype',['QVRDeviceButtonsType',['../config_8hpp.html#a0103bdffd7af9aabfa93384b2d64f9c3',1,'config.hpp']]],
   ['qvrdeviceconfig',['QVRDeviceConfig',['../class_q_v_r_device_config.html',1,'QVRDeviceConfig'],['../class_q_v_r_device_config.html#aab7469141fbfe191195cfd29db24ce77',1,'QVRDeviceConfig::QVRDeviceConfig()']]],

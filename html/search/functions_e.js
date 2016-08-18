@@ -1,6 +1,7 @@
 var searchData=
 [
   ['qvrconfig',['QVRConfig',['../class_q_v_r_config.html#a57d4153a3b3686b7e921626804a40fe9',1,'QVRConfig']]],
+  ['qvrdevice',['QVRDevice',['../class_q_v_r_device.html#a6bd2b495016917b34a2aeb24436d007a',1,'QVRDevice::QVRDevice()'],['../class_q_v_r_device.html#a52c81593715e557536f2739e6cf8f6a3',1,'QVRDevice::QVRDevice(int index)']]],
   ['qvrdeviceconfig',['QVRDeviceConfig',['../class_q_v_r_device_config.html#aab7469141fbfe191195cfd29db24ce77',1,'QVRDeviceConfig']]],
   ['qvrfrustum',['QVRFrustum',['../class_q_v_r_frustum.html#ac7167f74975f0db36d63cf17625913d2',1,'QVRFrustum::QVRFrustum()'],['../class_q_v_r_frustum.html#aa1903017eb4e2ffec16f41a508241ddd',1,'QVRFrustum::QVRFrustum(float l, float r, float b, float t, float n, float f)'],['../class_q_v_r_frustum.html#a3a3ad90413be1f3282b1998641ca795f',1,'QVRFrustum::QVRFrustum(const float *lrbtnf)']]],
   ['qvrmanager',['QVRManager',['../class_q_v_r_manager.html#a468c9240024bf4a2bb1da057e0a52ece',1,'QVRManager']]],
