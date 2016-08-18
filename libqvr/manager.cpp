@@ -21,6 +21,8 @@
  * SOFTWARE.
  */
 
+#include <cmath>
+
 #include <QDir>
 #include <QQueue>
 #include <QDesktopWidget>
