@@ -25,7 +25,7 @@
   <td id="projectlogo"><img alt="Logo" src="cg-logo-small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">QVR
-   &#160;<span id="projectnumber">0.9.4</span>
+   &#160;<span id="projectnumber">0.10.0</span>
    </div>
    <div id="projectbrief">A library to build Virtual Reality applications</div>
   </td>
@@ -161,7 +161,7 @@ Configuration files</h1>
 <h1><a class="anchor" id="Implementation"></a>
 Implementation</h1>
 <p>The <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> creates an invisible main OpenGL context for each process. This context is used for all calls to <em><a class="el" href="class_q_v_r_app.html" title="QVR application interface. ">QVRApp</a></em> application functions: the application only has to deal with this one context. The rendering results are directed into a set of textures that cover all the windows of the process.</p>
-<p>When all window textures have been rendered, they are put on screen by the actual visible windows who all have access to the textures from the main window. The windows themselves render in separate rendering threads. On buffer swap, only these rendering threads block. The main thread fills the waiting time with CPU work such as processing events and calling the <em><a class="el" href="class_q_v_r_app.html#af5c07b4602e772e2f78437499d08ada6" title="Update scene state. ">QVRApp::update()</a></em> function of the application.</p>
+<p>When all window textures have been rendered, they are put on screen by the actual visible windows who all have access to the textures from the main window. The windows themselves render in separate rendering threads. On buffer swap, only these rendering threads block. The main thread fills the waiting time with CPU work such as processing events and calling the <em><a class="el" href="class_q_v_r_app.html#a73e36780c62061623758f58d47a83083" title="Update scene state. ">QVRApp::update()</a></em> function of the application.</p>
 <p>The process initially started by the user is the master process. <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> launch slave processes as required by the configuration file, and it will handle all necessary synchronization and data exchange with these slave processes.</p>
 <h1><a class="anchor" id="Notes"></a>
 Notes</h1>

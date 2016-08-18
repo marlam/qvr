@@ -25,7 +25,7 @@
   <td id="projectlogo"><img alt="Logo" src="cg-logo-small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">QVR
-   &#160;<span id="projectnumber">0.9.4</span>
+   &#160;<span id="projectnumber">0.10.0</span>
    </div>
    <div id="projectbrief">A library to build Virtual Reality applications</div>
   </td>
@@ -110,13 +110,13 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a685d4271fbeaca3aa6e3be48a8760c81"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the navigation type.  <a href="#a685d4271fbeaca3aa6e3be48a8760c81">More...</a><br /></td></tr>
 <tr class="separator:a685d4271fbeaca3aa6e3be48a8760c81"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad993090f1dca87b0f1dcdd6c688be955"><td class="memItemLeft" align="right" valign="top">const QString &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer_config.html#ad993090f1dca87b0f1dcdd6c688be955">navigationParameters</a> () const </td></tr>
-<tr class="memdesc:ad993090f1dca87b0f1dcdd6c688be955"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns navigation parameters (may be empty).  <a href="#ad993090f1dca87b0f1dcdd6c688be955">More...</a><br /></td></tr>
+<tr class="memdesc:ad993090f1dca87b0f1dcdd6c688be955"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns navigation parameters.  <a href="#ad993090f1dca87b0f1dcdd6c688be955">More...</a><br /></td></tr>
 <tr class="separator:ad993090f1dca87b0f1dcdd6c688be955"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9e27a63cc8e0e792e2e6e48d50bbf7e7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="config_8hpp.html#a220d0309b7c2487178bb8bef2461a526">QVRTrackingType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer_config.html#a9e27a63cc8e0e792e2e6e48d50bbf7e7">trackingType</a> () const </td></tr>
 <tr class="memdesc:a9e27a63cc8e0e792e2e6e48d50bbf7e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the tracking type.  <a href="#a9e27a63cc8e0e792e2e6e48d50bbf7e7">More...</a><br /></td></tr>
 <tr class="separator:a9e27a63cc8e0e792e2e6e48d50bbf7e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae1b06507b74f2c738d11e6abfa2475bb"><td class="memItemLeft" align="right" valign="top">const QString &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer_config.html#ae1b06507b74f2c738d11e6abfa2475bb">trackingParameters</a> () const </td></tr>
-<tr class="memdesc:ae1b06507b74f2c738d11e6abfa2475bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns tracking parameters (may be empty).  <a href="#ae1b06507b74f2c738d11e6abfa2475bb">More...</a><br /></td></tr>
+<tr class="memdesc:ae1b06507b74f2c738d11e6abfa2475bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns tracking parameters.  <a href="#ae1b06507b74f2c738d11e6abfa2475bb">More...</a><br /></td></tr>
 <tr class="separator:ae1b06507b74f2c738d11e6abfa2475bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae10158d14a77f4618d45a02badbfe755"><td class="memItemLeft" align="right" valign="top">const QVector3D &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_observer_config.html#ae10158d14a77f4618d45a02badbfe755">initialNavigationPosition</a> () const </td></tr>
 <tr class="memdesc:ae10158d14a77f4618d45a02badbfe755"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the initial navigation position.  <a href="#ae10158d14a77f4618d45a02badbfe755">More...</a><br /></td></tr>
@@ -452,9 +452,11 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Returns navigation parameters (may be empty). </p>
-<p>Specific navigation types may require parameters.</p>
-<p>For VRPN navigation, this is currently a string of the form <code>&lt;name&gt; &lt;sensor&gt; &lt;analog0&gt; &lt;analog1&gt; &lt;digital0&gt; &lt;digital1&gt; &lt;digital2&gt; &lt;digital3&gt;</code> where <code>&lt;name&gt;</code> is the VRPN tracker name, e.g. Tracker0@localhost, <code>&lt;sensor&gt;</code> is the number of the sensor to be used (or -1 for all), <code>&lt;analog0&gt;</code> and <code>&lt;analog1&gt;</code> are the analog buttons corresponding to z and x axis movement, <code>&lt;digital0&gt;</code> and <code>&lt;digital1&gt;</code> are the digital buttons for y axis movement, and <code>&lt;digital2&gt;</code> and <code>&lt;digital3&gt;</code> are the digital buttons for rotations around the y axis. </p>
+<p>Returns navigation parameters. </p>
+<p>For <em>QVR_Navigation_Stationary</em>, parameters are ignored.</p>
+<p>For <em>QVR_Navigation_Device</em>, the parameter is the id of the device to use.</p>
+<p>For <em>QVR_Navigation_WASDQE</em>, parameters are currently ignored.</p>
+<p>For <em>QVR_Navigation_Custom</em>, parameters are currently ignored by QVR, but may be used by applications. </p>
 
 </div>
 </div>
@@ -504,9 +506,11 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Returns tracking parameters (may be empty). </p>
-<p>Specific tracking types may require parameters.</p>
-<p>For VRPN tracking, this is currently a string of the form <code>&lt;name&gt; &lt;sensor&gt;</code> where <code>&lt;name&gt;</code> is the VRPN tracker name, e.g. Tracker0@localhost, and <code>&lt;sensor&gt;</code> is the number of the sensor to be used (or -1 for all). </p>
+<p>Returns tracking parameters. </p>
+<p>For <em>QVR_Tracking_Stationary</em>, parameters are ignored.</p>
+<p>For <em>QVR_Tracking_Device</em>, the parameter is the id of the device to use.</p>
+<p>For <em>QVR_Tracking_Oculus</em>, parameters are currently ignored.</p>
+<p>For <em>QVR_Tracking_Custom</em>, parameters are currently ignored by QVR, but may be used by applications. </p>
 
 </div>
 </div>

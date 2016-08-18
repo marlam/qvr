@@ -25,7 +25,7 @@
   <td id="projectlogo"><img alt="Logo" src="cg-logo-small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">QVR
-   &#160;<span id="projectnumber">0.9.4</span>
+   &#160;<span id="projectnumber">0.10.0</span>
    </div>
    <div id="projectbrief">A library to build Virtual Reality applications</div>
   </td>
@@ -107,6 +107,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:afc225c02ccf1f9bf7dfe929a437d313c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_config.html#afc225c02ccf1f9bf7dfe929a437d313c">readFromFile</a> (const QString &amp;filename)</td></tr>
 <tr class="memdesc:afc225c02ccf1f9bf7dfe929a437d313c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a configuration file.  <a href="#afc225c02ccf1f9bf7dfe929a437d313c">More...</a><br /></td></tr>
 <tr class="separator:afc225c02ccf1f9bf7dfe929a437d313c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab29101de928e04390ae082696188f26"><td class="memItemLeft" align="right" valign="top">const QList&lt; <a class="el" href="class_q_v_r_device_config.html">QVRDeviceConfig</a> &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_config.html#aab29101de928e04390ae082696188f26">deviceConfigs</a> () const </td></tr>
+<tr class="memdesc:aab29101de928e04390ae082696188f26"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the list of device configurations.  <a href="#aab29101de928e04390ae082696188f26">More...</a><br /></td></tr>
+<tr class="separator:aab29101de928e04390ae082696188f26"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaabefc479423a43315b960a573424da3"><td class="memItemLeft" align="right" valign="top">const QList&lt; <a class="el" href="class_q_v_r_observer_config.html">QVRObserverConfig</a> &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_config.html#aaabefc479423a43315b960a573424da3">observerConfigs</a> () const </td></tr>
 <tr class="memdesc:aaabefc479423a43315b960a573424da3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the list of observer configurations.  <a href="#aaabefc479423a43315b960a573424da3">More...</a><br /></td></tr>
 <tr class="separator:aaabefc479423a43315b960a573424da3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -160,6 +163,31 @@ Public Member Functions</h2></td></tr>
 <p>This function will detect e.g. an Oculus Rift head mounted display and create a suitable configuration for it.</p>
 <p>If no special equipment is detected, the function will generate a single observer viewing a single window on the master process.</p>
 <p>The observer created will have the given preferred navigation type unless this conflicts with autodetected information about the VR system in use. </p>
+
+</div>
+</div>
+<a class="anchor" id="aab29101de928e04390ae082696188f26"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const QList&lt;<a class="el" href="class_q_v_r_device_config.html">QVRDeviceConfig</a>&gt;&amp; QVRConfig::deviceConfigs </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the list of device configurations. </p>
 
 </div>
 </div>

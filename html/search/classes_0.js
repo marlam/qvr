@@ -2,6 +2,7 @@ var searchData=
 [
   ['qvrapp',['QVRApp',['../class_q_v_r_app.html',1,'']]],
   ['qvrconfig',['QVRConfig',['../class_q_v_r_config.html',1,'']]],
+  ['qvrdeviceconfig',['QVRDeviceConfig',['../class_q_v_r_device_config.html',1,'']]],
   ['qvrfrustum',['QVRFrustum',['../class_q_v_r_frustum.html',1,'']]],
   ['qvrmanager',['QVRManager',['../class_q_v_r_manager.html',1,'']]],
   ['qvrobserver',['QVRObserver',['../class_q_v_r_observer.html',1,'']]],
