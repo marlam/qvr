@@ -784,6 +784,7 @@ WARN_LOGFILE           =
 INPUT                  = @CMAKE_SOURCE_DIR@/app.hpp \
                          @CMAKE_SOURCE_DIR@/manager.hpp \
                          @CMAKE_SOURCE_DIR@/config.hpp \
+                         @CMAKE_SOURCE_DIR@/device.hpp \
                          @CMAKE_SOURCE_DIR@/observer.hpp \
                          @CMAKE_SOURCE_DIR@/window.hpp \
                          @CMAKE_SOURCE_DIR@/process.hpp \
