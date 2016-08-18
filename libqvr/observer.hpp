@@ -27,17 +27,11 @@
 #include <QVector3D>
 #include <QMatrix4x4>
 #include <QQuaternion>
-
-#ifdef HAVE_VRPN
-# include <vrpn_Tracker.h>
-# include <vrpn_Analog.h>
-# include <vrpn_Button.h>
-#endif
+#include <QElapsedTimer>
 
 #include "config.hpp"
 
 class QDataStream;
-class QElapsedTimer;
 
 /*!
  * \brief Observer of the virtual world
@@ -75,31 +69,6 @@ private:
     float _eyeDistance;
     QVector3D _trackingPosition[3];
     QQuaternion _trackingOrientation[3];
-#ifdef HAVE_VRPN
-    // Navigation
-    QElapsedTimer* _vrpnTimer;
-    vrpn_Tracker_Remote* _vrpnNavigationTrackerRemote;
-    vrpn_Analog_Remote* _vrpnNavigationAnalogRemote;
-    vrpn_Button_Remote* _vrpnNavigationButtonRemote;
-    int _vrpnNavigationAnalog[2];
-    int _vrpnNavigationButton[4];
-    QQuaternion _vrpnNavigationOrientation;
-    float _vrpnNavigationAnalogState[2];
-    bool _vrpnNavigationButtonState[4];
-    QVector3D _vrpnNavigationPos;
-    float _vrpnNavigationRotY;
-    // Tracking
-    vrpn_Tracker_Remote* _vrpnTrackingTrackerRemote;
-#endif
-
-    /*! \cond
-     * Used for VRPN-based navigation. The user does not need to know about these. */
-#ifdef HAVE_VRPN
-    friend void QVRVrpnNavigationTrackerChangeHandler(void* userdata, const vrpn_TRACKERCB info);
-    friend void QVRVrpnNavigationAnalogChangeHandler(void* userdata, const vrpn_ANALOGCB info);
-    friend void QVRVrpnNavigationButtonChangeHandler(void* userdata, const vrpn_BUTTONCB info);
-#endif
-    /*! \endcond */
 
     friend QDataStream &operator<<(QDataStream& ds, const QVRObserver& o);
     friend QDataStream &operator>>(QDataStream& ds, QVRObserver& o);
@@ -221,13 +190,6 @@ public:
      * which may be modified from \a QVRApp::updateObservers().
      */
     void setTracking(const QVector3D& posLeft, const QQuaternion& rotLeft, const QVector3D& posRight, const QQuaternion& rotRight);
-
-    /*! \cond
-     * This function is only used internally. It updates the navigation and/or tracking
-     * matrices for certain types of observers. Note that some types of observers are updated
-     * from QVRManager or QVRWindow instead. */
-    void update();
-    /*! \endcond */
 };
 
 /*!

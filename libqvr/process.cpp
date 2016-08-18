@@ -27,6 +27,7 @@
 #include "manager.hpp"
 #include "process.hpp"
 #include "app.hpp"
+#include "device.hpp"
 #include "observer.hpp"
 #include "event.hpp"
 #include "logging.hpp"
@@ -128,6 +129,13 @@ void QVRProcess::sendCmdInit(const QByteArray& serializedStatData)
     write(serializedStatData);
 }
 
+void QVRProcess::sendCmdDevice(const QByteArray& serializedDevice)
+{
+    Q_ASSERT(processId());
+    putChar('d');
+    write(serializedDevice);
+}
+
 void QVRProcess::sendCmdWasdqeState(const QByteArray& serializedWasdqeState)
 {
     Q_ASSERT(processId());
@@ -212,6 +220,12 @@ void QVRProcess::receiveCmdInit(QVRApp* app)
 {
     QDataStream ds(_stdin);
     app->deserializeStaticData(ds);
+}
+
+void QVRProcess::receiveCmdDevice(QVRDevice* dev)
+{
+    QDataStream ds(_stdin);
+    ds >> *dev;
 }
 
 void QVRProcess::receiveCmdWasdqeState(int* wasdqeMouseProcessIndex, int* wasdqeMouseWindowIndex, bool* wasdqeMouseInitialized)

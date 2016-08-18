@@ -33,6 +33,7 @@
 #include "logging.hpp"
 #include "config.hpp"
 #include "app.hpp"
+#include "device.hpp"
 #include "observer.hpp"
 #include "window.hpp"
 #include "process.hpp"
@@ -86,6 +87,7 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
     _configFilename(),
     _app(NULL),
     _config(NULL),
+    _devices(),
     _observers(),
     _customObservers(),
     _masterWindow(NULL),
@@ -94,6 +96,7 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
     _thisProcess(NULL),
     _slaveProcesses(),
     _wantExit(false),
+    _wandNavigationTimer(NULL),
     _wasdqeTimer(NULL)
 {
     Q_ASSERT(!manager);  // there can be only one
@@ -184,6 +187,8 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
 
 QVRManager::~QVRManager()
 {
+    for (int i = 0; i < _devices.size(); i++)
+        delete _devices.at(i);
     for (int i = 0; i < _observers.size(); i++)
         delete _observers.at(i);
     for (int i = 0; i < _windows.size(); i++)
@@ -196,6 +201,7 @@ QVRManager::~QVRManager()
     delete _triggerTimer;
     delete _fpsTimer;
     delete _wasdqeTimer;
+    delete _wandNavigationTimer;
     delete eventQueue;
     eventQueue = NULL;
     manager = NULL;
@@ -219,9 +225,27 @@ bool QVRManager::init(QVRApp* app, QVRNavigationType preferredNavigationType)
         }
     }
 
+    // Create devices
+    bool haveVrpnDevices = false;
+    for (int d = 0; d < _config->deviceConfigs().size(); d++) {
+        _devices.append(new QVRDevice(d));
+        if (_config->deviceConfigs()[d].trackingType() == QVR_Device_Tracking_VRPN
+                || _config->deviceConfigs()[d].buttonsType() == QVR_Device_Buttons_VRPN
+                || _config->deviceConfigs()[d].analogsType() == QVR_Device_Analogs_VRPN) {
+            haveVrpnDevices = true;
+        }
+    }
+    if (haveVrpnDevices) {
+#ifdef HAVE_VRPN
+#else
+        QVR_FATAL("devices configured to use VRPN, but VRPN is not available");
+        return false;
+#endif
+    }
+
     // Create observers
     _haveWasdqeObservers = false;
-    _haveVrpnObservers = false;
+    bool haveWandNavigationObservers = false;
     for (int o = 0; o < _config->observerConfigs().size(); o++) {
         _observers.append(new QVRObserver(o));
         if (_config->observerConfigs()[o].navigationType() == QVR_Navigation_Custom
@@ -229,9 +253,49 @@ bool QVRManager::init(QVRApp* app, QVRNavigationType preferredNavigationType)
             _customObservers.append(_observers[o]);
         if (_config->observerConfigs()[o].navigationType() == QVR_Navigation_WASDQE)
             _haveWasdqeObservers = true;
-        if (_config->observerConfigs()[o].navigationType() == QVR_Navigation_VRPN
-                || _config->observerConfigs()[o].trackingType() == QVR_Tracking_VRPN)
-            _haveVrpnObservers = true;
+        int navDev = -1;
+        if (_config->observerConfigs()[o].navigationType() == QVR_Navigation_Device) {
+            haveWandNavigationObservers = true;
+            const QString devId = _config->observerConfigs()[o].navigationParameters().trimmed();
+            for (int d = 0; d < _devices.size(); d++) {
+                if (_devices[d]->config().id() == devId) {
+                    if (!_devices[d]->isTracked()) {
+                        QVR_FATAL("observer %s: navigation device %s is not tracked",
+                                qPrintable(_observers[o]->id()), qPrintable(_devices[d]->id()));
+                        return false;
+                    }
+                    if (_devices[d]->buttons() < 4) {
+                        QVR_FATAL("observer %s: navigation device %s has less than 4 buttons",
+                                qPrintable(_observers[o]->id()), qPrintable(_devices[d]->id()));
+                        return false;
+                    }
+                    if (_devices[d]->analogs() < 2) {
+                        QVR_FATAL("observer %s: navigation device %s has less than 2 analog joystick elements",
+                                qPrintable(_observers[o]->id()), qPrintable(_devices[d]->id()));
+                        return false;
+                    }
+                    navDev = d;
+                    break;
+                }
+            }
+        }
+        _observerNavigationDevices.append(navDev);
+        int trackDev = -1;
+        if (_config->observerConfigs()[o].trackingType() == QVR_Tracking_Device) {
+            const QString devId = _config->observerConfigs()[o].trackingParameters().trimmed();
+            for (int d = 0; d < _devices.size(); d++) {
+                if (_devices[d]->config().id() == devId) {
+                    if (!_devices[d]->isTracked()) {
+                        QVR_FATAL("observer %s: tracking device %s is not tracked",
+                                qPrintable(_observers[o]->id()), qPrintable(_devices[d]->id()));
+                        return false;
+                    }
+                    trackDev = d;
+                    break;
+                }
+            }
+        }
+        _observerTrackingDevices.append(trackDev);
     }
     if (_haveWasdqeObservers) {
         _wasdqeTimer = new QElapsedTimer;
@@ -243,15 +307,11 @@ bool QVRManager::init(QVRApp* app, QVRNavigationType preferredNavigationType)
         _wasdqePos = QVector3D(0.0f, 0.0f, 0.0f);
         _wasdqeHorzAngle = 0.0f;
         _wasdqeVertAngle = 0.0f;
-    } else {
-        _wasdqeTimer = NULL;
     }
-    if (_haveVrpnObservers) {
-#ifdef HAVE_VRPN
-#else
-        QVR_FATAL("VRPN observers configured but VRPN is not available");
-        return false;
-#endif
+    if (haveWandNavigationObservers) {
+        _wandNavigationTimer = new QElapsedTimer;
+        _wandNavigationPos = QVector3D(0.0f, 0.0f, 0.0f);
+        _wandNavigationRotY = 0.0f;
     }
 
     // Create processes
@@ -336,7 +396,9 @@ bool QVRManager::init(QVRApp* app, QVRNavigationType preferredNavigationType)
     if (_masterWindow)
         _masterWindow->winContext()->doneCurrent();
     if (_processIndex == 0) {
-        _app->update();
+        for (int d = 0; d < _config->deviceConfigs().size(); d++)
+            _devices[d]->update();
+        _app->update(_devices);
         _app->updateObservers(_customObservers);
     }
 
@@ -393,6 +455,10 @@ void QVRManager::masterLoop()
         return;
     }
 
+    for (int d = 0; d < _devices.size(); d++) {
+        QVR_FIREHOSE("  ... updating device %d", d);
+        _devices[d]->update();
+    }
     for (int o = 0; o < _observers.size(); o++) {
         QVRObserver* obs = _observers[o];
         QVR_FIREHOSE("  ... updating observer %d", o);
@@ -430,21 +496,69 @@ void QVRManager::masterLoop()
                     QQuaternion::fromEulerAngles(_wasdqeVertAngle, _wasdqeHorzAngle, 0.0f)
                     * obs->config().initialNavigationOrientation());
         }
+        if (obs->config().navigationType() == QVR_Navigation_Device) {
+            const QVRDevice* dev = _devices.at(_observerNavigationDevices[o]);
+            const float speed = 1.5f; // in meters per second; TODO: make this configurable?
+            float seconds = 0.0f;
+            if (_wandNavigationTimer->isValid()) {
+                seconds = _wandNavigationTimer->nsecsElapsed() / 1e9f;
+                _wandNavigationTimer->restart();
+            } else {
+                _wandNavigationTimer->start();
+            }
+            if (std::abs(dev->analog(0) > 0.0f) || std::abs(dev->analog(1) > 0.0f)) {
+                QQuaternion wandRot = dev->orientation() * QQuaternion::fromEulerAngles(0.0f, _wandNavigationRotY, 0.0f);
+                QVector3D forwardDir = wandRot * QVector3D(0.0f, 0.0f, -1.0f);
+                forwardDir.setY(0.0f);
+                forwardDir.normalize();
+                QVector3D rightDir = wandRot * QVector3D(1.0f, 0.0f, 0.0f);
+                rightDir.setY(0.0f);
+                rightDir.normalize();
+                _wandNavigationPos += speed * seconds * (forwardDir * dev->analog(0) + rightDir * dev->analog(1));
+            }
+            if (dev->button(0)) {
+                _wandNavigationPos += speed * seconds * QVector3D(0.0f, +1.0f, 0.0f);
+            }
+            if (dev->button(1)) {
+                _wandNavigationPos += speed * seconds * QVector3D(0.0f, -1.0f, 0.0f);
+            }
+            if (dev->button(2)) {
+                _wandNavigationRotY += 1.0f;
+                if (_wandNavigationRotY >= 360.0f)
+                    _wandNavigationRotY -= 360.0f;
+            }
+            if (dev->button(3)) {
+                _wandNavigationRotY -= 1.0f;
+                if (_wandNavigationRotY <= 0.0f)
+                    _wandNavigationRotY += 360.0f;
+            }
+            obs->setNavigation(_wandNavigationPos + obs->config().initialNavigationPosition(),
+                    QQuaternion::fromEulerAngles(0.0f, _wandNavigationRotY, 0.0f) * obs->config().initialNavigationOrientation());
+        }
         if (obs->config().trackingType() == QVR_Tracking_Oculus) {
             for (int w = 0; w < _windows.size(); w++) {
                 if (_windows[w]->observerId() == obs->id())
                     _windows[w]->updateObserver();
             }
         }
-        if (obs->config().navigationType() == QVR_Navigation_VRPN
-                || obs->config().trackingType() == QVR_Tracking_VRPN) {
-            obs->update();
+        if (obs->config().trackingType() == QVR_Tracking_Device) {
+            const QVRDevice* dev = _devices.at(_observerTrackingDevices[o]);
+            Q_ASSERT(dev->isTracked());
+            obs->setTracking(dev->position(), dev->orientation());
         }
     }
 
     _app->getNearFar(_near, _far);
 
     if (_slaveProcesses.size() > 0) {
+        for (int d = 0; d < _devices.size(); d++) {
+            QByteArray serializedDevice;
+            QDataStream serializationDataStream(&serializedDevice, QIODevice::WriteOnly);
+            serializationDataStream << (*_devices[d]);
+            QVR_FIREHOSE("  ... sending device %d (%d bytes) to slave processes", d, serializedDevice.size());
+            for (int p = 0; p < _slaveProcesses.size(); p++)
+                _slaveProcesses[p]->sendCmdDevice(serializedDevice);
+        }
         if (_haveWasdqeObservers) {
             QByteArray serializedWasdqeState;
             QDataStream serializationDataStream(&serializedWasdqeState, QIODevice::WriteOnly);
@@ -454,16 +568,12 @@ void QVRManager::masterLoop()
                 _slaveProcesses[p]->sendCmdWasdqeState(serializedWasdqeState);
         }
         for (int o = 0; o < _observers.size(); o++) {
-            QVRObserver* obs = _observers[o];
-            if (obs->config().navigationType() != QVR_Navigation_Stationary
-                    || obs->config().trackingType() != QVR_Tracking_Stationary) {
-                QByteArray serializedObserver;
-                QDataStream serializationDataStream(&serializedObserver, QIODevice::WriteOnly);
-                serializationDataStream << (*_observers[o]);
-                QVR_FIREHOSE("  ... sending observer %d (%d bytes) to slave processes", o, serializedObserver.size());
-                for (int p = 0; p < _slaveProcesses.size(); p++)
-                    _slaveProcesses[p]->sendCmdObserver(serializedObserver);
-            }
+            QByteArray serializedObserver;
+            QDataStream serializationDataStream(&serializedObserver, QIODevice::WriteOnly);
+            serializationDataStream << (*_observers[o]);
+            QVR_FIREHOSE("  ... sending observer %d (%d bytes) to slave processes", o, serializedObserver.size());
+            for (int p = 0; p < _slaveProcesses.size(); p++)
+                _slaveProcesses[p]->sendCmdObserver(serializedObserver);
         }
         QByteArray serializedDynData;
         QDataStream serializationDataStream(&serializedDynData, QIODevice::WriteOnly);
@@ -482,7 +592,7 @@ void QVRManager::masterLoop()
     QApplication::processEvents();
     processEventQueue();
     QVR_FIREHOSE("  ... app update");
-    _app->update();
+    _app->update(_devices);
     _app->updateObservers(_customObservers);
 
     // now wait for windows to finish buffer swap...
@@ -513,7 +623,11 @@ void QVRManager::slaveLoop()
         return;
     }
     QVR_FIREHOSE("  ... got command %c from master", cmd);
-    if (cmd == 'w') {
+    if (cmd == 'd') {
+        QVRDevice d;
+        _thisProcess->receiveCmdDevice(&d);
+        *(_devices.at(d.index())) = d;
+    } else if (cmd == 'w') {
         _thisProcess->receiveCmdWasdqeState(&_wasdqeMouseProcessIndex,
                 &_wasdqeMouseWindowIndex, &_wasdqeMouseInitialized);
     } else if (cmd == 'o') {
@@ -654,6 +768,11 @@ const QVRConfig& QVRManager::config()
 {
     Q_ASSERT(manager);
     return *(manager->_config);
+}
+
+const QVRDeviceConfig& QVRManager::deviceConfig(int deviceIndex)
+{
+    return config().deviceConfigs().at(deviceIndex);
 }
 
 const QVRObserverConfig& QVRManager::observerConfig(int observerIndex)

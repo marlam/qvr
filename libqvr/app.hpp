@@ -32,6 +32,7 @@ class QWheelEvent;
 class QMatrix4x4;
 template <typename T> class QList;
 
+class QVRDevice;
 class QVRObserver;
 class QVRWindow;
 class QVRProcess;
@@ -96,12 +97,14 @@ public:
 
     /*!
      * \brief Update scene state.
+     * \param devices   A list of Virtual Reality interaction devices
      *
-     * Update scene state, e.g. for animations.
+     * Update scene state, e.g. for animations. The \a devices list is only used
+     * if you implement your own interaction scheme based on VR interaction devices.
      *
      * Called once before each frame on the master process.
      */
-    virtual void update() {}
+    virtual void update(const QList<QVRDevice*>& devices) { Q_UNUSED(devices); }
 
     /*!
      * \brief Set the near and far clipping plane.

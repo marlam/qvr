@@ -1,6 +1,14 @@
-observer o0
-	navigation vrpn Tracker1@localhost 0 0 1 0 1 2 3
+device glasses
+	tracking vrpn Tracker1@localhost 0
+
+device wand
 	tracking vrpn Tracker0@localhost 0
+	buttons  vrpn Tracker0@localhost
+	analogs  vrpn Tracker0@localhost
+
+observer o0
+	navigation device wand
+	tracking device glasses
 
 process master
 	window 0

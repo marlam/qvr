@@ -33,19 +33,54 @@
 
 
 /*!
+ * \brief Device tracking type.
+ */
+typedef enum {
+    /*! \brief An untracked device without position and orientation. */
+    QVR_Device_Tracking_None,
+    /*! \brief A untracked device with a static position and orientation. */
+    QVR_Device_Tracking_Static,
+    /*! \brief A device with position and orientation tracked via <a href="https://github.com/vrpn/vrpn/wiki">VRPN</a>. */
+    QVR_Device_Tracking_VRPN
+} QVRDeviceTrackingType;
+
+/*!
+ * \brief Device buttons type.
+ */
+typedef enum {
+    /*! \brief An device without digital buttons. */
+    QVR_Device_Buttons_None,
+    /*! \brief A device with digital buttons that are static (never changed). */
+    QVR_Device_Buttons_Static,
+    /*! \brief A device with digital buttons queried via <a href="https://github.com/vrpn/vrpn/wiki">VRPN</a>. */
+    QVR_Device_Buttons_VRPN
+} QVRDeviceButtonsType;
+
+/*!
+ * \brief Device analogs type.
+ */
+typedef enum {
+    /*! \brief An device without analog joystick elements. */
+    QVR_Device_Analogs_None,
+    /*! \brief A device with analog joystick elements that are static (never changed). */
+    QVR_Device_Analogs_Static,
+    /*! \brief A device with analog joystick elements queried via <a href="https://github.com/vrpn/vrpn/wiki">VRPN</a>. */
+    QVR_Device_Analogs_VRPN
+} QVRDeviceAnalogsType;
+
+/*!
  * \brief Observer navigation type.
  */
 typedef enum {
     /*! \brief An observer that never navigates anywhere. */
     QVR_Navigation_Stationary,
-    /*! \brief An observer that navigates via a <a href="https://github.com/vrpn/vrpn/wiki">VRPN</a> wand.
+    /*! \brief An observer that navigates via a wand or flystick device.
      *
-     * A VRPN wand navigates in the x/z plane in the direction in which it points.
-     * Movement is activated with analog buttons. Two additional digital buttons
-     * allow movement along the y axis.
-     * Use the \a navigationParameters() property to configure the VRPN wand.
+     * The wand must be a tracked device (position and orientation), and it must have two analog joystick elements for
+     * movements in the x/z plane, and four digital buttons for movements based on the y axis (up, down, rotate left,
+     * rotate right).
      */
-    QVR_Navigation_VRPN,
+    QVR_Navigation_Device,
     /*! \brief An observer with keyboard and mouse navigation (WASD+QE and lookaround).
      *
      * WASDQE observers navigate via a common keyboard and mouse mapping: the keys
@@ -64,11 +99,8 @@ typedef enum {
 typedef enum {
     /*! \brief An observer that never moves. */
     QVR_Tracking_Stationary,
-    /*! \brief An observer that is tracked via a <a href="https://github.com/vrpn/vrpn/wiki">VRPN</a> tracker.
-     *
-     * Use the \a trackingParameters() property to configure the VRPN tracker.
-     */
-    QVR_Tracking_VRPN,
+    /*! \brief An observer that is tracked via a tracked device. */
+    QVR_Tracking_Device,
     /*! \brief An observer that wears the Oculus Rift head mounted display. */
     QVR_Tracking_Oculus,
     /*! \brief An observer with tracking implemented by QVRApp::updateObservers(). */
@@ -113,6 +145,85 @@ typedef enum {
 } QVROutputMode;
 
 /*!
+ * \brief Configuration of a \a QVRDevice.
+ */
+class QVRDeviceConfig
+{
+private:
+    // Unique identification string
+    QString _id;
+    // Types and parameters for tracking, buttons, and analogs
+    QVRDeviceTrackingType _trackingType;
+    QString _trackingParameters;
+    QVRDeviceButtonsType _buttonsType;
+    QString _buttonsParameters;
+    QVRDeviceAnalogsType _analogsType;
+    QString _analogsParameters;
+
+    friend class QVRConfig;
+
+public:
+    /*! \brief Constructor. */
+    QVRDeviceConfig();
+
+    /*! \brief Returns the unique id. */
+    const QString& id() const { return _id; }
+
+    /*! \brief Returns the tracking type. */
+    QVRDeviceTrackingType trackingType() const { return _trackingType; }
+
+    /*! \brief Returns the tracking parameters.
+     *
+     * For \a QVR_Device_Tracking_None, parameters are ignored.
+     *
+     * For \a QVR_Device_Tracking_Static, the parameter string is of the form
+     * `[<pos-x> <pos-y> <pos-z>] [<pitch> <yaw> <roll>]` where the first
+     * three numbers give the static position and the last three numbers give
+     * the static orientation as euler angles.
+     *
+     * For \a QVR_Device_Tracking_VRPN, the parameter string is of the form
+     * `<name> [<sensor>]` where `<name>` is the VRPN tracker name, e.g. Tracker0\@localhost,
+     * and `<sensor>` is the number of the sensor to be used (can be omitted to use all).
+     */
+    const QString& trackingParameters() const { return _trackingParameters; }
+
+    /*! \brief Returns the buttons type. */
+    QVRDeviceButtonsType buttonsType() const { return _buttonsType; }
+
+    /*! \brief Returns the buttons parameters.
+     *
+     * For \a QVR_Device_Buttons_None, parameters are ignored.
+     *
+     * For \a QVR_Device_Buttons_Static, the parameter string is a list of values.
+     * Each value represent the static state of one button and must be 0 (button
+     * not pressed) or 1 (button pressed).
+     *
+     * For \a QVR_Device_Buttons_VRPN, the parameter string is of the form
+     * `<name> [<button0> [<button1> [...]]]` where `<name>` is the VRPN tracker name,
+     * e.g. Tracker0\@localhost 
+     * and the optional button list specifies the number and order of VRPN buttons to use.
+     */
+    const QString& buttonsParameters() const { return _buttonsParameters; }
+
+    /*! \brief Returns the analogs type. */
+    QVRDeviceAnalogsType analogsType() const { return _analogsType; }
+
+    /*! \brief Returns the analogs parameters.
+     *
+     * For \a QVR_Device_Analogs_None, parameters are ignored.
+     *
+     * For \a QVR_Device_Analogs_Static, the parameter string is a list of values.
+     * Each value represent the static state of one button and must be in [-1,+1].
+     *
+     * For \a QVR_Device_Analogs_VRPN, the parameter string is of the form
+     * `<name> [<analog0> [<analog1> [...]]]` where `<name>` is the VRPN tracker name,
+     * e.g. Tracker0\@localhost
+     * and the optional analogs list specifies the number and order of VRPN analog joystick elements to use.
+     */
+    const QString& analogsParameters() const { return _analogsParameters; }
+};
+
+/*!
  * \brief Configuration of a \a QVRObserver.
  */
 class QVRObserverConfig
@@ -153,31 +264,30 @@ public:
     /*! \brief Returns the navigation type. */
     QVRNavigationType navigationType() const { return _navigationType; }
 
-    /*! \brief Returns navigation parameters (may be empty).
+    /*! \brief Returns navigation parameters.
      *
-     * Specific navigation types may require parameters.
+     * For \a QVR_Navigation_Stationary, parameters are ignored.
      *
-     * For VRPN navigation, this is currently a string of the form
-     * `<name> <sensor> <analog0> <analog1> <digital0> <digital1> <digital2> <digital3>`
-     * where `<name>` is the VRPN tracker name, e.g. Tracker0\@localhost, `<sensor>`
-     * is the number of the sensor to be used (or -1 for all), `<analog0>` and `<analog1>`
-     * are the analog buttons corresponding to z and x axis movement, `<digital0>`
-     * and `<digital1>` are the digital buttons for y axis movement, and `<digital2>` and
-     * `<digital3>` are the digital buttons for rotations around the y axis.
+     * For \a QVR_Navigation_Device, the parameter is the id of the device to use.
+     *
+     * For \a QVR_Navigation_WASDQE, parameters are currently ignored.
+     *
+     * For \a QVR_Navigation_Custom, parameters are currently ignored by QVR, but may be used by applications.
      */
     const QString& navigationParameters() const { return _navigationParameters; }
 
     /*! \brief Returns the tracking type. */
     QVRTrackingType trackingType() const { return _trackingType; }
 
-    /*! \brief Returns tracking parameters (may be empty).
+    /*! \brief Returns tracking parameters.
      *
-     * Specific tracking types may require parameters.
+     * For \a QVR_Tracking_Stationary, parameters are ignored.
      *
-     * For VRPN tracking, this is currently a string of the form
-     * `<name> <sensor>` where `<name>` is the VRPN tracker name, e.g.
-     * Tracker0\@localhost, and `<sensor>` is the number of the sensor to be used
-     * (or -1 for all).
+     * For \a QVR_Tracking_Device, the parameter is the id of the device to use.
+     *
+     * For \a QVR_Tracking_Oculus, parameters are currently ignored.
+     *
+     * For \a QVR_Tracking_Custom, parameters are currently ignored by QVR, but may be used by applications.
      */
     const QString& trackingParameters() const { return _trackingParameters; }
 
@@ -366,6 +476,8 @@ public:
 class QVRConfig
 {
 private:
+    // Devices for interaction and tracking.
+    QList<QVRDeviceConfig> _deviceConfigs;
     // The observers that get a view on the virtual world.
     QList<QVRObserverConfig> _observerConfigs;
     // The processes associated with this configuration.
@@ -399,6 +511,8 @@ public:
      */
     bool readFromFile(const QString& filename);
 
+    /*! \brief Returns the list of device configurations. */
+    const QList<QVRDeviceConfig>& deviceConfigs() const { return _deviceConfigs; }
     /*! \brief Returns the list of observer configurations. */
     const QList<QVRObserverConfig>& observerConfigs() const { return _observerConfigs; }
     /*! \brief Returns the list of process configurations. */

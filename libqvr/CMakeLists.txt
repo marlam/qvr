@@ -37,6 +37,7 @@ qt5_add_resources(QVRRESOURCES qvr.qrc)
 add_library(libqvr SHARED
     manager.hpp manager.cpp
     config.hpp config.cpp
+    device.hpp device.cpp
     observer.hpp observer.cpp
     window.hpp window.cpp
     process.hpp process.cpp
@@ -68,6 +69,7 @@ install(FILES
     app.hpp
     manager.hpp
     config.hpp
+    device.hpp
     observer.hpp
     window.hpp
     process.hpp
@@ -107,6 +109,7 @@ if(QVR_BUILD_DOCUMENTATION)
             "${CMAKE_SOURCE_DIR}/app.hpp"
 	    "${CMAKE_SOURCE_DIR}/manager.hpp"
 	    "${CMAKE_SOURCE_DIR}/config.hpp"
+	    "${CMAKE_SOURCE_DIR}/device.hpp"
 	    "${CMAKE_SOURCE_DIR}/observer.hpp"
 	    "${CMAKE_SOURCE_DIR}/window.hpp"
 	    "${CMAKE_SOURCE_DIR}/process.hpp"

@@ -98,7 +98,7 @@ public:
     void serializeDynamicData(QDataStream& ds) const override;
     void deserializeDynamicData(QDataStream& ds) override;
 
-    void update() override;
+    void update(const QList<QVRDevice*>& devices) override;
 
     bool wantExit() override;
 

@@ -194,6 +194,7 @@ class QElapsedTimer;
 #include "config.hpp"
 
 class QVRApp;
+class QVRDevice;
 class QVRObserver;
 class QVRWindow;
 class QVRProcess;
@@ -262,7 +263,10 @@ private:
     // Data initialized by init():
     QVRApp* _app;
     QVRConfig* _config;
+    QList<QVRDevice*> _devices;
     QList<QVRObserver*> _observers;
+    QList<int> _observerNavigationDevices;
+    QList<int> _observerTrackingDevices;
     QList<QVRObserver*> _customObservers; // subset of _observers
     QVRWindow* _masterWindow;
     QOpenGLContext* _masterGLContext;
@@ -271,6 +275,9 @@ private:
     QList<QVRProcess*> _slaveProcesses;
     float _near, _far;
     bool _wantExit;
+    QElapsedTimer* _wandNavigationTimer;    // Wand-based observers: framerate-independent speed
+    QVector3D _wandNavigationPos;           // Wand-based observers: position
+    float _wandNavigationRotY;              // Wand-based observers: angle around the y axis
     bool _haveWasdqeObservers;    // WASDQE observers: do we have at least one?
     QElapsedTimer* _wasdqeTimer;  // WASDQE observers: framerate-independent speed
     bool _wasdqeIsPressed[6];     // WASDQE observers: keys
@@ -280,7 +287,6 @@ private:
     QVector3D _wasdqePos;         // WASDQE observers: position
     float _wasdqeHorzAngle;       // WASDQE observers: angle around the y axis
     float _wasdqeVertAngle;       // WASDQE observers: angle around the x axis
-    bool _haveVrpnObservers;
     bool _masterLoopFirstRun;
 
     void processEventQueue();
@@ -357,6 +363,13 @@ public:
      * \brief Return the active configuration.
      */
     static const QVRConfig& config();
+
+    /*!
+     * \brief Return the configuration of the device with index \a deviceIndex.
+     *
+     * This is a convenience function, you can also get this information from \a config().
+     */
+    static const QVRDeviceConfig& deviceConfig(int deviceIndex);
 
     /*!
      * \brief Return the configuration of the observer with index \a observerIndex.

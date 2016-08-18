@@ -36,6 +36,17 @@
 #include "logging.hpp"
 
 
+QVRDeviceConfig::QVRDeviceConfig() :
+    _id(),
+    _trackingType(QVR_Device_Tracking_None),
+    _trackingParameters(),
+    _buttonsType(QVR_Device_Buttons_None),
+    _buttonsParameters(),
+    _analogsType(QVR_Device_Analogs_None),
+    _analogsParameters()
+{
+}
+
 QVRObserverConfig::QVRObserverConfig() :
     _id(),
     _navigationType(QVR_Navigation_Stationary),
@@ -146,6 +157,8 @@ bool QVRConfig::readFromFile(const QString& filename)
 
     int lineCounter = 0;
 
+    int deviceIndex = -1;
+    QVRDeviceConfig deviceConfig;
     int observerIndex = -1;
     QVRObserverConfig observerConfig;
     int processIndex = -1;
@@ -165,11 +178,64 @@ bool QVRConfig::readFromFile(const QString& filename)
             cmd.append(line[i++]);
         arg = line.mid(i).trimmed();
         arglist = arg.split(' ', QString::SkipEmptyParts);
-        if (observerIndex == -1) {
-            // expect 'observer' keyword
+        if (deviceIndex == -1 && observerIndex == -1) {
+            // expect 'device' keyword...
+            if (cmd == "device" && arglist.length() == 1) {
+                deviceConfig._id = arg;
+                deviceIndex++;
+                continue;
+            }
+            // ... or 'observer' keyword
             if (cmd == "observer" && arglist.length() == 1) {
                 observerConfig._id = arg;
                 observerIndex++;
+                continue;
+            }
+        }
+        if (deviceIndex >= 0 && observerIndex == -1) {
+            // expect 'device' keyword...
+            if (cmd == "device" && arglist.length() == 1) {
+                // commit current device
+                _deviceConfigs.append(deviceConfig);
+                // start new device
+                deviceConfig = QVRDeviceConfig();
+                deviceConfig._id = arg;
+                deviceIndex++;
+                continue;
+            }
+            // ... or 'observer' keyword...
+            if (cmd == "observer" && arglist.length() == 1) {
+                // commit current device
+                _deviceConfigs.append(deviceConfig);
+                // start first observer
+                observerConfig._id = arg;
+                observerIndex++;
+                continue;
+            }
+            // ... or device properties.
+            if (cmd == "tracking" && arglist.length() >= 1
+                    && (arglist[0] == "none" || arglist[0] == "static" || arglist[0] == "vrpn")) {
+                deviceConfig._trackingType = (
+                        arglist[0] == "none" ? QVR_Device_Tracking_None
+                        : arglist[0] == "static" ? QVR_Device_Tracking_Static
+                        : QVR_Device_Tracking_VRPN);
+                deviceConfig._trackingParameters = QStringList(arglist.mid(1)).join(' ');
+                continue;
+            } else if (cmd == "buttons" && arglist.length() >= 1
+                    && (arglist[0] == "none" || arglist[0] == "static" || arglist[0] == "vrpn")) {
+                deviceConfig._buttonsType = (
+                        arglist[0] == "none" ? QVR_Device_Buttons_None
+                        : arglist[0] == "static" ? QVR_Device_Buttons_Static
+                        : QVR_Device_Buttons_VRPN);
+                deviceConfig._buttonsParameters = QStringList(arglist.mid(1)).join(' ');
+                continue;
+            } else if (cmd == "analogs" && arglist.length() >= 1
+                    && (arglist[0] == "none" || arglist[0] == "static" || arglist[0] == "vrpn")) {
+                deviceConfig._analogsType = (
+                        arglist[0] == "none" ? QVR_Device_Analogs_None
+                        : arglist[0] == "static" ? QVR_Device_Analogs_Static
+                        : QVR_Device_Analogs_VRPN);
+                deviceConfig._analogsParameters = QStringList(arglist.mid(1)).join(' ');
                 continue;
             }
         }
@@ -195,21 +261,21 @@ bool QVRConfig::readFromFile(const QString& filename)
             }
             // ... or observer properties.
             if (cmd == "navigation" && arglist.length() >= 1
-                    && (arglist[0] == "stationary" || arglist[0] == "vrpn"
+                    && (arglist[0] == "stationary" || arglist[0] == "device"
                         || arglist[0] == "wasdqe" || arglist[0] == "custom")) {
                 observerConfig._navigationType = (
                         arglist[0] == "stationary" ? QVR_Navigation_Stationary
-                        : arglist[0] == "vrpn" ? QVR_Navigation_VRPN
+                        : arglist[0] == "device" ? QVR_Navigation_Device
                         : arglist[0] == "wasdqe" ? QVR_Navigation_WASDQE
                         : QVR_Navigation_Custom);
                 observerConfig._navigationParameters = QStringList(arglist.mid(1)).join(' ');
                 continue;
             } else if (cmd == "tracking" && arglist.length() >= 1
-                    && (arglist[0] == "stationary" || arglist[0] == "vrpn"
+                    && (arglist[0] == "stationary" || arglist[0] == "device"
                         || arglist[0] == "oculus" || arglist[0] == "custom")) {
                 observerConfig._trackingType = (
                         arglist[0] == "stationary" ? QVR_Tracking_Stationary
-                        : arglist[0] == "vrpn" ? QVR_Tracking_VRPN
+                        : arglist[0] == "device" ? QVR_Tracking_Device
                         : arglist[0] == "oculus" ? QVR_Tracking_Oculus
                         : QVR_Tracking_Custom);
                 observerConfig._trackingParameters = QStringList(arglist.mid(1)).join(' ');
@@ -407,10 +473,43 @@ bool QVRConfig::readFromFile(const QString& filename)
                 "and must not have the display property set", qPrintable(filename));
         return false;
     }
+    for (int i = 0; i < _deviceConfigs.size(); i++) {
+        for (int j = i + 1; j < _deviceConfigs.size(); j++) {
+            if (_deviceConfigs[i]._id == _deviceConfigs[j]._id) {
+                QVR_FATAL("config file %s: device id %s is not unique",
+                        qPrintable(filename), qPrintable(_deviceConfigs[i]._id));
+                return false;
+            }
+        }
+    }
     for (int i = 0; i < _observerConfigs.size(); i++) {
         for (int j = i + 1; j < _observerConfigs.size(); j++) {
             if (_observerConfigs[i]._id == _observerConfigs[j]._id) {
                 QVR_FATAL("config file %s: observer id %s is not unique",
+                        qPrintable(filename), qPrintable(_observerConfigs[i]._id));
+                return false;
+            }
+        }
+        if (_observerConfigs[i]._navigationType == QVR_Navigation_Device) {
+            int j;
+            for (j = 0; j < _deviceConfigs.size(); j++) {
+                if (_observerConfigs[i]._navigationParameters == _deviceConfigs[j]._id)
+                    break;
+            }
+            if (j == _deviceConfigs.size()) {
+                QVR_FATAL("config file %s: observer %s uses nonexistent device for navigation",
+                        qPrintable(filename), qPrintable(_observerConfigs[i]._id));
+                return false;
+            }
+        }
+        if (_observerConfigs[i]._trackingType == QVR_Tracking_Device) {
+            int j;
+            for (j = 0; j < _deviceConfigs.size(); j++) {
+                if (_observerConfigs[i]._trackingParameters == _deviceConfigs[j]._id)
+                    break;
+            }
+            if (j == _deviceConfigs.size()) {
+                QVR_FATAL("config file %s: observer %s uses nonexistent device for tracking",
                         qPrintable(filename), qPrintable(_observerConfigs[i]._id));
                 return false;
             }
