@@ -37,6 +37,7 @@
 #include <QLibrary>
 
 #ifdef HAVE_OCULUS
+# define isnan std::isnan
 # include <OVR.h>
 # include <OVR_CAPI_GL.h>
 #endif
