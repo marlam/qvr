@@ -100,6 +100,7 @@ unsigned int SceneViewer::createTex(
     m->GetTexture(t, i, &path, NULL, NULL, NULL, NULL, &mapmode);
 
     QString filename = baseDirectory + '/' + path.C_Str();
+    filename.replace('\\', '/');
 
     unsigned int tex = 0;
     auto it = texturemap.find(filename);
