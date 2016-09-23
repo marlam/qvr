@@ -17,17 +17,16 @@ Current limitations (these might be removed in future versions):
   materials takes place.
 * Animations are not currently supported.
 
-Scenes can be pretransformed with a matrix defined on the command line:
+Scenes can be transformed with a matrix defined by rotate, scale, and translate
+operations given on the command line:
 * `-r angle,x,y,z` or `--rotate angle,x,y,z`:  
   Rotate `angle` degrees around vector `(x,y,z)`.
 * `-s s` or `--scale s` or `-s sx,sy,sz` or `--scale sx,sy,sz`:  
   Scale coordinates with `s` or with `sx,sy,sz`.
 * `-t x,y,z` or `--translate x,y,z`:  
   Translate by offset `(x,y,z)`.
-These transformations will be applied to the pretransformation matrix in the
-order in which they are specified on the command line.
 
-Freely available scenes to try, with appropriate pretransformation:
+Freely available scenes to try, with appropriate transformation:
 * Crytek Sponza from [McGuire Graphics Data](http://graphics.cs.williams.edu/data/meshes.xml):  
   `qvr-sceneviewer --scale=0.01 --rotate=90,0,1,0 --translate=0,0,70 crytek-sponza/sponza.obj`
 * Rungholt from [McGuire Graphics Data](http://graphics.cs.williams.edu/data/meshes.xml):  
