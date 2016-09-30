@@ -62,10 +62,6 @@
  * then look at the source code of an example application to understand how it is
  * implemented.
  *
- * Note: your application must not write to stdout and must not read from stdin.
- * These streams are used by the QVR library for inter-process communication.
- * Of course, writing messages to stderr is still possible.
- *
  * \section conffile Configuration files
  *
  * A configuration file defines the observers, processes, and windows that the
