@@ -233,7 +233,8 @@ QString QVRServer::name()
         s += _localServer->serverName();
     } else {
         s = "tcp,";
-        if (_tcpServer->serverAddress().isNull())
+        if (_tcpServer->serverAddress().isNull()
+                || _tcpServer->serverAddress().toString() == "0.0.0.0")
             s += QHostInfo::fromName(QHostInfo::localHostName()).hostName();
         else
             s += _tcpServer->serverAddress().toString();
