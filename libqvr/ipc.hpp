@@ -45,12 +45,24 @@ class QByteArray;
  * which is assumed to be the case when all processes are configured without
  * a launcher), or over TCP sockets (if at least one process is on a remote host,
  * which is assumed to be the case if it is configured with a launcher).
- *
- * TODO: IPC implementation is currently not cleanly separated from QVRManager.
- * This should be improved.
  */
 
-/* The client, for slave processes. Based on QLocalSocket/QTcpSocket. */
+/* A global timeout value, used whenever a communication function can time out.
+ * TODO: this could be made configurable, e.g. via a master process attribute. */
+extern int QVRTimeoutMsecs;
+
+/* The client, for slave processes. Based on QLocalSocket/QTcpSocket.
+ * Unfortunately QLocalSocket is not based on QAbstractSocket... */
+
+typedef enum {
+    QVRClientCmdInit,
+    QVRClientCmdDevice,
+    QVRClientCmdWasdqeState,
+    QVRClientCmdObserver,
+    QVRClientCmdRender,
+    QVRClientCmdQuit
+} QVRClientCmd;
+
 class QVRClient
 {
 private:
@@ -61,22 +73,30 @@ public:
     QVRClient();
     ~QVRClient();
 
-    bool init(const QString& serverName, int timeoutMsecs = 10000); // tcp,name,port or local,name
+    /* Start a client by connecting to the server. The server name is of
+     * the form local,name for a local server and tcp,host,port for a TCP server. */
+    bool start(const QString& serverName);
 
-    // communication functions to be called by the slave to apply to the master
-    void sendCmdEvent(const QVREvent* e);               // starts with 'e'
-    void sendCmdSync();                                 // is 's'
-    bool receiveCmd(char* cmd, bool waitForIt = false); // will only get the first character
-    void receiveCmdInit(QVRApp* app);
-    void receiveCmdDevice(QVRDevice* dev);
-    void receiveCmdWasdqeState(int*, int*, bool*);
-    void receiveCmdObserver(QVRObserver* obs);
-    void receiveCmdRender(float* n, float* f, QVRApp* app);
-    // explicit flushing
+    /* Commands that this client sends to the server */
+    void sendCmdEvent(const QVREvent* e);
+    void sendCmdSync();
+    /* Explicit flushing of the underlying socket */
     void flush();
+
+    /* Commands that this client receives from the server.
+     * First use receiveCmd() to get the next command (if any).
+     * Then use one of the remaining functions to read the arguments for that
+     * command. */
+    bool receiveCmd(QVRClientCmd* cmd, bool waitForIt = false);
+    void receiveCmdInitArgs(QVRApp* app);
+    void receiveCmdDeviceArgs(QVRDevice* dev);
+    void receiveCmdWasdqeStateArgs(int*, int*, bool*);
+    void receiveCmdObserverArgs(QVRObserver* obs);
+    void receiveCmdRenderArgs(float* n, float* f, QVRApp* app);
 };
 
 /* The server, for the master process. Based on QLocalServer/QTcpServer. */
+
 class QVRServer
 {
 private:
@@ -91,21 +111,30 @@ public:
     QVRServer();
     ~QVRServer();
 
-    bool startLocal(); // starts listening on a local socket
-    bool startTcp(const QString& address = QString()); // starts listening on a TCP socket
-    QString name(); // tcp,name,port or local,name
-    bool waitForClients(int clients, int timeoutMsecs = 10000); // wait for all clients to connect (fills _sockets)
+    /* Start a server. You must choose to start either a local or a tcp server.
+     * In case of a tcp server, you can optionally specify an IP address to listen on. */
+    bool startLocal();
+    bool startTcp(const QString& address = QString());
+    /* Return the name of the server. This is either local,name for local servers
+     * or tcp,host,port for tcp servers. Pass this name to QVRClient::start(). */
+    QString name();
+    /* Wait until the given number of clients have connected to this server. */
+    bool waitForClients(int clients);
 
-    // communication functions to be called by the master to apply to slave processes
-    void sendCmdInit(const QByteArray& serializedStatData);                         // starts with 'i'
-    void sendCmdDevice(const QByteArray& serializedDevice);                         // starts with 'd'
-    void sendCmdWasdqeState(const QByteArray& serializedWasdqeState);               // starts with 'w'
-    void sendCmdObserver(const QByteArray& serializedObserver);                     // starts with 'o'
-    void sendCmdRender(float n, float f, const QByteArray& serializedDynData);      // starts with 'r'
-    void sendCmdQuit();                                                             // is 'q'
-    bool receiveCmdSync(QList<QVREvent>* eventList);
-    // explicit flushing
+    /* Commands that this server sends to all clients. */
+    void sendCmdInit(const QByteArray& serializedStatData);
+    void sendCmdDevice(const QByteArray& serializedDevice);
+    void sendCmdWasdqeState(const QByteArray& serializedWasdqeState);
+    void sendCmdObserver(const QByteArray& serializedObserver);
+    void sendCmdRender(float n, float f, const QByteArray& serializedDynData);
+    void sendCmdQuit();
+    /* Explicit flushing of the underlying sockets */
     void flush();
+
+    /* Commands that this server receives from all clients.
+     * This is always a list of zero or more event commands followed by a sync command.
+     * The events (if any) will be appended to the given list. */
+    bool receiveCmdsEventAndSync(QList<QVREvent>* eventList);
 };
 
 #endif

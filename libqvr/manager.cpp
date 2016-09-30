@@ -88,6 +88,8 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
     _fpsMsecs(0),
     _fpsCounter(0),
     _configFilename(),
+    _server(NULL),
+    _client(NULL),
     _app(NULL),
     _config(NULL),
     _devices(),
@@ -215,6 +217,8 @@ QVRManager::~QVRManager()
     delete _wasdqeTimer;
     delete _wandNavigationTimer;
     delete eventQueue;
+    delete _server;
+    delete _client;
     eventQueue = NULL;
     manager = NULL;
 }
@@ -331,6 +335,7 @@ bool QVRManager::init(QVRApp* app, QVRNavigationType preferredNavigationType)
     if (_processIndex == 0) {
         if (_config->processConfigs().size() > 1) {
             QVR_INFO("starting IPC server");
+            _server = new QVRServer;
             bool local = true;
             for (int p = 1; p < _config->processConfigs().size(); p++) {
                 if (!_config->processConfigs()[p].launcher().isEmpty()) {
@@ -340,8 +345,8 @@ bool QVRManager::init(QVRApp* app, QVRNavigationType preferredNavigationType)
                     break;
                 }
             }
-            bool r = (local ? _thisProcess->_server->startLocal()
-                    : _thisProcess->_server->startTcp(_config->processConfigs()[0].address()));
+            bool r = (local ? _server->startLocal()
+                    : _server->startTcp(_config->processConfigs()[0].address()));
             if (!r) {
                 QVR_FATAL("cannot start IPC server");
                 return false;
@@ -353,29 +358,32 @@ bool QVRManager::init(QVRApp* app, QVRNavigationType preferredNavigationType)
                 QVRProcess* process = new QVRProcess(p);
                 _slaveProcesses.append(process);
                 QVR_INFO("launching slave process %s (index %d) ...", qPrintable(process->id()), p);
-                if (!process->launch(_thisProcess->_server->name(), _configFilename,
+                if (!process->launch(_server->name(), _configFilename,
                             _logLevel, p, _syncToVblank, _appArgs)) {
                     return false;
                 }
             }
             QVR_INFO("waiting for slave processes to connect to master ...");
-            if (!_thisProcess->_server->waitForClients(_config->processConfigs().size() - 1))
+            if (!_server->waitForClients(_config->processConfigs().size() - 1))
                 return false;
             QVR_INFO("... all clients connected");
             QVR_INFO("initializing slave processes with %d bytes of static application data", serializedStatData.size());
-            _thisProcess->_server->sendCmdInit(serializedStatData);
-            _thisProcess->_server->flush();
+            _server->sendCmdInit(serializedStatData);
+            _server->flush();
         }
     } else {
-        if (!_thisProcess->_client->init(_masterName)) {
+        _client = new QVRClient;
+        if (!_client->start(_masterName)) {
             QVR_FATAL("cannot connect to master");
             return false;
         }
-        char cmd = '\0';
-        _thisProcess->_client->receiveCmd(&cmd, true);
-        Q_ASSERT(cmd == 'i');
+        QVRClientCmd cmd;
+        if (!_client->receiveCmd(&cmd, true) || cmd != QVRClientCmdInit) {
+            QVR_FATAL("cannot receive init command from master");
+            return false;
+        }
         QVR_INFO("initializing slave process %s (index %d) ...", qPrintable(_thisProcess->id()), _processIndex);
-        _thisProcess->_client->receiveCmdInit(_app);
+        _client->receiveCmdInitArgs(_app);
         QVR_INFO("... done");
     }
 
@@ -483,8 +491,8 @@ void QVRManager::masterLoop()
     if (_wantExit || _app->wantExit()) {
         QVR_FIREHOSE("  ... exit now!");
         _triggerTimer->stop();
-        _thisProcess->_server->sendCmdQuit();
-        _thisProcess->_server->flush();
+        _server->sendCmdQuit();
+        _server->flush();
         for (int p = 0; p < _slaveProcesses.size(); p++)
             _slaveProcesses[p]->exit();
         quit();
@@ -592,28 +600,28 @@ void QVRManager::masterLoop()
             QDataStream serializationDataStream(&serializedDevice, QIODevice::WriteOnly);
             serializationDataStream << (*_devices[d]);
             QVR_FIREHOSE("  ... sending device %d (%d bytes) to slave processes", d, serializedDevice.size());
-            _thisProcess->_server->sendCmdDevice(serializedDevice);
+            _server->sendCmdDevice(serializedDevice);
         }
         if (_haveWasdqeObservers) {
             QByteArray serializedWasdqeState;
             QDataStream serializationDataStream(&serializedWasdqeState, QIODevice::WriteOnly);
             serializationDataStream << _wasdqeMouseProcessIndex << _wasdqeMouseWindowIndex << _wasdqeMouseInitialized;
             QVR_FIREHOSE("  ... sending wasdqe state to slave processes");
-            _thisProcess->_server->sendCmdWasdqeState(serializedWasdqeState);
+            _server->sendCmdWasdqeState(serializedWasdqeState);
         }
         for (int o = 0; o < _observers.size(); o++) {
             QByteArray serializedObserver;
             QDataStream serializationDataStream(&serializedObserver, QIODevice::WriteOnly);
             serializationDataStream << (*_observers[o]);
             QVR_FIREHOSE("  ... sending observer %d (%d bytes) to slave processes", o, serializedObserver.size());
-            _thisProcess->_server->sendCmdObserver(serializedObserver);
+            _server->sendCmdObserver(serializedObserver);
         }
         QByteArray serializedDynData;
         QDataStream serializationDataStream(&serializedDynData, QIODevice::WriteOnly);
         _app->serializeDynamicData(serializationDataStream);
         QVR_FIREHOSE("  ... sending dynamic application data (%d bytes) to slave processes", serializedDynData.size());
-        _thisProcess->_server->sendCmdRender(_near, _far, serializedDynData);
-        _thisProcess->_server->flush();
+        _server->sendCmdRender(_near, _far, serializedDynData);
+        _server->flush();
         QVR_FIREHOSE("  ... rendering commands are on their way");
     }
 
@@ -632,7 +640,7 @@ void QVRManager::masterLoop()
     // ... and for the slaves to sync
     QVR_FIREHOSE("  ... waiting for slaves to sync");
     QList<QVREvent> slaveEvents;
-    if (!_thisProcess->_server->receiveCmdSync(&slaveEvents)) {
+    if (!_server->receiveCmdsEventAndSync(&slaveEvents)) {
         _wantExit = true;
     } else {
         QVR_FIREHOSE("  ... all slaves synced");
@@ -648,43 +656,47 @@ void QVRManager::masterLoop()
 
 void QVRManager::slaveLoop()
 {
-    char cmd;
-    bool ok = _thisProcess->_client->receiveCmd(&cmd);
+    QVRClientCmd cmd;
+    bool ok = _client->receiveCmd(&cmd);
     if (!ok) {
         // no command at this time
         return;
     }
-    QVR_FIREHOSE("  ... got command %c from master", cmd);
-    if (cmd == 'd') {
+    if (cmd == QVRClientCmdDevice) {
+        QVR_FIREHOSE("  ... got command 'device' from master");
         QVRDevice d;
-        _thisProcess->_client->receiveCmdDevice(&d);
+        _client->receiveCmdDeviceArgs(&d);
         *(_devices.at(d.index())) = d;
-    } else if (cmd == 'w') {
-        _thisProcess->_client->receiveCmdWasdqeState(&_wasdqeMouseProcessIndex,
+    } else if (cmd == QVRClientCmdWasdqeState) {
+        QVR_FIREHOSE("  ... got command 'wasdqestate' from master");
+        _client->receiveCmdWasdqeStateArgs(&_wasdqeMouseProcessIndex,
                 &_wasdqeMouseWindowIndex, &_wasdqeMouseInitialized);
-    } else if (cmd == 'o') {
+    } else if (cmd == QVRClientCmdObserver) {
+        QVR_FIREHOSE("  ... got command 'observer' from master");
         QVRObserver o;
-        _thisProcess->_client->receiveCmdObserver(&o);
+        _client->receiveCmdObserverArgs(&o);
         *(_observers.at(o.index())) = o;
-    } else if (cmd == 'r') {
-        _thisProcess->_client->receiveCmdRender(&_near, &_far, _app);
+    } else if (cmd == QVRClientCmdRender) {
+        QVR_FIREHOSE("  ... got command 'render' from master");
+        _client->receiveCmdRenderArgs(&_near, &_far, _app);
         render();
         QApplication::processEvents();
         while (!eventQueue->empty()) {
-            QVR_FIREHOSE("  ... sending event to master process");
-            _thisProcess->_client->sendCmdEvent(&eventQueue->front());
-            _thisProcess->_client->flush(); // XXX: seems to be necessary at least on remote tcp sockets!?
+            QVR_FIREHOSE("  ... sending command 'event' to master");
+            _client->sendCmdEvent(&eventQueue->front());
+            _client->flush(); // XXX: seems to be necessary at least on remote tcp sockets!?
             eventQueue->dequeue();
         }
-        QVR_FIREHOSE("  ... sending sync to master");
-        _thisProcess->_client->sendCmdSync();
-        _thisProcess->_client->flush();
+        QVR_FIREHOSE("  ... sending command 'sync' to master");
+        _client->sendCmdSync();
+        _client->flush();
         waitForBufferSwaps();
-    } else if (cmd == 'q') {
+    } else if (cmd == QVRClientCmdQuit) {
+        QVR_FIREHOSE("  ... got command 'quit' from master");
         _triggerTimer->stop();
         quit();
     } else {
-        QVR_FATAL("  unknown command from master!?");
+        QVR_FATAL("  got unknown command from master!?");
         quit();
     }
 }

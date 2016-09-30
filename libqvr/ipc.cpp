@@ -35,6 +35,7 @@
 #include "logging.hpp"
 #include "ipc.hpp"
 
+int QVRTimeoutMsecs = 10000;
 
 QVRClient::QVRClient() : _localSocket(NULL), _tcpSocket(NULL)
 {
@@ -46,7 +47,7 @@ QVRClient::~QVRClient()
     delete _tcpSocket;
 }
 
-bool QVRClient::init(const QString& serverName, int timeoutMsecs)
+bool QVRClient::start(const QString& serverName)
 {
     Q_ASSERT(!_localSocket);
     Q_ASSERT(!_tcpSocket);
@@ -55,7 +56,7 @@ bool QVRClient::init(const QString& serverName, int timeoutMsecs)
     if (args.length() == 2 && args[0] == "local") {
         QLocalSocket* socket = new QLocalSocket;
         socket->connectToServer(args[1]);
-        if (!socket->waitForConnected(timeoutMsecs)) {
+        if (!socket->waitForConnected(QVRTimeoutMsecs)) {
             QVR_FATAL("cannot connect to local server %s", qPrintable(args[1]));
             delete socket;
             return false;
@@ -66,7 +67,7 @@ bool QVRClient::init(const QString& serverName, int timeoutMsecs)
         int port = args[2].toInt();
         QTcpSocket* socket = new QTcpSocket;
         socket->connectToHost(args[1], port);
-        if (!socket->waitForConnected(timeoutMsecs)) {
+        if (!socket->waitForConnected(QVRTimeoutMsecs)) {
             QVR_FATAL("cannot connect to tcp server %s port %s", qPrintable(args[1]), qPrintable(args[2]));
             delete socket;
             return false;
@@ -75,7 +76,7 @@ bool QVRClient::init(const QString& serverName, int timeoutMsecs)
         QVR_INFO("connected to tcp server %s port %d", qPrintable(socket->peerName()), socket->peerPort());
         _tcpSocket = socket;
     } else {
-        QVR_FATAL("cannot connect to invalid server %s", qPrintable(serverName));
+        QVR_FATAL("invalid server specification %s", qPrintable(serverName));
         return false;
     }
     return true;
@@ -103,20 +104,42 @@ void QVRClient::sendCmdSync()
         _tcpSocket->putChar('s');
 }
 
-bool QVRClient::receiveCmd(char* cmd, bool waitForIt)
+void QVRClient::flush()
 {
-    if (_localSocket) {
-        if (waitForIt)
-            _localSocket->waitForReadyRead();
-        return _localSocket->getChar(cmd);
-    } else {
-        if (waitForIt)
-            _tcpSocket->waitForReadyRead();
-        return _tcpSocket->getChar(cmd);
-    }
+    if (_localSocket)
+        _localSocket->flush();
+    else
+        _tcpSocket->flush();
 }
 
-void QVRClient::receiveCmdInit(QVRApp* app)
+bool QVRClient::receiveCmd(QVRClientCmd* cmd, bool waitForIt)
+{
+    char c = '\0';
+    bool r;
+    if (_localSocket) {
+        if (waitForIt)
+            _localSocket->waitForReadyRead(QVRTimeoutMsecs);
+        r = _localSocket->getChar(&c);
+    } else {
+        if (waitForIt)
+            _tcpSocket->waitForReadyRead(QVRTimeoutMsecs);
+        r = _tcpSocket->getChar(&c);
+    }
+    if (r) {
+        switch (c) {
+        case 'i': *cmd = QVRClientCmdInit; break;
+        case 'd': *cmd = QVRClientCmdDevice; break;
+        case 'w': *cmd = QVRClientCmdWasdqeState; break;
+        case 'o': *cmd = QVRClientCmdObserver; break;
+        case 'r': *cmd = QVRClientCmdRender; break;
+        case 'q': *cmd = QVRClientCmdQuit; break;
+        default: r = false; break;
+        }
+    }
+    return r;
+}
+
+void QVRClient::receiveCmdInitArgs(QVRApp* app)
 {
     QDataStream ds;
     if (_localSocket)
@@ -126,7 +149,7 @@ void QVRClient::receiveCmdInit(QVRApp* app)
     app->deserializeStaticData(ds);
 }
 
-void QVRClient::receiveCmdDevice(QVRDevice* dev)
+void QVRClient::receiveCmdDeviceArgs(QVRDevice* dev)
 {
     QDataStream ds;
     if (_localSocket)
@@ -136,7 +159,7 @@ void QVRClient::receiveCmdDevice(QVRDevice* dev)
     ds >> *dev;
 }
 
-void QVRClient::receiveCmdWasdqeState(int* wasdqeMouseProcessIndex, int* wasdqeMouseWindowIndex, bool* wasdqeMouseInitialized)
+void QVRClient::receiveCmdWasdqeStateArgs(int* wasdqeMouseProcessIndex, int* wasdqeMouseWindowIndex, bool* wasdqeMouseInitialized)
 {
     QDataStream ds;
     if (_localSocket)
@@ -146,7 +169,7 @@ void QVRClient::receiveCmdWasdqeState(int* wasdqeMouseProcessIndex, int* wasdqeM
     ds >> *wasdqeMouseProcessIndex >> *wasdqeMouseWindowIndex >> *wasdqeMouseInitialized;
 }
 
-void QVRClient::receiveCmdObserver(QVRObserver* obs)
+void QVRClient::receiveCmdObserverArgs(QVRObserver* obs)
 {
     QDataStream ds;
     if (_localSocket)
@@ -156,7 +179,7 @@ void QVRClient::receiveCmdObserver(QVRObserver* obs)
     ds >> *obs;
 }
 
-void QVRClient::receiveCmdRender(float* n, float* f, QVRApp* app)
+void QVRClient::receiveCmdRenderArgs(float* n, float* f, QVRApp* app)
 {
     QDataStream ds;
     if (_localSocket)
@@ -167,26 +190,14 @@ void QVRClient::receiveCmdRender(float* n, float* f, QVRApp* app)
     app->deserializeDynamicData(ds);
 }
 
-void QVRClient::flush()
-{
-    if (_localSocket)
-        _localSocket->flush();
-    else
-        _tcpSocket->flush();
-}
-
 QVRServer::QVRServer() : _localServer(NULL), _tcpServer(NULL)
 {
 }
 
 QVRServer::~QVRServer()
 {
-    for (int i = 0; i < _localSockets.length(); i++)
-        delete _localSockets[i];
-    delete _localServer;
-    for (int i = 0; i < _tcpSockets.length(); i++)
-        delete _tcpSockets[i];
-    delete _tcpServer;
+    delete _localServer; // also deletes all local sockets
+    delete _tcpServer;   // also deletes all tcp sockets
 }
 
 bool QVRServer::startLocal()
@@ -244,11 +255,11 @@ QString QVRServer::name()
     return s;
 }
 
-bool QVRServer::waitForClients(int clients, int timeoutMsecs)
+bool QVRServer::waitForClients(int clients)
 {
     if (_localServer) {
         for (int i = 0; i < clients; i++) {
-            if (!_localServer->waitForNewConnection(timeoutMsecs)) {
+            if (!_localServer->waitForNewConnection(QVRTimeoutMsecs)) {
                 QVR_FATAL("client %d out of %d did not connect", i + 1, clients);
                 return false;
             }
@@ -256,11 +267,13 @@ bool QVRServer::waitForClients(int clients, int timeoutMsecs)
         }
     } else {
         for (int i = 0; i < clients; i++) {
-            if (!_tcpServer->waitForNewConnection(timeoutMsecs)) {
+            if (!_tcpServer->waitForNewConnection(QVRTimeoutMsecs)) {
                 QVR_FATAL("client %d out of %d did not connect", i + 1, clients);
                 return false;
             }
-            _tcpSockets.append(_tcpServer->nextPendingConnection());
+            QTcpSocket* socket = _tcpServer->nextPendingConnection();
+            socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+            _tcpSockets.append(socket);
         }
     }
     return true;
@@ -315,7 +328,18 @@ void QVRServer::sendCmdQuit()
     sendCmd('q', QByteArray());
 }
 
-bool QVRServer::receiveCmdSync(QList<QVREvent>* eventList)
+void QVRServer::flush()
+{
+    if (_localServer) {
+        for (int i = 0; i < _localSockets.size(); i++)
+            _localSockets[i]->flush();
+    } else {
+        for (int i = 0; i < _tcpSockets.size(); i++)
+            _tcpSockets[i]->flush();
+    }
+}
+
+bool QVRServer::receiveCmdsEventAndSync(QList<QVREvent>* eventList)
 {
     int n = (_localServer ? _localSockets.size() : _tcpSockets.size());
     for (int i = 0; i < n; i++) {
@@ -330,9 +354,9 @@ bool QVRServer::receiveCmdSync(QList<QVREvent>* eventList)
             if (!r) {
                 // no command available: wait for client, then try again
                 if (_localServer)
-                    _localSockets[i]->waitForReadyRead();
+                    _localSockets[i]->waitForReadyRead(QVRTimeoutMsecs);
                 else
-                    _tcpSockets[i]->waitForReadyRead();
+                    _tcpSockets[i]->waitForReadyRead(QVRTimeoutMsecs);
                 continue;
             } else {
                 // we have a command, it must be 'e' or 's'
@@ -358,15 +382,4 @@ bool QVRServer::receiveCmdSync(QList<QVREvent>* eventList)
         }
     }
     return true;
-}
-
-void QVRServer::flush()
-{
-    if (_localServer) {
-        for (int i = 0; i < _localSockets.size(); i++)
-            _localSockets[i]->flush();
-    } else {
-        for (int i = 0; i < _tcpSockets.size(); i++)
-            _tcpSockets[i]->flush();
-    }
 }

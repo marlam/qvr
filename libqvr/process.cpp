@@ -34,20 +34,13 @@
 #include "ipc.hpp"
 
 
-QVRProcess::QVRProcess(int index) :
-    _index(index), _server(NULL), _client(NULL)
+QVRProcess::QVRProcess(int index) : _index(index)
 {
     setProcessChannelMode(QProcess::ForwardedErrorChannel);
-    if (_index == 0)
-        _server = new QVRServer;
-    else
-        _client = new QVRClient;
 }
 
 QVRProcess::~QVRProcess()
 {
-    delete _server;
-    delete _client;
 }
 
 int QVRProcess::index() const
@@ -105,7 +98,7 @@ bool QVRProcess::launch(const QString& masterName, const QString& configFilename
             args.prepend(ll[i]);
     }
     start(prg, args, QIODevice::ReadWrite);
-    if (!waitForStarted(-1)) {
+    if (!waitForStarted(QVRTimeoutMsecs)) {
         QVR_FATAL("failed to launch process %d", processIndex);
         return false;
     }
@@ -115,7 +108,7 @@ bool QVRProcess::launch(const QString& masterName, const QString& configFilename
 bool QVRProcess::exit()
 {
     QVR_DEBUG("waiting for process %d to finish... ", index());
-    if (!waitForFinished()) {
+    if (!waitForFinished(QVRTimeoutMsecs)) {
         QVR_FATAL("failed to terminate process %d", index());
         return false;
     }

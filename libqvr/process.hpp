@@ -28,8 +28,6 @@
 
 #include "manager.hpp"
 
-class QVRServer;
-class QVRClient;
 class QVRWindowConfig;
 class QVRProcessConfig;
 
@@ -53,8 +51,6 @@ class QVRProcess : public QProcess
 {
 private:
     int _index;
-    QVRServer* _server; // only if _index == 0, i.e. this is the master
-    QVRClient* _client; // if _index > 0, i.e. this is a client
 
     // functions for the master to manage slave processes
     bool launch(const QString& masterName, const QString& configFilename,

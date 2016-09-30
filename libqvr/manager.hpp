@@ -195,6 +195,8 @@ class QVRObserver;
 class QVRWindow;
 class QVRProcess;
 class QVRRenderContext;
+class QVRServer;
+class QVRClient;
 
 /*!
  * \brief Level of logging of the QVR framework
@@ -258,6 +260,8 @@ private:
     QString _masterName;
     QStringList _appArgs;
     // Data initialized by init():
+    QVRServer* _server; // only on the master process
+    QVRClient* _client; // only on a client process
     QVRApp* _app;
     QVRConfig* _config;
     QList<QVRDevice*> _devices;
