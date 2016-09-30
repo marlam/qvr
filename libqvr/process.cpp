@@ -31,24 +31,23 @@
 #include "observer.hpp"
 #include "event.hpp"
 #include "logging.hpp"
+#include "ipc.hpp"
+
 
 QVRProcess::QVRProcess(int index) :
-    _index(index), _stdin(NULL), _stdout(NULL)
+    _index(index), _server(NULL), _client(NULL)
 {
     setProcessChannelMode(QProcess::ForwardedErrorChannel);
-    if (_index > 0) {
-        // this is a slave process; it talks via stdin/stdout with the master
-        _stdin = new QFile;
-        _stdin->open(stdin, QIODevice::ReadOnly, QFile::DontCloseHandle);
-        _stdout = new QFile;
-        _stdout->open(stdout, QIODevice::WriteOnly, QFile::DontCloseHandle);
-    }
+    if (_index == 0)
+        _server = new QVRServer;
+    else
+        _client = new QVRClient;
 }
 
 QVRProcess::~QVRProcess()
 {
-    delete _stdin;
-    delete _stdout;
+    delete _server;
+    delete _client;
 }
 
 int QVRProcess::index() const
@@ -76,7 +75,8 @@ const QVRWindowConfig& QVRProcess::windowConfig(int windowIndex) const
     return config().windowConfigs().at(windowIndex);
 }
 
-bool QVRProcess::launch(const QString& configFilename, QVRLogLevel logLevel, int processIndex,
+bool QVRProcess::launch(const QString& masterName, const QString& configFilename,
+        QVRLogLevel logLevel, int processIndex,
         bool syncToVblank, const QStringList& appArgs)
 {
     QString prg = QCoreApplication::applicationFilePath();
@@ -85,6 +85,7 @@ bool QVRProcess::launch(const QString& configFilename, QVRLogLevel logLevel, int
     if (!processConf.display().isEmpty()) {
         args << "-display" << processConf.display();
     }
+    args << QString("--qvr-server=%1").arg(masterName);
     args << QString("--qvr-log-level=%1").arg(
             logLevel == QVR_Log_Level_Fatal ? "fatal"
             : logLevel == QVR_Log_Level_Warning ? "warning"
@@ -104,7 +105,7 @@ bool QVRProcess::launch(const QString& configFilename, QVRLogLevel logLevel, int
             args.prepend(ll[i]);
     }
     start(prg, args, QIODevice::ReadWrite);
-    if (!waitForStarted(2 * _timeoutMsecs)) {
+    if (!waitForStarted(-1)) {
         QVR_FATAL("failed to launch process %d", processIndex);
         return false;
     }
@@ -114,140 +115,10 @@ bool QVRProcess::launch(const QString& configFilename, QVRLogLevel logLevel, int
 bool QVRProcess::exit()
 {
     QVR_DEBUG("waiting for process %d to finish... ", index());
-    if (!waitForFinished(2 * _timeoutMsecs)) {
+    if (!waitForFinished()) {
         QVR_FATAL("failed to terminate process %d", index());
         return false;
     }
     QVR_DEBUG("... process %d finished", index());
     return true;
-}
-
-void QVRProcess::sendCmdInit(const QByteArray& serializedStatData)
-{
-    Q_ASSERT(processId());
-    putChar('i');
-    write(serializedStatData);
-}
-
-void QVRProcess::sendCmdDevice(const QByteArray& serializedDevice)
-{
-    Q_ASSERT(processId());
-    putChar('d');
-    write(serializedDevice);
-}
-
-void QVRProcess::sendCmdWasdqeState(const QByteArray& serializedWasdqeState)
-{
-    Q_ASSERT(processId());
-    putChar('w');
-    write(serializedWasdqeState);
-}
-
-void QVRProcess::sendCmdObserver(const QByteArray& serializedObserver)
-{
-    Q_ASSERT(processId());
-    putChar('o');
-    write(serializedObserver);
-}
-
-void QVRProcess::sendCmdRender(float n, float f, const QByteArray& serializedDynData)
-{
-    Q_ASSERT(processId());
-    putChar('r');
-    { QDataStream ds(this); ds << n << f; }
-    write(serializedDynData);
-}
-
-void QVRProcess::sendCmdQuit()
-{
-    Q_ASSERT(processId());
-    putChar('q');
-}
-
-void QVRProcess::waitForSlaveData()
-{
-    Q_ASSERT(processId());
-    waitForReadyRead(_timeoutMsecs);
-}
-
-bool QVRProcess::receiveCmdEvent(QVREvent* e)
-{
-    Q_ASSERT(processId());
-    char c;
-    bool r = false;
-    if (getChar(&c)) {
-        if (c == 'e') {
-            QDataStream ds(this);
-            ds >> *e;
-            r = true;
-        } else {
-            ungetChar(c);
-        }
-    }
-    return r;
-}
-
-bool QVRProcess::receiveCmdSync()
-{
-    Q_ASSERT(processId());
-    char c = '\0';
-    if (!getChar(&c) || c != 's') {
-        QVR_FATAL("cannot sync with slave process");
-        return false;
-    }
-    return true;
-}
-
-void QVRProcess::sendCmdEvent(const QVREvent* e)
-{
-    _stdout->putChar('e');
-    QDataStream ds(_stdout);
-    ds << *e;
-}
-
-void QVRProcess::sendCmdSync()
-{
-    _stdout->putChar('s');
-    _stdout->flush();
-}
-
-bool QVRProcess::receiveCmd(char* cmd)
-{
-    return _stdin->getChar(cmd);
-}
-
-void QVRProcess::receiveCmdInit(QVRApp* app)
-{
-    QDataStream ds(_stdin);
-    app->deserializeStaticData(ds);
-}
-
-void QVRProcess::receiveCmdDevice(QVRDevice* dev)
-{
-    QDataStream ds(_stdin);
-    ds >> *dev;
-}
-
-void QVRProcess::receiveCmdWasdqeState(int* wasdqeMouseProcessIndex, int* wasdqeMouseWindowIndex, bool* wasdqeMouseInitialized)
-{
-    QDataStream ds(_stdin);
-    ds >> *wasdqeMouseProcessIndex >> *wasdqeMouseWindowIndex >> *wasdqeMouseInitialized;
-}
-
-void QVRProcess::receiveCmdObserver(QVRObserver* obs)
-{
-    QDataStream ds(_stdin);
-    ds >> *obs;
-}
-
-void QVRProcess::receiveCmdRender(float* n, float* f, QVRApp* app)
-{
-    QDataStream ds(_stdin);
-    ds >> *n >> *f;
-    app->deserializeDynamicData(ds);
-}
-
-void QVRProcess::flush()
-{
-    _stdout->flush();
 }

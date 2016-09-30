@@ -28,9 +28,8 @@
 
 #include "manager.hpp"
 
-class QFile;
-
-class QVREvent;
+class QVRServer;
+class QVRClient;
 class QVRWindowConfig;
 class QVRProcessConfig;
 
@@ -53,39 +52,15 @@ class QVRProcessConfig;
 class QVRProcess : public QProcess
 {
 private:
-    static const int _timeoutMsecs = 10000;
     int _index;
-    QFile* _stdin;
-    QFile* _stdout;
+    QVRServer* _server; // only if _index == 0, i.e. this is the master
+    QVRClient* _client; // if _index > 0, i.e. this is a client
 
     // functions for the master to manage slave processes
-    bool launch(const QString& configFilename, QVRLogLevel logLevel, int processIndex,
+    bool launch(const QString& masterName, const QString& configFilename,
+            QVRLogLevel logLevel, int processIndex,
             bool syncToVblank, const QStringList& appArgs);
     bool exit();
-
-    // communication functions to be called by the master to apply to slave processes
-    void sendCmdInit(const QByteArray& serializedStatData);                         // starts with 'i'
-    void sendCmdDevice(const QByteArray& serializedDevice);                         // starts with 'd'
-    void sendCmdWasdqeState(const QByteArray& serializedWasdqeState);               // starts with 'w'
-    void sendCmdObserver(const QByteArray& serializedObserver);                     // starts with 'o'
-    void sendCmdRender(float n, float f, const QByteArray& serializedDynData);      // starts with 'r'
-    void sendCmdQuit();                                                             // is 'q'
-    void waitForSlaveData();
-    bool receiveCmdEvent(QVREvent* e);
-    bool receiveCmdSync();
-
-    // communication functions to be called by the slave to apply to the master
-    void sendCmdEvent(const QVREvent* e);               // starts with 'e'
-    void sendCmdSync();                                 // is 's'
-    bool receiveCmd(char* cmd);                         // will only get the first character
-    void receiveCmdInit(QVRApp* app);
-    void receiveCmdDevice(QVRDevice* dev);
-    void receiveCmdWasdqeState(int*, int*, bool*);
-    void receiveCmdObserver(QVRObserver* obs);
-    void receiveCmdRender(float* n, float* f, QVRApp* app);
-
-    // explicit flushing of stdout
-    void flush();
 
     /*! \cond
      * This is internal information. */

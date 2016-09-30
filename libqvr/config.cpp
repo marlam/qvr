@@ -86,6 +86,7 @@ QVRWindowConfig::QVRWindowConfig() :
 QVRProcessConfig::QVRProcessConfig() :
     _id(),
     _display(),
+    _address(),
     _launcher(),
     _windowConfigs()
 {
@@ -347,6 +348,10 @@ bool QVRConfig::readFromFile(const QString& filename)
                 // process properties:
                 if (cmd == "display" && arglist.length() == 1) {
                     processConfig._display = arg;
+                    continue;
+                }
+                if (cmd == "address" && arglist.length() >= 1) {
+                    processConfig._address = arg;
                     continue;
                 }
                 if (cmd == "launcher" && arglist.length() >= 1) {

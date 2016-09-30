@@ -259,6 +259,7 @@ private:
     unsigned int _fpsMsecs;
     unsigned int _fpsCounter;
     QString _configFilename;
+    QString _masterName;
     QStringList _appArgs;
     // Data initialized by init():
     QVRApp* _app;

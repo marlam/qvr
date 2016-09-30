@@ -27,6 +27,7 @@ endif()
 
 # Required libraries
 find_package(Qt5Widgets 5.5.0 REQUIRED)
+find_package(Qt5Network 5.5.0 REQUIRED)
 
 # Optional libraries
 find_package(VRPN)
@@ -41,6 +42,7 @@ add_library(libqvr SHARED
     observer.hpp observer.cpp
     window.hpp window.cpp
     process.hpp process.cpp
+    ipc.hpp ipc.cpp
     logging.hpp logging.cpp
     event.hpp event.cpp
     rendercontext.hpp rendercontext.cpp
@@ -49,7 +51,7 @@ add_library(libqvr SHARED
 set_target_properties(libqvr PROPERTIES OUTPUT_NAME qvr)
 set_target_properties(libqvr PROPERTIES VERSION ${QVR_LIBVERSION})
 set_target_properties(libqvr PROPERTIES SOVERSION ${QVR_SOVERSION})
-target_link_libraries(libqvr Qt5::Widgets)
+target_link_libraries(libqvr Qt5::Widgets Qt5::Network)
 if(VRPN_FOUND)
     add_definitions(-DHAVE_VRPN)
     include_directories(${VRPN_INCLUDE_DIRS})

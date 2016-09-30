@@ -39,6 +39,7 @@
 #include "observer.hpp"
 #include "window.hpp"
 #include "process.hpp"
+#include "ipc.hpp"
 
 QVRManager* manager = NULL; // singleton instance
 QQueue<QVREvent>* eventQueue = NULL; // single event queue for the singleton
@@ -182,6 +183,15 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
         }
     }
 
+    // get master name (if any)
+    for (int i = 1; i < argc; i++) {
+        if (strncmp(argv[i], "--qvr-server=", 13) == 0) {
+            _masterName = QString(argv[i] + 13);
+            removeArg(argc, argv, i);
+            break;
+        }
+    }
+
     // preserve remaining command line content for slave processes
     for (int i = 1; i < argc; i++)
         _appArgs << argv[i];
@@ -320,6 +330,22 @@ bool QVRManager::init(QVRApp* app, QVRNavigationType preferredNavigationType)
     _thisProcess = new QVRProcess(_processIndex);
     if (_processIndex == 0) {
         if (_config->processConfigs().size() > 1) {
+            QVR_INFO("starting IPC server");
+            bool local = true;
+            for (int p = 1; p < _config->processConfigs().size(); p++) {
+                if (!_config->processConfigs()[p].launcher().isEmpty()) {
+                    // assume that the launcher starts the process on a remote
+                    // host and we need a TCP server to communicate
+                    local = false;
+                    break;
+                }
+            }
+            bool r = (local ? _thisProcess->_server->startLocal()
+                    : _thisProcess->_server->startTcp(_config->processConfigs()[0].address()));
+            if (!r) {
+                QVR_FATAL("cannot start IPC server");
+                return false;
+            }
             QByteArray serializedStatData;
             QDataStream serializationDataStream(&serializedStatData, QIODevice::WriteOnly);
             _app->serializeStaticData(serializationDataStream);
@@ -327,20 +353,29 @@ bool QVRManager::init(QVRApp* app, QVRNavigationType preferredNavigationType)
                 QVRProcess* process = new QVRProcess(p);
                 _slaveProcesses.append(process);
                 QVR_INFO("launching slave process %s (index %d) ...", qPrintable(process->id()), p);
-                if (!process->launch(_configFilename, _logLevel, p, _syncToVblank, _appArgs))
+                if (!process->launch(_thisProcess->_server->name(), _configFilename,
+                            _logLevel, p, _syncToVblank, _appArgs)) {
                     return false;
-                QVR_INFO("... initializing with %d bytes of static application data ...", serializedStatData.size());
-                process->sendCmdInit(serializedStatData);
-                process->flush();
-                QVR_INFO("... done");
+                }
             }
+            QVR_INFO("waiting for slave processes to connect to master ...");
+            if (!_thisProcess->_server->waitForClients(_config->processConfigs().size() - 1))
+                return false;
+            QVR_INFO("... all clients connected");
+            QVR_INFO("initializing slave processes with %d bytes of static application data", serializedStatData.size());
+            _thisProcess->_server->sendCmdInit(serializedStatData);
+            _thisProcess->_server->flush();
         }
     } else {
+        if (!_thisProcess->_client->init(_masterName)) {
+            QVR_FATAL("cannot connect to master");
+            return false;
+        }
         char cmd = '\0';
-        _thisProcess->receiveCmd(&cmd);
+        _thisProcess->_client->receiveCmd(&cmd, true);
         Q_ASSERT(cmd == 'i');
         QVR_INFO("initializing slave process %s (index %d) ...", qPrintable(_thisProcess->id()), _processIndex);
-        _thisProcess->receiveCmdInit(_app);
+        _thisProcess->_client->receiveCmdInit(_app);
         QVR_INFO("... done");
     }
 
@@ -448,11 +483,10 @@ void QVRManager::masterLoop()
     if (_wantExit || _app->wantExit()) {
         QVR_FIREHOSE("  ... exit now!");
         _triggerTimer->stop();
-        for (int p = _slaveProcesses.size() - 1; p >= 0; p--) {
-            _slaveProcesses[p]->sendCmdQuit();
-            _slaveProcesses[p]->flush();
+        _thisProcess->_server->sendCmdQuit();
+        _thisProcess->_server->flush();
+        for (int p = 0; p < _slaveProcesses.size(); p++)
             _slaveProcesses[p]->exit();
-        }
         quit();
         return;
     }
@@ -558,33 +592,29 @@ void QVRManager::masterLoop()
             QDataStream serializationDataStream(&serializedDevice, QIODevice::WriteOnly);
             serializationDataStream << (*_devices[d]);
             QVR_FIREHOSE("  ... sending device %d (%d bytes) to slave processes", d, serializedDevice.size());
-            for (int p = 0; p < _slaveProcesses.size(); p++)
-                _slaveProcesses[p]->sendCmdDevice(serializedDevice);
+            _thisProcess->_server->sendCmdDevice(serializedDevice);
         }
         if (_haveWasdqeObservers) {
             QByteArray serializedWasdqeState;
             QDataStream serializationDataStream(&serializedWasdqeState, QIODevice::WriteOnly);
             serializationDataStream << _wasdqeMouseProcessIndex << _wasdqeMouseWindowIndex << _wasdqeMouseInitialized;
             QVR_FIREHOSE("  ... sending wasdqe state to slave processes");
-            for (int p = 0; p < _slaveProcesses.size(); p++)
-                _slaveProcesses[p]->sendCmdWasdqeState(serializedWasdqeState);
+            _thisProcess->_server->sendCmdWasdqeState(serializedWasdqeState);
         }
         for (int o = 0; o < _observers.size(); o++) {
             QByteArray serializedObserver;
             QDataStream serializationDataStream(&serializedObserver, QIODevice::WriteOnly);
             serializationDataStream << (*_observers[o]);
             QVR_FIREHOSE("  ... sending observer %d (%d bytes) to slave processes", o, serializedObserver.size());
-            for (int p = 0; p < _slaveProcesses.size(); p++)
-                _slaveProcesses[p]->sendCmdObserver(serializedObserver);
+            _thisProcess->_server->sendCmdObserver(serializedObserver);
         }
         QByteArray serializedDynData;
         QDataStream serializationDataStream(&serializedDynData, QIODevice::WriteOnly);
         _app->serializeDynamicData(serializationDataStream);
         QVR_FIREHOSE("  ... sending dynamic application data (%d bytes) to slave processes", serializedDynData.size());
-        for (int p = 0; p < _slaveProcesses.size(); p++) {
-            _slaveProcesses[p]->sendCmdRender(_near, _far, serializedDynData);
-            _slaveProcesses[p]->flush();
-        }
+        _thisProcess->_server->sendCmdRender(_near, _far, serializedDynData);
+        _thisProcess->_server->flush();
+        QVR_FIREHOSE("  ... rendering commands are on their way");
     }
 
     render();
@@ -600,17 +630,17 @@ void QVRManager::masterLoop()
     // now wait for windows to finish buffer swap...
     waitForBufferSwaps();
     // ... and for the slaves to sync
-    for (int p = 0; p < _slaveProcesses.size(); p++) {
-        QVREvent e;
-        _slaveProcesses[p]->waitForSlaveData();
-        while (_slaveProcesses[p]->receiveCmdEvent(&e)) {
-            QVR_FIREHOSE("  ... got an event from process %d window %d",
-                    e.context.processIndex(), e.context.windowIndex());
-            eventQueue->enqueue(e);
-        }
-        if (!_slaveProcesses[p]->receiveCmdSync()) {
-            _wantExit = true;
-        }
+    QVR_FIREHOSE("  ... waiting for slaves to sync");
+    QList<QVREvent> slaveEvents;
+    if (!_thisProcess->_server->receiveCmdSync(&slaveEvents)) {
+        _wantExit = true;
+    } else {
+        QVR_FIREHOSE("  ... all slaves synced");
+    }
+    for (int e = 0; e < slaveEvents.size(); e++) {
+        QVR_FIREHOSE("  ... got an event from process %d window %d",
+                slaveEvents[e].context.processIndex(), slaveEvents[e].context.windowIndex());
+        eventQueue->enqueue(slaveEvents[e]);
     }
 
     _fpsCounter++;
@@ -619,41 +649,43 @@ void QVRManager::masterLoop()
 void QVRManager::slaveLoop()
 {
     char cmd;
-    bool ok = _thisProcess->receiveCmd(&cmd);
+    bool ok = _thisProcess->_client->receiveCmd(&cmd);
     if (!ok) {
-        QVR_FATAL("  no command from master?!");
+        // no command at this time
         return;
     }
     QVR_FIREHOSE("  ... got command %c from master", cmd);
     if (cmd == 'd') {
         QVRDevice d;
-        _thisProcess->receiveCmdDevice(&d);
+        _thisProcess->_client->receiveCmdDevice(&d);
         *(_devices.at(d.index())) = d;
     } else if (cmd == 'w') {
-        _thisProcess->receiveCmdWasdqeState(&_wasdqeMouseProcessIndex,
+        _thisProcess->_client->receiveCmdWasdqeState(&_wasdqeMouseProcessIndex,
                 &_wasdqeMouseWindowIndex, &_wasdqeMouseInitialized);
     } else if (cmd == 'o') {
         QVRObserver o;
-        _thisProcess->receiveCmdObserver(&o);
+        _thisProcess->_client->receiveCmdObserver(&o);
         *(_observers.at(o.index())) = o;
     } else if (cmd == 'r') {
-        _thisProcess->receiveCmdRender(&_near, &_far, _app);
+        _thisProcess->_client->receiveCmdRender(&_near, &_far, _app);
         render();
         QApplication::processEvents();
         while (!eventQueue->empty()) {
             QVR_FIREHOSE("  ... sending event to master process");
-            _thisProcess->sendCmdEvent(&eventQueue->front());
+            _thisProcess->_client->sendCmdEvent(&eventQueue->front());
+            _thisProcess->_client->flush(); // XXX: seems to be necessary at least on remote tcp sockets!?
             eventQueue->dequeue();
         }
         QVR_FIREHOSE("  ... sending sync to master");
-        _thisProcess->sendCmdSync();
-        _thisProcess->flush();
+        _thisProcess->_client->sendCmdSync();
+        _thisProcess->_client->flush();
         waitForBufferSwaps();
     } else if (cmd == 'q') {
         _triggerTimer->stop();
         quit();
     } else {
         QVR_FATAL("  unknown command from master!?");
+        quit();
     }
 }
 
@@ -748,8 +780,9 @@ void QVRManager::waitForBufferSwaps()
 {
     // wait for windows to finish the buffer swap
     for (int w = 0; w < _windows.size(); w++) {
-        QVR_FIREHOSE("  ... waitForSwapBuffers(%d)", w);
+        QVR_FIREHOSE("  ... waiting for buffer swap %d...", w);
         _windows[w]->waitForSwapBuffers();
+        QVR_FIREHOSE("  ... buffer swap %d done.", w);
     }
 }
 

@@ -434,6 +434,8 @@ private:
     QString _id;
     // The display that this process works on. Only relevant for X11 at this time.
     QString _display;
+    // The address to bind the QVR server to. Only relevant for the master process.
+    QString _address;
     // The launcher command, e.g. ssh
     QString _launcher;
     // The windows driven by this process.
@@ -449,6 +451,17 @@ public:
     const QString& id() const { return _id; }
     /*! \brief Returns the display that this process works with. */
     const QString& display() const { return _display; }
+    /*! \brief Returns the IP address that the QVR server will listen on.
+     *
+     * A QVR server is only started on the master process (which is the application
+     * process that is started first), and only if multiple processes are configured.
+     * A TCP QVR server that listens on a network address is only used if at least
+     * one of these processes is run on a remote host (which is assumed to be the case
+     * when a launcher is configured; see launcher()).
+     *
+     * By default, a TCP QVR server listens on all IP addresses of the host.
+     */
+    const QString& address() const { return _address; }
     /*! \brief Returns the launcher command used to launch this process.
      *
      * This is only required when processes need to run on remote computers,
