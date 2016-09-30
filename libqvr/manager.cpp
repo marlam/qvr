@@ -697,6 +697,7 @@ void QVRManager::slaveLoop()
         quit();
     } else {
         QVR_FATAL("  got unknown command from master!?");
+        _triggerTimer->stop();
         quit();
     }
 }

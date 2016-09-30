@@ -133,7 +133,7 @@ bool QVRClient::receiveCmd(QVRClientCmd* cmd, bool waitForIt)
         case 'o': *cmd = QVRClientCmdObserver; break;
         case 'r': *cmd = QVRClientCmdRender; break;
         case 'q': *cmd = QVRClientCmdQuit; break;
-        default: r = false; break;
+        default:  *cmd = QVRClientCmdInvalid; break;
         }
     }
     return r;

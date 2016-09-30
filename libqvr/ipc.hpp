@@ -60,7 +60,8 @@ typedef enum {
     QVRClientCmdWasdqeState,
     QVRClientCmdObserver,
     QVRClientCmdRender,
-    QVRClientCmdQuit
+    QVRClientCmdQuit,
+    QVRClientCmdInvalid
 } QVRClientCmd;
 
 class QVRClient
