@@ -491,10 +491,12 @@ void QVRManager::masterLoop()
     if (_wantExit || _app->wantExit()) {
         QVR_FIREHOSE("  ... exit now!");
         _triggerTimer->stop();
-        _server->sendCmdQuit();
-        _server->flush();
-        for (int p = 0; p < _slaveProcesses.size(); p++)
-            _slaveProcesses[p]->exit();
+        if (_slaveProcesses.size() > 0) {
+            _server->sendCmdQuit();
+            _server->flush();
+            for (int p = 0; p < _slaveProcesses.size(); p++)
+                _slaveProcesses[p]->exit();
+        }
         quit();
         return;
     }
@@ -638,17 +640,19 @@ void QVRManager::masterLoop()
     // now wait for windows to finish buffer swap...
     waitForBufferSwaps();
     // ... and for the slaves to sync
-    QVR_FIREHOSE("  ... waiting for slaves to sync");
-    QList<QVREvent> slaveEvents;
-    if (!_server->receiveCmdsEventAndSync(&slaveEvents)) {
-        _wantExit = true;
-    } else {
-        QVR_FIREHOSE("  ... all slaves synced");
-    }
-    for (int e = 0; e < slaveEvents.size(); e++) {
-        QVR_FIREHOSE("  ... got an event from process %d window %d",
-                slaveEvents[e].context.processIndex(), slaveEvents[e].context.windowIndex());
-        eventQueue->enqueue(slaveEvents[e]);
+    if (_slaveProcesses.size() > 0) {
+        QVR_FIREHOSE("  ... waiting for slaves to sync");
+        QList<QVREvent> slaveEvents;
+        if (!_server->receiveCmdsEventAndSync(&slaveEvents)) {
+            _wantExit = true;
+        } else {
+            QVR_FIREHOSE("  ... all slaves synced");
+        }
+        for (int e = 0; e < slaveEvents.size(); e++) {
+            QVR_FIREHOSE("  ... got an event from process %d window %d",
+                    slaveEvents[e].context.processIndex(), slaveEvents[e].context.windowIndex());
+            eventQueue->enqueue(slaveEvents[e]);
+        }
     }
 
     _fpsCounter++;
