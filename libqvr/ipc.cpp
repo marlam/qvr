@@ -47,6 +47,13 @@ QVRClient::~QVRClient()
     delete _tcpSocket;
 }
 
+QIODevice* QVRClient::device()
+{
+    return (_localSocket
+            ? dynamic_cast<QIODevice*>(_localSocket)
+            : dynamic_cast<QIODevice*>(_tcpSocket));
+}
+
 bool QVRClient::start(const QString& serverName)
 {
     Q_ASSERT(!_localSocket);
@@ -87,21 +94,13 @@ void QVRClient::sendCmdEvent(const QVREvent* e)
     QByteArray data;
     QDataStream ds(&data, QIODevice::WriteOnly);
     ds << *e;
-    if (_localSocket) {
-        _localSocket->putChar('e');
-        _localSocket->write(data);
-    } else {
-        _tcpSocket->putChar('e');
-        _tcpSocket->write(data);
-    }
+    device()->putChar('e');
+    device()->write(data);
 }
 
 void QVRClient::sendCmdSync()
 {
-    if (_localSocket)
-        _localSocket->putChar('s');
-    else
-        _tcpSocket->putChar('s');
+    device()->putChar('s');
 }
 
 void QVRClient::flush()
@@ -114,17 +113,10 @@ void QVRClient::flush()
 
 bool QVRClient::receiveCmd(QVRClientCmd* cmd, bool waitForIt)
 {
-    char c = '\0';
-    bool r;
-    if (_localSocket) {
-        if (waitForIt)
-            _localSocket->waitForReadyRead(QVRTimeoutMsecs);
-        r = _localSocket->getChar(&c);
-    } else {
-        if (waitForIt)
-            _tcpSocket->waitForReadyRead(QVRTimeoutMsecs);
-        r = _tcpSocket->getChar(&c);
-    }
+    if (waitForIt)
+        device()->waitForReadyRead(QVRTimeoutMsecs);
+    char c;
+    bool r = device()->getChar(&c);
     if (r) {
         switch (c) {
         case 'i': *cmd = QVRClientCmdInit; break;
@@ -141,51 +133,31 @@ bool QVRClient::receiveCmd(QVRClientCmd* cmd, bool waitForIt)
 
 void QVRClient::receiveCmdInitArgs(QVRApp* app)
 {
-    QDataStream ds;
-    if (_localSocket)
-        ds.setDevice(_localSocket);
-    else
-        ds.setDevice(_tcpSocket);
+    QDataStream ds(device());
     app->deserializeStaticData(ds);
 }
 
 void QVRClient::receiveCmdDeviceArgs(QVRDevice* dev)
 {
-    QDataStream ds;
-    if (_localSocket)
-        ds.setDevice(_localSocket);
-    else
-        ds.setDevice(_tcpSocket);
+    QDataStream ds(device());
     ds >> *dev;
 }
 
 void QVRClient::receiveCmdWasdqeStateArgs(int* wasdqeMouseProcessIndex, int* wasdqeMouseWindowIndex, bool* wasdqeMouseInitialized)
 {
-    QDataStream ds;
-    if (_localSocket)
-        ds.setDevice(_localSocket);
-    else
-        ds.setDevice(_tcpSocket);
+    QDataStream ds(device());
     ds >> *wasdqeMouseProcessIndex >> *wasdqeMouseWindowIndex >> *wasdqeMouseInitialized;
 }
 
 void QVRClient::receiveCmdObserverArgs(QVRObserver* obs)
 {
-    QDataStream ds;
-    if (_localSocket)
-        ds.setDevice(_localSocket);
-    else
-        ds.setDevice(_tcpSocket);
+    QDataStream ds(device());
     ds >> *obs;
 }
 
 void QVRClient::receiveCmdRenderArgs(float* n, float* f, QVRApp* app)
 {
-    QDataStream ds;
-    if (_localSocket)
-        ds.setDevice(_localSocket);
-    else
-        ds.setDevice(_tcpSocket);
+    QDataStream ds(device());
     ds >> *n >> *f;
     app->deserializeDynamicData(ds);
 }
@@ -198,6 +170,18 @@ QVRServer::~QVRServer()
 {
     delete _localServer; // also deletes all local sockets
     delete _tcpServer;   // also deletes all tcp sockets
+}
+
+int QVRServer::devices() const
+{
+    return _localServer ? _localSockets.size() : _tcpSockets.size();
+}
+
+QIODevice* QVRServer::device(int i)
+{
+    return (_localServer
+            ? dynamic_cast<QIODevice*>(_localSockets[i])
+            : dynamic_cast<QIODevice*>(_tcpSockets[i]));
 }
 
 bool QVRServer::startLocal()
@@ -279,18 +263,12 @@ bool QVRServer::waitForClients(int clients)
     return true;
 }
 
-void QVRServer::sendCmd(const char cmd, const QByteArray& data)
+void QVRServer::sendCmd(const char cmd, const QByteArray& data0, const QByteArray& data1)
 {
-    if (_localServer) {
-        for (int i = 0; i < _localSockets.size(); i++) {
-            _localSockets[i]->putChar(cmd);
-            _localSockets[i]->write(data);
-        }
-    } else {
-        for (int i = 0; i < _tcpSockets.size(); i++) {
-            _tcpSockets[i]->putChar(cmd);
-            _tcpSockets[i]->write(data);
-        }
+    for (int i = 0; i < devices(); i++) {
+        device(i)->putChar(cmd);
+        device(i)->write(data0);
+        device(i)->write(data1);
     }
 }
 
@@ -319,13 +297,12 @@ void QVRServer::sendCmdRender(float n, float f, const QByteArray& serializedDynD
     QByteArray data;
     QDataStream ds(&data, QIODevice::WriteOnly);
     ds << n << f;
-    data.append(serializedDynData);
-    sendCmd('r', data);
+    sendCmd('r', data, serializedDynData);
 }
 
 void QVRServer::sendCmdQuit()
 {
-    sendCmd('q', QByteArray());
+    sendCmd('q');
 }
 
 void QVRServer::flush()
@@ -341,32 +318,20 @@ void QVRServer::flush()
 
 bool QVRServer::receiveCmdsEventAndSync(QList<QVREvent>* eventList)
 {
-    int n = (_localServer ? _localSockets.size() : _tcpSockets.size());
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < devices(); i++) {
         for (;;) {
-            char c = '\0';
-            bool r;
             // get command from client
-            if (_localServer)
-                r = _localSockets[i]->getChar(&c);
-            else
-                r = _tcpSockets[i]->getChar(&c);
+            char c;
+            bool r = device(i)->getChar(&c);
             if (!r) {
                 // no command available: wait for client, then try again
-                if (_localServer)
-                    _localSockets[i]->waitForReadyRead(QVRTimeoutMsecs);
-                else
-                    _tcpSockets[i]->waitForReadyRead(QVRTimeoutMsecs);
+                device(i)->waitForReadyRead(QVRTimeoutMsecs);
                 continue;
             } else {
                 // we have a command, it must be 'e' or 's'
                 if (c == 'e') {
                     // an event; there might be more of these
-                    QDataStream ds;
-                    if (_localServer)
-                        ds.setDevice(_localSockets[i]);
-                    else
-                        ds.setDevice(_tcpSockets[i]);
+                    QDataStream ds(device(i));
                     QVREvent e;
                     ds >> e;
                     eventList->append(e);

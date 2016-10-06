@@ -30,6 +30,7 @@ class QLocalSocket;
 class QLocalServer;
 class QTcpSocket;
 class QTcpServer;
+class QIODevice;
 
 class QVREvent;
 class QVRApp;
@@ -70,6 +71,8 @@ private:
     QLocalSocket* _localSocket;
     QTcpSocket* _tcpSocket;
 
+    QIODevice* device();
+
 public:
     QVRClient();
     ~QVRClient();
@@ -106,7 +109,11 @@ private:
     QTcpServer* _tcpServer;
     QList<QTcpSocket*> _tcpSockets;
 
-    void sendCmd(const char cmd, const QByteArray& data);
+    int devices() const;
+    QIODevice* device(int i);
+    void sendCmd(const char cmd,
+            const QByteArray& data0 = QByteArray(),
+            const QByteArray& data1 = QByteArray());
 
 public:
     QVRServer();
