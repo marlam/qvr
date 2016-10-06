@@ -54,6 +54,12 @@ QIODevice* QVRClient::device()
             : dynamic_cast<QIODevice*>(_tcpSocket));
 }
 
+void QVRClient::waitForBytesAvailable(int size)
+{
+    while (device()->bytesAvailable() < size)
+        device()->waitForReadyRead(QVRTimeoutMsecs);
+}
+
 bool QVRClient::start(const QString& serverName)
 {
     Q_ASSERT(!_localSocket);
@@ -134,6 +140,9 @@ bool QVRClient::receiveCmd(QVRClientCmd* cmd, bool waitForIt)
 void QVRClient::receiveCmdInitArgs(QVRApp* app)
 {
     QDataStream ds(device());
+    int size;
+    ds >> size;
+    waitForBytesAvailable(size);
     app->deserializeStaticData(ds);
 }
 
@@ -158,7 +167,9 @@ void QVRClient::receiveCmdObserverArgs(QVRObserver* obs)
 void QVRClient::receiveCmdRenderArgs(float* n, float* f, QVRApp* app)
 {
     QDataStream ds(device());
-    ds >> *n >> *f;
+    int size;
+    ds >> *n >> *f >> size;
+    waitForBytesAvailable(size);
     app->deserializeDynamicData(ds);
 }
 
@@ -274,7 +285,10 @@ void QVRServer::sendCmd(const char cmd, const QByteArray& data0, const QByteArra
 
 void QVRServer::sendCmdInit(const QByteArray& serializedStatData)
 {
-    sendCmd('i', serializedStatData);
+    QByteArray data;
+    QDataStream ds(&data, QIODevice::WriteOnly);
+    ds << serializedStatData.size();
+    sendCmd('i', data, serializedStatData);
 }
 
 void QVRServer::sendCmdDevice(const QByteArray& serializedDevice)
@@ -296,7 +310,7 @@ void QVRServer::sendCmdRender(float n, float f, const QByteArray& serializedDynD
 {
     QByteArray data;
     QDataStream ds(&data, QIODevice::WriteOnly);
-    ds << n << f;
+    ds << n << f << serializedDynData.size();
     sendCmd('r', data, serializedDynData);
 }
 

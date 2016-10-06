@@ -72,6 +72,7 @@ private:
     QTcpSocket* _tcpSocket;
 
     QIODevice* device();
+    void waitForBytesAvailable(int size);
 
 public:
     QVRClient();
