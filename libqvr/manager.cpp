@@ -371,8 +371,7 @@ bool QVRManager::init(QVRApp* app, QVRNavigationType preferredNavigationType)
                 QVRProcess* process = new QVRProcess(p);
                 _slaveProcesses.append(process);
                 QVR_INFO("launching slave process %s (index %d) ...", qPrintable(process->id()), p);
-                if (!process->launch(_server->name(), _configFilename,
-                            QVRTimeoutMsecs, _logLevel, p, _syncToVblank, _appArgs)) {
+                if (!process->launch(_server->name(), _configFilename, _syncToVblank, _appArgs)) {
                     return false;
                 }
             }

@@ -472,6 +472,11 @@ public:
      *
      * Example for ssh if you use libraries in non-standard locations:
      * `launcher ssh remotehost env LD_LIBRARY_PATH=/path/to/libs`
+     *
+     * When the special string `manual` is used as launcher command, QVR will
+     * not start the process itself, and instead expects the user to start it
+     * manually. A list of options that the process needs to be started with
+     * will be printed to the terminal.
      */
     const QString& launcher() const { return _launcher; }
     /*! \brief Returns the configurations of the windows on this process. */

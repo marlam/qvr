@@ -69,50 +69,59 @@ const QVRWindowConfig& QVRProcess::windowConfig(int windowIndex) const
 }
 
 bool QVRProcess::launch(const QString& masterName, const QString& configFilename,
-        int timeoutMsecs, QVRLogLevel logLevel, int processIndex,
         bool syncToVblank, const QStringList& appArgs)
 {
     QString prg = QCoreApplication::applicationFilePath();
     QStringList args;
-    const QVRProcessConfig& processConf = QVRManager::config().processConfigs().at(processIndex);
-    if (!processConf.display().isEmpty()) {
-        args << "-display" << processConf.display();
+    if (!config().display().isEmpty()) {
+        args << "-display" << config().display();
     }
     args << QString("--qvr-server=%1").arg(masterName);
-    args << QString("--qvr-timeout=%1").arg(timeoutMsecs);
+    args << QString("--qvr-timeout=%1").arg(QVRTimeoutMsecs);
     args << QString("--qvr-log-level=%1").arg(
-            logLevel == QVR_Log_Level_Fatal ? "fatal"
-            : logLevel == QVR_Log_Level_Warning ? "warning"
-            : logLevel == QVR_Log_Level_Info ? "info"
-            : logLevel == QVR_Log_Level_Debug ? "debug"
+            QVRManager::logLevel() == QVR_Log_Level_Fatal ? "fatal"
+            : QVRManager::logLevel() == QVR_Log_Level_Warning ? "warning"
+            : QVRManager::logLevel() == QVR_Log_Level_Info ? "info"
+            : QVRManager::logLevel() == QVR_Log_Level_Debug ? "debug"
             : "firehose");
     args << QString("--qvr-wd=%1").arg(QDir::currentPath());
     args << QString("--qvr-config=%1").arg(configFilename);
-    args << QString("--qvr-process=%1").arg(processIndex);
+    args << QString("--qvr-process=%1").arg(index());
     args << QString("--qvr-sync-to-vblank=%1").arg(syncToVblank ? 1 : 0);
     args << appArgs;
-    if (!processConf.launcher().isEmpty()) {
-        QStringList ll = processConf.launcher().split(' ', QString::SkipEmptyParts);
-        args.prepend(prg);
-        prg = ll[0];
-        for (int i = ll.size() - 1; i >= 1; i--)
-            args.prepend(ll[i]);
-    }
-    start(prg, args, QIODevice::ReadWrite);
-    if (!waitForStarted(QVRTimeoutMsecs)) {
-        QVR_FATAL("failed to launch process %d", processIndex);
-        return false;
+    if (config().launcher() == "manual") {
+        QString s = args.join(' ');
+        QVR_FATAL("start process %s manually with the following options:", qPrintable(id()));
+        QVR_FATAL("%s", qPrintable(s));
+    } else {
+        if (!config().launcher().isEmpty()) {
+            QStringList ll = config().launcher().split(' ', QString::SkipEmptyParts);
+            args.prepend(prg);
+            prg = ll[0];
+            for (int i = ll.size() - 1; i >= 1; i--)
+                args.prepend(ll[i]);
+        }
+        start(prg, args, QIODevice::ReadWrite);
+        if (!waitForStarted(QVRTimeoutMsecs)) {
+            QVR_FATAL("failed to launch process %s", qPrintable(id()));
+            return false;
+        }
     }
     return true;
 }
 
 bool QVRProcess::exit()
 {
-    QVR_DEBUG("waiting for process %d to finish... ", index());
-    if (!waitForFinished(QVRTimeoutMsecs)) {
-        QVR_FATAL("failed to terminate process %d", index());
-        return false;
+    if (config().launcher() == "manual") {
+        // The process should have exited cleanly because it received a 'quit' command.
+        // We have no means of checking this or killing a misbehaving process.
+    } else {
+        QVR_DEBUG("waiting for process %d to finish... ", index());
+        if (!waitForFinished(QVRTimeoutMsecs)) {
+            QVR_FATAL("failed to terminate process %d", index());
+            return false;
+        }
+        QVR_DEBUG("... process %d finished", index());
     }
-    QVR_DEBUG("... process %d finished", index());
     return true;
 }
