@@ -309,6 +309,9 @@ public:
      * and removed from \a argc and \a argv:
      * - \-\-qvr-config=\<config.qvr\><br>
      *   Specify a QVR configuration file.
+     * - \-\-qvr-timeout=\<msecs\><br>
+     *   Set a timeout value in milliseconds for all interprocess communication.
+     *   The default is -1, which means to never timeout.
      * - \-\-qvr-log-level=\<level\><br>
      *   See \a QVRLogLevel.
      * - \-\-qvr-sync-to-vblank=<0|1><br>

@@ -109,6 +109,19 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
     eventQueue = new QQueue<QVREvent>;
     Q_INIT_RESOURCE(qvr);
 
+    // set global timeout value (-1 means never timeout)
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--qvr-timeout") == 0 && i < argc - 1) {
+            QVRTimeoutMsecs = ::atoi(argv[i + 1]);
+            removeTwoArgs(argc, argv, i);
+            break;
+        } else if (strncmp(argv[i], "--qvr-timeout=", 14) == 0) {
+            QVRTimeoutMsecs = ::atoi(argv[i] + 14);
+            removeArg(argc, argv, i);
+            break;
+        }
+    }
+
     // set log level
     if (::getenv("QVR_LOG_LEVEL"))
         parseLogLevel(::getenv("QVR_LOG_LEVEL"), &_logLevel);
@@ -359,7 +372,7 @@ bool QVRManager::init(QVRApp* app, QVRNavigationType preferredNavigationType)
                 _slaveProcesses.append(process);
                 QVR_INFO("launching slave process %s (index %d) ...", qPrintable(process->id()), p);
                 if (!process->launch(_server->name(), _configFilename,
-                            _logLevel, p, _syncToVblank, _appArgs)) {
+                            QVRTimeoutMsecs, _logLevel, p, _syncToVblank, _appArgs)) {
                     return false;
                 }
             }

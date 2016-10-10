@@ -54,7 +54,7 @@ private:
 
     // functions for the master to manage slave processes
     bool launch(const QString& masterName, const QString& configFilename,
-            QVRLogLevel logLevel, int processIndex,
+            int timeoutMsecs, QVRLogLevel logLevel, int processIndex,
             bool syncToVblank, const QStringList& appArgs);
     bool exit();
 

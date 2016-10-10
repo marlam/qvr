@@ -35,7 +35,7 @@
 #include "logging.hpp"
 #include "ipc.hpp"
 
-int QVRTimeoutMsecs = 10000;
+int QVRTimeoutMsecs = -1; // the default is to never timeout
 
 QVRClient::QVRClient() : _localSocket(NULL), _tcpSocket(NULL)
 {

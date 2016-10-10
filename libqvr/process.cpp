@@ -69,7 +69,7 @@ const QVRWindowConfig& QVRProcess::windowConfig(int windowIndex) const
 }
 
 bool QVRProcess::launch(const QString& masterName, const QString& configFilename,
-        QVRLogLevel logLevel, int processIndex,
+        int timeoutMsecs, QVRLogLevel logLevel, int processIndex,
         bool syncToVblank, const QStringList& appArgs)
 {
     QString prg = QCoreApplication::applicationFilePath();
@@ -79,6 +79,7 @@ bool QVRProcess::launch(const QString& masterName, const QString& configFilename
         args << "-display" << processConf.display();
     }
     args << QString("--qvr-server=%1").arg(masterName);
+    args << QString("--qvr-timeout=%1").arg(timeoutMsecs);
     args << QString("--qvr-log-level=%1").arg(
             logLevel == QVR_Log_Level_Fatal ? "fatal"
             : logLevel == QVR_Log_Level_Warning ? "warning"
