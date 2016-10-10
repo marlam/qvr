@@ -39,6 +39,7 @@
 
 QVRDeviceConfig::QVRDeviceConfig() :
     _id(),
+    _processIndex(0),
     _trackingType(QVR_Device_Tracking_None),
     _trackingParameters(),
     _buttonsType(QVR_Device_Buttons_None),
@@ -161,6 +162,8 @@ bool QVRConfig::readFromFile(const QString& filename)
 
     int deviceIndex = -1;
     QVRDeviceConfig deviceConfig;
+    QString deviceProcessId;
+    QStringList deviceProcessIds;
     int observerIndex = -1;
     QVRObserverConfig observerConfig;
     int processIndex = -1;
@@ -184,6 +187,7 @@ bool QVRConfig::readFromFile(const QString& filename)
             // expect 'device' keyword...
             if (cmd == "device" && arglist.length() == 1) {
                 deviceConfig._id = arg;
+                deviceProcessId.clear();
                 deviceIndex++;
                 continue;
             }
@@ -199,9 +203,11 @@ bool QVRConfig::readFromFile(const QString& filename)
             if (cmd == "device" && arglist.length() == 1) {
                 // commit current device
                 _deviceConfigs.append(deviceConfig);
+                deviceProcessIds.append(deviceProcessId);
                 // start new device
                 deviceConfig = QVRDeviceConfig();
                 deviceConfig._id = arg;
+                deviceProcessId.clear();
                 deviceIndex++;
                 continue;
             }
@@ -209,13 +215,17 @@ bool QVRConfig::readFromFile(const QString& filename)
             if (cmd == "observer" && arglist.length() == 1) {
                 // commit current device
                 _deviceConfigs.append(deviceConfig);
+                deviceProcessIds.append(deviceProcessId);
                 // start first observer
                 observerConfig._id = arg;
                 observerIndex++;
                 continue;
             }
             // ... or device properties.
-            if (cmd == "tracking" && arglist.length() >= 1
+            if (cmd == "process" && arglist.length() >= 1) {
+                deviceProcessId = arg;
+                continue;
+            } else if (cmd == "tracking" && arglist.length() >= 1
                     && (arglist[0] == "none" || arglist[0] == "static" || arglist[0] == "vrpn")) {
                 deviceConfig._trackingType = (
                         arglist[0] == "none" ? QVR_Device_Tracking_None
@@ -485,6 +495,22 @@ bool QVRConfig::readFromFile(const QString& filename)
                 QVR_FATAL("config file %s: device id %s is not unique",
                         qPrintable(filename), qPrintable(_deviceConfigs[i]._id));
                 return false;
+            }
+        }
+        // fill in process indices from our separate list of process ids
+        if (!deviceProcessIds[i].isEmpty()) {
+            int j;
+            for (j = 0; j < _processConfigs.size(); j++) {
+                if (_processConfigs[j]._id == deviceProcessIds[i])
+                    break;
+            }
+            if (j == _processConfigs.size()) {
+                QVR_FATAL("config file %s: device %s: process %s does not exist",
+                        qPrintable(filename), qPrintable(_deviceConfigs[i]._id),
+                        qPrintable(deviceProcessIds[i]));
+                return false;
+            } else {
+                _deviceConfigs[i]._processIndex = j;
             }
         }
     }

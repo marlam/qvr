@@ -292,6 +292,7 @@ private:
 
     void processEventQueue();
 
+    void updateDevices();
     void render();
     void waitForBufferSwaps();
     void quit();

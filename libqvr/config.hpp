@@ -152,6 +152,8 @@ class QVRDeviceConfig
 private:
     // Unique identification string
     QString _id;
+    // Index of owning process
+    int _processIndex;
     // Types and parameters for tracking, buttons, and analogs
     QVRDeviceTrackingType _trackingType;
     QString _trackingParameters;
@@ -168,6 +170,16 @@ public:
 
     /*! \brief Returns the unique id. */
     const QString& id() const { return _id; }
+
+    /*! \brief Returns the index of the owning process.
+     *
+     * This is 0 (the master process) by default, but in special
+     * cases (such as remote processes) a different process can own a device.
+     *
+     * The corresponding configuration file entry for the device is
+     * `process <id>` (note that the id and not the index is used).
+     */
+    int processIndex() const { return _processIndex; }
 
     /*! \brief Returns the tracking type. */
     QVRDeviceTrackingType trackingType() const { return _trackingType; }

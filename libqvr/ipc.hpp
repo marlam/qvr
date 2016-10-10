@@ -57,6 +57,7 @@ extern int QVRTimeoutMsecs;
 
 typedef enum {
     QVRClientCmdInit,
+    QVRClientCmdUpdateDevices,
     QVRClientCmdDevice,
     QVRClientCmdWasdqeState,
     QVRClientCmdObserver,
@@ -83,6 +84,7 @@ public:
     bool start(const QString& serverName);
 
     /* Commands that this client sends to the server */
+    void sendReplyUpdateDevices(int n, const QByteArray& serializedDevices);
     void sendCmdEvent(const QVREvent* e);
     void sendCmdSync();
     /* Explicit flushing of the underlying socket */
@@ -132,6 +134,7 @@ public:
 
     /* Commands that this server sends to all clients. */
     void sendCmdInit(const QByteArray& serializedStatData);
+    void sendCmdUpdateDevices();
     void sendCmdDevice(const QByteArray& serializedDevice);
     void sendCmdWasdqeState(const QByteArray& serializedWasdqeState);
     void sendCmdObserver(const QByteArray& serializedObserver);
@@ -140,6 +143,8 @@ public:
     /* Explicit flushing of the underlying sockets */
     void flush();
 
+    /* Replies that this server receives from clients. See sendCmdUpdateDevices(). */
+    void receiveReplyUpdateDevices(QList<QVRDevice*> devices);
     /* Commands that this server receives from all clients.
      * This is always a list of zero or more event commands followed by a sync command.
      * The events (if any) will be appended to the given list. */

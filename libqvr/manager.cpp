@@ -453,8 +453,7 @@ bool QVRManager::init(QVRApp* app, QVRNavigationType preferredNavigationType)
     if (_masterWindow)
         _masterWindow->winContext()->doneCurrent();
     if (_processIndex == 0) {
-        for (int d = 0; d < _config->deviceConfigs().size(); d++)
-            _devices[d]->update();
+        updateDevices();
         _app->update(_devices);
         _app->updateObservers(_customObservers);
     }
@@ -513,10 +512,7 @@ void QVRManager::masterLoop()
         return;
     }
 
-    for (int d = 0; d < _devices.size(); d++) {
-        QVR_FIREHOSE("  ... updating device %d", d);
-        _devices[d]->update();
-    }
+    updateDevices();
     for (int o = 0; o < _observers.size(); o++) {
         QVRObserver* obs = _observers[o];
         QVR_FIREHOSE("  ... updating observer %d", o);
@@ -673,48 +669,59 @@ void QVRManager::masterLoop()
 void QVRManager::slaveLoop()
 {
     QVRClientCmd cmd;
-    bool ok = _client->receiveCmd(&cmd);
-    if (!ok) {
-        // no command at this time
-        return;
-    }
-    if (cmd == QVRClientCmdDevice) {
-        QVR_FIREHOSE("  ... got command 'device' from master");
-        QVRDevice d;
-        _client->receiveCmdDeviceArgs(&d);
-        *(_devices.at(d.index())) = d;
-    } else if (cmd == QVRClientCmdWasdqeState) {
-        QVR_FIREHOSE("  ... got command 'wasdqestate' from master");
-        _client->receiveCmdWasdqeStateArgs(&_wasdqeMouseProcessIndex,
-                &_wasdqeMouseWindowIndex, &_wasdqeMouseInitialized);
-    } else if (cmd == QVRClientCmdObserver) {
-        QVR_FIREHOSE("  ... got command 'observer' from master");
-        QVRObserver o;
-        _client->receiveCmdObserverArgs(&o);
-        *(_observers.at(o.index())) = o;
-    } else if (cmd == QVRClientCmdRender) {
-        QVR_FIREHOSE("  ... got command 'render' from master");
-        _client->receiveCmdRenderArgs(&_near, &_far, _app);
-        render();
-        QApplication::processEvents();
-        while (!eventQueue->empty()) {
-            QVR_FIREHOSE("  ... sending command 'event' to master");
-            _client->sendCmdEvent(&eventQueue->front());
-            _client->flush(); // XXX: seems to be necessary at least on remote tcp sockets!?
-            eventQueue->dequeue();
+    while (_client->receiveCmd(&cmd)) {
+        if (cmd == QVRClientCmdUpdateDevices) {
+            QVR_FIREHOSE("  ... got command 'update-devices' from master");
+            int n = 0;
+            QByteArray data;
+            QDataStream ds(&data, QIODevice::WriteOnly);
+            for (int d = 0; d < _config->deviceConfigs().size(); d++) {
+                if (_devices[d]->config().processIndex() == processIndex() && _devices[d]->update()) {
+                    ds << *(_devices[d]);
+                    n++;
+                }
+            }
+            QVR_FIREHOSE("  ... sending %d updated devices to master", n);
+            _client->sendReplyUpdateDevices(n, data);
+            _client->flush();
+        } else if (cmd == QVRClientCmdDevice) {
+            QVR_FIREHOSE("  ... got command 'device' from master");
+            QVRDevice d;
+            _client->receiveCmdDeviceArgs(&d);
+            *(_devices.at(d.index())) = d;
+        } else if (cmd == QVRClientCmdWasdqeState) {
+            QVR_FIREHOSE("  ... got command 'wasdqestate' from master");
+            _client->receiveCmdWasdqeStateArgs(&_wasdqeMouseProcessIndex,
+                    &_wasdqeMouseWindowIndex, &_wasdqeMouseInitialized);
+        } else if (cmd == QVRClientCmdObserver) {
+            QVR_FIREHOSE("  ... got command 'observer' from master");
+            QVRObserver o;
+            _client->receiveCmdObserverArgs(&o);
+            *(_observers.at(o.index())) = o;
+        } else if (cmd == QVRClientCmdRender) {
+            QVR_FIREHOSE("  ... got command 'render' from master");
+            _client->receiveCmdRenderArgs(&_near, &_far, _app);
+            render();
+            QApplication::processEvents();
+            while (!eventQueue->empty()) {
+                QVR_FIREHOSE("  ... sending command 'event' to master");
+                _client->sendCmdEvent(&eventQueue->front());
+                _client->flush(); // XXX: seems to be necessary at least on remote tcp sockets!?
+                eventQueue->dequeue();
+            }
+            QVR_FIREHOSE("  ... sending command 'sync' to master");
+            _client->sendCmdSync();
+            _client->flush();
+            waitForBufferSwaps();
+        } else if (cmd == QVRClientCmdQuit) {
+            QVR_FIREHOSE("  ... got command 'quit' from master");
+            _triggerTimer->stop();
+            quit();
+        } else {
+            QVR_FATAL("  got unknown command from master!?");
+            _triggerTimer->stop();
+            quit();
         }
-        QVR_FIREHOSE("  ... sending command 'sync' to master");
-        _client->sendCmdSync();
-        _client->flush();
-        waitForBufferSwaps();
-    } else if (cmd == QVRClientCmdQuit) {
-        QVR_FIREHOSE("  ... got command 'quit' from master");
-        _triggerTimer->stop();
-        quit();
-    } else {
-        QVR_FATAL("  got unknown command from master!?");
-        _triggerTimer->stop();
-        quit();
     }
 }
 
@@ -734,6 +741,25 @@ void QVRManager::quit()
     _app->exitProcess(_thisProcess);
 
     QVR_DEBUG("... quitting process %d done", _thisProcess->index());
+}
+
+void QVRManager::updateDevices()
+{
+    Q_ASSERT(_processIndex == 0);
+    bool haveRemoteDevices = false;
+    for (int d = 0; d < _config->deviceConfigs().size(); d++) {
+        if (_devices[d]->config().processIndex() == 0)
+            _devices[d]->update();
+        else
+            haveRemoteDevices = true;
+    }
+    if (haveRemoteDevices) {
+        QVR_DEBUG("ordering slave processes to update devices");
+        _server->sendCmdUpdateDevices();
+        _server->flush();
+        QVR_DEBUG("getting updated device info from slave processes");
+        _server->receiveReplyUpdateDevices(_devices);
+    }
 }
 
 void QVRManager::render()

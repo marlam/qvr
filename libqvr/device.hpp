@@ -69,6 +69,7 @@ private:
     QVector<int> _vrpnButtons;
     vrpn_Analog_Remote* _vrpnAnalogRemote;
     QVector<float> _vrpnAnalogs;
+    bool _vrpnChangeFlag;
 #endif
 
     /*! \cond
@@ -90,6 +91,9 @@ public:
     QVRDevice(int index);
     /*! \brief Destructor. */
     ~QVRDevice();
+
+    /*! \brief Assignment operator. */
+    const QVRDevice& operator=(const QVRDevice& d);
 
     /*! \brief Returns the index of the device in the QVR configuration. */
     int index() const;
@@ -152,8 +156,9 @@ public:
     }
 
     /*! \cond
-     * This function is used internally to update the state of this device. */
-    void update();
+     * This function is used internally to update the state of this device.
+     * It returns true if something (might have) changed, false otherwise. */
+    bool update();
     /*! \endcond */
 };
 

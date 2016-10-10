@@ -95,6 +95,15 @@ bool QVRClient::start(const QString& serverName)
     return true;
 }
 
+void QVRClient::sendReplyUpdateDevices(int n, const QByteArray& serializedDevices)
+{
+    QByteArray data;
+    QDataStream ds(&data, QIODevice::WriteOnly);
+    ds << n;
+    device()->write(data);
+    device()->write(serializedDevices);
+}
+
 void QVRClient::sendCmdEvent(const QVREvent* e)
 {
     QByteArray data;
@@ -126,6 +135,7 @@ bool QVRClient::receiveCmd(QVRClientCmd* cmd, bool waitForIt)
     if (r) {
         switch (c) {
         case 'i': *cmd = QVRClientCmdInit; break;
+        case 'u': *cmd = QVRClientCmdUpdateDevices; break;
         case 'd': *cmd = QVRClientCmdDevice; break;
         case 'w': *cmd = QVRClientCmdWasdqeState; break;
         case 'o': *cmd = QVRClientCmdObserver; break;
@@ -291,6 +301,11 @@ void QVRServer::sendCmdInit(const QByteArray& serializedStatData)
     sendCmd('i', data, serializedStatData);
 }
 
+void QVRServer::sendCmdUpdateDevices()
+{
+    sendCmd('u');
+}
+
 void QVRServer::sendCmdDevice(const QByteArray& serializedDevice)
 {
     sendCmd('d', serializedDevice);
@@ -327,6 +342,21 @@ void QVRServer::flush()
     } else {
         for (int i = 0; i < _tcpSockets.size(); i++)
             _tcpSockets[i]->flush();
+    }
+}
+
+void QVRServer::receiveReplyUpdateDevices(QList<QVRDevice*> deviceList)
+{
+    for (int i = 0; i < devices(); i++) {
+        device(i)->waitForReadyRead(QVRTimeoutMsecs);
+        QDataStream ds(device(i));
+        QVRDevice dev;
+        int n;
+        ds >> n;
+        for (int j = 0; j < n; j++) {
+            ds >> dev;
+            *(deviceList.at(dev.index())) = dev;
+        }
     }
 }
 

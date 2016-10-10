@@ -31,6 +31,7 @@ void QVRVrpnTrackerChangeHandler(void* userdata, const vrpn_TRACKERCB info)
     QVRDevice* d = reinterpret_cast<QVRDevice*>(userdata);
     d->_position = QVector3D(info.pos[0], info.pos[1], info.pos[2]);
     d->_orientation = QQuaternion(info.quat[3], info.quat[0], info.quat[1], info.quat[2]);
+    d->_vrpnChangeFlag = true;
 }
 void QVRVrpnButtonChangeHandler(void* userdata, const vrpn_BUTTONCB info)
 {
@@ -39,6 +40,7 @@ void QVRVrpnButtonChangeHandler(void* userdata, const vrpn_BUTTONCB info)
         if (info.button == d->_vrpnButtons[i])
             d->_buttons[i] = info.state;
     }
+    d->_vrpnChangeFlag = true;
 }
 void QVRVrpnAnalogChangeHandler(void* userdata, const vrpn_ANALOGCB info)
 {
@@ -48,6 +50,7 @@ void QVRVrpnAnalogChangeHandler(void* userdata, const vrpn_ANALOGCB info)
         if (j >= 0 && j < info.num_channel)
             d->_analogs[i] = info.channel[j];
     }
+    d->_vrpnChangeFlag = true;
 }
 #endif
 
@@ -88,7 +91,7 @@ QVRDevice::QVRDevice(int deviceIndex) :
     case QVR_Device_Tracking_VRPN:
         _isTracked = true;
 #ifdef HAVE_VRPN
-        if (QVRManager::processIndex() == 0) {
+        if (QVRManager::processIndex() == config().processIndex()) {
             QStringList args = config().trackingParameters().split(' ', QString::SkipEmptyParts);
             QString name = (args.length() >= 1 ? args[0] : config().trackingParameters());
             int sensor = (args.length() >= 2 ? args[1].toInt() : vrpn_ALL_SENSORS);
@@ -129,7 +132,7 @@ QVRDevice::QVRDevice(int deviceIndex) :
             }
             for (int i = 0; i < _buttons.length(); i++)
                 _buttons[i] = false;
-            if (QVRManager::processIndex() == 0) {
+            if (QVRManager::processIndex() == config().processIndex()) {
                 _vrpnButtonRemote = new vrpn_Button_Remote(qPrintable(name));
                 vrpn_System_TextPrinter.set_ostream_to_use(stderr);
                 _vrpnButtonRemote->register_change_handler(this, QVRVrpnButtonChangeHandler);
@@ -168,7 +171,7 @@ QVRDevice::QVRDevice(int deviceIndex) :
             }
             for (int i = 0; i < _analogs.length(); i++)
                 _analogs[i] = 0.0f;
-            if (QVRManager::processIndex() == 0) {
+            if (QVRManager::processIndex() == config().processIndex()) {
                 _vrpnAnalogRemote = new vrpn_Analog_Remote(qPrintable(name));
                 vrpn_System_TextPrinter.set_ostream_to_use(stderr);
                 _vrpnAnalogRemote->register_change_handler(this, QVRVrpnAnalogChangeHandler);
@@ -188,6 +191,17 @@ QVRDevice::~QVRDevice()
 #endif
 }
 
+const QVRDevice& QVRDevice::operator=(const QVRDevice& d)
+{
+    _index = d._index;
+    _isTracked = d._isTracked;
+    _position = d._position;
+    _orientation = d._orientation;
+    _buttons = d._buttons;
+    _analogs = d._analogs;
+    return *this;
+}
+
 int QVRDevice::index() const
 {
     return _index;
@@ -203,16 +217,22 @@ const QVRDeviceConfig& QVRDevice::config() const
     return QVRManager::config().deviceConfigs().at(index());
 }
 
-void QVRDevice::update()
+bool QVRDevice::update()
 {
+    bool somethingMightHaveChanged = false;
+    if (config().processIndex() == QVRManager::processIndex()) {
 #ifdef HAVE_VRPN
-    if (_vrpnTrackerRemote)
-        _vrpnTrackerRemote->mainloop();
-    if (_vrpnButtonRemote)
-        _vrpnButtonRemote->mainloop();
-    if (_vrpnAnalogRemote)
-        _vrpnAnalogRemote->mainloop();
+        _vrpnChangeFlag = false; // VRPN callbacks will set this
+        if (_vrpnTrackerRemote)
+            _vrpnTrackerRemote->mainloop();
+        if (_vrpnButtonRemote)
+            _vrpnButtonRemote->mainloop();
+        if (_vrpnAnalogRemote)
+            _vrpnAnalogRemote->mainloop();
+        somethingMightHaveChanged = _vrpnChangeFlag;
 #endif
+    }
+    return somethingMightHaveChanged;
 }
 
 QDataStream &operator<<(QDataStream& ds, const QVRDevice& d)
