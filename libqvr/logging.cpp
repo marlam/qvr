@@ -36,7 +36,7 @@ void QVRMsg(const char* s)
     // mangled. Therefore we buffer what we want to print.
     char buf[QVR_MSG_BUFSIZE] = "QVR";
     int bufIndex = 3;
-    if (QVRManager::config().processConfigs().size() > 0)
+    if (QVRManager::config().processConfigs().size() > 1)
         bufIndex += snprintf(buf + bufIndex, QVR_MSG_BUFSIZE - bufIndex, "[%d]", QVRManager::processIndex());
     bufIndex += snprintf(buf + bufIndex, QVR_MSG_BUFSIZE - bufIndex, ": %s", s);
     buf[std::min(bufIndex, QVR_MSG_BUFSIZE - 2)] = '\n';
