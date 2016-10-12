@@ -441,11 +441,13 @@ bool QVRConfig::readFromFile(const QString& filename)
                         && (arglist[0] == "center"
                             || arglist[0] == "left"
                             || arglist[0] == "right"
+                            || arglist[0] == "osvr"
                             || (arglist[0] == "stereo" && arglist.length() >= 2))) {
                     windowConfig._outputMode = (
                             arglist[0] == "center" ? QVR_Output_Center
                             : arglist[0] == "left" ? QVR_Output_Left
                             : arglist[0] == "right" ? QVR_Output_Right
+                            : arglist[0] == "osvr" ? QVR_Output_OSVR
                             : arglist[1] == "gl" ? QVR_Output_Stereo_GL
                             : arglist[1] == "red_cyan" ? QVR_Output_Stereo_Red_Cyan
                             : arglist[1] == "green_magenta" ? QVR_Output_Stereo_Green_Magenta
