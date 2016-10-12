@@ -101,6 +101,11 @@ void QVRConfig::createDefault(QVRNavigationType preferredNavigationType)
 {
     QVR_INFO("creating default configuration ...");
 
+    bool osvr = false;
+#ifdef HAVE_OSVR
+    QVRAttemptOSVRInitialization();
+    osvr = (QVROsvrClientContext != NULL);
+#endif
     bool oculus = false;
 #ifdef HAVE_OCULUS
     ovrInitParams oculusInitParams;
@@ -108,7 +113,55 @@ void QVRConfig::createDefault(QVRNavigationType preferredNavigationType)
     oculus = ovr_Initialize(&oculusInitParams) && ovrHmd_Detect() > 0;
     ovr_Shutdown();
 #endif
-    if (oculus) {
+    if (osvr) {
+#ifdef HAVE_OSVR
+        OSVR_EyeCount eyes;
+        osvrClientGetNumEyesForViewer(QVROsvrDisplayConfig, 0, &eyes);
+        // Devices
+        QVRDeviceConfig deviceConf0, deviceConf1, deviceConf2;
+        deviceConf0._id = "osvr-head";
+        deviceConf0._trackingType = QVR_Device_Tracking_OSVR;
+        deviceConf0._trackingParameters = "/me/head";
+        if (eyes == 2) {
+            deviceConf1._id = "osvr-eye-left";
+            deviceConf1._trackingType = QVR_Device_Tracking_OSVR;
+            deviceConf1._trackingParameters = "eye-left";
+            deviceConf2._id = "osvr-eye-right";
+            deviceConf2._trackingType = QVR_Device_Tracking_OSVR;
+            deviceConf2._trackingParameters = "eye-right";
+        } else { // eyes == 1
+            deviceConf1._id = "osvr-eye-center";
+            deviceConf1._trackingType = QVR_Device_Tracking_OSVR;
+            deviceConf1._trackingParameters = "eye-center";
+        }
+        // One observer
+        QVRObserverConfig observerConf;
+        observerConf._id = "osvr-observer";
+        observerConf._navigationType = preferredNavigationType;
+        observerConf._trackingType = QVR_Tracking_Device;
+        if (eyes == 2)
+            observerConf._trackingParameters = "osvr-eye-left osvr-eye-right";
+        else
+            observerConf._trackingParameters = "osvr-eye-center";
+        // One window
+        QVRWindowConfig windowConf;
+        windowConf._id = "osvr-window";
+        windowConf._observerIndex = 0;
+        windowConf._outputMode = QVR_Output_OSVR;
+        // One process
+        QVRProcessConfig processConf;
+        processConf._id = "osvr-process";
+        processConf._windowConfigs.append(windowConf);
+        // Put it together
+        _deviceConfigs.append(deviceConf0);
+        _deviceConfigs.append(deviceConf1);
+        if (eyes == 2)
+            _deviceConfigs.append(deviceConf2);
+        _observerConfigs.append(observerConf);
+        _processConfigs.append(processConf);
+#endif
+    } else if (oculus) {
+#ifdef HAVE_OCULUS
         // One observer
         QVRObserverConfig observerConf;
         observerConf._id = "default";
@@ -126,20 +179,21 @@ void QVRConfig::createDefault(QVRNavigationType preferredNavigationType)
         // Put it together
         _observerConfigs.append(observerConf);
         _processConfigs.append(processConf);
+#endif
     } else {
         // One observer
         QVRObserverConfig observerConf;
-        observerConf._id = "default";
+        observerConf._id = "qvr-default";
         observerConf._navigationType = preferredNavigationType;
         observerConf._trackingType = QVR_Tracking_Custom;
         // One window
         QVRWindowConfig windowConf;
-        windowConf._id = "default";
+        windowConf._id = "qvr-default";
         windowConf._observerIndex = 0;
         windowConf._outputMode = QVR_Output_Center;
         // One process
         QVRProcessConfig processConf;
-        processConf._id = "default";
+        processConf._id = "qvr-default";
         processConf._windowConfigs.append(windowConf);
         // Put it together
         _observerConfigs.append(observerConf);
@@ -535,12 +589,22 @@ bool QVRConfig::readFromFile(const QString& filename)
             }
         }
         if (_observerConfigs[i]._trackingType == QVR_Tracking_Device) {
-            int j;
-            for (j = 0; j < _deviceConfigs.size(); j++) {
-                if (_observerConfigs[i]._trackingParameters == _deviceConfigs[j]._id)
-                    break;
+            QString devId = _observerConfigs[i]._trackingParameters.trimmed();
+            QStringList devIdList = devId.split(' ', QString::SkipEmptyParts);
+            int trackDev0 = -1;
+            int trackDev1 = -1;
+            for (int j = 0; j < _deviceConfigs.size(); j++) {
+                if (devIdList.size() == 2) {
+                    if (_deviceConfigs[j]._id == devIdList[0])
+                        trackDev0 = j;
+                    else if (_deviceConfigs[j]._id == devIdList[1])
+                        trackDev1 = j;
+                } else {
+                    if (_deviceConfigs[j]._id == devId)
+                        trackDev0 = j;
+                }
             }
-            if (j == _deviceConfigs.size()) {
+            if (trackDev0 == -1 || (devIdList.size() == 2 && trackDev1 == -1)) {
                 QVR_FATAL("config file %s: observer %s uses nonexistent device for tracking",
                         qPrintable(filename), qPrintable(_observerConfigs[i]._id));
                 return false;

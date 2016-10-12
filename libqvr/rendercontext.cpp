@@ -24,6 +24,7 @@
 #include <QDataStream>
 
 #include "rendercontext.hpp"
+#include "manager.hpp"
 
 
 QVRRenderContext::QVRRenderContext() :
@@ -60,6 +61,22 @@ void QVRRenderContext::setOutputConf(QVROutputMode om)
     case QVR_Output_Right:
         _viewPasses = 1;
         _eye[0] = QVR_Eye_Right;
+        break;
+    case QVR_Output_OSVR:
+        _viewPasses = 2;
+        _eye[0] = QVR_Eye_Left;
+        _eye[1] = QVR_Eye_Right;
+#ifdef HAVE_OSVR
+        {
+            Q_ASSERT(QVROsvrDisplayConfig);
+            OSVR_EyeCount eyes;
+            osvrClientGetNumEyesForViewer(QVROsvrDisplayConfig, 0, &eyes);
+            if (eyes == 1) {
+                _viewPasses = 1;
+                _eye[0] = QVR_Eye_Center;
+            }
+        }
+#endif
         break;
     case QVR_Output_Stereo_GL:
         _viewPasses = 2;

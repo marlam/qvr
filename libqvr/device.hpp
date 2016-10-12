@@ -34,6 +34,9 @@
 # include <vrpn_Analog.h>
 # include <vrpn_Button.h>
 #endif
+#ifdef HAVE_OSVR
+# include <osvr/Util/ClientOpaqueTypesC.h>
+#endif
 
 #include "config.hpp"
 
@@ -57,7 +60,6 @@ class QVRDevice
 private:
     int _index;
 
-    bool _isTracked;
     QVector3D _position;
     QQuaternion _orientation;
     QVector<bool> _buttons;
@@ -69,7 +71,12 @@ private:
     QVector<int> _vrpnButtons;
     vrpn_Analog_Remote* _vrpnAnalogRemote;
     QVector<float> _vrpnAnalogs;
-    bool _vrpnChangeFlag;
+#endif
+#ifdef HAVE_OSVR
+    int _osvrTrackedEye; // -1 = none, 0 = center, 1 = left, 2 = right
+    OSVR_ClientInterface _osvrTrackingInterface;
+    QVector<OSVR_ClientInterface> _osvrButtonsInterfaces;
+    QVector<OSVR_ClientInterface> _osvrAnalogsInterfaces;
 #endif
 
     /*! \cond
@@ -101,12 +108,6 @@ public:
     const QString& id() const;
     /*! \brief Returns the configuration. */
     const QVRDeviceConfig& config() const;
-
-    /*! \brief Returns whether this device is tracked. Tracked devices have a position and orientation. */
-    bool isTracked() const
-    {
-        return _isTracked;
-    }
 
     /*! \brief Returns the position. */
     const QVector3D& position() const
@@ -158,7 +159,7 @@ public:
     /*! \cond
      * This function is used internally to update the state of this device.
      * It returns true if something (might have) changed, false otherwise. */
-    bool update();
+    void update();
     /*! \endcond */
 };
 

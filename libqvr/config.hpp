@@ -41,7 +41,9 @@ typedef enum {
     /*! \brief A untracked device with a static position and orientation. */
     QVR_Device_Tracking_Static,
     /*! \brief A device with position and orientation tracked via <a href="https://github.com/vrpn/vrpn/wiki">VRPN</a>. */
-    QVR_Device_Tracking_VRPN
+    QVR_Device_Tracking_VRPN,
+    /*! \brief A device with position and orientation tracked via <a href="http://www.osvr.org/">OSVR</a>. */
+    QVR_Device_Tracking_OSVR,
 } QVRDeviceTrackingType;
 
 /*!
@@ -53,7 +55,9 @@ typedef enum {
     /*! \brief A device with digital buttons that are static (never changed). */
     QVR_Device_Buttons_Static,
     /*! \brief A device with digital buttons queried via <a href="https://github.com/vrpn/vrpn/wiki">VRPN</a>. */
-    QVR_Device_Buttons_VRPN
+    QVR_Device_Buttons_VRPN,
+    /*! \brief A device with digital buttons queried via <a href="http://www.osvr.org/">OSVR</a>. */
+    QVR_Device_Buttons_OSVR
 } QVRDeviceButtonsType;
 
 /*!
@@ -65,7 +69,9 @@ typedef enum {
     /*! \brief A device with analog joystick elements that are static (never changed). */
     QVR_Device_Analogs_Static,
     /*! \brief A device with analog joystick elements queried via <a href="https://github.com/vrpn/vrpn/wiki">VRPN</a>. */
-    QVR_Device_Analogs_VRPN
+    QVR_Device_Analogs_VRPN,
+    /*! \brief A device with analog joystick elements queried via <a href="http://www.osvr.org/">OSVR</a>. */
+    QVR_Device_Analogs_OSVR
 } QVRDeviceAnalogsType;
 
 /*!
@@ -130,6 +136,8 @@ typedef enum {
     QVR_Output_Left = 1,
     /*! \brief Output a monoscopic view for \a QVR_Eye_Right. */
     QVR_Output_Right = 2,
+    /*! \brief Output a view for OSVR (monoscopic or stereoscopic). */
+    QVR_Output_OSVR = 9,
     /*! \brief Output a stereoscopic view via OpenGL-supported quad-buffer stereo. */
     QVR_Output_Stereo_GL = 3,
     /*! \brief Output a stereoscopic view for red-cyan anaglyph glasses. */
@@ -196,6 +204,11 @@ public:
      * For \a QVR_Device_Tracking_VRPN, the parameter string is of the form
      * `<name> [<sensor>]` where `<name>` is the VRPN tracker name, e.g. Tracker0\@localhost,
      * and `<sensor>` is the number of the sensor to be used (can be omitted to use all).
+     *
+     * For \a QVR_Device_Tracking_OSVR, the parameter string is the path
+     * name of an OSVR tracker interface. The special strings "eye-center", "eye-left",
+     * and "eye-right" identify the center, left, and right eyes of the viewer (these are
+     * unfortunately not available via path names in OSVR).
      */
     const QString& trackingParameters() const { return _trackingParameters; }
 
@@ -212,8 +225,11 @@ public:
      *
      * For \a QVR_Device_Buttons_VRPN, the parameter string is of the form
      * `<name> [<button0> [<button1> [...]]]` where `<name>` is the VRPN tracker name,
-     * e.g. Tracker0\@localhost 
+     * e.g. Tracker0\@localhost
      * and the optional button list specifies the number and order of VRPN buttons to use.
+     *
+     * For \a QVR_Device_Buttons_OSVR, the parameter string is a space-separated list
+     * of path names of OSVR button interfaces (one path name for each button managed by this device).
      */
     const QString& buttonsParameters() const { return _buttonsParameters; }
 
@@ -231,6 +247,9 @@ public:
      * `<name> [<analog0> [<analog1> [...]]]` where `<name>` is the VRPN tracker name,
      * e.g. Tracker0\@localhost
      * and the optional analogs list specifies the number and order of VRPN analog joystick elements to use.
+     *
+     * For \a QVR_Device_Analogs_OSVR, the parameter string is a space-separated list
+     * of path names of OSVR analog interfaces (one path name for each analog managed by this device).
      */
     const QString& analogsParameters() const { return _analogsParameters; }
 };
@@ -295,7 +314,10 @@ public:
      *
      * For \a QVR_Tracking_Stationary, parameters are ignored.
      *
-     * For \a QVR_Tracking_Device, the parameter is the id of the device to use.
+     * For \a QVR_Tracking_Device, the parameter is the id of the device to use. The pose of this device is
+     * interpreted as the pose of the center eye; left and right eye poses are computed from this and depend on
+     * the observer's eye distance. If two device ids are given, their poses are interpreted as the poses
+     * of the left and right eye and used directly.
      *
      * For \a QVR_Tracking_Oculus, parameters are currently ignored.
      *

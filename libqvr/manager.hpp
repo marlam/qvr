@@ -198,6 +198,14 @@ class QVRRenderContext;
 class QVRServer;
 class QVRClient;
 
+#ifdef HAVE_OSVR
+# include <osvr/ClientKit/DisplayC.h>
+# include <osvr/ClientKit/ContextC.h>
+extern OSVR_ClientContext QVROsvrClientContext;
+extern OSVR_DisplayConfig QVROsvrDisplayConfig;
+void QVRAttemptOSVRInitialization();
+#endif
+
 /*!
  * \brief Level of logging of the QVR framework
  *
@@ -267,7 +275,8 @@ private:
     QList<QVRDevice*> _devices;
     QList<QVRObserver*> _observers;
     QList<int> _observerNavigationDevices;
-    QList<int> _observerTrackingDevices;
+    QList<int> _observerTrackingDevices0;
+    QList<int> _observerTrackingDevices1;
     QList<QVRObserver*> _customObservers; // subset of _observers
     QVRWindow* _masterWindow;
     QOpenGLContext* _masterGLContext;

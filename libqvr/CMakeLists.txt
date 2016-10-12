@@ -31,6 +31,7 @@ find_package(Qt5Network 5.5.0 REQUIRED)
 
 # Optional libraries
 find_package(VRPN)
+find_package(OSVR)
 find_package(Oculus)
 
 # The QVR library
@@ -56,6 +57,11 @@ if(VRPN_FOUND)
     add_definitions(-DHAVE_VRPN)
     include_directories(${VRPN_INCLUDE_DIRS})
     target_link_libraries(libqvr ${VRPN_LIBRARIES})
+endif()
+if(OSVR_FOUND)
+    add_definitions(-DHAVE_OSVR)
+    include_directories(${OSVR_INCLUDE_DIRS})
+    target_link_libraries(libqvr ${OSVR_LIBRARIES})
 endif()
 if(OCULUS_FOUND)
     add_definitions(-DHAVE_OCULUS)

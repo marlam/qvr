@@ -301,6 +301,26 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext,
             _isValid = false;
             return;
 #endif
+        } else if (config().outputMode() == QVR_Output_OSVR) {
+#ifdef HAVE_OSVR
+            if (config().initialDisplayScreen() >= 0) {
+                QVR_DEBUG("      screen: %d", config().initialDisplayScreen());
+                setScreen(QApplication::screens().at(config().initialDisplayScreen()));
+            }
+            OSVR_DisplayDimension w, h;
+            osvrClientGetDisplayDimensions(QVROsvrDisplayConfig, 0, &w, &h);
+            QRect geom = QApplication::desktop()->screenGeometry(config().initialDisplayScreen());
+            geom.setWidth(w);
+            geom.setHeight(h);
+            QVR_DEBUG("      geometry: %d %d %dx%d", geom.x(), geom.y(), geom.width(), geom.height());
+            setGeometry(geom);
+            setCursor(Qt::BlankCursor);
+            show();
+#else
+            QVR_FATAL("OSVR support not available in this version of QVR");
+            _isValid = false;
+            return;
+#endif
         } else {
             if (config().initialDisplayScreen() >= 0) {
                 QVR_DEBUG("      screen: %d", config().initialDisplayScreen());
@@ -588,6 +608,7 @@ void QVRWindow::screenWall(QVector3D& cornerBottomLeft, QVector3D& cornerBottomR
     Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
     Q_ASSERT(QOpenGLContext::currentContext() != _winContext);
     Q_ASSERT(config().outputMode() != QVR_Output_Stereo_Oculus);
+    Q_ASSERT(config().outputMode() != QVR_Output_OSVR);
 
     if (config().screenIsGivenByCenter()) {
         // Get geometry (in meter) of the screen
@@ -651,7 +672,7 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
     _renderContext.setNavigation(_observer->navigationPosition(), _observer->navigationOrientation());
     _renderContext.setOutputConf(config().outputMode());
     QVector3D wallBl, wallBr, wallTl;
-    if (config().outputMode() != QVR_Output_Stereo_Oculus)
+    if (config().outputMode() != QVR_Output_Stereo_Oculus && config().outputMode() != QVR_Output_OSVR)
         screenWall(wallBl, wallBr, wallTl);
     _renderContext.setScreenWall(wallBl, wallBr, wallTl);
     for (int i = 0; i < _renderContext.viewPasses(); i++) {
@@ -666,6 +687,17 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
                         -_hmdLRBTTan[2][i] * n,
                          _hmdLRBTTan[3][i] * n,
                         n, f));
+            viewPos = _renderContext.trackingPosition(i);
+            viewRot = _renderContext.trackingOrientation(i);
+        } else if (config().outputMode() == QVR_Output_OSVR) {
+            double l = 0.0, r = 0.0, b = 0.0, t = 0.0;
+#ifdef HAVE_OSVR
+            osvrClientGetViewerEyeSurfaceProjectionClippingPlanes(
+                    QVROsvrDisplayConfig, 0, i, 0, &l, &r, &b, &t);
+#endif
+            QVRFrustum frustum(l, r, b, t, 1.0f, f);
+            frustum.adjustNearPlane(n);
+            _renderContext.setFrustum(i, frustum);
             viewPos = _renderContext.trackingPosition(i);
             viewRot = _renderContext.trackingOrientation(i);
         } else {
@@ -750,6 +782,14 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
             _thread->oculusEyeTextures[i].OGL.Header.RenderViewport.Size.h = h;
             _thread->oculusEyeTextures[i].OGL.TexId = _textures[i];
 #endif
+        } else if (config().outputMode() == QVR_Output_OSVR) {
+#ifdef HAVE_OSVR
+            OSVR_ViewportDimension vpl, vpb, vpw, vph;
+            osvrClientGetRelativeViewportForViewerEyeSurface(
+                    QVROsvrDisplayConfig, 0, i, 0, &vpl, &vpb, &vpw, &vph);
+            w = vpw * config().renderResolutionFactor();
+            h = vph * config().renderResolutionFactor();
+#endif
         } else {
             w = width() * config().renderResolutionFactor();
             h = height() * config().renderResolutionFactor();
@@ -778,21 +818,38 @@ void QVRWindow::renderOutput()
     Q_ASSERT(QOpenGLContext::currentContext() == _winContext);
 
     if (config().outputPlugin().isEmpty()) {
-        glViewport(0, 0, width(), height());
         glDisable(GL_DEPTH_TEST);
         glUseProgram(_outputPrg->programId());
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, _textures[0]);
         glUniform1i(glGetUniformLocation(_outputPrg->programId(), "tex_l"), 0);
         glUniform1i(glGetUniformLocation(_outputPrg->programId(), "tex_r"), 0);
-        if (_textures[1] != 0) {
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, _textures[1]);
-            glUniform1i(glGetUniformLocation(_outputPrg->programId(), "tex_r"), 1);
-        }
         glUniform1i(glGetUniformLocation(_outputPrg->programId(), "output_mode"), config().outputMode());
         glBindVertexArray(_outputQuadVao);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        if (config().outputMode() == QVR_Output_OSVR) {
+#ifdef HAVE_OSVR
+            OSVR_ViewportDimension vpl, vpb, vpw, vph;
+            osvrClientGetRelativeViewportForViewerEyeSurface(
+                    QVROsvrDisplayConfig, 0, 0, 0, &vpl, &vpb, &vpw, &vph);
+            glViewport(vpl, vpb, vpw, vph);
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+            if (_textures[1] != 0) {
+                glBindTexture(GL_TEXTURE_2D, _textures[1]);
+                osvrClientGetRelativeViewportForViewerEyeSurface(
+                        QVROsvrDisplayConfig, 0, 1, 0, &vpl, &vpb, &vpw, &vph);
+                glViewport(vpl, vpb, vpw, vph);
+                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+            }
+#endif
+        } else {
+            if (_textures[1] != 0) {
+                glActiveTexture(GL_TEXTURE1);
+                glBindTexture(GL_TEXTURE_2D, _textures[1]);
+                glUniform1i(glGetUniformLocation(_outputPrg->programId(), "tex_r"), 1);
+            }
+            glViewport(0, 0, width(), height());
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        }
     } else {
         _outputPluginFunc(this, _renderContext, _textures[0], _textures[1]);
     }

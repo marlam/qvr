@@ -41,8 +41,75 @@
 #include "process.hpp"
 #include "ipc.hpp"
 
+#ifdef HAVE_OSVR
+# include <osvr/ClientKit/ServerAutoStartC.h>
+#endif
+
 QVRManager* manager = NULL; // singleton instance
 QQueue<QVREvent>* eventQueue = NULL; // single event queue for the singleton
+
+#ifdef HAVE_OSVR
+OSVR_ClientContext QVROsvrClientContext = NULL; // singleton instance
+OSVR_DisplayConfig QVROsvrDisplayConfig = NULL; // singleton instance
+void QVRAttemptOSVRInitialization()
+{
+    bool osvr = false;
+    osvrClientAttemptServerAutoStart();
+    QVROsvrClientContext = osvrClientInit("de.uni-siegen.informatik.cg.qvr");
+    if (osvrClientGetDisplay(QVROsvrClientContext, &QVROsvrDisplayConfig) == OSVR_RETURN_SUCCESS) {
+        QVR_INFO("OSVR: got display config");
+        OSVR_DisplayInputCount numDisplayInputs;
+        osvrClientGetNumDisplayInputs(QVROsvrDisplayConfig, &numDisplayInputs);
+        if (numDisplayInputs != 1) {
+            QVR_INFO("OSVR: needs more than one display inputs; QVR currently does not handle this");
+        } else {
+            OSVR_DisplayDimension w, h;
+            osvrClientGetDisplayDimensions(QVROsvrDisplayConfig, 0, &w, &h);
+            QVR_INFO("OSVR: display dimensions %dx%d", static_cast<int>(w), static_cast<int>(h));
+            OSVR_ViewerCount viewers;
+            osvrClientGetNumViewers(QVROsvrDisplayConfig, &viewers);
+            if (viewers != 1) {
+                QVR_INFO("OSVR: requires more than one viewer; QVR currently does not handle this");
+            } else {
+                OSVR_EyeCount eyes;
+                osvrClientGetNumEyesForViewer(QVROsvrDisplayConfig, 0, &eyes);
+                if (eyes != 2) {
+                    QVR_INFO("OSVR: viewer has more than 2 eyes; QVR currently does not handle this");
+                } else {
+                    OSVR_SurfaceCount surfaces0, surfaces1 = 1;
+                    osvrClientGetNumSurfacesForViewerEye(QVROsvrDisplayConfig, 0, 0, &surfaces0);
+                    if (eyes > 1)
+                        osvrClientGetNumSurfacesForViewerEye(QVROsvrDisplayConfig, 0, 1, &surfaces1);
+                    if (surfaces0 != 1 || surfaces1 != 1) {
+                        QVR_INFO("OSVR: more than one surface per eye; QVR currently does not handle this");
+                    } else {
+                        QVR_INFO("OSVR: display config is usable");
+                        osvr = true;
+                    }
+                }
+            }
+        }
+    } else {
+        QVR_INFO("OSVR: cannot get display config; server probably not running correctly");
+    }
+    if (osvr) {
+        QVR_INFO("OSVR: waiting for context to become ready ... ");
+        while (osvrClientCheckStatus(QVROsvrClientContext) != OSVR_RETURN_SUCCESS) {
+            osvrClientUpdate(QVROsvrClientContext);
+        }
+        QVR_INFO("OSVR: ... context is ready");
+        QVR_INFO("OSVR: waiting for display to become ready ... ");
+        while (osvrClientCheckDisplayStartup(QVROsvrDisplayConfig) != OSVR_RETURN_SUCCESS) {
+            osvrClientUpdate(QVROsvrClientContext);
+        }
+        QVR_INFO("OSVR: ... display is ready");
+    } else {
+        osvrClientShutdown(QVROsvrClientContext);
+        QVROsvrDisplayConfig = NULL;
+        QVROsvrClientContext = NULL;
+    }
+}
+#endif
 
 static bool parseLogLevel(const QString& ll, QVRLogLevel* logLevel)
 {
@@ -234,6 +301,13 @@ QVRManager::~QVRManager()
     delete _client;
     eventQueue = NULL;
     manager = NULL;
+#ifdef HAVE_OSVR
+    if (QVROsvrClientContext) {
+        osvrClientShutdown(QVROsvrClientContext);
+        QVROsvrDisplayConfig = NULL;
+        QVROsvrClientContext = NULL;
+    }
+#endif
 }
 
 bool QVRManager::init(QVRApp* app, QVRNavigationType preferredNavigationType)
@@ -245,6 +319,7 @@ bool QVRManager::init(QVRApp* app, QVRNavigationType preferredNavigationType)
     if (!_workingDir.isEmpty())
         QDir::setCurrent(_workingDir);
 
+    // Get configuration
     _config = new QVRConfig;
     if (_configFilename.isEmpty()) {
         _config->createDefault(preferredNavigationType);
@@ -252,6 +327,38 @@ bool QVRManager::init(QVRApp* app, QVRNavigationType preferredNavigationType)
         if (!_config->readFromFile(_configFilename)) {
             return false;
         }
+    }
+
+    // Initialize OSVR for this process if required by the configuration
+    bool needToInitializeOSVR = false;
+    for (int d = 0; d < _config->deviceConfigs().size(); d++) {
+        if (_config->deviceConfigs()[d].processIndex() == _processIndex
+                && (_config->deviceConfigs()[d].trackingType() == QVR_Device_Tracking_OSVR
+                    || _config->deviceConfigs()[d].buttonsType() == QVR_Device_Buttons_OSVR
+                    || _config->deviceConfigs()[d].analogsType() == QVR_Device_Analogs_OSVR)) {
+            needToInitializeOSVR = true;
+            break;
+        }
+    }
+    for (int w = 0; w < processConfig().windowConfigs().size(); w++) {
+        if (windowConfig(_processIndex, w).outputMode() == QVR_Output_OSVR) {
+            needToInitializeOSVR = true;
+            break;
+        }
+    }
+    if (needToInitializeOSVR) {
+#ifdef HAVE_OSVR
+        if (!QVROsvrClientContext) {
+            QVRAttemptOSVRInitialization();
+            if (!QVROsvrClientContext) {
+                QVR_FATAL("cannot initialize OSVR");
+                return false;
+            }
+        }
+#else
+        QVR_FATAL("configuration requires OSVR, but OSVR is not available");
+        return false;
+#endif
     }
 
     // Create devices
@@ -288,11 +395,6 @@ bool QVRManager::init(QVRApp* app, QVRNavigationType preferredNavigationType)
             const QString devId = _config->observerConfigs()[o].navigationParameters().trimmed();
             for (int d = 0; d < _devices.size(); d++) {
                 if (_devices[d]->config().id() == devId) {
-                    if (!_devices[d]->isTracked()) {
-                        QVR_FATAL("observer %s: navigation device %s is not tracked",
-                                qPrintable(_observers[o]->id()), qPrintable(_devices[d]->id()));
-                        return false;
-                    }
                     if (_devices[d]->buttons() < 4) {
                         QVR_FATAL("observer %s: navigation device %s has less than 4 buttons",
                                 qPrintable(_observers[o]->id()), qPrintable(_devices[d]->id()));
@@ -309,22 +411,25 @@ bool QVRManager::init(QVRApp* app, QVRNavigationType preferredNavigationType)
             }
         }
         _observerNavigationDevices.append(navDev);
-        int trackDev = -1;
+        int trackDev0 = -1;
+        int trackDev1 = -1;
         if (_config->observerConfigs()[o].trackingType() == QVR_Tracking_Device) {
             const QString devId = _config->observerConfigs()[o].trackingParameters().trimmed();
+            const QStringList devIdList = devId.split(' ', QString::SkipEmptyParts);
             for (int d = 0; d < _devices.size(); d++) {
-                if (_devices[d]->config().id() == devId) {
-                    if (!_devices[d]->isTracked()) {
-                        QVR_FATAL("observer %s: tracking device %s is not tracked",
-                                qPrintable(_observers[o]->id()), qPrintable(_devices[d]->id()));
-                        return false;
-                    }
-                    trackDev = d;
-                    break;
+                if (devIdList.size() == 2) {
+                    if (_devices[d]->config().id() == devIdList[0])
+                        trackDev0 = d;
+                    else if (_devices[d]->config().id() == devIdList[1])
+                        trackDev1 = d;
+                } else {
+                    if (_devices[d]->config().id() == devId)
+                        trackDev0 = d;
                 }
             }
         }
-        _observerTrackingDevices.append(trackDev);
+        _observerTrackingDevices0.append(trackDev0);
+        _observerTrackingDevices1.append(trackDev1);
     }
     if (_haveWasdqeObservers) {
         _wasdqeTimer = new QElapsedTimer;
@@ -512,6 +617,11 @@ void QVRManager::masterLoop()
         return;
     }
 
+#ifdef HAVE_OSVR
+    if (QVROsvrClientContext) {
+        osvrClientUpdate(QVROsvrClientContext);
+    }
+#endif
     updateDevices();
     for (int o = 0; o < _observers.size(); o++) {
         QVRObserver* obs = _observers[o];
@@ -596,9 +706,16 @@ void QVRManager::masterLoop()
             }
         }
         if (obs->config().trackingType() == QVR_Tracking_Device) {
-            const QVRDevice* dev = _devices.at(_observerTrackingDevices[o]);
-            Q_ASSERT(dev->isTracked());
-            obs->setTracking(dev->position(), dev->orientation());
+            int td0 = _observerTrackingDevices0[o];
+            int td1 = _observerTrackingDevices1[o];
+            if (td0 >= 0 && td1 >= 0) {
+                const QVRDevice* dev0 = _devices.at(td0);
+                const QVRDevice* dev1 = _devices.at(td1);
+                obs->setTracking(dev0->position(), dev0->orientation(), dev1->position(), dev1->orientation());
+            } else if (td0 >= 0) {
+                const QVRDevice* dev = _devices.at(td0);
+                obs->setTracking(dev->position(), dev->orientation());
+            }
         }
     }
 
@@ -669,6 +786,11 @@ void QVRManager::masterLoop()
 void QVRManager::slaveLoop()
 {
     QVRClientCmd cmd;
+#ifdef HAVE_OSVR
+    if (QVROsvrClientContext) {
+        osvrClientUpdate(QVROsvrClientContext);
+    }
+#endif
     while (_client->receiveCmd(&cmd)) {
         if (cmd == QVRClientCmdUpdateDevices) {
             QVR_FIREHOSE("  ... got command 'update-devices' from master");
@@ -676,7 +798,8 @@ void QVRManager::slaveLoop()
             QByteArray data;
             QDataStream ds(&data, QIODevice::WriteOnly);
             for (int d = 0; d < _config->deviceConfigs().size(); d++) {
-                if (_devices[d]->config().processIndex() == processIndex() && _devices[d]->update()) {
+                if (_devices[d]->config().processIndex() == processIndex()) {
+                    _devices[d]->update();
                     ds << *(_devices[d]);
                     n++;
                 }
