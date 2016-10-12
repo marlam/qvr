@@ -1,24 +1,19 @@
 # Manual Oculus configuration.
-# The master process must be started for display :0.1
-# (which is the Oculus). The slave process displays a
-# small control window on the main screen :0.0.
+# This is of little use since Oculus is autodetected.
 
-observer oculus
-	navigation wasdqe
-	tracking oculus
+device oculus-head
+    tracking oculus head
+device oculus-eye-left
+    tracking oculus eye-left
+device oculus-eye-right
+    tracking oculus eye-right
 
-process master
-	window oculus
-		observer oculus
-		output stereo oculus
+observer oculus-observer
+    navigation wasdqe
+    tracking device oculus-eye-left oculus-eye-right
 
-process oculus
-	display :0.0
-	window control
-		observer oculus
-		output stereo red_cyan
-		display_screen -1
-		position 100 100
-		size 400 400
-		screen_is_fixed_to_observer true
-		screen_is_given_by_center true
+process oculus-process
+    window oculus-window
+        display_screen 1
+        observer oculus-observer
+        output stereo oculus

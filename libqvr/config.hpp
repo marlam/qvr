@@ -40,6 +40,8 @@ typedef enum {
     QVR_Device_Tracking_None,
     /*! \brief A untracked device with a static position and orientation. */
     QVR_Device_Tracking_Static,
+    /*! \brief A device with position and orientation tracked via Oculus Rift. */
+    QVR_Device_Tracking_Oculus,
     /*! \brief A device with position and orientation tracked via <a href="https://github.com/vrpn/vrpn/wiki">VRPN</a>. */
     QVR_Device_Tracking_VRPN,
     /*! \brief A device with position and orientation tracked via <a href="http://www.osvr.org/">OSVR</a>. */
@@ -107,8 +109,6 @@ typedef enum {
     QVR_Tracking_Stationary,
     /*! \brief An observer that is tracked via a tracked device. */
     QVR_Tracking_Device,
-    /*! \brief An observer that wears the Oculus Rift head mounted display. */
-    QVR_Tracking_Oculus,
     /*! \brief An observer with tracking implemented by QVRApp::updateObservers(). */
     QVR_Tracking_Custom
 } QVRTrackingType;
@@ -200,6 +200,10 @@ public:
      * `[<pos-x> <pos-y> <pos-z>] [<pitch> <yaw> <roll>]` where the first
      * three numbers give the static position and the last three numbers give
      * the static orientation as euler angles.
+     *
+     * For \a QVR_Device_Tracking_Oculus, the parameter string must be one of "head",
+     * "eye-left", and "eye-right". There can be only one device for each of these three
+     * Oculus tracker types.
      *
      * For \a QVR_Device_Tracking_VRPN, the parameter string is of the form
      * `<name> [<sensor>]` where `<name>` is the VRPN tracker name, e.g. Tracker0\@localhost,

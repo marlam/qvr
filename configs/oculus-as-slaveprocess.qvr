@@ -1,0 +1,37 @@
+# Oculus configuration where the Oculus is handled in a slave process.
+#
+# The master process shows a desktop window that displays the Oculus view.
+# The Oculus view and tracking is handled by a slave process.
+#
+# You can run your program on multiple Oculus Rifts in the same way.
+# Just configure Oculus on each process, and remember to configure devices
+# for each Rift with the correct process.
+
+device oculus-head
+    process oculus-process
+    tracking oculus head
+device oculus-eye-left
+    process oculus-process
+    tracking oculus eye-left
+device oculus-eye-right
+    process oculus-process
+    tracking oculus eye-right
+
+observer oculus-observer
+    navigation wasdqe
+    tracking device oculus-eye-left oculus-eye-right
+
+process master
+    window oculus-control
+        observer oculus-observer
+        output stereo red_cyan
+        position 100 100
+        size 400 400
+        screen_is_fixed_to_observer true
+        screen_is_given_by_center true
+
+process oculus-process
+    display :0.1
+    window oculus-window
+        observer oculus-observer
+        output stereo oculus

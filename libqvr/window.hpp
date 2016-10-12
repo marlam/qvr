@@ -78,10 +78,6 @@ private:
     void (*_outputPluginFunc)(QVRWindow*, const QVRRenderContext&, unsigned int, unsigned int);
     QOpenGLContext* _winContext;
     QVRRenderContext _renderContext;
-    // only for HMDs:
-    void* _hmdHandle;
-    float _hmdLRBTTan[4][2];
-    float _hmdToEyeViewOffset[3][2];
 
     bool isMaster() const;
     void screenWall(QVector3D& cornerBottomLeft, QVector3D& cornerBottomRight, QVector3D& cornerTopLeft);

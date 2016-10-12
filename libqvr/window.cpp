@@ -36,32 +36,11 @@
 #include <QKeyEvent>
 #include <QLibrary>
 
-#ifdef HAVE_OCULUS
-# define isnan std::isnan
-# include <OVR.h>
-# include <OVR_CAPI_GL.h>
-#endif
-
 #include "window.hpp"
 #include "manager.hpp"
 #include "logging.hpp"
 #include "observer.hpp"
 
-
-#ifdef HAVE_OCULUS
-// This is required because otherwise the Oculus SDK messes up standard output of QVR processes.
-// Unfortunately the Oculus SDK seems to ignore this from time to time...
-static void oculusLogCallback(int level, const char* message)
-{
-    if (level == ovrLogLevel_Debug) {
-        QVR_DEBUG(message);
-    } else if (level == ovrLogLevel_Info) {
-        QVR_INFO(message);
-    } else {
-        QVR_WARNING(message);
-    }
-}
-#endif
 
 class QVRWindowThread : public QThread
 {
@@ -76,7 +55,6 @@ public:
     bool swapbuffersFinished;
 
 #ifdef HAVE_OCULUS
-    ovrPosef oculusRenderPoses[2];
     ovrGLTexture oculusEyeTextures[2];
 #endif
 
@@ -96,24 +74,9 @@ void QVRWindowThread::run()
     bool oculus = false;
 #ifdef HAVE_OCULUS
     oculus = _window->config().outputMode() == QVR_Output_Stereo_Oculus;
-    ovrHmd oculusHmd = reinterpret_cast<ovrHmd>(_window->_hmdHandle);
 #endif
     for (;;) {
         _window->winContext()->makeCurrent(_window);
-        if (oculus) {
-#ifdef HAVE_OCULUS
-            ovrHmd_BeginFrame(oculusHmd, 0);
-            ovrVector3f hmdToEyeViewOffset[2] = {
-                { _window->_hmdToEyeViewOffset[0][0],
-                  _window->_hmdToEyeViewOffset[1][0],
-                  _window->_hmdToEyeViewOffset[2][0] },
-                { _window->_hmdToEyeViewOffset[0][1],
-                  _window->_hmdToEyeViewOffset[1][1],
-                  _window->_hmdToEyeViewOffset[2][1] },
-            };
-            ovrHmd_GetEyePoses(oculusHmd, 0, hmdToEyeViewOffset, oculusRenderPoses, NULL);
-#endif
-        }
         // Start rendering
         renderingMutex.lock();
         if (!exitWanted) {
@@ -130,7 +93,7 @@ void QVRWindowThread::run()
         if (!exitWanted) {
             if (oculus) {
 #ifdef HAVE_OCULUS
-                ovrHmd_EndFrame(oculusHmd, oculusRenderPoses,
+                ovrHmd_EndFrame(QVROculus, QVROculusRenderPoses,
                         reinterpret_cast<ovrTexture*>(oculusEyeTextures));
 #endif
             } else {
@@ -159,8 +122,7 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext,
     _textures { 0, 0 },
     _outputQuadVao(0),
     _outputPrg(NULL),
-    _renderContext(),
-    _hmdHandle(NULL)
+    _renderContext()
 {
     setSurfaceType(OpenGLSurface);
     create();
@@ -207,99 +169,38 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext,
         setMinimumSize(QSize(64, 64));
         if (config().outputMode() == QVR_Output_Stereo_Oculus) {
 #ifdef HAVE_OCULUS
-            bool ok;
-            QVR_DEBUG("    initializing Oculus ...");
-            ovrInitParams oculusInitParams;
-            std::memset(&oculusInitParams, 0, sizeof(oculusInitParams));
-            oculusInitParams.LogCallback = oculusLogCallback;
-            int hmds;
-            if (!ovr_Initialize(&oculusInitParams) || (hmds = ovrHmd_Detect() <= 0)) {
-                QVR_DEBUG("    ... failed");
-                QVR_FATAL("Oculus HMD not available");
-                _isValid = false;
-                return;
-            }
-            QVR_DEBUG("    ... SDK version is %s", ovr_GetVersionString());
-            QVR_DEBUG("    ... number of HMDs: %d", hmds);
-            QVR_DEBUG("    ... using HMD 0");
-            ovrHmd oculusHmd = ovrHmd_Create(0);
-            if (!oculusHmd) {
-                QVR_DEBUG("    ... failed");
-                QVR_FATAL("Oculus HMD not usable");
-                _isValid = false;
-                return;
-            }
-            QVR_DEBUG("    ... product name: %s", oculusHmd->ProductName);
-            QVR_DEBUG("    ... resolution: %dx%d", oculusHmd->Resolution.w, oculusHmd->Resolution.h);
-            QVR_DEBUG("    ... window pos: %d %d", oculusHmd->WindowsPos.x, oculusHmd->WindowsPos.y);
-            QVR_DEBUG("    ... display: %s", oculusHmd->DisplayDeviceName);
-            ok = ovrHmd_ConfigureTracking(oculusHmd,
-                    ovrTrackingCap_Orientation
-                    | ovrTrackingCap_MagYawCorrection
-                    | ovrTrackingCap_Position,
-                    ovrTrackingCap_Orientation
-                    | ovrTrackingCap_Position);
-            QVR_DEBUG("    ... tracking initialization: %s", ok ? "success" : "failure");
-            ovrSizei texSizeL = ovrHmd_GetFovTextureSize(oculusHmd, ovrEye_Left, oculusHmd->DefaultEyeFov[0], 1.0f);
-            ovrSizei texSizeR = ovrHmd_GetFovTextureSize(oculusHmd, ovrEye_Right, oculusHmd->DefaultEyeFov[1], 1.0f);
-            QVR_DEBUG("    ... texture size left: %dx%d", texSizeL.w, texSizeL.h);
-            QVR_DEBUG("    ... texture size right: %dx%d", texSizeR.w, texSizeR.h);
-            QVR_DEBUG("    ... Cap_ExtendDesktop: %d", (oculusHmd->HmdCaps & ovrHmdCap_ExtendDesktop ? 1 : 0));
-            QVR_DEBUG("    ... setting up Oculus rendering ...");
-            unsigned int distortionCaps =
-                ovrDistortionCap_TimeWarp | ovrDistortionCap_Overdrive
+            unsigned int distortionCaps = ovrDistortionCap_TimeWarp | ovrDistortionCap_Overdrive
                 | ovrDistortionCap_HqDistortion | ovrDistortionCap_LinuxDevFullscreen;
             ovrGLConfig glconf;
             std::memset(&glconf, 0, sizeof(glconf));
             glconf.OGL.Header.API = ovrRenderAPI_OpenGL;
-            glconf.OGL.Header.BackBufferSize.w = oculusHmd->Resolution.w;
-            glconf.OGL.Header.BackBufferSize.h = oculusHmd->Resolution.h;
+            glconf.OGL.Header.BackBufferSize.w = QVROculus->Resolution.w;
+            glconf.OGL.Header.BackBufferSize.h = QVROculus->Resolution.h;
             glconf.OGL.Header.Multisample = 0;
             _winContext->makeCurrent(this);
-            ovrEyeRenderDesc oculusEyeRenderDesc[2];
-            ok = ovrHmd_ConfigureRendering(oculusHmd,
+            ovrHmd_ConfigureRendering(QVROculus,
                     reinterpret_cast<ovrRenderAPIConfig*>(&glconf),
-                    distortionCaps,
-                    oculusHmd->DefaultEyeFov,
-                    oculusEyeRenderDesc);
-            for (int i = 0; i < 2; i++) {
-                const ovrFovPort& fov = oculusEyeRenderDesc[i].Fov;
-                _hmdLRBTTan[0][i] = fov.LeftTan;
-                _hmdLRBTTan[1][i] = fov.RightTan;
-                _hmdLRBTTan[2][i] = fov.DownTan;
-                _hmdLRBTTan[3][i] = fov.UpTan;
-                _hmdToEyeViewOffset[0][i] = oculusEyeRenderDesc[i].HmdToEyeViewOffset.x;
-                _hmdToEyeViewOffset[1][i] = oculusEyeRenderDesc[i].HmdToEyeViewOffset.y;
-                _hmdToEyeViewOffset[2][i] = oculusEyeRenderDesc[i].HmdToEyeViewOffset.z;
-            }
-            ovrHmd_DismissHSWDisplay(oculusHmd);
+                    distortionCaps, QVROculus->DefaultEyeFov,
+                    QVROculusEyeRenderDesc);
+            ovrHmd_DismissHSWDisplay(QVROculus);
             _winContext->doneCurrent();
-            if (!ok) {
-                QVR_DEBUG("    ... failed to initialize.");
-                QVR_FATAL("Oculus rendering initialization failed");
-                _isValid = false;
-                return;
-            }
             int oculusScreen = -1;
             for (int i = QApplication::desktop()->screenCount() - 1; i >= 0; i--) {
-                if (QApplication::desktop()->screenGeometry(i).width() == 1080
-                        && QApplication::desktop()->screenGeometry(i).height() == 1920) {
+                if (QApplication::desktop()->screenGeometry(i).width() == QVROculus->Resolution.w
+                        && QApplication::desktop()->screenGeometry(i).height() == QVROculus->Resolution.h) {
                     oculusScreen = i;
                     break;
                 }
             }
+            QVR_DEBUG("      screen: %d", oculusScreen);
             if (oculusScreen >= 0)
                 setScreen(QApplication::screens().at(oculusScreen));
-            setGeometry(QApplication::desktop()->screenGeometry(oculusScreen));
+            QRect geom = QApplication::desktop()->screenGeometry(oculusScreen);
+            QVR_DEBUG("      geometry: %d %d %dx%d", geom.x(), geom.y(), geom.width(), geom.height());
+            setGeometry(geom);
             setCursor(Qt::BlankCursor);
             show(); // Apparently this must be called before showFullScreen()
             showFullScreen();
-            QVR_DEBUG("    ... done");
-            _hmdHandle = const_cast<void*>(reinterpret_cast<const void*>(oculusHmd));
-#else
-            QVR_FATAL("Oculus HMD support not available in this version of QVR");
-            _isValid = false;
-            return;
 #endif
         } else if (config().outputMode() == QVR_Output_OSVR) {
 #ifdef HAVE_OSVR
@@ -316,10 +217,6 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext,
             setGeometry(geom);
             setCursor(Qt::BlankCursor);
             show();
-#else
-            QVR_FATAL("OSVR support not available in this version of QVR");
-            _isValid = false;
-            return;
 #endif
         } else {
             if (config().initialDisplayScreen() >= 0) {
@@ -370,13 +267,7 @@ QVRWindow::~QVRWindow()
     if (_thread) {
         exitGL();
         winContext()->deleteLater();
-     }
-#ifdef HAVE_OCULUS
-    if (_hmdHandle) {
-        ovrHmd_Destroy(reinterpret_cast<ovrHmd>(_hmdHandle));
-        ovr_Shutdown();
     }
-#endif
 }
 
 void QVRWindow::renderToScreen()
@@ -411,25 +302,6 @@ void QVRWindow::waitForSwapBuffers()
     while (!_thread->swapbuffersFinished)
         QThread::usleep(1);
     _thread->swapbuffersMutex.lock();
-}
-
-void QVRWindow::updateObserver()
-{
-    if (config().outputMode() == QVR_Output_Stereo_Oculus) {
-#ifdef HAVE_OCULUS
-        const ovrPosef& L = _thread->oculusRenderPoses[0];
-        const ovrPosef& R = _thread->oculusRenderPoses[1];
-        _observer->setTracking(
-                QVector3D(L.Position.x, L.Position.y, L.Position.z)
-                + _observer->config().initialTrackingPosition(),
-                QQuaternion(L.Orientation.w, L.Orientation.x, L.Orientation.y, L.Orientation.z)
-                * _observer->config().initialTrackingOrientation(),
-                QVector3D(R.Position.x, R.Position.y, R.Position.z)
-                + _observer->config().initialTrackingPosition(),
-                QQuaternion(R.Orientation.w, R.Orientation.x, R.Orientation.y, R.Orientation.z)
-                * _observer->config().initialTrackingOrientation());
-#endif
-    }
 }
 
 bool QVRWindow::isMaster() const
@@ -681,12 +553,15 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
         QVector3D viewPos;
         QQuaternion viewRot;
         if (config().outputMode() == QVR_Output_Stereo_Oculus) {
+#ifdef HAVE_OCULUS
+            const ovrFovPort& fov = QVROculusEyeRenderDesc[i].Fov;
             _renderContext.setFrustum(i, QVRFrustum(
-                        -_hmdLRBTTan[0][i] * n,
-                         _hmdLRBTTan[1][i] * n,
-                        -_hmdLRBTTan[2][i] * n,
-                         _hmdLRBTTan[3][i] * n,
+                        -fov.LeftTan * n,
+                        fov.RightTan * n,
+                        -fov.DownTan * n,
+                        fov.UpTan * n,
                         n, f));
+#endif
             viewPos = _renderContext.trackingPosition(i);
             viewRot = _renderContext.trackingOrientation(i);
         } else if (config().outputMode() == QVR_Output_OSVR) {
@@ -767,10 +642,9 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
         int w = 0, h = 0;
         if (config().outputMode() == QVR_Output_Stereo_Oculus) {
 #ifdef HAVE_OCULUS
-            ovrHmd oculusHmd = reinterpret_cast<ovrHmd>(_hmdHandle);
-            ovrSizei tex_size = ovrHmd_GetFovTextureSize(oculusHmd,
+            ovrSizei tex_size = ovrHmd_GetFovTextureSize(QVROculus,
                     i == 0 ? ovrEye_Left : ovrEye_Right,
-                    oculusHmd->DefaultEyeFov[i], 1.0f);
+                    QVROculus->DefaultEyeFov[i], 1.0f);
             w = tex_size.w * config().renderResolutionFactor();
             h = tex_size.h * config().renderResolutionFactor();
             _thread->oculusEyeTextures[i].OGL.Header.API = ovrRenderAPI_OpenGL;

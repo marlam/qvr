@@ -21,6 +21,7 @@
  * SOFTWARE.
  */
 
+#include <cstring>
 #include <cmath>
 
 #include <QDir>
@@ -48,6 +49,44 @@
 QVRManager* manager = NULL; // singleton instance
 QQueue<QVREvent>* eventQueue = NULL; // single event queue for the singleton
 
+#ifdef HAVE_OCULUS
+ovrHmd QVROculus = NULL;
+ovrEyeRenderDesc QVROculusEyeRenderDesc[2];
+ovrPosef QVROculusRenderPoses[2];
+ovrTrackingState QVROculusTrackingState;
+static void oculusLogCallback(int level, const char* message)
+{
+    if (level == ovrLogLevel_Debug) {
+        QVR_DEBUG("Oculus log: %s", message);
+    } else if (level == ovrLogLevel_Info) {
+        QVR_INFO("Oculus log: %s", message);
+    } else {
+        QVR_WARNING("Oculus log: %s", message);
+    }
+}
+void QVRAttemptOculusInitialization()
+{
+    QVR_DEBUG("Oculus: SDK version %s", ovr_GetVersionString());
+    ovrInitParams oculusInitParams;
+    std::memset(&oculusInitParams, 0, sizeof(oculusInitParams));
+    oculusInitParams.LogCallback = oculusLogCallback;
+    if (!ovr_Initialize(&oculusInitParams)
+            || ovrHmd_Detect() <= 0
+            || !(QVROculus = ovrHmd_Create(0))) {
+        QVR_INFO("Oculus: HMD not available");
+        return;
+    }
+    QVR_INFO("Oculus: HMD available");
+    QVR_DEBUG("Oculus: product name: %s", QVROculus->ProductName);
+    QVR_DEBUG("Oculus: resolution: %dx%d", QVROculus->Resolution.w, QVROculus->Resolution.h);
+    QVR_DEBUG("Oculus: window position: %d %d", QVROculus->WindowsPos.x, QVROculus->WindowsPos.y);
+    QVR_DEBUG("Oculus: display %s", QVROculus->DisplayDeviceName);
+    QVR_DEBUG("Oculus: Cap_ExtendDesktop: %d", (QVROculus->HmdCaps & ovrHmdCap_ExtendDesktop ? 1 : 0));
+    ovrHmd_ConfigureTracking(QVROculus,
+                    ovrTrackingCap_Orientation | ovrTrackingCap_MagYawCorrection | ovrTrackingCap_Position,
+                    ovrTrackingCap_Orientation | ovrTrackingCap_Position);
+}
+#endif
 #ifdef HAVE_OSVR
 OSVR_ClientContext QVROsvrClientContext = NULL; // singleton instance
 OSVR_DisplayConfig QVROsvrDisplayConfig = NULL; // singleton instance
@@ -281,6 +320,19 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
 
 QVRManager::~QVRManager()
 {
+#ifdef HAVE_OCULUS
+    if (QVROculus) {
+        ovrHmd_Destroy(QVROculus);
+        ovr_Shutdown();
+    }
+#endif
+#ifdef HAVE_OSVR
+    if (QVROsvrClientContext) {
+        osvrClientShutdown(QVROsvrClientContext);
+        QVROsvrDisplayConfig = NULL;
+        QVROsvrClientContext = NULL;
+    }
+#endif
     for (int i = 0; i < _devices.size(); i++)
         delete _devices.at(i);
     for (int i = 0; i < _observers.size(); i++)
@@ -301,13 +353,6 @@ QVRManager::~QVRManager()
     delete _client;
     eventQueue = NULL;
     manager = NULL;
-#ifdef HAVE_OSVR
-    if (QVROsvrClientContext) {
-        osvrClientShutdown(QVROsvrClientContext);
-        QVROsvrDisplayConfig = NULL;
-        QVROsvrClientContext = NULL;
-    }
-#endif
 }
 
 bool QVRManager::init(QVRApp* app, QVRNavigationType preferredNavigationType)
@@ -329,22 +374,42 @@ bool QVRManager::init(QVRApp* app, QVRNavigationType preferredNavigationType)
         }
     }
 
-    // Initialize OSVR for this process if required by the configuration
+    // Initialize Oculus and OSVR for this process if required by the configuration
+    bool needToInitializeOculus = false;
     bool needToInitializeOSVR = false;
     for (int d = 0; d < _config->deviceConfigs().size(); d++) {
-        if (_config->deviceConfigs()[d].processIndex() == _processIndex
-                && (_config->deviceConfigs()[d].trackingType() == QVR_Device_Tracking_OSVR
+        if (_config->deviceConfigs()[d].processIndex() == _processIndex) {
+            if (_config->deviceConfigs()[d].trackingType() == QVR_Device_Tracking_Oculus) {
+                needToInitializeOculus = true;
+            }
+            if (_config->deviceConfigs()[d].trackingType() == QVR_Device_Tracking_OSVR
                     || _config->deviceConfigs()[d].buttonsType() == QVR_Device_Buttons_OSVR
-                    || _config->deviceConfigs()[d].analogsType() == QVR_Device_Analogs_OSVR)) {
-            needToInitializeOSVR = true;
-            break;
+                    || _config->deviceConfigs()[d].analogsType() == QVR_Device_Analogs_OSVR) {
+                needToInitializeOSVR = true;
+            }
         }
     }
     for (int w = 0; w < processConfig().windowConfigs().size(); w++) {
+        if (windowConfig(_processIndex, w).outputMode() == QVR_Output_Stereo_Oculus) {
+            needToInitializeOculus = true;
+        }
         if (windowConfig(_processIndex, w).outputMode() == QVR_Output_OSVR) {
             needToInitializeOSVR = true;
-            break;
         }
+    }
+    if (needToInitializeOculus) {
+#ifdef HAVE_OCULUS
+        if (!QVROculus) {
+            QVRAttemptOculusInitialization();
+            if (!QVROculus) {
+                QVR_FATAL("cannot initialize Oculus");
+                return false;
+            }
+        }
+#else
+        QVR_FATAL("configuration requires Oculus, but Oculus support is not available");
+        return false;
+#endif
     }
     if (needToInitializeOSVR) {
 #ifdef HAVE_OSVR
@@ -617,6 +682,17 @@ void QVRManager::masterLoop()
         return;
     }
 
+#ifdef HAVE_OCULUS
+    if (QVROculus) {
+        ovrHmd_BeginFrame(QVROculus, 0);
+        ovrVector3f hmdToEyeViewOffset[2] = {
+            QVROculusEyeRenderDesc[0].HmdToEyeViewOffset,
+            QVROculusEyeRenderDesc[1].HmdToEyeViewOffset
+        };
+        ovrHmd_GetEyePoses(QVROculus, 0, hmdToEyeViewOffset,
+                QVROculusRenderPoses, &QVROculusTrackingState);
+    }
+#endif
 #ifdef HAVE_OSVR
     if (QVROsvrClientContext) {
         osvrClientUpdate(QVROsvrClientContext);
@@ -699,12 +775,6 @@ void QVRManager::masterLoop()
             obs->setNavigation(_wandNavigationPos + obs->config().initialNavigationPosition(),
                     QQuaternion::fromEulerAngles(0.0f, _wandNavigationRotY, 0.0f) * obs->config().initialNavigationOrientation());
         }
-        if (obs->config().trackingType() == QVR_Tracking_Oculus) {
-            for (int w = 0; w < _windows.size(); w++) {
-                if (_windows[w]->observerId() == obs->id())
-                    _windows[w]->updateObserver();
-            }
-        }
         if (obs->config().trackingType() == QVR_Tracking_Device) {
             int td0 = _observerTrackingDevices0[o];
             int td1 = _observerTrackingDevices1[o];
@@ -786,14 +856,25 @@ void QVRManager::masterLoop()
 void QVRManager::slaveLoop()
 {
     QVRClientCmd cmd;
-#ifdef HAVE_OSVR
-    if (QVROsvrClientContext) {
-        osvrClientUpdate(QVROsvrClientContext);
-    }
-#endif
     while (_client->receiveCmd(&cmd)) {
         if (cmd == QVRClientCmdUpdateDevices) {
             QVR_FIREHOSE("  ... got command 'update-devices' from master");
+#ifdef HAVE_OCULUS
+            if (QVROculus) {
+                ovrHmd_BeginFrame(QVROculus, 0);
+                ovrVector3f hmdToEyeViewOffset[2] = {
+                    QVROculusEyeRenderDesc[0].HmdToEyeViewOffset,
+                    QVROculusEyeRenderDesc[1].HmdToEyeViewOffset
+                };
+                ovrHmd_GetEyePoses(QVROculus, 0, hmdToEyeViewOffset,
+                        QVROculusRenderPoses, &QVROculusTrackingState);
+            }
+#endif
+#ifdef HAVE_OSVR
+            if (QVROsvrClientContext) {
+                osvrClientUpdate(QVROsvrClientContext);
+            }
+#endif
             int n = 0;
             QByteArray data;
             QDataStream ds(&data, QIODevice::WriteOnly);
@@ -877,10 +958,10 @@ void QVRManager::updateDevices()
             haveRemoteDevices = true;
     }
     if (haveRemoteDevices) {
-        QVR_DEBUG("ordering slave processes to update devices");
+        QVR_FIREHOSE("ordering slave processes to update devices");
         _server->sendCmdUpdateDevices();
         _server->flush();
-        QVR_DEBUG("getting updated device info from slave processes");
+        QVR_FIREHOSE("getting updated device info from slave processes");
         _server->receiveReplyUpdateDevices(_devices);
     }
 }

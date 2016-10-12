@@ -26,12 +26,6 @@
 #include <QFile>
 #include <QTextStream>
 
-#ifdef HAVE_OCULUS
-# define isnan std::isnan
-# include <OVR.h>
-# include <OVR_CAPI_GL.h>
-#endif
-
 #include "config.hpp"
 #include "manager.hpp"
 #include "logging.hpp"
@@ -99,22 +93,49 @@ QVRConfig::QVRConfig()
 
 void QVRConfig::createDefault(QVRNavigationType preferredNavigationType)
 {
-    QVR_INFO("creating default configuration ...");
+    QVR_INFO("creating default configuration");
 
-    bool osvr = false;
+#ifdef HAVE_OCULUS
+    QVRAttemptOculusInitialization();
+    if (QVROculus) {
+        // Devices
+        QVRDeviceConfig deviceConf0, deviceConf1, deviceConf2;
+        deviceConf0._id = "oculus-head";
+        deviceConf0._trackingType = QVR_Device_Tracking_Oculus;
+        deviceConf1._trackingParameters = "head";
+        deviceConf1._id = "oculus-eye-left";
+        deviceConf1._trackingType = QVR_Device_Tracking_Oculus;
+        deviceConf1._trackingParameters = "eye-left";
+        deviceConf2._id = "oculus-eye-right";
+        deviceConf2._trackingType = QVR_Device_Tracking_Oculus;
+        deviceConf2._trackingParameters = "eye-right";
+        // One observer
+        QVRObserverConfig observerConf;
+        observerConf._id = "oculus-observer";
+        observerConf._navigationType = preferredNavigationType;
+        observerConf._trackingType = QVR_Tracking_Device;
+        observerConf._trackingParameters = "oculus-eye-left oculus-eye-right";
+        // One window
+        QVRWindowConfig windowConf;
+        windowConf._id = "oculus-window";
+        windowConf._observerIndex = 0;
+        windowConf._outputMode = QVR_Output_Stereo_Oculus;
+        // One process
+        QVRProcessConfig processConf;
+        processConf._id = "oculus-process";
+        processConf._windowConfigs.append(windowConf);
+        // Put it together
+        _deviceConfigs.append(deviceConf0);
+        _deviceConfigs.append(deviceConf1);
+        _deviceConfigs.append(deviceConf2);
+        _observerConfigs.append(observerConf);
+        _processConfigs.append(processConf);
+        return;
+    }
+#endif
 #ifdef HAVE_OSVR
     QVRAttemptOSVRInitialization();
-    osvr = (QVROsvrClientContext != NULL);
-#endif
-    bool oculus = false;
-#ifdef HAVE_OCULUS
-    ovrInitParams oculusInitParams;
-    std::memset(&oculusInitParams, 0, sizeof(oculusInitParams));
-    oculus = ovr_Initialize(&oculusInitParams) && ovrHmd_Detect() > 0;
-    ovr_Shutdown();
-#endif
-    if (osvr) {
-#ifdef HAVE_OSVR
+    if (QVROsvrClientContext) {
         OSVR_EyeCount eyes;
         osvrClientGetNumEyesForViewer(QVROsvrDisplayConfig, 0, &eyes);
         // Devices
@@ -159,48 +180,26 @@ void QVRConfig::createDefault(QVRNavigationType preferredNavigationType)
             _deviceConfigs.append(deviceConf2);
         _observerConfigs.append(observerConf);
         _processConfigs.append(processConf);
-#endif
-    } else if (oculus) {
-#ifdef HAVE_OCULUS
-        // One observer
-        QVRObserverConfig observerConf;
-        observerConf._id = "default";
-        observerConf._navigationType = preferredNavigationType;
-        observerConf._trackingType = QVR_Tracking_Oculus;
-        // One window
-        QVRWindowConfig windowConf;
-        windowConf._id = "default";
-        windowConf._observerIndex = 0;
-        windowConf._outputMode = QVR_Output_Stereo_Oculus;
-        // One process
-        QVRProcessConfig processConf;
-        processConf._id = "default";
-        processConf._windowConfigs.append(windowConf);
-        // Put it together
-        _observerConfigs.append(observerConf);
-        _processConfigs.append(processConf);
-#endif
-    } else {
-        // One observer
-        QVRObserverConfig observerConf;
-        observerConf._id = "qvr-default";
-        observerConf._navigationType = preferredNavigationType;
-        observerConf._trackingType = QVR_Tracking_Custom;
-        // One window
-        QVRWindowConfig windowConf;
-        windowConf._id = "qvr-default";
-        windowConf._observerIndex = 0;
-        windowConf._outputMode = QVR_Output_Center;
-        // One process
-        QVRProcessConfig processConf;
-        processConf._id = "qvr-default";
-        processConf._windowConfigs.append(windowConf);
-        // Put it together
-        _observerConfigs.append(observerConf);
-        _processConfigs.append(processConf);
+        return;
     }
-
-    QVR_INFO("... done");
+#endif
+    // One observer
+    QVRObserverConfig observerConf;
+    observerConf._id = "qvr-default";
+    observerConf._navigationType = preferredNavigationType;
+    observerConf._trackingType = QVR_Tracking_Custom;
+    // One window
+    QVRWindowConfig windowConf;
+    windowConf._id = "qvr-default";
+    windowConf._observerIndex = 0;
+    windowConf._outputMode = QVR_Output_Center;
+    // One process
+    QVRProcessConfig processConf;
+    processConf._id = "qvr-default";
+    processConf._windowConfigs.append(windowConf);
+    // Put it together
+    _observerConfigs.append(observerConf);
+    _processConfigs.append(processConf);
 }
 
 bool QVRConfig::readFromFile(const QString& filename)
@@ -280,11 +279,15 @@ bool QVRConfig::readFromFile(const QString& filename)
                 deviceProcessId = arg;
                 continue;
             } else if (cmd == "tracking" && arglist.length() >= 1
-                    && (arglist[0] == "none" || arglist[0] == "static" || arglist[0] == "vrpn")) {
+                    && (arglist[0] == "none" || arglist[0] == "static"
+                        || arglist[0] == "oculus" || arglist[0] == "vrpn"
+                        || arglist[0] == "osvr")) {
                 deviceConfig._trackingType = (
                         arglist[0] == "none" ? QVR_Device_Tracking_None
                         : arglist[0] == "static" ? QVR_Device_Tracking_Static
-                        : QVR_Device_Tracking_VRPN);
+                        : arglist[0] == "oculus" ? QVR_Device_Tracking_Oculus
+                        : arglist[0] == "vrpn" ? QVR_Device_Tracking_VRPN
+                        : QVR_Device_Tracking_OSVR);
                 deviceConfig._trackingParameters = QStringList(arglist.mid(1)).join(' ');
                 continue;
             } else if (cmd == "buttons" && arglist.length() >= 1
@@ -342,7 +345,6 @@ bool QVRConfig::readFromFile(const QString& filename)
                 observerConfig._trackingType = (
                         arglist[0] == "stationary" ? QVR_Tracking_Stationary
                         : arglist[0] == "device" ? QVR_Tracking_Device
-                        : arglist[0] == "oculus" ? QVR_Tracking_Oculus
                         : QVR_Tracking_Custom);
                 observerConfig._trackingParameters = QStringList(arglist.mid(1)).join(' ');
                 continue;
@@ -634,33 +636,11 @@ bool QVRConfig::readFromFile(const QString& filename)
         }
     }
     for (int i = 0; i < _processConfigs.size(); i++) {
-        bool haveOculusWindow = false;
         for (int j = 0; j < _processConfigs[i]._windowConfigs.size(); j++) {
-            if (_processConfigs[i]._windowConfigs[j]._outputMode == QVR_Output_Stereo_Oculus) {
-                if (i > 0) {
-                    QVR_FATAL("config file %s: currently only the master process "
-                            "can have a window with output stereo oculus", qPrintable(filename));
-                    return false;
-                }
-                if (haveOculusWindow) {
-                    QVR_FATAL("config file %s: process %s: "
-                            "more than one window has stereo_mode oculus",
-                            qPrintable(filename), qPrintable(_processConfigs[i]._id));
-                    return false;
-                }
-                haveOculusWindow = true;
-            }
             if (_processConfigs[i]._windowConfigs[j]._observerIndex < 0) {
-                QVR_FATAL("config file %s: window id %s does not have a valid observer",
+                QVR_FATAL("config file %s: window %s does not have a valid observer",
                         qPrintable(filename), qPrintable(_processConfigs[i]._windowConfigs[j]._id));
                 return false;
-            }
-            if (_observerConfigs[_processConfigs[i]._windowConfigs[j]._observerIndex]._trackingType == QVR_Tracking_Oculus
-                    && _processConfigs[i]._windowConfigs[j]._outputMode != QVR_Output_Stereo_Oculus) {
-                    QVR_FATAL("config file %s: process %s: "
-                            "only windows with output stereo oculus can have observers of type oculus",
-                            qPrintable(filename), qPrintable(_processConfigs[i]._id));
-                    return false;
             }
         }
     }

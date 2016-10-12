@@ -65,6 +65,9 @@ private:
     QVector<bool> _buttons;
     QVector<float> _analogs;
 
+#ifdef HAVE_OCULUS
+    int _oculusTrackedEye; // -1 = none, 0 = center/head, 1 = left, 2 = right
+#endif
 #ifdef HAVE_VRPN
     vrpn_Tracker_Remote* _vrpnTrackerRemote;
     vrpn_Button_Remote* _vrpnButtonRemote;
@@ -157,8 +160,7 @@ public:
     }
 
     /*! \cond
-     * This function is used internally to update the state of this device.
-     * It returns true if something (might have) changed, false otherwise. */
+     * This function is used internally to update the state of this device. */
     void update();
     /*! \endcond */
 };

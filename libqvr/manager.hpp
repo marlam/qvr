@@ -198,6 +198,16 @@ class QVRRenderContext;
 class QVRServer;
 class QVRClient;
 
+#ifdef HAVE_OCULUS
+# define isnan std::isnan
+# include <OVR.h>
+# include <OVR_CAPI_GL.h>
+extern ovrHmd QVROculus;
+extern ovrEyeRenderDesc QVROculusEyeRenderDesc[2];
+extern ovrPosef QVROculusRenderPoses[2];
+extern ovrTrackingState QVROculusTrackingState;
+void QVRAttemptOculusInitialization();
+#endif
 #ifdef HAVE_OSVR
 # include <osvr/ClientKit/DisplayC.h>
 # include <osvr/ClientKit/ContextC.h>

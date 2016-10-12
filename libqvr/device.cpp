@@ -61,6 +61,9 @@ void QVRVrpnAnalogChangeHandler(void* userdata, const vrpn_ANALOGCB info)
 QVRDevice::QVRDevice() :
     _index(-1)
 {
+#ifdef HAVE_OCULUS
+    _oculusTrackedEye = -1;
+#endif
 #ifdef HAVE_VRPN
     _vrpnTrackerRemote = NULL;
     _vrpnAnalogRemote = NULL;
@@ -75,6 +78,9 @@ QVRDevice::QVRDevice() :
 QVRDevice::QVRDevice(int deviceIndex) :
     _index(deviceIndex)
 {
+#ifdef HAVE_OCULUS
+    _oculusTrackedEye = -1;
+#endif
 #ifdef HAVE_VRPN
     _vrpnTrackerRemote = NULL;
     _vrpnAnalogRemote = NULL;
@@ -96,6 +102,19 @@ QVRDevice::QVRDevice(int deviceIndex) :
             if (args.length() == 6)
                 _orientation = QQuaternion::fromEulerAngles(args[3].toFloat(), args[4].toFloat(), args[5].toFloat());
         }
+        break;
+    case QVR_Device_Tracking_Oculus:
+#ifdef HAVE_OCULUS
+        if (QVRManager::processIndex() == config().processIndex()) {
+            QString arg = config().trackingParameters().trimmed();
+            if (arg == "eye-left")
+                _oculusTrackedEye = 1;
+            else if (arg == "eye-right")
+                _oculusTrackedEye = 2;
+            else if (arg == "head")
+                _oculusTrackedEye = 0;
+        }
+#endif
         break;
     case QVR_Device_Tracking_VRPN:
 #ifdef HAVE_VRPN
@@ -292,6 +311,19 @@ const QVRDeviceConfig& QVRDevice::config() const
 void QVRDevice::update()
 {
     if (config().processIndex() == QVRManager::processIndex()) {
+#ifdef HAVE_OCULUS
+        if (_oculusTrackedEye >= 0) {
+            const ovrPosef* p;
+            if (_oculusTrackedEye == 1)
+                p = &(QVROculusRenderPoses[0]);
+            else if (_oculusTrackedEye == 2)
+                p = &(QVROculusRenderPoses[1]);
+            else
+                p = &(QVROculusTrackingState.HeadPose.ThePose);
+            _position = QVector3D(p->Position.x, p->Position.y, p->Position.z);
+            _orientation = QQuaternion(p->Orientation.w, p->Orientation.x, p->Orientation.y, p->Orientation.z);
+        }
+#endif
 #ifdef HAVE_VRPN
         if (_vrpnTrackerRemote)
             _vrpnTrackerRemote->mainloop();
