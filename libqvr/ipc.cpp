@@ -27,6 +27,7 @@
 #include <QTcpSocket>
 #include <QTcpServer>
 #include <QHostInfo>
+#include <QUuid>
 
 #include "event.hpp"
 #include "app.hpp"
@@ -207,9 +208,10 @@ QIODevice* QVRServer::device(int i)
 
 bool QVRServer::startLocal()
 {
+    QString name = QString("qvr-") + QUuid::createUuid().toString().mid(1, 36);
     QLocalServer* server = new QLocalServer;
     server->setSocketOptions(QLocalServer::UserAccessOption);
-    if (!server->listen("qvr")) {
+    if (!server->listen(name)) {
         QVR_FATAL("cannot initialize local server: %s", qPrintable(server->errorString()));
         delete server;
         return false;
