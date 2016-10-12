@@ -1,0 +1,37 @@
+# OSVR configuration where the OSVR display is handled in a slave process.
+#
+# The master process shows a desktop window that displays the OSVR view.
+# The OSVR view and tracking is handled by a slave process.
+#
+# You can run your program on multiple OSVR displays in the same way.
+# Just configure OSVR on each process, and remember to configure devices
+# for each.
+
+device osvr-head
+    process osvr-process
+    tracking osvr /me/head
+device osvr-eye-left
+    process osvr-process
+    tracking osvr eye-left
+device osvr-eye-right
+    process osvr-process
+    tracking osvr eye-right
+
+observer osvr-observer
+    navigation wasdqe
+    tracking device osvr-eye-left osvr-eye-right
+
+process master
+    window osvr-control
+        observer osvr-observer
+        output stereo red_cyan
+        position 100 100
+        size 400 400
+        screen_is_fixed_to_observer true
+        screen_is_given_by_center true
+
+process osvr-process
+    display :0.1
+    window osvr-window
+        observer osvr-observer
+        output osvr

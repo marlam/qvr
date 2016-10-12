@@ -1,0 +1,18 @@
+# Manual OSVR configuration.
+# This is of little use since OSVR is autodetected.
+
+device osvr-head
+    tracking osvr /me/head
+device osvr-eye-left
+    tracking osvr eye-left
+device osvr-eye-right
+    tracking osvr eye-right
+
+observer osvr-observer
+    navigation wasdqe
+    tracking device osvr-eye-left osvr-eye-right
+
+process osvr-process
+    window osvr-window
+        observer osvr-observer
+        output osvr

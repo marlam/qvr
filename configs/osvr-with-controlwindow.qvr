@@ -1,0 +1,32 @@
+# OSVR configuration with an additional desktop window
+# that displays the OSVR view.
+#
+# Note that this additional window must live in a slave process
+# when the OSVR uses its own display (which is the case in this example).
+
+device osvr-head
+    tracking osvr /me/head
+device osvr-eye-left
+    tracking osvr eye-left
+device osvr-eye-right
+    tracking osvr eye-right
+
+observer osvr-observer
+    navigation wasdqe
+    tracking device osvr-eye-left osvr-eye-right
+
+process osvr-master-process
+    # display :0.1
+    window osvr-window
+        observer osvr-observer
+        output osvr
+
+process osvr-slave-process
+    display :0.0
+    window osvr-controlwindow
+        observer osvr-observer
+        output stereo red_cyan
+        position 100 100
+        size 400 400
+        screen_is_fixed_to_observer true
+        screen_is_given_by_center true
