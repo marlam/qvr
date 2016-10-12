@@ -1,29 +1,29 @@
 observer o0
-	navigation wasdqe
-	tracking custom
+    navigation wasdqe
+    tracking custom
 
 process master
-	window 0
-		observer o0
-		output center
-		display_screen -1
-		position 100 100
-		size 400 800
-		screen_is_fixed_to_observer true
-		screen_is_given_by_center true
-	window 1
-		observer o0
-		output center
-		display_screen -1
-		position 510 100
-		size 400 800
-		screen_is_fixed_to_observer true
-		screen_is_given_by_center true
-	window 2
-		observer o0
-		output center
-		display_screen -1
-		position 920 100
-		size 400 800
-		screen_is_fixed_to_observer true
-		screen_is_given_by_center true
+    window 0
+        observer o0
+        output center
+        display_screen -1
+        position 100 100
+        size 400 800
+        screen_is_fixed_to_observer true
+        screen_is_given_by_center true
+    window 1
+        observer o0
+        output center
+        display_screen -1
+        position 510 100
+        size 400 800
+        screen_is_fixed_to_observer true
+        screen_is_given_by_center true
+    window 2
+        observer o0
+        output center
+        display_screen -1
+        position 920 100
+        size 400 800
+        screen_is_fixed_to_observer true
+        screen_is_given_by_center true

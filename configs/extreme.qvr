@@ -1,425 +1,425 @@
 observer default
-	navigation wasdqe
-	tracking custom
+    navigation wasdqe
+    tracking custom
 
 process master
-	window wall1
-		observer default
-		position 100 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2.49 0 -0.0771964  -1.5598 0 -1.94244  -2.49 2.6 -0.0771964
-	window wall2
-		observer default
-		position 410 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -1.78883 0 -1.73382  0.1549 0 -2.48638  -1.78883 2.6 -1.73382
-	window wall3
-		observer default
-		position 720 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -0.1549 0 -2.48638  1.78883 0 -1.73382  -0.1549 2.6 -2.48638
-	window wall4
-		observer default
-		position 1030 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  1.5598 0 -1.94244  2.49 0 -0.0771964  1.5598 2.6 -1.94244
-	window wall5
-		observer default
-		position 310 535
-		size 400 300
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2.49 0 -0.0771964  0.7 0 -0.0771964  -2.49 0 -2.4912
-	window wall6
-		observer default
-		position 720 535
-		size 400 300
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -0.7 0 -0.0771964  2.49 0 -0.0771964  -0.7 0 -2.4912
-	window wall7
-		observer default
-		position 100 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2.49 0 -0.0771964  -1.5598 0 -1.94244  -2.49 2.6 -0.0771964
-	window wall8
-		observer default
-		position 410 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -1.78883 0 -1.73382  0.1549 0 -2.48638  -1.78883 2.6 -1.73382
-	window wall9
-		observer default
-		position 720 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -0.1549 0 -2.48638  1.78883 0 -1.73382  -0.1549 2.6 -2.48638
-	window wall10
-		observer default
-		position 1030 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  1.5598 0 -1.94244  2.49 0 -0.0771964  1.5598 2.6 -1.94244
-	window wall11
-		observer default
-		position 310 535
-		size 400 300
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2.49 0 -0.0771964  0.7 0 -0.0771964  -2.49 0 -2.4912
-	window wall12
-		observer default
-		position 720 535
-		size 400 300
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -0.7 0 -0.0771964  2.49 0 -0.0771964  -0.7 0 -2.4912
-	window wall13
-		observer default
-		position 100 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2.49 0 -0.0771964  -1.5598 0 -1.94244  -2.49 2.6 -0.0771964
-	window wall14
-		observer default
-		position 410 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -1.78883 0 -1.73382  0.1549 0 -2.48638  -1.78883 2.6 -1.73382
-	window wall15
-		observer default
-		position 720 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -0.1549 0 -2.48638  1.78883 0 -1.73382  -0.1549 2.6 -2.48638
-	window wall16
-		observer default
-		position 1030 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  1.5598 0 -1.94244  2.49 0 -0.0771964  1.5598 2.6 -1.94244
-	window wall17
-		observer default
-		position 310 535
-		size 400 300
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2.49 0 -0.0771964  0.7 0 -0.0771964  -2.49 0 -2.4912
-	window wall18
-		observer default
-		position 720 535
-		size 400 300
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -0.7 0 -0.0771964  2.49 0 -0.0771964  -0.7 0 -2.4912
-	window wall19
-		observer default
-		position 100 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2.49 0 -0.0771964  -1.5598 0 -1.94244  -2.49 2.6 -0.0771964
-	window wall20
-		observer default
-		position 410 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -1.78883 0 -1.73382  0.1549 0 -2.48638  -1.78883 2.6 -1.73382
-	window wall21
-		observer default
-		position 720 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -0.1549 0 -2.48638  1.78883 0 -1.73382  -0.1549 2.6 -2.48638
-	window wall22
-		observer default
-		position 1030 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  1.5598 0 -1.94244  2.49 0 -0.0771964  1.5598 2.6 -1.94244
-	window wall23
-		observer default
-		position 310 535
-		size 400 300
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2.49 0 -0.0771964  0.7 0 -0.0771964  -2.49 0 -2.4912
-	window wall24
-		observer default
-		position 720 535
-		size 400 300
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -0.7 0 -0.0771964  2.49 0 -0.0771964  -0.7 0 -2.4912
-	window wall25
-		observer default
-		position 100 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2.49 0 -0.0771964  -1.5598 0 -1.94244  -2.49 2.6 -0.0771964
-	window wall26
-		observer default
-		position 410 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -1.78883 0 -1.73382  0.1549 0 -2.48638  -1.78883 2.6 -1.73382
-	window wall27
-		observer default
-		position 720 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -0.1549 0 -2.48638  1.78883 0 -1.73382  -0.1549 2.6 -2.48638
-	window wall28
-		observer default
-		position 1030 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  1.5598 0 -1.94244  2.49 0 -0.0771964  1.5598 2.6 -1.94244
-	window wall29
-		observer default
-		position 310 535
-		size 400 300
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2.49 0 -0.0771964  0.7 0 -0.0771964  -2.49 0 -2.4912
-	window wall30
-		observer default
-		position 720 535
-		size 400 300
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -0.7 0 -0.0771964  2.49 0 -0.0771964  -0.7 0 -2.4912
-	window wall31
-		observer default
-		position 100 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2.49 0 -0.0771964  -1.5598 0 -1.94244  -2.49 2.6 -0.0771964
-	window wall32
-		observer default
-		position 410 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -1.78883 0 -1.73382  0.1549 0 -2.48638  -1.78883 2.6 -1.73382
-	window wall33
-		observer default
-		position 720 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -0.1549 0 -2.48638  1.78883 0 -1.73382  -0.1549 2.6 -2.48638
-	window wall34
-		observer default
-		position 1030 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  1.5598 0 -1.94244  2.49 0 -0.0771964  1.5598 2.6 -1.94244
-	window wall35
-		observer default
-		position 310 535
-		size 400 300
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2.49 0 -0.0771964  0.7 0 -0.0771964  -2.49 0 -2.4912
-	window wall36
-		observer default
-		position 720 535
-		size 400 300
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -0.7 0 -0.0771964  2.49 0 -0.0771964  -0.7 0 -2.4912
-	window wall37
-		observer default
-		position 100 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2.49 0 -0.0771964  -1.5598 0 -1.94244  -2.49 2.6 -0.0771964
-	window wall38
-		observer default
-		position 410 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -1.78883 0 -1.73382  0.1549 0 -2.48638  -1.78883 2.6 -1.73382
-	window wall39
-		observer default
-		position 720 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -0.1549 0 -2.48638  1.78883 0 -1.73382  -0.1549 2.6 -2.48638
-	window wall40
-		observer default
-		position 1030 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  1.5598 0 -1.94244  2.49 0 -0.0771964  1.5598 2.6 -1.94244
-	window wall41
-		observer default
-		position 310 535
-		size 400 300
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2.49 0 -0.0771964  0.7 0 -0.0771964  -2.49 0 -2.4912
-	window wall42
-		observer default
-		position 720 535
-		size 400 300
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -0.7 0 -0.0771964  2.49 0 -0.0771964  -0.7 0 -2.4912
-	window wall43
-		observer default
-		position 100 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2.49 0 -0.0771964  -1.5598 0 -1.94244  -2.49 2.6 -0.0771964
-	window wall44
-		observer default
-		position 410 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -1.78883 0 -1.73382  0.1549 0 -2.48638  -1.78883 2.6 -1.73382
-	window wall45
-		observer default
-		position 720 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -0.1549 0 -2.48638  1.78883 0 -1.73382  -0.1549 2.6 -2.48638
-	window wall46
-		observer default
-		position 1030 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  1.5598 0 -1.94244  2.49 0 -0.0771964  1.5598 2.6 -1.94244
-	window wall47
-		observer default
-		position 310 535
-		size 400 300
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2.49 0 -0.0771964  0.7 0 -0.0771964  -2.49 0 -2.4912
-	window wall48
-		observer default
-		position 720 535
-		size 400 300
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -0.7 0 -0.0771964  2.49 0 -0.0771964  -0.7 0 -2.4912
-	window wall49
-		observer default
-		position 100 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2.49 0 -0.0771964  -1.5598 0 -1.94244  -2.49 2.6 -0.0771964
-	window wall50
-		observer default
-		position 410 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -1.78883 0 -1.73382  0.1549 0 -2.48638  -1.78883 2.6 -1.73382
-	window wall51
-		observer default
-		position 720 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -0.1549 0 -2.48638  1.78883 0 -1.73382  -0.1549 2.6 -2.48638
-	window wall52
-		observer default
-		position 1030 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  1.5598 0 -1.94244  2.49 0 -0.0771964  1.5598 2.6 -1.94244
-	window wall53
-		observer default
-		position 310 535
-		size 400 300
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2.49 0 -0.0771964  0.7 0 -0.0771964  -2.49 0 -2.4912
-	window wall54
-		observer default
-		position 720 535
-		size 400 300
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -0.7 0 -0.0771964  2.49 0 -0.0771964  -0.7 0 -2.4912
-	window wall55
-		observer default
-		position 100 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2.49 0 -0.0771964  -1.5598 0 -1.94244  -2.49 2.6 -0.0771964
-	window wall56
-		observer default
-		position 410 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -1.78883 0 -1.73382  0.1549 0 -2.48638  -1.78883 2.6 -1.73382
-	window wall57
-		observer default
-		position 720 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -0.1549 0 -2.48638  1.78883 0 -1.73382  -0.1549 2.6 -2.48638
-	window wall58
-		observer default
-		position 1030 100
-		size 300 400
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  1.5598 0 -1.94244  2.49 0 -0.0771964  1.5598 2.6 -1.94244
-	window wall59
-		observer default
-		position 310 535
-		size 400 300
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2.49 0 -0.0771964  0.7 0 -0.0771964  -2.49 0 -2.4912
-	window wall60
-		observer default
-		position 720 535
-		size 400 300
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -0.7 0 -0.0771964  2.49 0 -0.0771964  -0.7 0 -2.4912
+    window wall1
+        observer default
+        position 100 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2.49 0 -0.0771964  -1.5598 0 -1.94244  -2.49 2.6 -0.0771964
+    window wall2
+        observer default
+        position 410 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -1.78883 0 -1.73382  0.1549 0 -2.48638  -1.78883 2.6 -1.73382
+    window wall3
+        observer default
+        position 720 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -0.1549 0 -2.48638  1.78883 0 -1.73382  -0.1549 2.6 -2.48638
+    window wall4
+        observer default
+        position 1030 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  1.5598 0 -1.94244  2.49 0 -0.0771964  1.5598 2.6 -1.94244
+    window wall5
+        observer default
+        position 310 535
+        size 400 300
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2.49 0 -0.0771964  0.7 0 -0.0771964  -2.49 0 -2.4912
+    window wall6
+        observer default
+        position 720 535
+        size 400 300
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -0.7 0 -0.0771964  2.49 0 -0.0771964  -0.7 0 -2.4912
+    window wall7
+        observer default
+        position 100 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2.49 0 -0.0771964  -1.5598 0 -1.94244  -2.49 2.6 -0.0771964
+    window wall8
+        observer default
+        position 410 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -1.78883 0 -1.73382  0.1549 0 -2.48638  -1.78883 2.6 -1.73382
+    window wall9
+        observer default
+        position 720 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -0.1549 0 -2.48638  1.78883 0 -1.73382  -0.1549 2.6 -2.48638
+    window wall10
+        observer default
+        position 1030 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  1.5598 0 -1.94244  2.49 0 -0.0771964  1.5598 2.6 -1.94244
+    window wall11
+        observer default
+        position 310 535
+        size 400 300
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2.49 0 -0.0771964  0.7 0 -0.0771964  -2.49 0 -2.4912
+    window wall12
+        observer default
+        position 720 535
+        size 400 300
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -0.7 0 -0.0771964  2.49 0 -0.0771964  -0.7 0 -2.4912
+    window wall13
+        observer default
+        position 100 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2.49 0 -0.0771964  -1.5598 0 -1.94244  -2.49 2.6 -0.0771964
+    window wall14
+        observer default
+        position 410 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -1.78883 0 -1.73382  0.1549 0 -2.48638  -1.78883 2.6 -1.73382
+    window wall15
+        observer default
+        position 720 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -0.1549 0 -2.48638  1.78883 0 -1.73382  -0.1549 2.6 -2.48638
+    window wall16
+        observer default
+        position 1030 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  1.5598 0 -1.94244  2.49 0 -0.0771964  1.5598 2.6 -1.94244
+    window wall17
+        observer default
+        position 310 535
+        size 400 300
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2.49 0 -0.0771964  0.7 0 -0.0771964  -2.49 0 -2.4912
+    window wall18
+        observer default
+        position 720 535
+        size 400 300
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -0.7 0 -0.0771964  2.49 0 -0.0771964  -0.7 0 -2.4912
+    window wall19
+        observer default
+        position 100 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2.49 0 -0.0771964  -1.5598 0 -1.94244  -2.49 2.6 -0.0771964
+    window wall20
+        observer default
+        position 410 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -1.78883 0 -1.73382  0.1549 0 -2.48638  -1.78883 2.6 -1.73382
+    window wall21
+        observer default
+        position 720 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -0.1549 0 -2.48638  1.78883 0 -1.73382  -0.1549 2.6 -2.48638
+    window wall22
+        observer default
+        position 1030 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  1.5598 0 -1.94244  2.49 0 -0.0771964  1.5598 2.6 -1.94244
+    window wall23
+        observer default
+        position 310 535
+        size 400 300
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2.49 0 -0.0771964  0.7 0 -0.0771964  -2.49 0 -2.4912
+    window wall24
+        observer default
+        position 720 535
+        size 400 300
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -0.7 0 -0.0771964  2.49 0 -0.0771964  -0.7 0 -2.4912
+    window wall25
+        observer default
+        position 100 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2.49 0 -0.0771964  -1.5598 0 -1.94244  -2.49 2.6 -0.0771964
+    window wall26
+        observer default
+        position 410 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -1.78883 0 -1.73382  0.1549 0 -2.48638  -1.78883 2.6 -1.73382
+    window wall27
+        observer default
+        position 720 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -0.1549 0 -2.48638  1.78883 0 -1.73382  -0.1549 2.6 -2.48638
+    window wall28
+        observer default
+        position 1030 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  1.5598 0 -1.94244  2.49 0 -0.0771964  1.5598 2.6 -1.94244
+    window wall29
+        observer default
+        position 310 535
+        size 400 300
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2.49 0 -0.0771964  0.7 0 -0.0771964  -2.49 0 -2.4912
+    window wall30
+        observer default
+        position 720 535
+        size 400 300
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -0.7 0 -0.0771964  2.49 0 -0.0771964  -0.7 0 -2.4912
+    window wall31
+        observer default
+        position 100 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2.49 0 -0.0771964  -1.5598 0 -1.94244  -2.49 2.6 -0.0771964
+    window wall32
+        observer default
+        position 410 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -1.78883 0 -1.73382  0.1549 0 -2.48638  -1.78883 2.6 -1.73382
+    window wall33
+        observer default
+        position 720 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -0.1549 0 -2.48638  1.78883 0 -1.73382  -0.1549 2.6 -2.48638
+    window wall34
+        observer default
+        position 1030 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  1.5598 0 -1.94244  2.49 0 -0.0771964  1.5598 2.6 -1.94244
+    window wall35
+        observer default
+        position 310 535
+        size 400 300
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2.49 0 -0.0771964  0.7 0 -0.0771964  -2.49 0 -2.4912
+    window wall36
+        observer default
+        position 720 535
+        size 400 300
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -0.7 0 -0.0771964  2.49 0 -0.0771964  -0.7 0 -2.4912
+    window wall37
+        observer default
+        position 100 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2.49 0 -0.0771964  -1.5598 0 -1.94244  -2.49 2.6 -0.0771964
+    window wall38
+        observer default
+        position 410 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -1.78883 0 -1.73382  0.1549 0 -2.48638  -1.78883 2.6 -1.73382
+    window wall39
+        observer default
+        position 720 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -0.1549 0 -2.48638  1.78883 0 -1.73382  -0.1549 2.6 -2.48638
+    window wall40
+        observer default
+        position 1030 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  1.5598 0 -1.94244  2.49 0 -0.0771964  1.5598 2.6 -1.94244
+    window wall41
+        observer default
+        position 310 535
+        size 400 300
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2.49 0 -0.0771964  0.7 0 -0.0771964  -2.49 0 -2.4912
+    window wall42
+        observer default
+        position 720 535
+        size 400 300
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -0.7 0 -0.0771964  2.49 0 -0.0771964  -0.7 0 -2.4912
+    window wall43
+        observer default
+        position 100 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2.49 0 -0.0771964  -1.5598 0 -1.94244  -2.49 2.6 -0.0771964
+    window wall44
+        observer default
+        position 410 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -1.78883 0 -1.73382  0.1549 0 -2.48638  -1.78883 2.6 -1.73382
+    window wall45
+        observer default
+        position 720 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -0.1549 0 -2.48638  1.78883 0 -1.73382  -0.1549 2.6 -2.48638
+    window wall46
+        observer default
+        position 1030 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  1.5598 0 -1.94244  2.49 0 -0.0771964  1.5598 2.6 -1.94244
+    window wall47
+        observer default
+        position 310 535
+        size 400 300
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2.49 0 -0.0771964  0.7 0 -0.0771964  -2.49 0 -2.4912
+    window wall48
+        observer default
+        position 720 535
+        size 400 300
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -0.7 0 -0.0771964  2.49 0 -0.0771964  -0.7 0 -2.4912
+    window wall49
+        observer default
+        position 100 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2.49 0 -0.0771964  -1.5598 0 -1.94244  -2.49 2.6 -0.0771964
+    window wall50
+        observer default
+        position 410 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -1.78883 0 -1.73382  0.1549 0 -2.48638  -1.78883 2.6 -1.73382
+    window wall51
+        observer default
+        position 720 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -0.1549 0 -2.48638  1.78883 0 -1.73382  -0.1549 2.6 -2.48638
+    window wall52
+        observer default
+        position 1030 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  1.5598 0 -1.94244  2.49 0 -0.0771964  1.5598 2.6 -1.94244
+    window wall53
+        observer default
+        position 310 535
+        size 400 300
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2.49 0 -0.0771964  0.7 0 -0.0771964  -2.49 0 -2.4912
+    window wall54
+        observer default
+        position 720 535
+        size 400 300
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -0.7 0 -0.0771964  2.49 0 -0.0771964  -0.7 0 -2.4912
+    window wall55
+        observer default
+        position 100 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2.49 0 -0.0771964  -1.5598 0 -1.94244  -2.49 2.6 -0.0771964
+    window wall56
+        observer default
+        position 410 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -1.78883 0 -1.73382  0.1549 0 -2.48638  -1.78883 2.6 -1.73382
+    window wall57
+        observer default
+        position 720 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -0.1549 0 -2.48638  1.78883 0 -1.73382  -0.1549 2.6 -2.48638
+    window wall58
+        observer default
+        position 1030 100
+        size 300 400
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  1.5598 0 -1.94244  2.49 0 -0.0771964  1.5598 2.6 -1.94244
+    window wall59
+        observer default
+        position 310 535
+        size 400 300
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2.49 0 -0.0771964  0.7 0 -0.0771964  -2.49 0 -2.4912
+    window wall60
+        observer default
+        position 720 535
+        size 400 300
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -0.7 0 -0.0771964  2.49 0 -0.0771964  -0.7 0 -2.4912

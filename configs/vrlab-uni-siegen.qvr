@@ -1,175 +1,175 @@
 # for qvr-vncviewer, use --cylinder 0,1.55,0,0,1,0,2.4912,0,56.145,43.6
 
 device glasses
-	tracking vrpn DTrack@localhost 0
+    tracking vrpn DTrack@localhost 0
 
 device foot-left
-	tracking vrpn DTrack@localhost 1
+    tracking vrpn DTrack@localhost 1
 
 device foot-right
-	tracking vrpn DTrack@localhost 2
+    tracking vrpn DTrack@localhost 2
 
 device leg-left
-	tracking vrpn DTrack@localhost 3
+    tracking vrpn DTrack@localhost 3
 
 device leg-right
-	tracking vrpn DTrack@localhost 4
+    tracking vrpn DTrack@localhost 4
 
 device waist
-	tracking vrpn DTrack@localhost 5
+    tracking vrpn DTrack@localhost 5
 
 device upperarm-left
-	tracking vrpn DTrack@localhost 6
+    tracking vrpn DTrack@localhost 6
 
 device upperarm-right
-	tracking vrpn DTrack@localhost 7
+    tracking vrpn DTrack@localhost 7
 
 device forearm-left
-	tracking vrpn DTrack@localhost 8
+    tracking vrpn DTrack@localhost 8
 
 device forearm-right
-	tracking vrpn DTrack@localhost 9
+    tracking vrpn DTrack@localhost 9
 
 device hand-left
-	tracking vrpn DTrack@localhost 10
+    tracking vrpn DTrack@localhost 10
 
 device hand-right
-	tracking vrpn DTrack@localhost 11
+    tracking vrpn DTrack@localhost 11
 
 device flystick
-	# We use the glasses orientation to steer navigation (tracking sensor number 0).
-	# If you want to use Flystick orientation instead, use sensor number 14.
-	# Furthermore, we reorder the indices of the digital buttons and analog joystick
-	# elements to match expectations.
-	tracking vrpn DTrack@localhost 0
-	buttons  vrpn DTrack@localhost 4 1 3 2 0
-	analogs  vrpn DTrack@localhost 1 0
+    # We use the glasses orientation to steer navigation (tracking sensor number 0).
+    # If you want to use Flystick orientation instead, use sensor number 14.
+    # Furthermore, we reorder the indices of the digital buttons and analog joystick
+    # elements to match expectations.
+    tracking vrpn DTrack@localhost 0
+    buttons  vrpn DTrack@localhost 4 1 3 2 0
+    analogs  vrpn DTrack@localhost 1 0
 
 observer default
-	navigation device flystick
-	navigation_position 0 0 0
-	navigation_up       0 1 0
-	navigation_forward  0 0 -1
-	tracking device glasses
-	tracking_position 0 1.78 0
-	tracking_up       0 1 0
-	tracking_forward  0 0 -1
+    navigation device flystick
+    navigation_position 0 0 0
+    navigation_up       0 1 0
+    navigation_forward  0 0 -1
+    tracking device glasses
+    tracking_position 0 1.78 0
+    tracking_up       0 1 0
+    tracking_forward  0 0 -1
 
 process x-screen-0
-	# display :0.0
-	window wall1l
-		observer default
-		display_screen 0
-		fullscreen true
-		output left qvr-outputplugin-unisiegen /vr/projects/share/vrcalibration.txt
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2.49 0 -0.0771964  -1.5598 0 -1.94244  -2.49 2.6 -0.0771964
-	window wall1r
-		observer default
-		display_screen 1
-		fullscreen true
-		output right qvr-outputplugin-unisiegen /vr/projects/share/vrcalibration.txt
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2.49 0 -0.0771964  -1.5598 0 -1.94244  -2.49 2.6 -0.0771964
-	window wall5l
-		observer default
-		display_screen 2
-		fullscreen true
-		output left qvr-outputplugin-unisiegen /vr/projects/share/vrcalibration.txt
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2.49 0 -0.0771964  0.7 0 -0.0771964  -2.49 0 -2.4912
+    # display :0.0
+    window wall1l
+        observer default
+        display_screen 0
+        fullscreen true
+        output left qvr-outputplugin-unisiegen /vr/projects/share/vrcalibration.txt
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2.49 0 -0.0771964  -1.5598 0 -1.94244  -2.49 2.6 -0.0771964
+    window wall1r
+        observer default
+        display_screen 1
+        fullscreen true
+        output right qvr-outputplugin-unisiegen /vr/projects/share/vrcalibration.txt
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2.49 0 -0.0771964  -1.5598 0 -1.94244  -2.49 2.6 -0.0771964
+    window wall5l
+        observer default
+        display_screen 2
+        fullscreen true
+        output left qvr-outputplugin-unisiegen /vr/projects/share/vrcalibration.txt
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2.49 0 -0.0771964  0.7 0 -0.0771964  -2.49 0 -2.4912
 
 process x-screen-1
-	display :0.1
-	window wall2l
-		observer default
-		display_screen 0
-		fullscreen true
-		output left qvr-outputplugin-unisiegen /vr/projects/share/vrcalibration.txt
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -1.78883 0 -1.73382  0.1549 0 -2.48638  -1.78883 2.6 -1.73382
-	window wall2r
-		observer default
-		display_screen 4
-		fullscreen true
-		output right qvr-outputplugin-unisiegen /vr/projects/share/vrcalibration.txt
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -1.78883 0 -1.73382  0.1549 0 -2.48638  -1.78883 2.6 -1.73382
-	window wall5r
-		observer default
-		display_screen 5
-		fullscreen true
-		output right qvr-outputplugin-unisiegen /vr/projects/share/vrcalibration.txt
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2.49 0 -0.0771964  0.7 0 -0.0771964  -2.49 0 -2.4912
+    display :0.1
+    window wall2l
+        observer default
+        display_screen 0
+        fullscreen true
+        output left qvr-outputplugin-unisiegen /vr/projects/share/vrcalibration.txt
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -1.78883 0 -1.73382  0.1549 0 -2.48638  -1.78883 2.6 -1.73382
+    window wall2r
+        observer default
+        display_screen 4
+        fullscreen true
+        output right qvr-outputplugin-unisiegen /vr/projects/share/vrcalibration.txt
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -1.78883 0 -1.73382  0.1549 0 -2.48638  -1.78883 2.6 -1.73382
+    window wall5r
+        observer default
+        display_screen 5
+        fullscreen true
+        output right qvr-outputplugin-unisiegen /vr/projects/share/vrcalibration.txt
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2.49 0 -0.0771964  0.7 0 -0.0771964  -2.49 0 -2.4912
 
 process x-screen-2
-	display :0.2
-	window wall3l
-		observer default
-		display_screen 0
-		fullscreen true
-		output left qvr-outputplugin-unisiegen /vr/projects/share/vrcalibration.txt
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -0.1549 0 -2.48638  1.78883 0 -1.73382  -0.1549 2.6 -2.48638
-	window wall3r
-		observer default
-		display_screen 7
-		fullscreen true
-		output right qvr-outputplugin-unisiegen /vr/projects/share/vrcalibration.txt
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -0.1549 0 -2.48638  1.78883 0 -1.73382  -0.1549 2.6 -2.48638
-	window wall6l
-		observer default
-		display_screen 8
-		fullscreen true
-		output left qvr-outputplugin-unisiegen /vr/projects/share/vrcalibration.txt
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -0.7 0 -0.0771964  2.49 0 -0.0771964  -0.7 0 -2.4912
+    display :0.2
+    window wall3l
+        observer default
+        display_screen 0
+        fullscreen true
+        output left qvr-outputplugin-unisiegen /vr/projects/share/vrcalibration.txt
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -0.1549 0 -2.48638  1.78883 0 -1.73382  -0.1549 2.6 -2.48638
+    window wall3r
+        observer default
+        display_screen 7
+        fullscreen true
+        output right qvr-outputplugin-unisiegen /vr/projects/share/vrcalibration.txt
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -0.1549 0 -2.48638  1.78883 0 -1.73382  -0.1549 2.6 -2.48638
+    window wall6l
+        observer default
+        display_screen 8
+        fullscreen true
+        output left qvr-outputplugin-unisiegen /vr/projects/share/vrcalibration.txt
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -0.7 0 -0.0771964  2.49 0 -0.0771964  -0.7 0 -2.4912
 
 process x-screen-3
-	display :0.3
-	window wall4l
-		observer default
-		display_screen 0
-		fullscreen true
-		output left qvr-outputplugin-unisiegen /vr/projects/share/vrcalibration.txt
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  1.5598 0 -1.94244  2.49 0 -0.0771964  1.5598 2.6 -1.94244
-	window wall4r
-		observer default
-		display_screen 10
-		fullscreen true
-		output right qvr-outputplugin-unisiegen /vr/projects/share/vrcalibration.txt
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  1.5598 0 -1.94244  2.49 0 -0.0771964  1.5598 2.6 -1.94244
-	window wall6r
-		observer default
-		display_screen 12
-		fullscreen true
-		output right qvr-outputplugin-unisiegen /vr/projects/share/vrcalibration.txt
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -0.7 0 -0.0771964  2.49 0 -0.0771964  -0.7 0 -2.4912
-	window control
-		observer default
-		display_screen 11
-		fullscreen false
-		size 1000 500
-		position 200 275
-		output center
-		render_resolution_factor 0.5
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2.5 0 -2.5  +2.5 0 -2.5  -2.5 +2.5 -2.5
+    display :0.3
+    window wall4l
+        observer default
+        display_screen 0
+        fullscreen true
+        output left qvr-outputplugin-unisiegen /vr/projects/share/vrcalibration.txt
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  1.5598 0 -1.94244  2.49 0 -0.0771964  1.5598 2.6 -1.94244
+    window wall4r
+        observer default
+        display_screen 10
+        fullscreen true
+        output right qvr-outputplugin-unisiegen /vr/projects/share/vrcalibration.txt
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  1.5598 0 -1.94244  2.49 0 -0.0771964  1.5598 2.6 -1.94244
+    window wall6r
+        observer default
+        display_screen 12
+        fullscreen true
+        output right qvr-outputplugin-unisiegen /vr/projects/share/vrcalibration.txt
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -0.7 0 -0.0771964  2.49 0 -0.0771964  -0.7 0 -2.4912
+    window control
+        observer default
+        display_screen 11
+        fullscreen false
+        size 1000 500
+        position 200 275
+        output center
+        render_resolution_factor 0.5
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2.5 0 -2.5  +2.5 0 -2.5  -2.5 +2.5 -2.5

@@ -1,23 +1,23 @@
 observer o0
-	navigation wasdqe
-	tracking custom
+    navigation wasdqe
+    tracking custom
 
 process master
-	window 0
-		observer o0
-		position 0 100
-		size 450 450
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  0 -1 -10  2 -1 -10  0 +1 -10
+    window 0
+        observer o0
+        position 0 100
+        size 450 450
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  0 -1 -10  2 -1 -10  0 +1 -10
 
 process slave
-	launcher ssh wile env LD_LIBRARY_PATH=/home/lambers/install/lib
-	display :0.0
-	window 1
-		observer o0
-		position 510 100
-		size 600 600
-		screen_is_fixed_to_observer false
-		screen_is_given_by_center false
-		screen_wall  -2 -1 -10  0 -1 -10  -2 +1 -10
+    launcher ssh wile env LD_LIBRARY_PATH=/home/lambers/install/lib
+    display :0.0
+    window 1
+        observer o0
+        position 510 100
+        size 600 600
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall  -2 -1 -10  0 -1 -10  -2 +1 -10
