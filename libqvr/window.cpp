@@ -169,14 +169,19 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext,
         setMinimumSize(QSize(64, 64));
         if (config().outputMode() == QVR_Output_Stereo_Oculus) {
 #ifdef HAVE_OCULUS
-            unsigned int distortionCaps = ovrDistortionCap_TimeWarp | ovrDistortionCap_Overdrive
-                | ovrDistortionCap_HqDistortion | ovrDistortionCap_LinuxDevFullscreen;
+            unsigned int distortionCaps =
+                ovrDistortionCap_TimeWarp
+                | ovrDistortionCap_Vignette
+                | ovrDistortionCap_NoRestore
+                | ovrDistortionCap_Overdrive
+                | ovrDistortionCap_HqDistortion
+                | ovrDistortionCap_LinuxDevFullscreen;
             ovrGLConfig glconf;
             std::memset(&glconf, 0, sizeof(glconf));
             glconf.OGL.Header.API = ovrRenderAPI_OpenGL;
             glconf.OGL.Header.BackBufferSize.w = QVROculus->Resolution.w;
             glconf.OGL.Header.BackBufferSize.h = QVROculus->Resolution.h;
-            glconf.OGL.Header.Multisample = 0;
+            glconf.OGL.Header.Multisample = 1;
             _winContext->makeCurrent(this);
             ovrHmd_ConfigureRendering(QVROculus,
                     reinterpret_cast<ovrRenderAPIConfig*>(&glconf),
@@ -699,7 +704,11 @@ void QVRWindow::renderOutput()
     Q_ASSERT(QThread::currentThread() == _thread);
     Q_ASSERT(QOpenGLContext::currentContext() == _winContext);
 
-    if (config().outputPlugin().isEmpty()) {
+    if (!config().outputPlugin().isEmpty()) {
+        _outputPluginFunc(this, _renderContext, _textures[0], _textures[1]);
+    } else if (config().outputMode() == QVR_Output_Stereo_Oculus) {
+        // nothing to do here: the Oculus SDK will render from the textures
+    } else {
         glDisable(GL_DEPTH_TEST);
         glUseProgram(_outputPrg->programId());
         glActiveTexture(GL_TEXTURE0);
@@ -732,8 +741,6 @@ void QVRWindow::renderOutput()
             glViewport(0, 0, width(), height());
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         }
-    } else {
-        _outputPluginFunc(this, _renderContext, _textures[0], _textures[1]);
     }
 }
 
