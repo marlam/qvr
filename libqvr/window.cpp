@@ -627,13 +627,21 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
         if (_textures[i] == 0) {
             glGenTextures(1, &(_textures[i]));
             glBindTexture(GL_TEXTURE_2D, _textures[i]);
-            if (std::abs(config().renderResolutionFactor() - 1.0f) <= 0.0f) {
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            } else {
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            bool wantBilinearInterpolation = true;
+            if (std::abs(config().renderResolutionFactor() - 1.0f) <= 0.0f
+                    && (config().outputMode() == QVR_Output_Center
+                        || config().outputMode() == QVR_Output_Left
+                        || config().outputMode() == QVR_Output_Right
+                        || config().outputMode() == QVR_Output_Stereo_GL
+                        || config().outputMode() == QVR_Output_Stereo_Red_Cyan
+                        || config().outputMode() == QVR_Output_Stereo_Green_Magenta
+                        || config().outputMode() == QVR_Output_Stereo_Amber_Blue)) {
+                wantBilinearInterpolation = false;
             }
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, wantBilinearInterpolation ? GL_LINEAR : GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, wantBilinearInterpolation ? GL_LINEAR : GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         } else {
             glBindTexture(GL_TEXTURE_2D, _textures[i]);
             glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &tw);
