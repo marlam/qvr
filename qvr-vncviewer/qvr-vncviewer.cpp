@@ -256,7 +256,7 @@ void QVRVNCViewer::deserializeDynamicData(QDataStream& ds)
     }
 }
 
-void QVRVNCViewer::update(const QList<QVRDevice*>&)
+void QVRVNCViewer::update(const QList<const QVRDevice*>&)
 {
     _vncDirtyRectangles.clear();
     int i = WaitForMessage(_vncClient, 1);

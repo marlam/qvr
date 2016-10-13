@@ -283,6 +283,7 @@ private:
     QVRApp* _app;
     QVRConfig* _config;
     QList<QVRDevice*> _devices;
+    QList<const QVRDevice*> _constDevices; // identical content as _devices, but const; C++ cannot cast
     QList<QVRObserver*> _observers;
     QList<int> _observerNavigationDevices;
     QList<int> _observerTrackingDevices0;

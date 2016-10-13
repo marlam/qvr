@@ -140,7 +140,7 @@ void QVRMinimalExample::render(QVRWindow* /* w */,
     glDrawElements(GL_TRIANGLES, _vaoIndices, GL_UNSIGNED_INT, 0);
 }
 
-void QVRMinimalExample::update(const QList<QVRDevice*>&)
+void QVRMinimalExample::update(const QList<const QVRDevice*>&)
 {
     float seconds = _timer.elapsed() / 1000.0f;
     _rotationAngle = seconds * 20.0f;

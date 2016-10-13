@@ -99,12 +99,14 @@ public:
      * \brief Update scene state.
      * \param devices   A list of Virtual Reality interaction devices
      *
-     * Update scene state, e.g. for animations. The \a devices list is only used
-     * if you implement your own interaction scheme based on VR interaction devices.
+     * Update scene state, e.g. for animations.
+     *
+     * The \a devices list can be used to implement your own interaction schemes
+     * based on VR interaction devices. You can safely ignore it.
      *
      * Called once before each frame on the master process.
      */
-    virtual void update(const QList<QVRDevice*>& devices) { Q_UNUSED(devices); }
+    virtual void update(const QList<const QVRDevice*>& devices) { Q_UNUSED(devices); }
 
     /*!
      * \brief Set the near and far clipping plane.
