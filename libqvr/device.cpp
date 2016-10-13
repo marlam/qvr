@@ -320,7 +320,9 @@ void QVRDevice::update()
                 p = &(QVROculusRenderPoses[1]);
             else
                 p = &(QVROculusTrackingState.HeadPose.ThePose);
-            _position = QVector3D(p->Position.x, p->Position.y, p->Position.z);
+            // Note the position Y offset that moves the sitting user's eyes to a default standing height in
+            // the virtual world.
+            _position = QVector3D(p->Position.x, p->Position.y + QVRObserverConfig::defaultEyeHeight, p->Position.z);
             _orientation = QQuaternion(p->Orientation.w, p->Orientation.x, p->Orientation.y, p->Orientation.z);
         }
 #endif
@@ -350,6 +352,12 @@ void QVRDevice::update()
                 ok = (osvrGetPoseState(_osvrTrackingInterface, &timestamp, &pose) == OSVR_RETURN_SUCCESS);
             }
             if (ok) {
+                if (_osvrTrackedEye >= 0 && pose.translation.data[1] < 1.1f) {
+                    // Assume the user wears a HMD and sits (i.e. no room-scale VR).
+                    // In this case, we apply an offset to a default standing observer,
+                    // just as we do for Oculus Rift.
+                    pose.translation.data[1] += QVRObserverConfig::defaultEyeHeight;
+                }
                 _position = QVector3D(pose.translation.data[0], pose.translation.data[1],
                         pose.translation.data[2]);
                 _orientation = QQuaternion(pose.rotation.data[0], pose.rotation.data[1],
