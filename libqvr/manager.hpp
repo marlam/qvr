@@ -211,8 +211,10 @@ void QVRAttemptOculusInitialization();
 #ifdef HAVE_OSVR
 # include <osvr/ClientKit/DisplayC.h>
 # include <osvr/ClientKit/ContextC.h>
+# include <osvr/RenderKit/RenderManager.h>
 extern OSVR_ClientContext QVROsvrClientContext;
 extern OSVR_DisplayConfig QVROsvrDisplayConfig;
+extern osvr::renderkit::RenderManager* QVROsvrRenderManager;
 void QVRAttemptOSVRInitialization();
 #endif
 

@@ -31,8 +31,9 @@ find_package(Qt5Network 5.5.0 REQUIRED)
 
 # Optional libraries
 find_package(VRPN)
-find_package(OSVR)
 find_package(Oculus)
+find_package(OSVRCore)
+find_package(OSVRRenderManager)
 
 # The QVR library
 qt5_add_resources(QVRRESOURCES qvr.qrc)
@@ -58,15 +59,17 @@ if(VRPN_FOUND)
     include_directories(${VRPN_INCLUDE_DIRS})
     target_link_libraries(libqvr ${VRPN_LIBRARIES})
 endif()
-if(OSVR_FOUND)
-    add_definitions(-DHAVE_OSVR)
-    include_directories(${OSVR_INCLUDE_DIRS})
-    target_link_libraries(libqvr ${OSVR_LIBRARIES})
-endif()
 if(OCULUS_FOUND)
     add_definitions(-DHAVE_OCULUS)
     include_directories(${OCULUS_INCLUDE_DIRS})
     target_link_libraries(libqvr ${OCULUS_LIBRARIES})
+endif()
+if(OSVRCORE_FOUND)
+    if (OSVRRENDERMANAGER_FOUND)
+        add_definitions(-DHAVE_OSVR)
+        include_directories(${OSVRCORE_INCLUDE_DIRS} ${OSVRRENDERMANAGER_INCLUDE_DIRS})
+        target_link_libraries(libqvr ${OSVRCORE_LIBRARIES} ${OSVRRENDERMANAGER_LIBRARIES})
+    endif()
 endif()
 install(TARGETS libqvr
     RUNTIME DESTINATION bin

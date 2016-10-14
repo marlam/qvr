@@ -44,6 +44,7 @@
 
 #ifdef HAVE_OSVR
 # include <osvr/ClientKit/ServerAutoStartC.h>
+# include <osvr/RenderKit/GraphicsLibraryOpenGL.h>
 #endif
 
 QVRManager* manager = NULL; // singleton instance
@@ -88,8 +89,35 @@ void QVRAttemptOculusInitialization()
 }
 #endif
 #ifdef HAVE_OSVR
-OSVR_ClientContext QVROsvrClientContext = NULL; // singleton instance
-OSVR_DisplayConfig QVROsvrDisplayConfig = NULL; // singleton instance
+OSVR_ClientContext QVROsvrClientContext = NULL;
+OSVR_DisplayConfig QVROsvrDisplayConfig = NULL;
+osvr::renderkit::RenderManager* QVROsvrRenderManager = NULL;
+// to prevent the OSVR Render Manager from getting in our way, we have to make
+// it use a dummy toolkit that does absolutely nothing.
+static void osvrToolkitCreate(void*) {}
+static void osvrToolkitDestroy(void*) {}
+static OSVR_CBool osvrToolkitAddOpenGLContext(void*, const OSVR_OpenGLContextParams*) { return true; }
+static OSVR_CBool osvrToolkitRemoveOpenGLContexts(void*) { return true; }
+static OSVR_CBool osvrToolkitMakeCurrent(void*, size_t) { return true; }
+static OSVR_CBool osvrToolkitSwapBuffers(void*, size_t) { return true; }
+static OSVR_CBool osvrToolkitSetVerticalSync(void*, OSVR_CBool) { return true; }
+static OSVR_CBool osvrToolkitHandleEvents(void*) { return true; }
+static OSVR_CBool osvrToolkitGetDisplayFrameBuffer(void*, size_t, GLuint* fb) { *fb = 0; return true; }
+static OSVR_CBool osvrToolkitGetDisplaySizeOverride(void*, size_t, int*, int*) { return false; }
+static OSVR_OpenGLToolkitFunctions osvrToolkit = {
+    .size = sizeof(OSVR_OpenGLToolkitFunctions),
+    .data = NULL,
+    .create = osvrToolkitCreate,
+    .destroy = osvrToolkitDestroy,
+    .addOpenGLContext = osvrToolkitAddOpenGLContext,
+    .removeOpenGLContexts = osvrToolkitRemoveOpenGLContexts,
+    .makeCurrent = osvrToolkitMakeCurrent,
+    .swapBuffers = osvrToolkitSwapBuffers,
+    .setVerticalSync = osvrToolkitSetVerticalSync,
+    .handleEvents = osvrToolkitHandleEvents,
+    .getDisplayFrameBuffer = osvrToolkitGetDisplayFrameBuffer,
+    .getDisplaySizeOverride = osvrToolkitGetDisplaySizeOverride
+};
 void QVRAttemptOSVRInitialization()
 {
     bool osvr = false;
@@ -123,7 +151,21 @@ void QVRAttemptOSVRInitialization()
                         QVR_INFO("OSVR: more than one surface per eye; QVR currently does not handle this");
                     } else {
                         QVR_INFO("OSVR: display config is usable");
-                        osvr = true;
+                        osvr::renderkit::GraphicsLibrary qvrGraphicsLibrary;
+                        qvrGraphicsLibrary.OpenGL = new osvr::renderkit::GraphicsLibraryOpenGL;
+                        qvrGraphicsLibrary.OpenGL->toolkit = &osvrToolkit;
+                        QVROsvrRenderManager = osvr::renderkit::createRenderManager(
+                                QVROsvrClientContext, "OpenGL", qvrGraphicsLibrary);
+                        if (!QVROsvrRenderManager) {
+                            QVR_INFO("OSVR: cannot create render manager");
+                        } else if (!QVROsvrRenderManager->doingOkay()) {
+                            QVR_INFO("OSVR: created render manager does not work");
+                            delete QVROsvrRenderManager;
+                            QVROsvrRenderManager = NULL;
+                        } else {
+                            QVR_INFO("OSVR: render manager works");
+                            osvr = true;
+                        }
                     }
                 }
             }
@@ -329,6 +371,8 @@ QVRManager::~QVRManager()
 #endif
 #ifdef HAVE_OSVR
     if (QVROsvrClientContext) {
+        delete QVROsvrRenderManager;
+        QVROsvrRenderManager = NULL;
         osvrClientShutdown(QVROsvrClientContext);
         QVROsvrDisplayConfig = NULL;
         QVROsvrClientContext = NULL;

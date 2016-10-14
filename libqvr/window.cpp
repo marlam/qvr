@@ -41,6 +41,9 @@
 #include "logging.hpp"
 #include "observer.hpp"
 
+#ifdef HAVE_OSVR
+# include <osvr/RenderKit/GraphicsLibraryOpenGL.h>
+#endif
 
 class QVRWindowThread : public QThread
 {
@@ -71,18 +74,12 @@ QVRWindowThread::QVRWindowThread(QVRWindow* window) :
 
 void QVRWindowThread::run()
 {
-    bool oculus = false;
-#ifdef HAVE_OCULUS
-    oculus = _window->config().outputMode() == QVR_Output_Stereo_Oculus;
-#endif
     for (;;) {
         _window->winContext()->makeCurrent(_window);
         // Start rendering
         renderingMutex.lock();
         if (!exitWanted) {
-            if (!oculus) {
-                _window->renderOutput();
-            }
+            _window->renderOutput();
         }
         renderingMutex.unlock();
         renderingFinished = true;
@@ -91,10 +88,17 @@ void QVRWindowThread::run()
         // Swap buffers
         swapbuffersMutex.lock();
         if (!exitWanted) {
-            if (oculus) {
+            if (_window->config().outputMode() == QVR_Output_Stereo_Oculus) {
 #ifdef HAVE_OCULUS
                 ovrHmd_EndFrame(QVROculus, QVROculusRenderPoses,
                         reinterpret_cast<ovrTexture*>(oculusEyeTextures));
+#endif
+            } else if (_window->config().outputMode() == QVR_Output_OSVR) {
+#ifdef HAVE_OSVR
+                QVROsvrRenderManager->PresentRenderBuffers(
+                        _window->_osvrRenderBuffers,
+                        _window->_osvrRenderInfo);
+                _window->winContext()->swapBuffers(_window);
 #endif
             } else {
                 _window->winContext()->swapBuffers(_window);
@@ -220,6 +224,11 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext,
             geom.setHeight(h);
             QVR_DEBUG("      geometry: %d %d %dx%d", geom.x(), geom.y(), geom.width(), geom.height());
             setGeometry(geom);
+            _winContext->makeCurrent(this);
+            osvr::renderkit::RenderManager::OpenResults r = QVROsvrRenderManager->OpenDisplay();
+            if (r.status == osvr::renderkit::RenderManager::OpenStatus::FAILURE)
+                QVR_FATAL("OSVR: render manager failed to open display");
+            _winContext->doneCurrent();
             setCursor(Qt::BlankCursor);
             show();
 #endif
@@ -627,6 +636,11 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
     GLint textureBinding2dBak;
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &textureBinding2dBak);
 
+#ifdef HAVE_OSVR
+    bool texturesNeedRegistering = false;
+    _osvrRenderInfo = QVROsvrRenderManager->GetRenderInfo();
+    Q_ASSERT(_osvrRenderInfo.size() == static_cast<unsigned int>(_renderContext.viewPasses()));
+#endif
     for (int i = 0; i < _renderContext.viewPasses(); i++) {
         int tw = -1, th = -1;
         if (_textures[i] == 0) {
@@ -647,6 +661,9 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, wantBilinearInterpolation ? GL_LINEAR : GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+#ifdef HAVE_OSVR
+            texturesNeedRegistering = true;
+#endif
         } else {
             glBindTexture(GL_TEXTURE_2D, _textures[i]);
             glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &tw);
@@ -674,6 +691,11 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
             OSVR_ViewportDimension vpl, vpb, vpw, vph;
             osvrClientGetRelativeViewportForViewerEyeSurface(
                     QVROsvrDisplayConfig, 0, i, 0, &vpl, &vpb, &vpw, &vph);
+            // TODO: use _osvrRenderInfo to determine the texture sizes?
+            // The render manager might want us to use a different texture size
+            // than plain OSVR because of distortion correction effects.
+            // However, currently the viewport fields in _osvrRenderInfo
+            // seem to contain random garbage (2016-10-14).
             w = vpw * config().renderResolutionFactor();
             h = vph * config().renderResolutionFactor();
 #endif
@@ -684,12 +706,30 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
         if (tw != w || th != h) {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0,
                     GL_BGRA, GL_UNSIGNED_BYTE, NULL);
+#ifdef HAVE_OSVR
+            texturesNeedRegistering = true;
+#endif
         }
     }
     if (_renderContext.viewPasses() == 1 && _textures[1] != 0) {
         glDeleteTextures(1, &(_textures[1]));
         _textures[1] = 0;
     }
+#ifdef HAVE_OSVR
+    if (texturesNeedRegistering) {
+        _osvrRenderBuffers.clear();
+        for (int i = 0; i < _renderContext.viewPasses(); i++) {
+            osvr::renderkit::RenderBuffer rb;
+            rb.OpenGL = new osvr::renderkit::RenderBufferOpenGL;
+            rb.OpenGL->colorBufferName = _textures[i];
+            rb.OpenGL->depthStencilBufferName = 0;
+            _osvrRenderBuffers.push_back(rb);
+        }
+        if (!QVROsvrRenderManager->RegisterRenderBuffers(_osvrRenderBuffers)) {
+            QVR_FATAL("OSVR: cannot register render buffers");
+        }
+    }
+#endif
     textures[0] = _textures[0];
     textures[1] = _textures[1];
 
@@ -708,6 +748,8 @@ void QVRWindow::renderOutput()
         _outputPluginFunc(this, _renderContext, _textures[0], _textures[1]);
     } else if (config().outputMode() == QVR_Output_Stereo_Oculus) {
         // nothing to do here: the Oculus SDK will render from the textures
+    } else if (config().outputMode() == QVR_Output_OSVR) {
+        // nothing to do here: the OSVR Render Manager will render from the textures
     } else {
         glDisable(GL_DEPTH_TEST);
         glUseProgram(_outputPrg->programId());
@@ -717,30 +759,13 @@ void QVRWindow::renderOutput()
         glUniform1i(glGetUniformLocation(_outputPrg->programId(), "tex_r"), 0);
         glUniform1i(glGetUniformLocation(_outputPrg->programId(), "output_mode"), config().outputMode());
         glBindVertexArray(_outputQuadVao);
-        if (config().outputMode() == QVR_Output_OSVR) {
-#ifdef HAVE_OSVR
-            OSVR_ViewportDimension vpl, vpb, vpw, vph;
-            osvrClientGetRelativeViewportForViewerEyeSurface(
-                    QVROsvrDisplayConfig, 0, 0, 0, &vpl, &vpb, &vpw, &vph);
-            glViewport(vpl, vpb, vpw, vph);
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-            if (_textures[1] != 0) {
-                glBindTexture(GL_TEXTURE_2D, _textures[1]);
-                osvrClientGetRelativeViewportForViewerEyeSurface(
-                        QVROsvrDisplayConfig, 0, 1, 0, &vpl, &vpb, &vpw, &vph);
-                glViewport(vpl, vpb, vpw, vph);
-                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-            }
-#endif
-        } else {
-            if (_textures[1] != 0) {
-                glActiveTexture(GL_TEXTURE1);
-                glBindTexture(GL_TEXTURE_2D, _textures[1]);
-                glUniform1i(glGetUniformLocation(_outputPrg->programId(), "tex_r"), 1);
-            }
-            glViewport(0, 0, width(), height());
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        if (_textures[1] != 0) {
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, _textures[1]);
+            glUniform1i(glGetUniformLocation(_outputPrg->programId(), "tex_r"), 1);
         }
+        glViewport(0, 0, width(), height());
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
 }
 
