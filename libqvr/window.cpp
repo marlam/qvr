@@ -77,9 +77,10 @@ QVRWindowThread::QVRWindowThread(QVRWindow* window) :
 void QVRWindowThread::run()
 {
 #ifdef HAVE_OSVR
-    OSVR_RenderParams osvrDefaultRenderParams;
-    osvrRenderManagerGetDefaultRenderParams(&osvrDefaultRenderParams);
     const OSVR_ViewportDescription osvrDefaultViewport = { .left = 0, .lower = 0, .width = 1, .height = 1 };
+    OSVR_RenderParams osvrDefaultRenderParams;
+    if (_window->config().outputMode() == QVR_Output_OSVR)
+        osvrRenderManagerGetDefaultRenderParams(&osvrDefaultRenderParams);
 #endif
     for (;;) {
         _window->winContext()->makeCurrent(_window);
@@ -656,13 +657,15 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
 
 #ifdef HAVE_OSVR
     bool texturesNeedRegistering = false;
-    OSVR_RenderParams osvrRenderParams;
-    osvrRenderManagerGetDefaultRenderParams(&osvrRenderParams);
     OSVR_RenderInfoCollection osvrRenderInfoCollection;
-    osvrRenderManagerGetRenderInfoCollection(QVROsvrRenderManager, osvrRenderParams, &osvrRenderInfoCollection);
-    OSVR_RenderInfoCount osvrRenderInfoCount;
-    osvrRenderManagerGetNumRenderInfoInCollection(osvrRenderInfoCollection, &osvrRenderInfoCount);
-    Q_ASSERT(osvrRenderInfoCount == static_cast<unsigned int>(_renderContext.viewPasses()));
+    if (config().outputMode() == QVR_Output_OSVR) {
+        OSVR_RenderParams osvrRenderParams;
+        osvrRenderManagerGetDefaultRenderParams(&osvrRenderParams);
+        osvrRenderManagerGetRenderInfoCollection(QVROsvrRenderManager, osvrRenderParams, &osvrRenderInfoCollection);
+        OSVR_RenderInfoCount osvrRenderInfoCount;
+        osvrRenderManagerGetNumRenderInfoInCollection(osvrRenderInfoCollection, &osvrRenderInfoCount);
+        Q_ASSERT(osvrRenderInfoCount == static_cast<unsigned int>(_renderContext.viewPasses()));
+    }
 #endif
     for (int i = 0; i < _renderContext.viewPasses(); i++) {
         int tw = -1, th = -1;
@@ -741,18 +744,20 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
         _textures[1] = 0;
     }
 #ifdef HAVE_OSVR
-    osvrRenderManagerReleaseRenderInfoCollection(osvrRenderInfoCollection);
-    if (texturesNeedRegistering) {
-        OSVR_RenderManagerRegisterBufferState s;
-        osvrRenderManagerStartRegisterRenderBuffers(&s);
-        _thread->osvrRenderBufferOpenGL[1].colorBufferName = 0;
-        _thread->osvrRenderBufferOpenGL[1].depthStencilBufferName = 0;
-        for (int i = 0; i < _renderContext.viewPasses(); i++) {
-            _thread->osvrRenderBufferOpenGL[i].colorBufferName = _textures[i];
-            _thread->osvrRenderBufferOpenGL[i].depthStencilBufferName = 0;
-            osvrRenderManagerRegisterRenderBufferOpenGL(s, _thread->osvrRenderBufferOpenGL[i]);
+    if (config().outputMode() == QVR_Output_OSVR) {
+        osvrRenderManagerReleaseRenderInfoCollection(osvrRenderInfoCollection);
+        if (texturesNeedRegistering) {
+            OSVR_RenderManagerRegisterBufferState s;
+            osvrRenderManagerStartRegisterRenderBuffers(&s);
+            _thread->osvrRenderBufferOpenGL[1].colorBufferName = 0;
+            _thread->osvrRenderBufferOpenGL[1].depthStencilBufferName = 0;
+            for (int i = 0; i < _renderContext.viewPasses(); i++) {
+                _thread->osvrRenderBufferOpenGL[i].colorBufferName = _textures[i];
+                _thread->osvrRenderBufferOpenGL[i].depthStencilBufferName = 0;
+                osvrRenderManagerRegisterRenderBufferOpenGL(s, _thread->osvrRenderBufferOpenGL[i]);
+            }
+            osvrRenderManagerFinishRegisterRenderBuffers(QVROsvrRenderManager, s, false);
         }
-        osvrRenderManagerFinishRegisterRenderBuffers(QVROsvrRenderManager, s, false);
     }
 #endif
     textures[0] = _textures[0];
