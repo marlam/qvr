@@ -45,6 +45,7 @@ add_library(libqvr SHARED
     window.hpp window.cpp
     process.hpp process.cpp
     ipc.hpp ipc.cpp
+    internalglobals.hpp internalglobals.cpp
     logging.hpp logging.cpp
     event.hpp event.cpp
     rendercontext.hpp rendercontext.cpp

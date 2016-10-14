@@ -29,6 +29,7 @@
 #include "config.hpp"
 #include "manager.hpp"
 #include "logging.hpp"
+#include "internalglobals.hpp"
 
 
 QVRDeviceConfig::QVRDeviceConfig() :

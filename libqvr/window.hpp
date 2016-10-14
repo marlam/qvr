@@ -30,10 +30,6 @@
 #include "config.hpp"
 #include "rendercontext.hpp"
 
-#ifdef HAVE_OSVR
-# include <osvr/RenderKit/RenderManagerOpenGLC.h>
-#endif
-
 class QVRObserver;
 class QVRWindowThread;
 class QOpenGLShaderProgram;
@@ -82,11 +78,6 @@ private:
     void (*_outputPluginFunc)(QVRWindow*, const QVRRenderContext&, unsigned int, unsigned int);
     QOpenGLContext* _winContext;
     QVRRenderContext _renderContext;
-
-#ifdef HAVE_OSVR
-    OSVR_RenderInfoOpenGL _osvrRenderInfoOpenGL[2];
-    OSVR_RenderBufferOpenGL _osvrRenderBufferOpenGL[2];
-#endif
 
     bool isMaster() const;
     void screenWall(QVector3D& cornerBottomLeft, QVector3D& cornerBottomRight, QVector3D& cornerTopLeft);

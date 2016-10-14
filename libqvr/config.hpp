@@ -40,10 +40,10 @@ typedef enum {
     QVR_Device_Tracking_None,
     /*! \brief A untracked device with a static position and orientation. */
     QVR_Device_Tracking_Static,
-    /*! \brief A device with position and orientation tracked via Oculus Rift. */
-    QVR_Device_Tracking_Oculus,
     /*! \brief A device with position and orientation tracked via <a href="https://github.com/vrpn/vrpn/wiki">VRPN</a>. */
     QVR_Device_Tracking_VRPN,
+    /*! \brief A device with position and orientation tracked via Oculus Rift. */
+    QVR_Device_Tracking_Oculus,
     /*! \brief A device with position and orientation tracked via <a href="http://www.osvr.org/">OSVR</a>. */
     QVR_Device_Tracking_OSVR,
 } QVRDeviceTrackingType;

@@ -29,18 +29,11 @@
 #include <QMatrix4x4>
 #include <QQuaternion>
 
-#ifdef HAVE_VRPN
-# include <vrpn_Tracker.h>
-# include <vrpn_Analog.h>
-# include <vrpn_Button.h>
-#endif
-#ifdef HAVE_OSVR
-# include <osvr/Util/ClientOpaqueTypesC.h>
-#endif
-
 #include "config.hpp"
 
 class QDataStream;
+
+struct QVRDeviceInternals;
 
 /*!
  * \brief Device for interaction purposes
@@ -65,31 +58,7 @@ private:
     QVector<bool> _buttons;
     QVector<float> _analogs;
 
-#ifdef HAVE_OCULUS
-    int _oculusTrackedEye; // -1 = none, 0 = center/head, 1 = left, 2 = right
-#endif
-#ifdef HAVE_VRPN
-    vrpn_Tracker_Remote* _vrpnTrackerRemote;
-    vrpn_Button_Remote* _vrpnButtonRemote;
-    QVector<int> _vrpnButtons;
-    vrpn_Analog_Remote* _vrpnAnalogRemote;
-    QVector<float> _vrpnAnalogs;
-#endif
-#ifdef HAVE_OSVR
-    int _osvrTrackedEye; // -1 = none, 0 = center, 1 = left, 2 = right
-    OSVR_ClientInterface _osvrTrackingInterface;
-    QVector<OSVR_ClientInterface> _osvrButtonsInterfaces;
-    QVector<OSVR_ClientInterface> _osvrAnalogsInterfaces;
-#endif
-
-    /*! \cond
-     * Used for VRPN-based devices. The user does not need to know about these. */
-#ifdef HAVE_VRPN
-    friend void QVRVrpnTrackerChangeHandler(void* userdata, const vrpn_TRACKERCB info);
-    friend void QVRVrpnButtonChangeHandler(void* userdata, const vrpn_BUTTONCB info);
-    friend void QVRVrpnAnalogChangeHandler(void* userdata, const vrpn_ANALOGCB info);
-#endif
-    /*! \endcond */
+    QVRDeviceInternals* _internals;
 
     friend QDataStream &operator<<(QDataStream& ds, const QVRDevice& d);
     friend QDataStream &operator>>(QDataStream& ds, QVRDevice& d);
@@ -160,7 +129,7 @@ public:
     }
 
     /*! \cond
-     * This function is used internally to update the state of this device. */
+     * These functions are used internally to update the state of this device. */
     void update();
     /*! \endcond */
 };

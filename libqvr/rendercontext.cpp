@@ -24,7 +24,7 @@
 #include <QDataStream>
 
 #include "rendercontext.hpp"
-#include "manager.hpp"
+#include "internalglobals.hpp"
 
 
 QVRRenderContext::QVRRenderContext() :

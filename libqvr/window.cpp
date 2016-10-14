@@ -40,10 +40,8 @@
 #include "manager.hpp"
 #include "logging.hpp"
 #include "observer.hpp"
+#include "internalglobals.hpp"
 
-#ifdef HAVE_OSVR
-# include <osvr/RenderKit/GraphicsLibraryOpenGL.h>
-#endif
 
 class QVRWindowThread : public QThread
 {
@@ -59,6 +57,10 @@ public:
 
 #ifdef HAVE_OCULUS
     ovrGLTexture oculusEyeTextures[2];
+#endif
+#ifdef HAVE_OSVR
+    OSVR_RenderInfoOpenGL osvrRenderInfoOpenGL[2];
+    OSVR_RenderBufferOpenGL osvrRenderBufferOpenGL[2];
 #endif
 
     QVRWindowThread(QVRWindow* window);
@@ -103,13 +105,13 @@ void QVRWindowThread::run()
                 OSVR_RenderManagerPresentState s;
                 osvrRenderManagerStartPresentRenderBuffers(&s);
                 osvrRenderManagerPresentRenderBufferOpenGL(s,
-                        _window->_osvrRenderBufferOpenGL[0],
-                        _window->_osvrRenderInfoOpenGL[0],
+                        osvrRenderBufferOpenGL[0],
+                        osvrRenderInfoOpenGL[0],
                         osvrDefaultViewport);
-                if (_window->_osvrRenderBufferOpenGL[1].colorBufferName != 0) {
+                if (osvrRenderBufferOpenGL[1].colorBufferName != 0) {
                     osvrRenderManagerPresentRenderBufferOpenGL(s,
-                            _window->_osvrRenderBufferOpenGL[1],
-                            _window->_osvrRenderInfoOpenGL[1],
+                            osvrRenderBufferOpenGL[1],
+                            osvrRenderInfoOpenGL[1],
                             osvrDefaultViewport);
                 }
                 osvrRenderManagerFinishPresentRenderBuffers(QVROsvrRenderManager, s, osvrDefaultRenderParams, false);
@@ -715,11 +717,11 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
             w = vpw * config().renderResolutionFactor();
             h = vph * config().renderResolutionFactor();
             osvrRenderManagerGetRenderInfoFromCollectionOpenGL(
-                    osvrRenderInfoCollection, i, &(_osvrRenderInfoOpenGL[i]));
-            // TODO: use _osvrRenderInfoOpenGL to determine the texture sizes?
+                    osvrRenderInfoCollection, i, &(_thread->osvrRenderInfoOpenGL[i]));
+            // TODO: use osvrRenderInfoOpenGL to determine the texture sizes?
             // The render manager might want us to use a different texture size
             // than plain OSVR because of distortion correction effects.
-            // However, currently the viewport fields in _osvrRenderInfoOpenGL
+            // However, currently the viewport fields in osvrRenderInfoOpenGL
             // seem to contain random garbage (2016-10-14).
 #endif
         } else {
@@ -743,12 +745,12 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
     if (texturesNeedRegistering) {
         OSVR_RenderManagerRegisterBufferState s;
         osvrRenderManagerStartRegisterRenderBuffers(&s);
-        _osvrRenderBufferOpenGL[1].colorBufferName = 0;
-        _osvrRenderBufferOpenGL[1].depthStencilBufferName = 0;
+        _thread->osvrRenderBufferOpenGL[1].colorBufferName = 0;
+        _thread->osvrRenderBufferOpenGL[1].depthStencilBufferName = 0;
         for (int i = 0; i < _renderContext.viewPasses(); i++) {
-            _osvrRenderBufferOpenGL[i].colorBufferName = _textures[i];
-            _osvrRenderBufferOpenGL[i].depthStencilBufferName = 0;
-            osvrRenderManagerRegisterRenderBufferOpenGL(s, _osvrRenderBufferOpenGL[i]);
+            _thread->osvrRenderBufferOpenGL[i].colorBufferName = _textures[i];
+            _thread->osvrRenderBufferOpenGL[i].depthStencilBufferName = 0;
+            osvrRenderManagerRegisterRenderBufferOpenGL(s, _thread->osvrRenderBufferOpenGL[i]);
         }
         osvrRenderManagerFinishRegisterRenderBuffers(QVROsvrRenderManager, s, false);
     }

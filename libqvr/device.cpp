@@ -24,71 +24,94 @@
 #include "manager.hpp"
 #include "device.hpp"
 #include "logging.hpp"
+#include "internalglobals.hpp"
 
+#ifdef HAVE_VRPN
+# include <vrpn_Tracker.h>
+# include <vrpn_Analog.h>
+# include <vrpn_Button.h>
+#endif
 #ifdef HAVE_OSVR
 # include <osvr/ClientKit/InterfaceStateC.h>
 # include <osvr/ClientKit/InterfaceC.h>
 #endif
 
 
+struct QVRDeviceInternals {
+#ifdef HAVE_VRPN
+    QVector3D* vrpnPositionPtr; // pointer to _position
+    QQuaternion* vrpnOrientationPtr; // pointer to _orientation
+    QVector<bool>* vrpnButtonsPtr; // pointer to _buttons
+    QVector<float>* vrpnAnalogsPtr; // pointer to _analogs
+    vrpn_Tracker_Remote* vrpnTrackerRemote;
+    vrpn_Button_Remote* vrpnButtonRemote;
+    QVector<int> vrpnButtons;
+    vrpn_Analog_Remote* vrpnAnalogRemote;
+    QVector<float> vrpnAnalogs;
+#endif
+#ifdef HAVE_OCULUS
+    int oculusTrackedEye; // -1 = none, 0 = center/head, 1 = left, 2 = right
+#endif
+#ifdef HAVE_OSVR
+    int osvrTrackedEye; // -1 = none, 0 = center, 1 = left, 2 = right
+    OSVR_ClientInterface osvrTrackingInterface;
+    QVector<OSVR_ClientInterface> osvrButtonsInterfaces;
+    QVector<OSVR_ClientInterface> osvrAnalogsInterfaces;
+#endif
+};
+
+
 #ifdef HAVE_VRPN
 void QVRVrpnTrackerChangeHandler(void* userdata, const vrpn_TRACKERCB info)
 {
-    QVRDevice* d = reinterpret_cast<QVRDevice*>(userdata);
-    d->_position = QVector3D(info.pos[0], info.pos[1], info.pos[2]);
-    d->_orientation = QQuaternion(info.quat[3], info.quat[0], info.quat[1], info.quat[2]);
+    struct QVRDeviceInternals* d = reinterpret_cast<struct QVRDeviceInternals*>(userdata);
+    *(d->vrpnPositionPtr) = QVector3D(info.pos[0], info.pos[1], info.pos[2]);
+    *(d->vrpnOrientationPtr) = QQuaternion(info.quat[3], info.quat[0], info.quat[1], info.quat[2]);
 }
 void QVRVrpnButtonChangeHandler(void* userdata, const vrpn_BUTTONCB info)
 {
-    QVRDevice* d = reinterpret_cast<QVRDevice*>(userdata);
-    for (int i = 0; i < d->_buttons.length(); i++) {
-        if (info.button == d->_vrpnButtons[i])
-            d->_buttons[i] = info.state;
+    struct QVRDeviceInternals* d = reinterpret_cast<struct QVRDeviceInternals*>(userdata);
+    for (int i = 0; i < d->vrpnButtonsPtr->length(); i++) {
+        if (info.button == d->vrpnButtons[i])
+            (*(d->vrpnButtonsPtr))[i] = info.state;
     }
 }
 void QVRVrpnAnalogChangeHandler(void* userdata, const vrpn_ANALOGCB info)
 {
-    QVRDevice* d = reinterpret_cast<QVRDevice*>(userdata);
-    for (int i = 0; i < d->_analogs.length(); i++) {
-        int j = d->_vrpnAnalogs[i];
+    struct QVRDeviceInternals* d = reinterpret_cast<struct QVRDeviceInternals*>(userdata);
+    for (int i = 0; i < d->vrpnAnalogsPtr->length(); i++) {
+        int j = d->vrpnAnalogs[i];
         if (j >= 0 && j < info.num_channel)
-            d->_analogs[i] = info.channel[j];
+            (*(d->vrpnAnalogsPtr))[i] = info.channel[j];
     }
 }
 #endif
 
 
 QVRDevice::QVRDevice() :
-    _index(-1)
+    _index(-1), _internals(NULL)
 {
-#ifdef HAVE_OCULUS
-    _oculusTrackedEye = -1;
-#endif
-#ifdef HAVE_VRPN
-    _vrpnTrackerRemote = NULL;
-    _vrpnAnalogRemote = NULL;
-    _vrpnButtonRemote = NULL;
-#endif
-#ifdef HAVE_OSVR
-    _osvrTrackedEye = -1;
-    _osvrTrackingInterface = NULL;
-#endif
 }
 
 QVRDevice::QVRDevice(int deviceIndex) :
     _index(deviceIndex)
 {
-#ifdef HAVE_OCULUS
-    _oculusTrackedEye = -1;
-#endif
+    _internals = new struct QVRDeviceInternals;
 #ifdef HAVE_VRPN
-    _vrpnTrackerRemote = NULL;
-    _vrpnAnalogRemote = NULL;
-    _vrpnButtonRemote = NULL;
+    _internals->vrpnPositionPtr = &_position;
+    _internals->vrpnOrientationPtr = &_orientation;
+    _internals->vrpnButtonsPtr = &_buttons;
+    _internals->vrpnAnalogsPtr = &_analogs;
+    _internals->vrpnTrackerRemote = NULL;
+    _internals->vrpnAnalogRemote = NULL;
+    _internals->vrpnButtonRemote = NULL;
+#endif
+#ifdef HAVE_OCULUS
+    _internals->oculusTrackedEye = -1;
 #endif
 #ifdef HAVE_OSVR
-    _osvrTrackedEye = -1;
-    _osvrTrackingInterface = NULL;
+    _internals->osvrTrackedEye = -1;
+    _internals->osvrTrackingInterface = NULL;
 #endif
 
     switch (config().trackingType()) {
@@ -103,28 +126,28 @@ QVRDevice::QVRDevice(int deviceIndex) :
                 _orientation = QQuaternion::fromEulerAngles(args[3].toFloat(), args[4].toFloat(), args[5].toFloat());
         }
         break;
-    case QVR_Device_Tracking_Oculus:
-#ifdef HAVE_OCULUS
-        if (QVRManager::processIndex() == config().processIndex()) {
-            QString arg = config().trackingParameters().trimmed();
-            if (arg == "eye-left")
-                _oculusTrackedEye = 1;
-            else if (arg == "eye-right")
-                _oculusTrackedEye = 2;
-            else if (arg == "head")
-                _oculusTrackedEye = 0;
-        }
-#endif
-        break;
     case QVR_Device_Tracking_VRPN:
 #ifdef HAVE_VRPN
         if (QVRManager::processIndex() == config().processIndex()) {
             QStringList args = config().trackingParameters().split(' ', QString::SkipEmptyParts);
             QString name = (args.length() >= 1 ? args[0] : config().trackingParameters());
             int sensor = (args.length() >= 2 ? args[1].toInt() : vrpn_ALL_SENSORS);
-            _vrpnTrackerRemote = new vrpn_Tracker_Remote(qPrintable(name));
+            _internals->vrpnTrackerRemote = new vrpn_Tracker_Remote(qPrintable(name));
             vrpn_System_TextPrinter.set_ostream_to_use(stderr);
-            _vrpnTrackerRemote->register_change_handler(this, QVRVrpnTrackerChangeHandler, sensor);
+            _internals->vrpnTrackerRemote->register_change_handler(this, QVRVrpnTrackerChangeHandler, sensor);
+        }
+#endif
+        break;
+    case QVR_Device_Tracking_Oculus:
+#ifdef HAVE_OCULUS
+        if (QVRManager::processIndex() == config().processIndex()) {
+            QString arg = config().trackingParameters().trimmed();
+            if (arg == "eye-left")
+                _internals->oculusTrackedEye = 1;
+            else if (arg == "eye-right")
+                _internals->oculusTrackedEye = 2;
+            else if (arg == "head")
+                _internals->oculusTrackedEye = 0;
         }
 #endif
         break;
@@ -134,14 +157,14 @@ QVRDevice::QVRDevice(int deviceIndex) :
             Q_ASSERT(QVROsvrClientContext);
             const QString& osvrPath = config().trackingParameters();
             if (osvrPath == "eye-center") {
-                _osvrTrackedEye = 0;
+                _internals->osvrTrackedEye = 0;
             } else if (osvrPath == "eye-left") {
-                _osvrTrackedEye = 1;
+                _internals->osvrTrackedEye = 1;
             } else if (osvrPath == "eye-right") {
-                _osvrTrackedEye = 2;
+                _internals->osvrTrackedEye = 2;
             } else {
-                osvrClientGetInterface(QVROsvrClientContext, qPrintable(osvrPath), &_osvrTrackingInterface);
-                if (!_osvrTrackingInterface) {
+                osvrClientGetInterface(QVROsvrClientContext, qPrintable(osvrPath), &_internals->osvrTrackingInterface);
+                if (!_internals->osvrTrackingInterface) {
                     QVR_WARNING("device %s: OSVR interface path %s does not exist",
                             qPrintable(id()), qPrintable(osvrPath));
                 }
@@ -169,21 +192,21 @@ QVRDevice::QVRDevice(int deviceIndex) :
             QString name = (args.length() >= 1 ? args[0] : config().buttonsParameters());
             if (args.length() > 1) {
                 _buttons.resize(args.length() - 1);
-                _vrpnButtons.resize(_buttons.length());
+                _internals->vrpnButtons.resize(_buttons.length());
                 for (int i = 0; i < _buttons.length(); i++)
-                    _vrpnButtons[i] = args[i + 1].toInt();
+                    _internals->vrpnButtons[i] = args[i + 1].toInt();
             } else {
                 _buttons.resize(32);
-                _vrpnButtons.resize(_buttons.length());
+                _internals->vrpnButtons.resize(_buttons.length());
                 for (int i = 0; i < _buttons.length(); i++)
-                    _vrpnButtons[i] = i;
+                    _internals->vrpnButtons[i] = i;
             }
             for (int i = 0; i < _buttons.length(); i++)
                 _buttons[i] = false;
             if (QVRManager::processIndex() == config().processIndex()) {
-                _vrpnButtonRemote = new vrpn_Button_Remote(qPrintable(name));
+                _internals->vrpnButtonRemote = new vrpn_Button_Remote(qPrintable(name));
                 vrpn_System_TextPrinter.set_ostream_to_use(stderr);
-                _vrpnButtonRemote->register_change_handler(this, QVRVrpnButtonChangeHandler);
+                _internals->vrpnButtonRemote->register_change_handler(this, QVRVrpnButtonChangeHandler);
             }
         }
 #endif
@@ -202,7 +225,7 @@ QVRDevice::QVRDevice(int deviceIndex) :
                         QVR_WARNING("device %s: OSVR interface path %s does not exist",
                                 qPrintable(id()), qPrintable(osvrPath));
                     }
-                    _osvrButtonsInterfaces.append(osvrInterface);
+                    _internals->osvrButtonsInterfaces.append(osvrInterface);
                 }
             }
         }
@@ -228,21 +251,21 @@ QVRDevice::QVRDevice(int deviceIndex) :
             QString name = (args.length() >= 1 ? args[0] : config().analogsParameters());
             if (args.length() > 1) {
                 _analogs.resize(args.length() - 1);
-                _vrpnAnalogs.resize(_analogs.length());
+                _internals->vrpnAnalogs.resize(_analogs.length());
                 for (int i = 0; i < _analogs.length(); i++)
-                    _vrpnAnalogs[i] = args[i + 1].toInt();
+                    _internals->vrpnAnalogs[i] = args[i + 1].toInt();
             } else {
                 _analogs.resize(8);
-                _vrpnAnalogs.resize(_analogs.length());
+                _internals->vrpnAnalogs.resize(_analogs.length());
                 for (int i = 0; i < _analogs.length(); i++)
-                    _vrpnAnalogs[i] = i;
+                    _internals->vrpnAnalogs[i] = i;
             }
             for (int i = 0; i < _analogs.length(); i++)
                 _analogs[i] = 0.0f;
             if (QVRManager::processIndex() == config().processIndex()) {
-                _vrpnAnalogRemote = new vrpn_Analog_Remote(qPrintable(name));
+                _internals->vrpnAnalogRemote = new vrpn_Analog_Remote(qPrintable(name));
                 vrpn_System_TextPrinter.set_ostream_to_use(stderr);
-                _vrpnAnalogRemote->register_change_handler(this, QVRVrpnAnalogChangeHandler);
+                _internals->vrpnAnalogRemote->register_change_handler(this, QVRVrpnAnalogChangeHandler);
             }
         }
 #endif
@@ -261,7 +284,7 @@ QVRDevice::QVRDevice(int deviceIndex) :
                         QVR_WARNING("device %s: OSVR interface path %s does not exist",
                                 qPrintable(id()), qPrintable(osvrPath));
                     }
-                    _osvrAnalogsInterfaces.append(osvrInterface);
+                    _internals->osvrAnalogsInterfaces.append(osvrInterface);
                 }
             }
         }
@@ -272,15 +295,18 @@ QVRDevice::QVRDevice(int deviceIndex) :
 
 QVRDevice::~QVRDevice()
 {
+    if (_internals) {
 #ifdef HAVE_VRPN
-    delete _vrpnTrackerRemote;
-    delete _vrpnAnalogRemote;
-    delete _vrpnButtonRemote;
+        delete _internals->vrpnTrackerRemote;
+        delete _internals->vrpnAnalogRemote;
+        delete _internals->vrpnButtonRemote;
 #endif
 #ifdef HAVE_OSVR
-    // the OSVR interfaces do not need to be cleaned up,
-    // this will happen when the OSVR context exits.
+        // the OSVR interfaces do not need to be cleaned up,
+        // this will happen when the OSVR context exits.
 #endif
+        delete _internals;
+    }
 }
 
 const QVRDevice& QVRDevice::operator=(const QVRDevice& d)
@@ -311,12 +337,20 @@ const QVRDeviceConfig& QVRDevice::config() const
 void QVRDevice::update()
 {
     if (config().processIndex() == QVRManager::processIndex()) {
+#ifdef HAVE_VRPN
+        if (_internals->vrpnTrackerRemote)
+            _internals->vrpnTrackerRemote->mainloop();
+        if (_internals->vrpnButtonRemote)
+            _internals->vrpnButtonRemote->mainloop();
+        if (_internals->vrpnAnalogRemote)
+            _internals->vrpnAnalogRemote->mainloop();
+#endif
 #ifdef HAVE_OCULUS
-        if (_oculusTrackedEye >= 0) {
+        if (_internals->oculusTrackedEye >= 0) {
             const ovrPosef* p;
-            if (_oculusTrackedEye == 1)
+            if (_internals->oculusTrackedEye == 1)
                 p = &(QVROculusRenderPoses[0]);
-            else if (_oculusTrackedEye == 2)
+            else if (_internals->oculusTrackedEye == 2)
                 p = &(QVROculusRenderPoses[1]);
             else
                 p = &(QVROculusTrackingState.HeadPose.ThePose);
@@ -326,33 +360,25 @@ void QVRDevice::update()
             _orientation = QQuaternion(p->Orientation.w, p->Orientation.x, p->Orientation.y, p->Orientation.z);
         }
 #endif
-#ifdef HAVE_VRPN
-        if (_vrpnTrackerRemote)
-            _vrpnTrackerRemote->mainloop();
-        if (_vrpnButtonRemote)
-            _vrpnButtonRemote->mainloop();
-        if (_vrpnAnalogRemote)
-            _vrpnAnalogRemote->mainloop();
-#endif
 #ifdef HAVE_OSVR
-        if (_osvrTrackedEye != -1 || _osvrTrackingInterface) {
+        if (_internals->osvrTrackedEye != -1 || _internals->osvrTrackingInterface) {
             OSVR_Pose3 pose;
             bool ok;
-            if (_osvrTrackedEye == 0) { // center eye
+            if (_internals->osvrTrackedEye == 0) { // center eye
                 ok = (osvrClientGetViewerPose(QVROsvrDisplayConfig, 0, &pose) == OSVR_RETURN_SUCCESS);
-            } else if (_osvrTrackedEye == 1) { // left eye
+            } else if (_internals->osvrTrackedEye == 1) { // left eye
                 ok = (osvrClientGetViewerEyePose(QVROsvrDisplayConfig, 0, 0, &pose) == OSVR_RETURN_SUCCESS);
-            } else if (_osvrTrackedEye == 2) { // right eye
+            } else if (_internals->osvrTrackedEye == 2) { // right eye
                 OSVR_EyeCount eyes;
                 osvrClientGetNumEyesForViewer(QVROsvrDisplayConfig, 0, &eyes);
                 int e = (eyes == 2 ? 1 : 0);
                 ok = (osvrClientGetViewerEyePose(QVROsvrDisplayConfig, 0, e, &pose) == OSVR_RETURN_SUCCESS);
-            } else { // _osvrTrackingInterface
+            } else { // _internals->osvrTrackingInterface
                 struct OSVR_TimeValue timestamp;
-                ok = (osvrGetPoseState(_osvrTrackingInterface, &timestamp, &pose) == OSVR_RETURN_SUCCESS);
+                ok = (osvrGetPoseState(_internals->osvrTrackingInterface, &timestamp, &pose) == OSVR_RETURN_SUCCESS);
             }
             if (ok) {
-                if (_osvrTrackedEye >= 0 && pose.translation.data[1] < 1.1f) {
+                if (_internals->osvrTrackedEye >= 0 && pose.translation.data[1] < 1.1f) {
                     // Assume the user wears a HMD and sits (i.e. no room-scale VR).
                     // In this case, we apply an offset to a default standing observer,
                     // just as we do for Oculus Rift.
@@ -364,23 +390,23 @@ void QVRDevice::update()
                         pose.rotation.data[2], pose.rotation.data[3]);
             }
         }
-        if (_osvrButtonsInterfaces.length() > 0) {
+        if (_internals->osvrButtonsInterfaces.length() > 0) {
             OSVR_ButtonState state;
             struct OSVR_TimeValue timestamp;
             for (int i = 0; i < _buttons.length(); i++) {
-                if (_osvrButtonsInterfaces[i]
-                        && osvrGetButtonState(_osvrButtonsInterfaces[i],
+                if (_internals->osvrButtonsInterfaces[i]
+                        && osvrGetButtonState(_internals->osvrButtonsInterfaces[i],
                             &timestamp, &state) == OSVR_RETURN_SUCCESS) {
                     _buttons[i] = state;
                 }
             }
         }
-        if (_osvrAnalogsInterfaces.length() > 0) {
+        if (_internals->osvrAnalogsInterfaces.length() > 0) {
             OSVR_AnalogState state;
             struct OSVR_TimeValue timestamp;
             for (int i = 0; i < _analogs.length(); i++) {
-                if (_osvrAnalogsInterfaces[i]
-                        && osvrGetAnalogState(_osvrAnalogsInterfaces[i],
+                if (_internals->osvrAnalogsInterfaces[i]
+                        && osvrGetAnalogState(_internals->osvrAnalogsInterfaces[i],
                             &timestamp, &state) == OSVR_RETURN_SUCCESS) {
                     _analogs[i] = state;
                 }
