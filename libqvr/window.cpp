@@ -74,6 +74,11 @@ QVRWindowThread::QVRWindowThread(QVRWindow* window) :
 
 void QVRWindowThread::run()
 {
+#ifdef HAVE_OSVR
+    OSVR_RenderParams osvrDefaultRenderParams;
+    osvrRenderManagerGetDefaultRenderParams(&osvrDefaultRenderParams);
+    const OSVR_ViewportDescription osvrDefaultViewport = { .left = 0, .lower = 0, .width = 1, .height = 1 };
+#endif
     for (;;) {
         _window->winContext()->makeCurrent(_window);
         // Start rendering
@@ -95,9 +100,19 @@ void QVRWindowThread::run()
 #endif
             } else if (_window->config().outputMode() == QVR_Output_OSVR) {
 #ifdef HAVE_OSVR
-                QVROsvrRenderManager->PresentRenderBuffers(
-                        _window->_osvrRenderBuffers,
-                        _window->_osvrRenderInfo);
+                OSVR_RenderManagerPresentState s;
+                osvrRenderManagerStartPresentRenderBuffers(&s);
+                osvrRenderManagerPresentRenderBufferOpenGL(s,
+                        _window->_osvrRenderBufferOpenGL[0],
+                        _window->_osvrRenderInfoOpenGL[0],
+                        osvrDefaultViewport);
+                if (_window->_osvrRenderBufferOpenGL[1].colorBufferName != 0) {
+                    osvrRenderManagerPresentRenderBufferOpenGL(s,
+                            _window->_osvrRenderBufferOpenGL[1],
+                            _window->_osvrRenderInfoOpenGL[1],
+                            osvrDefaultViewport);
+                }
+                osvrRenderManagerFinishPresentRenderBuffers(QVROsvrRenderManager, s, osvrDefaultRenderParams, false);
                 _window->winContext()->swapBuffers(_window);
 #endif
             } else {
@@ -225,8 +240,9 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext,
             QVR_DEBUG("      geometry: %d %d %dx%d", geom.x(), geom.y(), geom.width(), geom.height());
             setGeometry(geom);
             _winContext->makeCurrent(this);
-            osvr::renderkit::RenderManager::OpenResults r = QVROsvrRenderManager->OpenDisplay();
-            if (r.status == osvr::renderkit::RenderManager::OpenStatus::FAILURE)
+            OSVR_OpenResultsOpenGL r;
+            osvrRenderManagerOpenDisplayOpenGL(QVROsvrRenderManagerOpenGL, &r);
+            if (r.status == OSVR_OPEN_STATUS_FAILURE)
                 QVR_FATAL("OSVR: render manager failed to open display");
             _winContext->doneCurrent();
             setCursor(Qt::BlankCursor);
@@ -638,8 +654,13 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
 
 #ifdef HAVE_OSVR
     bool texturesNeedRegistering = false;
-    _osvrRenderInfo = QVROsvrRenderManager->GetRenderInfo();
-    Q_ASSERT(_osvrRenderInfo.size() == static_cast<unsigned int>(_renderContext.viewPasses()));
+    OSVR_RenderParams osvrRenderParams;
+    osvrRenderManagerGetDefaultRenderParams(&osvrRenderParams);
+    OSVR_RenderInfoCollection osvrRenderInfoCollection;
+    osvrRenderManagerGetRenderInfoCollection(QVROsvrRenderManager, osvrRenderParams, &osvrRenderInfoCollection);
+    OSVR_RenderInfoCount osvrRenderInfoCount;
+    osvrRenderManagerGetNumRenderInfoInCollection(osvrRenderInfoCollection, &osvrRenderInfoCount);
+    Q_ASSERT(osvrRenderInfoCount == static_cast<unsigned int>(_renderContext.viewPasses()));
 #endif
     for (int i = 0; i < _renderContext.viewPasses(); i++) {
         int tw = -1, th = -1;
@@ -691,13 +712,15 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
             OSVR_ViewportDimension vpl, vpb, vpw, vph;
             osvrClientGetRelativeViewportForViewerEyeSurface(
                     QVROsvrDisplayConfig, 0, i, 0, &vpl, &vpb, &vpw, &vph);
-            // TODO: use _osvrRenderInfo to determine the texture sizes?
-            // The render manager might want us to use a different texture size
-            // than plain OSVR because of distortion correction effects.
-            // However, currently the viewport fields in _osvrRenderInfo
-            // seem to contain random garbage (2016-10-14).
             w = vpw * config().renderResolutionFactor();
             h = vph * config().renderResolutionFactor();
+            osvrRenderManagerGetRenderInfoFromCollectionOpenGL(
+                    osvrRenderInfoCollection, i, &(_osvrRenderInfoOpenGL[i]));
+            // TODO: use _osvrRenderInfoOpenGL to determine the texture sizes?
+            // The render manager might want us to use a different texture size
+            // than plain OSVR because of distortion correction effects.
+            // However, currently the viewport fields in _osvrRenderInfoOpenGL
+            // seem to contain random garbage (2016-10-14).
 #endif
         } else {
             w = width() * config().renderResolutionFactor();
@@ -716,18 +739,18 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
         _textures[1] = 0;
     }
 #ifdef HAVE_OSVR
+    osvrRenderManagerReleaseRenderInfoCollection(osvrRenderInfoCollection);
     if (texturesNeedRegistering) {
-        _osvrRenderBuffers.clear();
+        OSVR_RenderManagerRegisterBufferState s;
+        osvrRenderManagerStartRegisterRenderBuffers(&s);
+        _osvrRenderBufferOpenGL[1].colorBufferName = 0;
+        _osvrRenderBufferOpenGL[1].depthStencilBufferName = 0;
         for (int i = 0; i < _renderContext.viewPasses(); i++) {
-            osvr::renderkit::RenderBuffer rb;
-            rb.OpenGL = new osvr::renderkit::RenderBufferOpenGL;
-            rb.OpenGL->colorBufferName = _textures[i];
-            rb.OpenGL->depthStencilBufferName = 0;
-            _osvrRenderBuffers.push_back(rb);
+            _osvrRenderBufferOpenGL[i].colorBufferName = _textures[i];
+            _osvrRenderBufferOpenGL[i].depthStencilBufferName = 0;
+            osvrRenderManagerRegisterRenderBufferOpenGL(s, _osvrRenderBufferOpenGL[i]);
         }
-        if (!QVROsvrRenderManager->RegisterRenderBuffers(_osvrRenderBuffers)) {
-            QVR_FATAL("OSVR: cannot register render buffers");
-        }
+        osvrRenderManagerFinishRegisterRenderBuffers(QVROsvrRenderManager, s, false);
     }
 #endif
     textures[0] = _textures[0];

@@ -31,8 +31,7 @@
 #include "rendercontext.hpp"
 
 #ifdef HAVE_OSVR
-# include <vector>
-# include <osvr/RenderKit/RenderManager.h>
+# include <osvr/RenderKit/RenderManagerOpenGLC.h>
 #endif
 
 class QVRObserver;
@@ -85,8 +84,8 @@ private:
     QVRRenderContext _renderContext;
 
 #ifdef HAVE_OSVR
-    std::vector<osvr::renderkit::RenderInfo> _osvrRenderInfo;
-    std::vector<osvr::renderkit::RenderBuffer> _osvrRenderBuffers;
+    OSVR_RenderInfoOpenGL _osvrRenderInfoOpenGL[2];
+    OSVR_RenderBufferOpenGL _osvrRenderBufferOpenGL[2];
 #endif
 
     bool isMaster() const;

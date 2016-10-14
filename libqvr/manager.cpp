@@ -44,7 +44,6 @@
 
 #ifdef HAVE_OSVR
 # include <osvr/ClientKit/ServerAutoStartC.h>
-# include <osvr/RenderKit/GraphicsLibraryOpenGL.h>
 #endif
 
 QVRManager* manager = NULL; // singleton instance
@@ -91,7 +90,8 @@ void QVRAttemptOculusInitialization()
 #ifdef HAVE_OSVR
 OSVR_ClientContext QVROsvrClientContext = NULL;
 OSVR_DisplayConfig QVROsvrDisplayConfig = NULL;
-osvr::renderkit::RenderManager* QVROsvrRenderManager = NULL;
+OSVR_RenderManager QVROsvrRenderManager = NULL;
+OSVR_RenderManagerOpenGL QVROsvrRenderManagerOpenGL = NULL;
 // to prevent the OSVR Render Manager from getting in our way, we have to make
 // it use a dummy toolkit that does absolutely nothing.
 static void osvrToolkitCreate(void*) {}
@@ -151,16 +151,14 @@ void QVRAttemptOSVRInitialization()
                         QVR_INFO("OSVR: more than one surface per eye; QVR currently does not handle this");
                     } else {
                         QVR_INFO("OSVR: display config is usable");
-                        osvr::renderkit::GraphicsLibrary qvrGraphicsLibrary;
-                        qvrGraphicsLibrary.OpenGL = new osvr::renderkit::GraphicsLibraryOpenGL;
-                        qvrGraphicsLibrary.OpenGL->toolkit = &osvrToolkit;
-                        QVROsvrRenderManager = osvr::renderkit::createRenderManager(
-                                QVROsvrClientContext, "OpenGL", qvrGraphicsLibrary);
-                        if (!QVROsvrRenderManager) {
+                        OSVR_GraphicsLibraryOpenGL library;
+                        library.toolkit = &osvrToolkit;
+                        if (osvrCreateRenderManagerOpenGL(QVROsvrClientContext, "OpenGL", library,
+                                    &QVROsvrRenderManager, &QVROsvrRenderManagerOpenGL) != OSVR_RETURN_SUCCESS) {
                             QVR_INFO("OSVR: cannot create render manager");
-                        } else if (!QVROsvrRenderManager->doingOkay()) {
+                        } else if (osvrRenderManagerGetDoingOkay(QVROsvrRenderManager) != OSVR_RETURN_SUCCESS) {
                             QVR_INFO("OSVR: created render manager does not work");
-                            delete QVROsvrRenderManager;
+                            osvrDestroyRenderManager(QVROsvrRenderManager);
                             QVROsvrRenderManager = NULL;
                         } else {
                             QVR_INFO("OSVR: render manager works");
@@ -371,7 +369,7 @@ QVRManager::~QVRManager()
 #endif
 #ifdef HAVE_OSVR
     if (QVROsvrClientContext) {
-        delete QVROsvrRenderManager;
+        osvrDestroyRenderManager(QVROsvrRenderManager);
         QVROsvrRenderManager = NULL;
         osvrClientShutdown(QVROsvrClientContext);
         QVROsvrDisplayConfig = NULL;
