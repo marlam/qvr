@@ -19,6 +19,25 @@ issues, and no threading problems!
 QVR allows writing VR applications in pure OpenGL as well as using arbitrary
 external rendering engines. Examples are provided.
 
+## Supported platforms and hardware
+
+The library should work on every platform that has Qt (i.e. all the platforms).
+Currently tested are Linux and Windows.
+
+Supported VR hardware includes:
+
+- Custom room-scale VR labs with multiple GPUs and/or render clusters
+
+- Desktop-based fake-VR for development and testing purposes
+
+- With [VRPN](http://vrpn.org/): almost all tracking and interaction hardware
+
+- With [Oculus SDK](https://www.oculus.com/): Oculus Rift (currently DK2 on Linux is tested)
+
+- With [OSVR](http://osvr.org/): HDK and lots of other head-mounted displays
+
+Support for the HTC Vive is planned.
+
 ## The library
 
 Build and install the QVR library `libqvr` first. After that, you can build
