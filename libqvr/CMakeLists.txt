@@ -6,13 +6,13 @@
 # permitted in any medium without royalty provided the copyright notice and this
 # notice are preserved. This file is offered as-is, without any warranty.
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.4)
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR} ${CMAKE_MODULE_PATH})
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Project
-project(QVR)
+project(libqvr)
 set(QVR_VERSION 0.10.0)
 set(QVR_LIBVERSION 0.0.0)
 set(QVR_SOVERSION 0)
@@ -51,6 +51,7 @@ add_library(libqvr SHARED
     rendercontext.hpp rendercontext.cpp
     frustum.hpp frustum.cpp
     ${QVRRESOURCES})
+set_target_properties(libqvr PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 set_target_properties(libqvr PROPERTIES OUTPUT_NAME qvr)
 set_target_properties(libqvr PROPERTIES VERSION ${QVR_LIBVERSION})
 set_target_properties(libqvr PROPERTIES SOVERSION ${QVR_SOVERSION})
