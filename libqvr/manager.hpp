@@ -317,6 +317,8 @@ public:
      *   The default is -1, which means to never timeout.
      * - \-\-qvr-log-level=\<level\><br>
      *   See \a QVRLogLevel.
+     * - \-\-qvr-log-file=\<filename\><br>
+     *   Write all log messages to the given file instead of the standard error stream.
      * - \-\-qvr-sync-to-vblank=<0|1><br>
      *   Disable (0) or enable (1) sync-to-vblank. Default is enable.
      * - \-\-qvr-fps=\<n\><br>

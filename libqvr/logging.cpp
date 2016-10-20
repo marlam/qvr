@@ -21,13 +21,23 @@
  * SOFTWARE.
  */
 
-#include <algorithm>
+#include <cstdio>
 
 #include "manager.hpp"
-#include "config.hpp"
-#include "process.hpp"
 #include "logging.hpp"
 
+static FILE* QVRLogStream = NULL;
+
+void QVRSetLogFile(const char* name)
+{
+    if (!name) {
+        QVRLogStream = NULL;
+    } else if (!(QVRLogStream = std::fopen(name, "w"))) {
+        QVR_WARNING("cannot open log file %s", name);
+    } else {
+        std::setvbuf(QVRLogStream, NULL, _IOLBF, 0);
+    }
+}
 
 void QVRMsg(const char* s)
 {
@@ -37,10 +47,10 @@ void QVRMsg(const char* s)
     char buf[QVR_MSG_BUFSIZE] = "QVR";
     int bufIndex = 3;
     if (QVRManager::config().processConfigs().size() > 1)
-        bufIndex += snprintf(buf + bufIndex, QVR_MSG_BUFSIZE - bufIndex, "[%d]", QVRManager::processIndex());
+        bufIndex += std::snprintf(buf + bufIndex, QVR_MSG_BUFSIZE - bufIndex, "[%d]", QVRManager::processIndex());
     bufIndex += snprintf(buf + bufIndex, QVR_MSG_BUFSIZE - bufIndex, ": %s", s);
     buf[std::min(bufIndex, QVR_MSG_BUFSIZE - 2)] = '\n';
     bufIndex++;
     buf[std::min(bufIndex, QVR_MSG_BUFSIZE - 1)] = '\0';
-    fputs(buf, stderr);
+    std::fputs(buf, QVRLogStream ? QVRLogStream : stderr);
 }

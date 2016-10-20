@@ -28,6 +28,7 @@
 
 #include "manager.hpp"
 
+void QVRSetLogFile(const char* name); /* NULL means use stderr */
 void QVRMsg(const char* s);
 
 #define QVR_MSG_BUFSIZE 1024

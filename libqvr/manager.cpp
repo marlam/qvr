@@ -140,6 +140,19 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
         }
     }
 
+    // set log file
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--qvr-log-file") == 0 && i < argc - 1) {
+            QVRSetLogFile(argv[i + 1]);
+            removeTwoArgs(argc, argv, i);
+            break;
+        } else if (strncmp(argv[i], "--qvr-log-file=", 15) == 0) {
+            QVRSetLogFile(argv[i] + 15);
+            removeArg(argc, argv, i);
+            break;
+        }
+    }
+
     // set working directory
     for (int i = 1; i < argc; i++) {
         if (strncmp(argv[i], "--qvr-wd=", 9) == 0) {
