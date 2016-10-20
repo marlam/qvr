@@ -34,8 +34,6 @@ void QVRSetLogFile(const char* name)
         QVRLogStream = NULL;
     } else if (!(QVRLogStream = std::fopen(name, "w"))) {
         QVR_WARNING("cannot open log file %s", name);
-    } else {
-        std::setvbuf(QVRLogStream, NULL, _IOLBF, 0);
     }
 }
 
