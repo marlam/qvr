@@ -350,47 +350,47 @@ bool SceneViewer::init(const aiScene* s, const QString& baseDirectory, const QMa
 
     qInfo("Using %u light sources", static_cast<unsigned int>(_scene.lights.size()));
     glUseProgram(_prg.programId());
-    int tmp_int[_scene.lights.size()];
-    float tmp_vec3[3 * _scene.lights.size()];
-    float tmp_float[_scene.lights.size()];
+    QVector<int> tmp_int(_scene.lights.size());
+    QVector<float> tmp_vec3(3 * _scene.lights.size());
+    QVector<float> tmp_float(_scene.lights.size());
     for (size_t i = 0; i < _scene.lights.size(); i++)
         tmp_int[i] = _scene.lights[i].type;
-    _prg.setUniformValueArray("light_type", tmp_int, _scene.lights.size());
+    _prg.setUniformValueArray("light_type", tmp_int.data(), _scene.lights.size());
     for (size_t i = 0; i < _scene.lights.size(); i++)
         tmp_int[i] = _scene.lights[i].relative_to_camera ? 1 : 0;
-    _prg.setUniformValueArray("light_relative_to_camera", tmp_int, _scene.lights.size());
+    _prg.setUniformValueArray("light_relative_to_camera", tmp_int.data(), _scene.lights.size());
     for (size_t i = 0; i < _scene.lights.size(); i++)
         for (int j = 0; j < 3; j++)
             tmp_vec3[3 * i + j] = _scene.lights[i].position[j];
-    _prg.setUniformValueArray("light_position", tmp_vec3, _scene.lights.size(), 3);
+    _prg.setUniformValueArray("light_position", tmp_vec3.data(), _scene.lights.size(), 3);
     for (size_t i = 0; i < _scene.lights.size(); i++)
         for (int j = 0; j < 3; j++)
             tmp_vec3[3 * i + j] = _scene.lights[i].direction[j];
-    _prg.setUniformValueArray("light_direction", tmp_vec3, _scene.lights.size(), 3);
+    _prg.setUniformValueArray("light_direction", tmp_vec3.data(), _scene.lights.size(), 3);
     for (size_t i = 0; i < _scene.lights.size(); i++)
         tmp_float[i] = _scene.lights[i].inner_cone_angle;
-    _prg.setUniformValueArray("light_inner_cone_angle", tmp_float, _scene.lights.size(), 1);
+    _prg.setUniformValueArray("light_inner_cone_angle", tmp_float.data(), _scene.lights.size(), 1);
     for (size_t i = 0; i < _scene.lights.size(); i++)
         tmp_float[i] = _scene.lights[i].outer_cone_angle;
-    _prg.setUniformValueArray("light_outer_cone_angle", tmp_float, _scene.lights.size(), 1);
+    _prg.setUniformValueArray("light_outer_cone_angle", tmp_float.data(), _scene.lights.size(), 1);
     for (size_t i = 0; i < _scene.lights.size(); i++) {
         tmp_vec3[3 * i + 0] = _scene.lights[i].attenuation_constant;
         tmp_vec3[3 * i + 1] = _scene.lights[i].attenuation_linear;
         tmp_vec3[3 * i + 2] = _scene.lights[i].attenuation_quadratic;
     }
-    _prg.setUniformValueArray("light_attenuation", tmp_vec3, _scene.lights.size(), 3);
+    _prg.setUniformValueArray("light_attenuation", tmp_vec3.data(), _scene.lights.size(), 3);
     for (size_t i = 0; i < _scene.lights.size(); i++)
         for (int j = 0; j < 3; j++)
             tmp_vec3[3 * i + j] = _scene.lights[i].ambient[j];
-    _prg.setUniformValueArray("light_ambient", tmp_vec3, _scene.lights.size(), 3);
+    _prg.setUniformValueArray("light_ambient", tmp_vec3.data(), _scene.lights.size(), 3);
     for (size_t i = 0; i < _scene.lights.size(); i++)
         for (int j = 0; j < 3; j++)
             tmp_vec3[3 * i + j] = _scene.lights[i].diffuse[j];
-    _prg.setUniformValueArray("light_diffuse", tmp_vec3, _scene.lights.size(), 3);
+    _prg.setUniformValueArray("light_diffuse", tmp_vec3.data(), _scene.lights.size(), 3);
     for (size_t i = 0; i < _scene.lights.size(); i++)
         for (int j = 0; j < 3; j++)
             tmp_vec3[3 * i + j] = _scene.lights[i].specular[j];
-    _prg.setUniformValueArray("light_specular", tmp_vec3, _scene.lights.size(), 3);
+    _prg.setUniformValueArray("light_specular", tmp_vec3.data(), _scene.lights.size(), 3);
 
     return true;
 }

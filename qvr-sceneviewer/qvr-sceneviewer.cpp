@@ -177,7 +177,7 @@ static QMatrix4x4 getMatrix(int& argc, char* argv[])
 {
     QMatrix4x4 M;
 
-    bool remove[argc];
+    QVector<bool> remove(argc);
     for (int i = 0; i < argc; i++)
         remove[i] = false;
 
