@@ -50,7 +50,7 @@ class QVRProcess;
  * - For rendering, implement render().
  * - To animate your scene, implement update().
  * - To override the default near and far plane, implement getNearFar().
- * - To singal when your application wants to quit, implement wantExit().
+ * - To signal when your application wants to quit, implement wantExit().
  * - For special process-specific actions, implement initProcess(), exitProcess(),
  *   preRenderProcess(), or postRenderProcess().
  * - For special window-specific actions, implement initWindow(), exitWindow(),
@@ -102,9 +102,10 @@ public:
      * Update scene state, e.g. for animations.
      *
      * The \a devices list can be used to implement your own interaction schemes
-     * based on VR interaction devices. You can safely ignore it.
+     * based on VR interaction devices.
      *
-     * Called once before each frame on the master process.
+     * Called once before each frame on the master process. Immediately afterwards,
+     * \a updateObservers() is called.
      */
     virtual void update(const QList<const QVRDevice*>& devices) { Q_UNUSED(devices); }
 
@@ -259,16 +260,17 @@ public:
     virtual void deserializeStaticData(QDataStream& ds) { Q_UNUSED(ds); }
 
     /*!
-     * \brief Update observers for custom tracking implementations.
+     * \brief Update observers for custom tracking and navigation implementations.
+     * \param devices           A list of Virtual Reality interaction devices.
      * \param customObservers   A list of observers that the application may modify.
      *
-     * Update position and orientation of all observers defined in the configuration
-     * that are of type \a QVR_Observer_Custom. This is useful if you want to implement
-     * support for a custom tracking system that is not supported by QVR.
+     * Update tracking and/or navigation information for observers of type
+     * \a QVR_Observer_Custom. Use this to implement your own navigation methods,
+     * and/or your own tracking system.
      *
-     * Called once before each frame on the master process.
+     * Called once before each frame on the master process, after \a update().
      */
-    virtual void updateObservers(const QList<QVRObserver*>& customObservers) { Q_UNUSED(customObservers); }
+    virtual void updateObservers(const QList<const QVRDevice*>& devices, const QList<QVRObserver*>& customObservers) { Q_UNUSED(devices); Q_UNUSED(customObservers); }
 
     /*!
      * \brief Handle a key press event.

@@ -538,7 +538,7 @@ bool QVRManager::init(QVRApp* app, QVRNavigationType preferredNavigationType)
     if (_processIndex == 0) {
         updateDevices();
         _app->update(_constDevices);
-        _app->updateObservers(_customObservers);
+        _app->updateObservers(_constDevices, _customObservers);
     }
 
     // Initialize FPS printing
@@ -743,7 +743,7 @@ void QVRManager::masterLoop()
     processEventQueue();
     QVR_FIREHOSE("  ... app update");
     _app->update(_constDevices);
-    _app->updateObservers(_customObservers);
+    _app->updateObservers(_constDevices, _customObservers);
 
     // now wait for windows to finish buffer swap...
     waitForBufferSwaps();
