@@ -32,11 +32,25 @@
 
 
 #ifdef HAVE_OCULUS
+# if (OVR_PRODUCT_VERSION >= 1)
+ovrSession QVROculus = NULL;
+ovrGraphicsLuid QVROculusLuid;
+ovrTextureSwapChain QVROculusTextureSwapChainL = 0;
+ovrTextureSwapChain QVROculusTextureSwapChainR = 0;
+long long QVROculusFrameIndex = 0;
+ovrLayerEyeFov QVROculusLayer;
+ovrVector3f QVROculusHmdToEyeViewOffset[2];
+# else
 ovrHmd QVROculus = NULL;
-ovrEyeRenderDesc QVROculusEyeRenderDesc[2];
-ovrPosef QVROculusRenderPoses[2];
+# endif
 ovrTrackingState QVROculusTrackingState;
-static void oculusLogCallback(int level, const char* message)
+ovrPosef QVROculusRenderPoses[2];
+ovrEyeRenderDesc QVROculusEyeRenderDesc[2];
+static void oculusLogCallback(
+# if (OVR_PRODUCT_VERSION >= 1)
+    uintptr_t /* userData */,
+# endif
+    int level, const char* message)
 {
     if (level == ovrLogLevel_Debug) {
         QVR_DEBUG("Oculus log: %s", message);
@@ -52,21 +66,34 @@ void QVRAttemptOculusInitialization()
     ovrInitParams oculusInitParams;
     std::memset(&oculusInitParams, 0, sizeof(oculusInitParams));
     oculusInitParams.LogCallback = oculusLogCallback;
-    if (!ovr_Initialize(&oculusInitParams)
-            || ovrHmd_Detect() <= 0
-            || !(QVROculus = ovrHmd_Create(0))) {
-        QVR_INFO("Oculus: HMD not available");
+    if (
+# if (OVR_PRODUCT_VERSION >= 1)
+        OVR_FAILURE(ovr_Initialize(&oculusInitParams)) || OVR_FAILURE(ovr_Create(&QVROculus, &QVROculusLuid))
+# else
+        !ovr_Initialize(&oculusInitParams) || ovrHmd_Detect() <= 0 || !(QVROculus = ovrHmd_Create(0))
+# endif
+        ) {
+        QVR_INFO("Oculus: cannot initialize SDK or HMD not available");
         return;
     }
     QVR_INFO("Oculus: HMD available");
-    QVR_DEBUG("Oculus: product name: %s", QVROculus->ProductName);
-    QVR_DEBUG("Oculus: resolution: %dx%d", QVROculus->Resolution.w, QVROculus->Resolution.h);
-    QVR_DEBUG("Oculus: window position: %d %d", QVROculus->WindowsPos.x, QVROculus->WindowsPos.y);
-    QVR_DEBUG("Oculus: display %s", QVROculus->DisplayDeviceName);
-    QVR_DEBUG("Oculus: Cap_ExtendDesktop: %d", (QVROculus->HmdCaps & ovrHmdCap_ExtendDesktop ? 1 : 0));
+# if (OVR_PRODUCT_VERSION >= 1)
+    const auto oculusHmdDesc = ovr_GetHmdDesc(QVROculus);
+    QVROculusEyeRenderDesc[0] = ovr_GetRenderDesc(QVROculus, ovrEye_Left, oculusHmdDesc.DefaultEyeFov[0]);
+    QVROculusEyeRenderDesc[1] = ovr_GetRenderDesc(QVROculus, ovrEye_Right, oculusHmdDesc.DefaultEyeFov[1]);
+    QVROculusHmdToEyeViewOffset[0] = QVROculusEyeRenderDesc[0].HmdToEyeOffset;
+    QVROculusHmdToEyeViewOffset[1] = QVROculusEyeRenderDesc[1].HmdToEyeOffset;
+# else
+#  define oculusHmdDesc (*QVROculus)
+# endif
+    QVR_DEBUG("Oculus: product name: %s", oculusHmdDesc.ProductName);
+    QVR_DEBUG("Oculus: resolution: %dx%d", oculusHmdDesc.Resolution.w, oculusHmdDesc.Resolution.h);
+# if (OVR_PRODUCT_VERSION < 1)
+    // this is done automatically with newer SDKs
     ovrHmd_ConfigureTracking(QVROculus,
-                    ovrTrackingCap_Orientation | ovrTrackingCap_MagYawCorrection | ovrTrackingCap_Position,
-                    ovrTrackingCap_Orientation | ovrTrackingCap_Position);
+            ovrTrackingCap_Orientation | ovrTrackingCap_MagYawCorrection | ovrTrackingCap_Position,
+            ovrTrackingCap_Orientation | ovrTrackingCap_Position);
+# endif
 }
 #endif
 

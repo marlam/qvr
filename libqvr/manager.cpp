@@ -232,8 +232,11 @@ QVRManager::~QVRManager()
 {
 #ifdef HAVE_OCULUS
     if (QVROculus) {
-        ovrHmd_Destroy(QVROculus);
+# if (OVR_PRODUCT_VERSION >= 1)
         ovr_Shutdown();
+# else
+        ovrHmd_Destroy(QVROculus);
+# endif
     }
 #endif
 #ifdef HAVE_OSVR
@@ -597,6 +600,13 @@ void QVRManager::masterLoop()
 
 #ifdef HAVE_OCULUS
     if (QVROculus) {
+# if (OVR_PRODUCT_VERSION >= 1)
+        QVROculusFrameIndex++;
+        double dt = ovr_GetPredictedDisplayTime(QVROculus, QVROculusFrameIndex);
+        QVROculusTrackingState = ovr_GetTrackingState(QVROculus, dt, ovrTrue);
+        ovr_CalcEyePoses(QVROculusTrackingState.HeadPose.ThePose, QVROculusHmdToEyeViewOffset, QVROculusRenderPoses);
+        QVROculusLayer.SensorSampleTime = ovr_GetTimeInSeconds();
+# else
         ovrHmd_BeginFrame(QVROculus, 0);
         ovrVector3f hmdToEyeViewOffset[2] = {
             QVROculusEyeRenderDesc[0].HmdToEyeViewOffset,
@@ -604,6 +614,7 @@ void QVRManager::masterLoop()
         };
         ovrHmd_GetEyePoses(QVROculus, 0, hmdToEyeViewOffset,
                 QVROculusRenderPoses, &QVROculusTrackingState);
+# endif
     }
 #endif
 #ifdef HAVE_OSVR
@@ -774,6 +785,13 @@ void QVRManager::slaveLoop()
             QVR_FIREHOSE("  ... got command 'update-devices' from master");
 #ifdef HAVE_OCULUS
             if (QVROculus) {
+# if (OVR_PRODUCT_VERSION >= 1)
+                QVROculusFrameIndex++;
+                double dt = ovr_GetPredictedDisplayTime(QVROculus, QVROculusFrameIndex);
+                QVROculusTrackingState = ovr_GetTrackingState(QVROculus, dt, ovrTrue);
+                ovr_CalcEyePoses(QVROculusTrackingState.HeadPose.ThePose, QVROculusHmdToEyeViewOffset, QVROculusRenderPoses);
+                QVROculusLayer.SensorSampleTime = ovr_GetTimeInSeconds();
+# else
                 ovrHmd_BeginFrame(QVROculus, 0);
                 ovrVector3f hmdToEyeViewOffset[2] = {
                     QVROculusEyeRenderDesc[0].HmdToEyeViewOffset,
@@ -781,6 +799,7 @@ void QVRManager::slaveLoop()
                 };
                 ovrHmd_GetEyePoses(QVROculus, 0, hmdToEyeViewOffset,
                         QVROculusRenderPoses, &QVROculusTrackingState);
+# endif
             }
 #endif
 #ifdef HAVE_OSVR

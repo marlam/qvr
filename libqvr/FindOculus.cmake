@@ -6,7 +6,7 @@
 # permitted in any medium without royalty provided the copyright notice and this
 # notice are preserved. This file is offered as-is, without any warranty.
 
-FIND_PATH(OCULUS_INCLUDE_DIR NAMES OVR.h)
+FIND_PATH(OCULUS_INCLUDE_DIR NAMES OVR_CAPI.h)
 
 FIND_LIBRARY(OCULUS_LIBRARY NAMES OVR)
 

@@ -25,13 +25,25 @@
 #define QVR_INTERNALS_HPP
 
 #ifdef HAVE_OCULUS
-# define isnan std::isnan
-# include <OVR.h>
-# include <OVR_CAPI_GL.h>
+# include <OVR_Version.h>
+# if (OVR_PRODUCT_VERSION < 1)
+#  define isnan std::isnan
+# endif
+# include <OVR_CAPI.h>
+# if (OVR_PRODUCT_VERSION >= 1)
+extern ovrSession QVROculus;
+extern ovrGraphicsLuid QVROculusLuid;
+extern ovrTextureSwapChain QVROculusTextureSwapChainL;
+extern ovrTextureSwapChain QVROculusTextureSwapChainR;
+extern long long QVROculusFrameIndex;
+extern ovrLayerEyeFov QVROculusLayer;
+extern ovrVector3f QVROculusHmdToEyeViewOffset[2];
+# else
 extern ovrHmd QVROculus;
-extern ovrEyeRenderDesc QVROculusEyeRenderDesc[2];
-extern ovrPosef QVROculusRenderPoses[2];
+# endif
 extern ovrTrackingState QVROculusTrackingState;
+extern ovrPosef QVROculusRenderPoses[2];
+extern ovrEyeRenderDesc QVROculusEyeRenderDesc[2];
 void QVRAttemptOculusInitialization();
 #endif
 

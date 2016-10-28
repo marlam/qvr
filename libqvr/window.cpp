@@ -42,6 +42,10 @@
 #include "observer.hpp"
 #include "internalglobals.hpp"
 
+#ifdef HAVE_OCULUS
+# include <OVR_CAPI_GL.h>
+#endif
+
 
 class QVRWindowThread : public QThread
 {
@@ -55,7 +59,7 @@ public:
     QMutex swapbuffersMutex;
     bool swapbuffersFinished;
 
-#ifdef HAVE_OCULUS
+#if defined(HAVE_OCULUS) && (OVR_PRODUCT_VERSION < 1)
     ovrGLTexture oculusEyeTextures[2];
 #endif
 #ifdef HAVE_OSVR
@@ -98,8 +102,17 @@ void QVRWindowThread::run()
         if (!exitWanted) {
             if (_window->config().outputMode() == QVR_Output_Stereo_Oculus) {
 #ifdef HAVE_OCULUS
+# if (OVR_PRODUCT_VERSION >= 1)
+                ovr_CommitTextureSwapChain(QVROculus, QVROculusTextureSwapChainL);
+                ovr_CommitTextureSwapChain(QVROculus, QVROculusTextureSwapChainR);
+                QVROculusLayer.RenderPose[0] = QVROculusRenderPoses[0];
+                QVROculusLayer.RenderPose[1] = QVROculusRenderPoses[1];
+                ovrLayerHeader* layers = &QVROculusLayer.Header;
+                ovr_SubmitFrame(QVROculus, QVROculusFrameIndex, NULL, &layers, 1);
+# else
                 ovrHmd_EndFrame(QVROculus, QVROculusRenderPoses,
                         reinterpret_cast<ovrTexture*>(oculusEyeTextures));
+# endif
 #endif
             } else if (_window->config().outputMode() == QVR_Output_OSVR) {
 #ifdef HAVE_OSVR
@@ -191,6 +204,13 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext,
         setMinimumSize(QSize(64, 64));
         if (config().outputMode() == QVR_Output_Stereo_Oculus) {
 #ifdef HAVE_OCULUS
+# if (OVR_PRODUCT_VERSION >= 1)
+            // We don't actually want a window, but create and show one here anyway
+            // so that the user has keyboard and mouse input. This should be removed
+            // once we have support for the Oculus controllers.
+            resize(800, 600);
+            show();
+# else
             unsigned int distortionCaps =
                 ovrDistortionCap_TimeWarp
                 | ovrDistortionCap_Vignette
@@ -228,6 +248,7 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext,
             setCursor(Qt::BlankCursor);
             show(); // Apparently this must be called before showFullScreen()
             showFullScreen();
+# endif
 #endif
         } else if (config().outputMode() == QVR_Output_OSVR) {
 #ifdef HAVE_OSVR
@@ -655,10 +676,50 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
     GLint textureBinding2dBak;
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &textureBinding2dBak);
 
+#if defined(HAVE_OCULUS) && (OVR_PRODUCT_VERSION >= 1)
+    if (config().outputMode() == QVR_Output_Stereo_Oculus && _textures[0] == 0) {
+        ovrHmdDesc hmdDesc = ovr_GetHmdDesc(QVROculus);
+        ovrTextureSwapChainDesc tscDesc = {};
+        tscDesc.Type = ovrTexture_2D;
+        tscDesc.ArraySize = 1;
+        tscDesc.Format = OVR_FORMAT_R8G8B8A8_UNORM_SRGB;
+        tscDesc.MipLevels = 1;
+        tscDesc.SampleCount = 1;
+        tscDesc.StaticImage = ovrFalse;
+        ovrSizei texSizeL = ovr_GetFovTextureSize(QVROculus, ovrEye_Left, hmdDesc.DefaultEyeFov[0], 1.0f);
+        tscDesc.Width = texSizeL.w * config().renderResolutionFactor();
+        tscDesc.Height = texSizeL.h * config().renderResolutionFactor();
+        ovr_CreateTextureSwapChainGL(QVROculus, &tscDesc, &QVROculusTextureSwapChainL);
+        ovrSizei texSizeR = ovr_GetFovTextureSize(QVROculus, ovrEye_Right, hmdDesc.DefaultEyeFov[1], 1.0f);
+        tscDesc.Width = texSizeR.w * config().renderResolutionFactor();
+        tscDesc.Height = texSizeR.h * config().renderResolutionFactor();
+        ovr_CreateTextureSwapChainGL(QVROculus, &tscDesc, &QVROculusTextureSwapChainR);
+        ovr_GetTextureSwapChainBufferGL(QVROculus, QVROculusTextureSwapChainL, 0, &(_textures[0]));
+        ovr_GetTextureSwapChainBufferGL(QVROculus, QVROculusTextureSwapChainR, 0, &(_textures[1]));
+        QVROculusLayer.Header.Type = ovrLayerType_EyeFov;
+        QVROculusLayer.Header.Flags = ovrLayerFlag_TextureOriginAtBottomLeft;
+        QVROculusLayer.ColorTexture[0] = QVROculusTextureSwapChainL;
+        QVROculusLayer.ColorTexture[1] = QVROculusTextureSwapChainR;
+        QVROculusLayer.Fov[0] = QVROculusEyeRenderDesc[0].Fov;
+        QVROculusLayer.Fov[1] = QVROculusEyeRenderDesc[1].Fov;
+        ovrRecti vpL;
+        vpL.Pos.x = 0;
+        vpL.Pos.y = 0;
+        vpL.Size.w = texSizeL.w;
+        vpL.Size.h = texSizeL.h;
+        QVROculusLayer.Viewport[0] = vpL;
+        ovrRecti vpR;
+        vpR.Pos.x = 0;
+        vpR.Pos.y = 0;
+        vpR.Size.w = texSizeR.w;
+        vpR.Size.h = texSizeR.h;
+        QVROculusLayer.Viewport[1] = vpR;
+    }
+#endif
 #ifdef HAVE_OSVR
     bool texturesNeedRegistering = false;
     OSVR_RenderInfoCollection osvrRenderInfoCollection;
-    if (config().outputMode() == QVR_Output_OSVR) {
+    if (config().outputMode() == QVR_Output_OSVR && _textures[0] == 0) {
         OSVR_RenderParams osvrRenderParams;
         osvrRenderManagerGetDefaultRenderParams(&osvrRenderParams);
         osvrRenderManagerGetRenderInfoCollection(QVROsvrRenderManager, osvrRenderParams, &osvrRenderInfoCollection);
@@ -698,6 +759,12 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
         int w = 0, h = 0;
         if (config().outputMode() == QVR_Output_Stereo_Oculus) {
 #ifdef HAVE_OCULUS
+# if (OVR_PRODUCT_VERSION >= 1)
+            // we already created the textures before this loop, make sure that we don't do
+            // anything inside this loop.
+            w = tw;
+            h = th;
+# else
             ovrSizei tex_size = ovrHmd_GetFovTextureSize(QVROculus,
                     i == 0 ? ovrEye_Left : ovrEye_Right,
                     QVROculus->DefaultEyeFov[i], 1.0f);
@@ -711,6 +778,7 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
             _thread->oculusEyeTextures[i].OGL.Header.RenderViewport.Size.w = w;
             _thread->oculusEyeTextures[i].OGL.Header.RenderViewport.Size.h = h;
             _thread->oculusEyeTextures[i].OGL.TexId = _textures[i];
+# endif
 #endif
         } else if (config().outputMode() == QVR_Output_OSVR) {
 #ifdef HAVE_OSVR
@@ -762,6 +830,12 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
 #endif
     textures[0] = _textures[0];
     textures[1] = _textures[1];
+#if defined(HAVE_OCULUS) && (OVR_PRODUCT_VERSION >= 1)
+    if (config().outputMode() == QVR_Output_Stereo_Oculus) {
+        ovr_GetTextureSwapChainBufferGL(QVROculus, QVROculusTextureSwapChainL, -1, &(textures[0]));
+        ovr_GetTextureSwapChainBufferGL(QVROculus, QVROculusTextureSwapChainR, -1, &(textures[1]));
+    }
+#endif
 
     glBindTexture(GL_TEXTURE_2D, textureBinding2dBak);
 
