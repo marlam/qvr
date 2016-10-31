@@ -32,7 +32,7 @@ Supported VR hardware includes:
 
 - With [VRPN](http://vrpn.org/): almost all tracking and interaction hardware
 
-- With [Oculus SDK](https://www.oculus.com/): Oculus Rift (currently DK2 on Linux is tested)
+- With [Oculus SDK](https://www.oculus.com/): Oculus Rift
 
 - With [OSVR](http://osvr.org/): HDK and lots of other head-mounted displays
 
