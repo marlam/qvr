@@ -800,7 +800,7 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
             h = height() * config().renderResolutionFactor();
         }
         if (tw != w || th != h) {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0,
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8_ALPHA8, w, h, 0,
                     GL_BGRA, GL_UNSIGNED_BYTE, NULL);
 #ifdef HAVE_OSVR
             texturesNeedRegistering = true;

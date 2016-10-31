@@ -902,8 +902,10 @@ void QVRManager::render()
 {
     QVR_FIREHOSE("  render() ...");
 
-    if (_masterWindow)
+    if (_masterWindow) {
         _masterWindow->winContext()->makeCurrent(_masterWindow);
+        _masterWindow->glEnable(GL_FRAMEBUFFER_SRGB);
+    }
 
     if (_windows.size() > 0) {
         QVR_FIREHOSE("  ... preRenderProcess()");
