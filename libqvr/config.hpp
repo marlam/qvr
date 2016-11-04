@@ -44,6 +44,8 @@ typedef enum {
     QVR_Device_Tracking_VRPN,
     /*! \brief A device with position and orientation tracked via Oculus Rift. */
     QVR_Device_Tracking_Oculus,
+    /*! \brief A device with position and orientation tracked via OpenVR (HTC Vive). */
+    QVR_Device_Tracking_OpenVR,
     /*! \brief A device with position and orientation tracked via <a href="http://www.osvr.org/">OSVR</a>. */
     QVR_Device_Tracking_OSVR,
 } QVRDeviceTrackingType;
@@ -58,6 +60,8 @@ typedef enum {
     QVR_Device_Buttons_Static,
     /*! \brief A device with digital buttons queried via <a href="https://github.com/vrpn/vrpn/wiki">VRPN</a>. */
     QVR_Device_Buttons_VRPN,
+    /*! \brief A device with digital buttons queried via OpenVR (HTC Vive). */
+    QVR_Device_Buttons_OpenVR,
     /*! \brief A device with digital buttons queried via <a href="http://www.osvr.org/">OSVR</a>. */
     QVR_Device_Buttons_OSVR
 } QVRDeviceButtonsType;
@@ -72,6 +76,8 @@ typedef enum {
     QVR_Device_Analogs_Static,
     /*! \brief A device with analog joystick elements queried via <a href="https://github.com/vrpn/vrpn/wiki">VRPN</a>. */
     QVR_Device_Analogs_VRPN,
+    /*! \brief A device with analog joystick elements queried via OpenVR (HTC Vive). */
+    QVR_Device_Analogs_OpenVR,
     /*! \brief A device with analog joystick elements queried via <a href="http://www.osvr.org/">OSVR</a>. */
     QVR_Device_Analogs_OSVR
 } QVRDeviceAnalogsType;
@@ -148,6 +154,8 @@ typedef enum {
     QVR_Output_Stereo_Amber_Blue = 6,
     /*! \brief Output a stereoscopic view for the Oculus Rift head-mounted display. */
     QVR_Output_Stereo_Oculus = 7,
+    /*! \brief Output a stereoscopic view for the HTC Vive head-mounted display. */
+    QVR_Output_Stereo_OpenVR = 10,
     /*! \brief Output a stereoscopic view via an output plugin; see \a QVROutputPlugin(). */
     QVR_Output_Stereo_Custom = 8
 } QVROutputMode;
@@ -201,13 +209,16 @@ public:
      * three numbers give the static position and the last three numbers give
      * the static orientation as euler angles.
      *
+     * For \a QVR_Device_Tracking_VRPN, the parameter string is of the form
+     * `<name> [<sensor>]` where `<name>` is the VRPN tracker name, e.g. Tracker0\@localhost,
+     * and `<sensor>` is the number of the sensor to be used (can be omitted to use all).
+     *
      * For \a QVR_Device_Tracking_Oculus, the parameter string must be one of "head",
      * "eye-left", and "eye-right". There can be only one device for each of these three
      * Oculus tracker types.
      *
-     * For \a QVR_Device_Tracking_VRPN, the parameter string is of the form
-     * `<name> [<sensor>]` where `<name>` is the VRPN tracker name, e.g. Tracker0\@localhost,
-     * and `<sensor>` is the number of the sensor to be used (can be omitted to use all).
+     * For \a QVR_Device_Tracking_OpenVR, the parameter string must be one of "head",
+     * "eye-left", "eye-right", "controller-0", and "controller-1".
      *
      * For \a QVR_Device_Tracking_OSVR, the parameter string is the path
      * name of an OSVR tracker interface. The special strings "eye-center", "eye-left",
@@ -232,6 +243,11 @@ public:
      * e.g. Tracker0\@localhost
      * and the optional button list specifies the number and order of VRPN buttons to use.
      *
+     * For \a QVR_Device_Buttons_OpenVR, the parameter string must be either "controller-0"
+     * or "controller-1". There will be 6 buttons: pad up (0), pad down (1), pad left (2),
+     * pad right (3), menu (4), grip (5). Note that the four pad buttons are only simulated:
+     * they will report to be pressed when the analog value of their direction exceeds 0.5.
+     *
      * For \a QVR_Device_Buttons_OSVR, the parameter string is a space-separated list
      * of path names of OSVR button interfaces (one path name for each button managed by this device).
      */
@@ -251,6 +267,10 @@ public:
      * `<name> [<analog0> [<analog1> [...]]]` where `<name>` is the VRPN tracker name,
      * e.g. Tracker0\@localhost
      * and the optional analogs list specifies the number and order of VRPN analog joystick elements to use.
+     *
+     * For \a QVR_Device_Analogs_OpenVR, the parameter string must be either "controller-0"
+     * or "controller-1". There will be 3 analogs: pad left-right axis (0), pad up-down axis (1),
+     * trigger (2). Note that the pad axes will go from -1 to 1 while the trigger will go from 0 to 1.
      *
      * For \a QVR_Device_Analogs_OSVR, the parameter string is a space-separated list
      * of path names of OSVR analog interfaces (one path name for each analog managed by this device).

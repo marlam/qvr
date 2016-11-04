@@ -28,15 +28,15 @@ Supported VR hardware includes:
 
 - Custom room-scale VR labs with multiple GPUs and/or render clusters
 
+- Oculus Rift with [Oculus SDK](https://www.oculus.com/)
+
+- HTC Vive and SteamVR with [OpenVR](https://github.com/ValveSoftware/openvr)
+
+- HDK and lots of other head-mounted displays with [OSVR](http://osvr.org/)
+
+- Almost all tracking and interaction hardware with [VRPN](http://vrpn.org/)
+
 - Desktop-based fake-VR for development and testing purposes
-
-- With [VRPN](http://vrpn.org/): almost all tracking and interaction hardware
-
-- With [Oculus SDK](https://www.oculus.com/): Oculus Rift
-
-- With [OSVR](http://osvr.org/): HDK and lots of other head-mounted displays
-
-Support for the HTC Vive is planned.
 
 ## The library
 

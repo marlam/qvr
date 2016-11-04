@@ -47,6 +47,19 @@ extern ovrEyeRenderDesc QVROculusEyeRenderDesc[2];
 void QVRAttemptOculusInitialization();
 #endif
 
+#ifdef HAVE_OPENVR
+# include <QMatrix4x4>
+# include <QQuaternion>
+# include <QVector3D>
+# include <openvr.h>
+extern vr::IVRSystem* QVROpenVRSystem;
+extern vr::VRControllerState_t QVROpenVRControllerStates[2];
+extern QQuaternion QVROpenVRTrackedOrientations[5]; // head, left eye, right eye, controller0, controller1
+extern QVector3D QVROpenVRTrackedPositions[5];      // head, left eye, right eye, controller0, controller1
+void QVRAttemptOpenVRInitialization();
+void QVRUpdateOpenVR();
+#endif
+
 #ifdef HAVE_OSVR
 # include <osvr/ClientKit/DisplayC.h>
 # include <osvr/ClientKit/ContextC.h>

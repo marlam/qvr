@@ -134,6 +134,69 @@ void QVRConfig::createDefault(QVRNavigationType preferredNavigationType)
         return;
     }
 #endif
+#ifdef HAVE_OPENVR
+    QVRAttemptOpenVRInitialization();
+    if (QVROpenVRSystem) {
+        // Devices
+        QVRDeviceConfig deviceConf0, deviceConf1, deviceConf2, deviceConf3, deviceConf4, deviceConf5;
+        deviceConf0._id = "openvr-head";
+        deviceConf0._trackingType = QVR_Device_Tracking_OpenVR;
+        deviceConf0._trackingParameters = "head";
+        deviceConf1._id = "openvr-eye-left";
+        deviceConf1._trackingType = QVR_Device_Tracking_OpenVR;
+        deviceConf1._trackingParameters = "eye-left";
+        deviceConf2._id = "openvr-eye-right";
+        deviceConf2._trackingType = QVR_Device_Tracking_OpenVR;
+        deviceConf2._trackingParameters = "eye-right";
+        deviceConf3._id = "openvr-controller-0";
+        deviceConf3._trackingType = QVR_Device_Tracking_OpenVR;
+        deviceConf3._trackingParameters = "controller-0";
+        deviceConf3._buttonsType = QVR_Device_Buttons_OpenVR;
+        deviceConf3._buttonsParameters = "controller-0";
+        deviceConf3._analogsType = QVR_Device_Analogs_OpenVR;
+        deviceConf3._analogsParameters = "controller-0";
+        deviceConf4._id = "openvr-controller-1";
+        deviceConf4._trackingType = QVR_Device_Tracking_OpenVR;
+        deviceConf4._trackingParameters = "controller-1";
+        deviceConf4._buttonsType = QVR_Device_Buttons_OpenVR;
+        deviceConf4._buttonsParameters = "controller-1";
+        deviceConf4._analogsType = QVR_Device_Analogs_OpenVR;
+        deviceConf4._analogsParameters = "controller-1";
+        deviceConf5._id = "openvr-navigation-device";
+        deviceConf5._trackingType = QVR_Device_Tracking_OpenVR;
+        deviceConf5._trackingParameters = "head";
+        deviceConf5._buttonsType = QVR_Device_Buttons_OpenVR;
+        deviceConf5._buttonsParameters = "controller-1";
+        deviceConf5._analogsType = QVR_Device_Analogs_OpenVR;
+        deviceConf5._analogsParameters = "controller-0";
+        // One observer
+        QVRObserverConfig observerConf;
+        observerConf._id = "openvr-observer";
+        observerConf._navigationType = QVR_Navigation_Device;
+        observerConf._navigationParameters = "openvr-navigation-device";
+        observerConf._trackingType = QVR_Tracking_Device;
+        observerConf._trackingParameters = "openvr-eye-left openvr-eye-right";
+        // One window
+        QVRWindowConfig windowConf;
+        windowConf._id = "openvr-window";
+        windowConf._observerIndex = 0;
+        windowConf._outputMode = QVR_Output_Stereo_OpenVR;
+        // One process
+        QVRProcessConfig processConf;
+        processConf._id = "openvr-process";
+        processConf._windowConfigs.append(windowConf);
+        // Put it together
+        _deviceConfigs.append(deviceConf0);
+        _deviceConfigs.append(deviceConf1);
+        _deviceConfigs.append(deviceConf2);
+        _deviceConfigs.append(deviceConf3);
+        _deviceConfigs.append(deviceConf4);
+        _deviceConfigs.append(deviceConf5);
+        _observerConfigs.append(observerConf);
+        _processConfigs.append(processConf);
+        return;
+    }
+#endif
 #ifdef HAVE_OSVR
     QVRAttemptOSVRInitialization();
     if (QVROsvrClientContext) {

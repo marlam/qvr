@@ -52,6 +52,11 @@ struct QVRDeviceInternals {
 #ifdef HAVE_OCULUS
     int oculusTrackedEye; // -1 = none, 0 = center/head, 1 = left, 2 = right
 #endif
+#ifdef HAVE_OPENVR
+    int openVrTrackedEntity; // -1 = none, 0 = center/head, 1 = left eye, 2 = right eye, 3 = controller0, 4 = controller1
+    int openVrButtonsEntity; // -1 = none, 0 = controller0, 1 = controller1
+    int openVrAnalogsEntity; // -1 = none, 0 = controller0, 1 = controller1
+#endif
 #ifdef HAVE_OSVR
     int osvrTrackedEye; // -1 = none, 0 = center, 1 = left, 2 = right
     OSVR_ClientInterface osvrTrackingInterface;
@@ -109,6 +114,11 @@ QVRDevice::QVRDevice(int deviceIndex) :
 #ifdef HAVE_OCULUS
     _internals->oculusTrackedEye = -1;
 #endif
+#ifdef HAVE_OPENVR
+    _internals->openVrTrackedEntity = -1;
+    _internals->openVrButtonsEntity = -1;
+    _internals->openVrAnalogsEntity = -1;
+#endif
 #ifdef HAVE_OSVR
     _internals->osvrTrackedEye = -1;
     _internals->osvrTrackingInterface = NULL;
@@ -142,12 +152,33 @@ QVRDevice::QVRDevice(int deviceIndex) :
 #ifdef HAVE_OCULUS
         if (QVRManager::processIndex() == config().processIndex()) {
             QString arg = config().trackingParameters().trimmed();
-            if (arg == "eye-left")
+            if (arg == "head")
+                _internals->oculusTrackedEye = 0;
+            else if (arg == "eye-left")
                 _internals->oculusTrackedEye = 1;
             else if (arg == "eye-right")
                 _internals->oculusTrackedEye = 2;
-            else if (arg == "head")
-                _internals->oculusTrackedEye = 0;
+            else
+                QVR_WARNING("device %s: invalid Oculus tracking parameter", qPrintable(id()));
+        }
+#endif
+        break;
+    case QVR_Device_Tracking_OpenVR:
+#ifdef HAVE_OPENVR
+        if (QVRManager::processIndex() == config().processIndex()) {
+            QString arg = config().trackingParameters().trimmed();
+            if (arg == "head")
+                _internals->openVrTrackedEntity = 0;
+            else if (arg == "eye-left")
+                _internals->openVrTrackedEntity = 1;
+            else if (arg == "eye-right")
+                _internals->openVrTrackedEntity = 2;
+            else if (arg == "controller-0")
+                _internals->openVrTrackedEntity = 3;
+            else if (arg == "controller-1")
+                _internals->openVrTrackedEntity = 4;
+            else
+                QVR_WARNING("device %s: invalid OpenVR tracking parameter", qPrintable(id()));
         }
 #endif
         break;
@@ -210,6 +241,29 @@ QVRDevice::QVRDevice(int deviceIndex) :
             }
         }
 #endif
+        break;
+    case QVR_Device_Buttons_OpenVR:
+#ifdef HAVE_OPENVR
+        {
+            QString arg = config().buttonsParameters().trimmed();
+            if (arg == "controller-0") {
+                _buttons.resize(6);
+                if (QVRManager::processIndex() == config().processIndex()) {
+                    Q_ASSERT(QVROpenVRSystem);
+                    _internals->openVrButtonsEntity = 0;
+                }
+            } else if (arg == "controller-1") {
+                _buttons.resize(6);
+                if (QVRManager::processIndex() == config().processIndex()) {
+                    Q_ASSERT(QVROpenVRSystem);
+                    _internals->openVrButtonsEntity = 1;
+                }
+            } else {
+                QVR_WARNING("device %s: invalid OpenVR buttons parameter", qPrintable(id()));
+            }
+        }
+#endif
+        break;
     case QVR_Device_Buttons_OSVR:
 #ifdef HAVE_OSVR
         {
@@ -269,6 +323,29 @@ QVRDevice::QVRDevice(int deviceIndex) :
             }
         }
 #endif
+        break;
+    case QVR_Device_Analogs_OpenVR:
+#ifdef HAVE_OPENVR
+        {
+            QString arg = config().analogsParameters().trimmed();
+            if (arg == "controller-0") {
+                _analogs.resize(3);
+                if (QVRManager::processIndex() == config().processIndex()) {
+                    Q_ASSERT(QVROpenVRSystem);
+                    _internals->openVrAnalogsEntity = 0;
+                }
+            } else if (arg == "controller-1") {
+                _analogs.resize(3);
+                if (QVRManager::processIndex() == config().processIndex()) {
+                    Q_ASSERT(QVROpenVRSystem);
+                    _internals->openVrAnalogsEntity = 1;
+                }
+            } else {
+                QVR_WARNING("device %s: invalid OpenVR analogs parameter", qPrintable(id()));
+            }
+        }
+#endif
+        break;
     case QVR_Device_Analogs_OSVR:
 #ifdef HAVE_OSVR
         {
@@ -358,6 +435,26 @@ void QVRDevice::update()
             // the virtual world.
             _position = QVector3D(p->Position.x, p->Position.y + QVRObserverConfig::defaultEyeHeight, p->Position.z);
             _orientation = QQuaternion(p->Orientation.w, p->Orientation.x, p->Orientation.y, p->Orientation.z);
+        }
+#endif
+#ifdef HAVE_OPENVR
+        if (_internals->openVrTrackedEntity >= 0) {
+            _orientation = QVROpenVRTrackedOrientations[_internals->openVrTrackedEntity];
+            _position = QVROpenVRTrackedPositions[_internals->openVrTrackedEntity];
+        }
+        if (_internals->openVrButtonsEntity >= 0) {
+            _buttons[0] = QVROpenVRControllerStates[_internals->openVrButtonsEntity].rAxis[0].y > +0.5f;
+            _buttons[1] = QVROpenVRControllerStates[_internals->openVrButtonsEntity].rAxis[0].y < -0.5f;
+            _buttons[2] = QVROpenVRControllerStates[_internals->openVrButtonsEntity].rAxis[0].x < -0.5f;
+            _buttons[3] = QVROpenVRControllerStates[_internals->openVrButtonsEntity].rAxis[0].x > +0.5f;
+            unsigned long buttonPressed = QVROpenVRControllerStates[_internals->openVrButtonsEntity].ulButtonPressed;
+            _buttons[4] = buttonPressed & vr::ButtonMaskFromId(vr::k_EButton_ApplicationMenu);
+            _buttons[5] = buttonPressed & vr::ButtonMaskFromId(vr::k_EButton_Grip);
+        }
+        if (_internals->openVrAnalogsEntity >= 0) {
+            _analogs[0] = QVROpenVRControllerStates[_internals->openVrAnalogsEntity].rAxis[0].y;
+            _analogs[1] = QVROpenVRControllerStates[_internals->openVrAnalogsEntity].rAxis[0].x;
+            _analogs[2] = QVROpenVRControllerStates[_internals->openVrAnalogsEntity].rAxis[1].x;
         }
 #endif
 #ifdef HAVE_OSVR

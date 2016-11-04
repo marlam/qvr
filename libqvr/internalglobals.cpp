@@ -97,6 +97,93 @@ void QVRAttemptOculusInitialization()
 }
 #endif
 
+#ifdef HAVE_OPENVR
+vr::IVRSystem* QVROpenVRSystem = NULL;
+vr::VRControllerState_t QVROpenVRControllerStates[2];
+vr::TrackedDevicePose_t QVROpenVRPoses[3];
+QQuaternion QVROpenVRTrackedOrientations[5]; // head, left eye, right eye, controller0, controller1
+QVector3D QVROpenVRTrackedPositions[5];      // head, left eye, right eye, controller0, controller1
+static QMatrix4x4 QVROpenVRHmdToEye[2];
+static QMatrix4x4 QVROpenVRConvertMatrix(const vr::HmdMatrix44_t& openVrMatrix)
+{
+    QMatrix4x4 m;
+    for (int r = 0; r < 4; r++)
+        for (int c = 0; c < 4; c++)
+            m(r, c) = openVrMatrix.m[r][c];
+    return m;
+}
+static QMatrix4x4 QVROpenVRConvertMatrix(const vr::HmdMatrix34_t& openVrMatrix)
+{
+    QMatrix4x4 m;
+    for (int r = 0; r < 3; r++)
+        for (int c = 0; c < 4; c++)
+            m(r, c) = openVrMatrix.m[r][c];
+    m(3, 0) = 0;
+    m(3, 1) = 0;
+    m(3, 2) = 0;
+    m(3, 3) = 1;
+    return m;
+}
+static void QVROpenVRConvertPose(const QMatrix4x4& matrix, QQuaternion* orientation, QVector3D* position)
+{
+    *orientation = QQuaternion::fromRotationMatrix(matrix.toGenericMatrix<3, 3>());
+    *position = QVector3D(matrix(0, 3), matrix(1, 3), matrix(2, 3));
+}
+static unsigned int QVROpenVRControllerIndices[2];
+void QVRUpdateOpenVR()
+{
+    vr::TrackedDevicePose_t poses[vr::k_unMaxTrackedDeviceCount];
+    vr::VRCompositor()->WaitGetPoses(poses, vr::k_unMaxTrackedDeviceCount, NULL, 0);
+    // head:
+    QMatrix4x4 headMatrix = QVROpenVRConvertMatrix(poses[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking);
+    QVROpenVRConvertPose(headMatrix, &(QVROpenVRTrackedOrientations[0]), &(QVROpenVRTrackedPositions[0]));
+    // left eye:
+    QMatrix4x4 leftEyeMatrix = headMatrix * QVROpenVRHmdToEye[0];
+    QVROpenVRConvertPose(leftEyeMatrix, &(QVROpenVRTrackedOrientations[1]), &(QVROpenVRTrackedPositions[1]));
+    // right eye:
+    QMatrix4x4 rightEyeMatrix = headMatrix * QVROpenVRHmdToEye[1];
+    QVROpenVRConvertPose(rightEyeMatrix, &(QVROpenVRTrackedOrientations[2]), &(QVROpenVRTrackedPositions[2]));
+    // controller 0:
+    QVROpenVRConvertPose(QVROpenVRConvertMatrix(poses[QVROpenVRControllerIndices[0]].mDeviceToAbsoluteTracking),
+            &(QVROpenVRTrackedOrientations[3]), &(QVROpenVRTrackedPositions[3]));
+    // controller 1:
+    QVROpenVRConvertPose(QVROpenVRConvertMatrix(poses[QVROpenVRControllerIndices[1]].mDeviceToAbsoluteTracking),
+            &(QVROpenVRTrackedOrientations[4]), &(QVROpenVRTrackedPositions[4]));
+    // controller states:
+    QVROpenVRSystem->GetControllerState(QVROpenVRControllerIndices[0], &(QVROpenVRControllerStates[0]));
+    QVROpenVRSystem->GetControllerState(QVROpenVRControllerIndices[1], &(QVROpenVRControllerStates[1]));
+}
+void QVRAttemptOpenVRInitialization()
+{
+    if (!vr::VR_IsHmdPresent()) {
+        QVR_INFO("OpenVR: no HMD available");
+        return;
+    }
+    QVR_DEBUG("OpenVR: attempting initialization");
+    vr::EVRInitError e = vr::VRInitError_None;
+    QVROpenVRSystem = vr::VR_Init(&e, vr::VRApplication_Scene);
+    if (!QVROpenVRSystem) {
+        QVR_INFO("OpenVR: initialization failed: %s", vr::VR_GetVRInitErrorAsEnglishDescription(e));
+        return;
+    }
+    QVR_INFO("OpenVR: initialization succeeded");
+    std::memset(QVROpenVRControllerStates, 0, sizeof(QVROpenVRControllerStates));
+    QVROpenVRSystem->CaptureInputFocus();
+    QVROpenVRHmdToEye[0] = QVROpenVRConvertMatrix(QVROpenVRSystem->GetEyeToHeadTransform(vr::Eye_Left));
+    QVROpenVRHmdToEye[1] = QVROpenVRConvertMatrix(QVROpenVRSystem->GetEyeToHeadTransform(vr::Eye_Right));
+    int controllerIndex = 0;
+    for (unsigned int i = 0; i < vr::k_unMaxTrackedDeviceCount; i++) {
+        if (QVROpenVRSystem->GetTrackedDeviceClass(i) == vr::TrackedDeviceClass_Controller) {
+            QVROpenVRControllerIndices[controllerIndex] = i;
+            QVR_DEBUG("OpenVR: controller %d has device index %u", controllerIndex, i);
+            controllerIndex++;
+            if (controllerIndex >= 2)
+                break;
+        }
+    }
+}
+#endif
+
 #ifdef HAVE_OSVR
 OSVR_ClientContext QVROsvrClientContext = NULL;
 OSVR_DisplayConfig QVROsvrDisplayConfig = NULL;

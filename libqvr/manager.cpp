@@ -239,6 +239,11 @@ QVRManager::~QVRManager()
 # endif
     }
 #endif
+#ifdef HAVE_OPENVR
+    if (QVROpenVRSystem) {
+        vr::VR_Shutdown();
+    }
+#endif
 #ifdef HAVE_OSVR
     if (QVROsvrClientContext) {
         osvrDestroyRenderManager(QVROsvrRenderManager);
@@ -289,13 +294,19 @@ bool QVRManager::init(QVRApp* app, QVRNavigationType preferredNavigationType)
         }
     }
 
-    // Initialize Oculus and OSVR for this process if required by the configuration
+    // Initialize HMDs for this process if required by the configuration
     bool needToInitializeOculus = false;
+    bool needToInitializeOpenVR = false;
     bool needToInitializeOSVR = false;
     for (int d = 0; d < _config->deviceConfigs().size(); d++) {
         if (_config->deviceConfigs()[d].processIndex() == _processIndex) {
             if (_config->deviceConfigs()[d].trackingType() == QVR_Device_Tracking_Oculus) {
                 needToInitializeOculus = true;
+            }
+            if (_config->deviceConfigs()[d].trackingType() == QVR_Device_Tracking_OpenVR
+                    || _config->deviceConfigs()[d].buttonsType() == QVR_Device_Buttons_OpenVR
+                    || _config->deviceConfigs()[d].analogsType() == QVR_Device_Analogs_OpenVR) {
+                needToInitializeOpenVR = true;
             }
             if (_config->deviceConfigs()[d].trackingType() == QVR_Device_Tracking_OSVR
                     || _config->deviceConfigs()[d].buttonsType() == QVR_Device_Buttons_OSVR
@@ -307,6 +318,9 @@ bool QVRManager::init(QVRApp* app, QVRNavigationType preferredNavigationType)
     for (int w = 0; w < processConfig().windowConfigs().size(); w++) {
         if (windowConfig(_processIndex, w).outputMode() == QVR_Output_Stereo_Oculus) {
             needToInitializeOculus = true;
+        }
+        if (windowConfig(_processIndex, w).outputMode() == QVR_Output_Stereo_OpenVR) {
+            needToInitializeOpenVR = true;
         }
         if (windowConfig(_processIndex, w).outputMode() == QVR_Output_OSVR) {
             needToInitializeOSVR = true;
@@ -323,6 +337,20 @@ bool QVRManager::init(QVRApp* app, QVRNavigationType preferredNavigationType)
         }
 #else
         QVR_FATAL("configuration requires Oculus, but Oculus support is not available");
+        return false;
+#endif
+    }
+    if (needToInitializeOpenVR) {
+#ifdef HAVE_OPENVR
+        if (!QVROpenVRSystem) {
+            QVRAttemptOpenVRInitialization();
+            if (!QVROpenVRSystem) {
+                QVR_FATAL("cannot initialize OpenVR");
+                return false;
+            }
+        }
+#else
+        QVR_FATAL("configuration requires OpenVR, but OpenVR support is not available");
         return false;
 #endif
     }
@@ -567,6 +595,27 @@ bool QVRManager::init(QVRApp* app, QVRNavigationType preferredNavigationType)
     return true;
 }
 
+#ifdef HAVE_OCULUS
+static void QVRUpdateOculus()
+{
+# if (OVR_PRODUCT_VERSION >= 1)
+    QVROculusFrameIndex++;
+    double dt = ovr_GetPredictedDisplayTime(QVROculus, QVROculusFrameIndex);
+    QVROculusTrackingState = ovr_GetTrackingState(QVROculus, dt, ovrTrue);
+    ovr_CalcEyePoses(QVROculusTrackingState.HeadPose.ThePose, QVROculusHmdToEyeViewOffset, QVROculusRenderPoses);
+    QVROculusLayer.SensorSampleTime = ovr_GetTimeInSeconds();
+# else
+    ovrHmd_BeginFrame(QVROculus, 0);
+    ovrVector3f hmdToEyeViewOffset[2] = {
+        QVROculusEyeRenderDesc[0].HmdToEyeViewOffset,
+        QVROculusEyeRenderDesc[1].HmdToEyeViewOffset
+    };
+    ovrHmd_GetEyePoses(QVROculus, 0, hmdToEyeViewOffset,
+            QVROculusRenderPoses, &QVROculusTrackingState);
+# endif
+}
+#endif
+
 void QVRManager::masterLoop()
 {
     Q_ASSERT(_processIndex == 0);
@@ -598,30 +647,6 @@ void QVRManager::masterLoop()
         return;
     }
 
-#ifdef HAVE_OCULUS
-    if (QVROculus) {
-# if (OVR_PRODUCT_VERSION >= 1)
-        QVROculusFrameIndex++;
-        double dt = ovr_GetPredictedDisplayTime(QVROculus, QVROculusFrameIndex);
-        QVROculusTrackingState = ovr_GetTrackingState(QVROculus, dt, ovrTrue);
-        ovr_CalcEyePoses(QVROculusTrackingState.HeadPose.ThePose, QVROculusHmdToEyeViewOffset, QVROculusRenderPoses);
-        QVROculusLayer.SensorSampleTime = ovr_GetTimeInSeconds();
-# else
-        ovrHmd_BeginFrame(QVROculus, 0);
-        ovrVector3f hmdToEyeViewOffset[2] = {
-            QVROculusEyeRenderDesc[0].HmdToEyeViewOffset,
-            QVROculusEyeRenderDesc[1].HmdToEyeViewOffset
-        };
-        ovrHmd_GetEyePoses(QVROculus, 0, hmdToEyeViewOffset,
-                QVROculusRenderPoses, &QVROculusTrackingState);
-# endif
-    }
-#endif
-#ifdef HAVE_OSVR
-    if (QVROsvrClientContext) {
-        osvrClientUpdate(QVROsvrClientContext);
-    }
-#endif
     updateDevices();
     for (int o = 0; o < _observers.size(); o++) {
         QVRObserver* obs = _observers[o];
@@ -785,21 +810,16 @@ void QVRManager::slaveLoop()
             QVR_FIREHOSE("  ... got command 'update-devices' from master");
 #ifdef HAVE_OCULUS
             if (QVROculus) {
-# if (OVR_PRODUCT_VERSION >= 1)
-                QVROculusFrameIndex++;
-                double dt = ovr_GetPredictedDisplayTime(QVROculus, QVROculusFrameIndex);
-                QVROculusTrackingState = ovr_GetTrackingState(QVROculus, dt, ovrTrue);
-                ovr_CalcEyePoses(QVROculusTrackingState.HeadPose.ThePose, QVROculusHmdToEyeViewOffset, QVROculusRenderPoses);
-                QVROculusLayer.SensorSampleTime = ovr_GetTimeInSeconds();
-# else
-                ovrHmd_BeginFrame(QVROculus, 0);
-                ovrVector3f hmdToEyeViewOffset[2] = {
-                    QVROculusEyeRenderDesc[0].HmdToEyeViewOffset,
-                    QVROculusEyeRenderDesc[1].HmdToEyeViewOffset
-                };
-                ovrHmd_GetEyePoses(QVROculus, 0, hmdToEyeViewOffset,
-                        QVROculusRenderPoses, &QVROculusTrackingState);
-# endif
+                QVRUpdateOculus();
+            }
+#endif
+#ifdef HAVE_OPENVR
+            if (QVROpenVRSystem) {
+                static bool firstRun = true;
+                if (firstRun) {
+                    QVRUpdateOpenVR();
+                    firstRun = false;
+                }
             }
 #endif
 #ifdef HAVE_OSVR
@@ -882,6 +902,28 @@ void QVRManager::quit()
 void QVRManager::updateDevices()
 {
     Q_ASSERT(_processIndex == 0);
+#ifdef HAVE_OCULUS
+    if (QVROculus) {
+        QVRUpdateOculus();
+    }
+#endif
+#ifdef HAVE_OPENVR
+    if (QVROpenVRSystem) {
+        // We only update OpenVR on the first call to this function,
+        // since it will be updated at buffer swap time after each
+        // rendered frame.
+        static bool firstRun = true;
+        if (firstRun) {
+            QVRUpdateOpenVR();
+            firstRun = false;
+        }
+    }
+#endif
+#ifdef HAVE_OSVR
+    if (QVROsvrClientContext) {
+        osvrClientUpdate(QVROsvrClientContext);
+    }
+#endif
     bool haveRemoteDevices = false;
     for (int d = 0; d < _config->deviceConfigs().size(); d++) {
         if (_devices[d]->config().processIndex() == 0)

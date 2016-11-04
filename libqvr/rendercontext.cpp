@@ -79,30 +79,11 @@ void QVRRenderContext::setOutputConf(QVROutputMode om)
 #endif
         break;
     case QVR_Output_Stereo_GL:
-        _viewPasses = 2;
-        _eye[0] = QVR_Eye_Left;
-        _eye[1] = QVR_Eye_Right;
-        break;
     case QVR_Output_Stereo_Red_Cyan:
-        _viewPasses = 2;
-        _eye[0] = QVR_Eye_Left;
-        _eye[1] = QVR_Eye_Right;
-        break;
     case QVR_Output_Stereo_Green_Magenta:
-        _viewPasses = 2;
-        _eye[0] = QVR_Eye_Left;
-        _eye[1] = QVR_Eye_Right;
-        break;
     case QVR_Output_Stereo_Amber_Blue:
-        _viewPasses = 2;
-        _eye[0] = QVR_Eye_Left;
-        _eye[1] = QVR_Eye_Right;
-        break;
     case QVR_Output_Stereo_Oculus:
-        _viewPasses = 2;
-        _eye[0] = QVR_Eye_Left;
-        _eye[1] = QVR_Eye_Right;
-        break;
+    case QVR_Output_Stereo_OpenVR:
     case QVR_Output_Stereo_Custom:
         _viewPasses = 2;
         _eye[0] = QVR_Eye_Left;
