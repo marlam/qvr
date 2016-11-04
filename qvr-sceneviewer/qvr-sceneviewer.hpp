@@ -51,6 +51,8 @@ public:
 
     bool initProcess(QVRProcess* p) override;
 
+    void getNearFar(float& nearPlane, float& farPlane) override;
+
     void render(QVRWindow* w, const QVRRenderContext& c,
             int viewPass, unsigned int texture) override;
 

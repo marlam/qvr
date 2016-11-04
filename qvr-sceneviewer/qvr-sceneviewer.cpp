@@ -74,6 +74,12 @@ bool QVRSceneViewer::initProcess(QVRProcess* /* p */)
     return true;
 }
 
+void QVRSceneViewer::getNearFar(float& nearPlane, float& farPlane)
+{
+    nearPlane = 0.05f;
+    farPlane = 500.0f; // for large scenes such as Rungholt
+}
+
 void QVRSceneViewer::render(QVRWindow* /* window */,
         const QVRRenderContext& context,
         int viewPass, unsigned int texture)

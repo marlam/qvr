@@ -30,4 +30,4 @@ Freely available scenes to try, with appropriate transformation:
 * Crytek Sponza from [McGuire Graphics Data](http://graphics.cs.williams.edu/data/meshes.xml):  
   `qvr-sceneviewer --scale=0.01 --rotate=90,0,1,0 --translate=0,0,70 crytek-sponza/sponza.obj`
 * Rungholt from [McGuire Graphics Data](http://graphics.cs.williams.edu/data/meshes.xml):  
-  `qvr-sceneviewer --translate=0,1,0 --scale=0.1 rungholt/rungholt.obj`
+  `qvr-sceneviewer --scale=0.5 --translate=0,-6,0 rungholt/rungholt.obj`
