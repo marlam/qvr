@@ -397,6 +397,7 @@ bool SceneViewer::init(const aiScene* s, const QString& baseDirectory, const QMa
 
 void SceneViewer::render(const QMatrix4x4& projectionMatrix, const QMatrix4x4& viewMatrix)
 {
+    /* Set per-frame uniforms */
     glUseProgram(_prg.programId());
     _prg.setUniformValue("projection_modelview_matrix", projectionMatrix * viewMatrix);
     _prg.setUniformValue("modelview_matrix", viewMatrix);
