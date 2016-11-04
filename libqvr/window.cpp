@@ -188,12 +188,30 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext,
             setTitle(config().id());
         }
         setMinimumSize(QSize(64, 64));
-        if (config().outputMode() == QVR_Output_Stereo_Oculus) {
-#ifdef HAVE_OCULUS
-# if (OVR_PRODUCT_VERSION >= 1)
-            resize(800, 600);
+        if (config().outputMode() == QVR_Output_OSVR) {
+#ifdef HAVE_OSVR
+            if (config().initialDisplayScreen() >= 0) {
+                QVR_DEBUG("      screen: %d", config().initialDisplayScreen());
+                setScreen(QApplication::screens().at(config().initialDisplayScreen()));
+            }
+            OSVR_DisplayDimension w, h;
+            osvrClientGetDisplayDimensions(QVROsvrDisplayConfig, 0, &w, &h);
+            QRect geom = QApplication::desktop()->screenGeometry(config().initialDisplayScreen());
+            geom.setWidth(w);
+            geom.setHeight(h);
+            QVR_DEBUG("      geometry: %d %d %dx%d", geom.x(), geom.y(), geom.width(), geom.height());
+            setGeometry(geom);
+            _winContext->makeCurrent(this);
+            OSVR_OpenResultsOpenGL r;
+            osvrRenderManagerOpenDisplayOpenGL(QVROsvrRenderManagerOpenGL, &r);
+            if (r.status == OSVR_OPEN_STATUS_FAILURE)
+                QVR_FATAL("OSVR: render manager failed to open display");
+            _winContext->doneCurrent();
+            setCursor(Qt::BlankCursor);
             show();
-# else
+#endif
+#if defined(HAVE_OCULUS) && (OVR_PRODUCT_VERSION < 1)
+        } else if (config().outputMode() == QVR_Output_Stereo_Oculus) {
             unsigned int distortionCaps =
                 ovrDistortionCap_TimeWarp
                 | ovrDistortionCap_Vignette
@@ -231,34 +249,6 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext,
             setCursor(Qt::BlankCursor);
             show(); // Apparently this must be called before showFullScreen()
             showFullScreen();
-# endif
-#endif
-        } else if (config().outputMode() == QVR_Output_Stereo_OpenVR) {
-#ifdef HAVE_OPENVR
-            resize(800, 600);
-            show();
-#endif
-        } else if (config().outputMode() == QVR_Output_OSVR) {
-#ifdef HAVE_OSVR
-            if (config().initialDisplayScreen() >= 0) {
-                QVR_DEBUG("      screen: %d", config().initialDisplayScreen());
-                setScreen(QApplication::screens().at(config().initialDisplayScreen()));
-            }
-            OSVR_DisplayDimension w, h;
-            osvrClientGetDisplayDimensions(QVROsvrDisplayConfig, 0, &w, &h);
-            QRect geom = QApplication::desktop()->screenGeometry(config().initialDisplayScreen());
-            geom.setWidth(w);
-            geom.setHeight(h);
-            QVR_DEBUG("      geometry: %d %d %dx%d", geom.x(), geom.y(), geom.width(), geom.height());
-            setGeometry(geom);
-            _winContext->makeCurrent(this);
-            OSVR_OpenResultsOpenGL r;
-            osvrRenderManagerOpenDisplayOpenGL(QVROsvrRenderManagerOpenGL, &r);
-            if (r.status == OSVR_OPEN_STATUS_FAILURE)
-                QVR_FATAL("OSVR: render manager failed to open display");
-            _winContext->doneCurrent();
-            setCursor(Qt::BlankCursor);
-            show();
 #endif
         } else {
             if (config().initialDisplayScreen() >= 0) {
