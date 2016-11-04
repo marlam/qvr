@@ -567,18 +567,14 @@ public:
 
     /*!
      * \brief Create a default configuration.
-     * \param preferredNavigationType   Preferred type of navigation for the default observer.
      *
-     * This function will detect e.g. an Oculus Rift head mounted display and
-     * create a suitable configuration for it.
+     * This function will detect a head-mounted display and create a suitable
+     * configuration for it.
      *
      * If no special equipment is detected, the function will generate a single
      * observer viewing a single window on the master process.
-     *
-     * The observer created will have the given preferred navigation type unless
-     * this conflicts with autodetected information about the VR system in use.
      */
-    void createDefault(QVRNavigationType preferredNavigationType = QVR_Navigation_WASDQE);
+    void createDefault();
 
     /*!
      * \brief Read a configuration file.

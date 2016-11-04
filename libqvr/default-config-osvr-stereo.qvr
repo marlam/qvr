@@ -1,6 +1,3 @@
-# Manual OSVR configuration.
-# This is of little use since OSVR is autodetected.
-
 device osvr-head
     tracking osvr /me/head
 device osvr-eye-left

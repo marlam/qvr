@@ -1,6 +1,3 @@
-# Manual OpenVR configuration.
-# This is of little use since OpenVR is autodetected.
-
 device openvr-head
     tracking openvr head
 device openvr-eye-left

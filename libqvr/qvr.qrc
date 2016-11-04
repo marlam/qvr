@@ -1,6 +1,11 @@
 <RCC>
   <qresource prefix="/libqvr">
     <file>cg-logo.png</file>
+    <file>default-config-desktop.qvr</file>
+    <file>default-config-oculus.qvr</file>
+    <file>default-config-openvr.qvr</file>
+    <file>default-config-osvr-mono.qvr</file>
+    <file>default-config-osvr-stereo.qvr</file>
     <file>output-vs.glsl</file>
     <file>output-fs.glsl</file>
   </qresource>

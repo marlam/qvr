@@ -92,108 +92,23 @@ QVRConfig::QVRConfig()
 {
 }
 
-void QVRConfig::createDefault(QVRNavigationType preferredNavigationType)
+void QVRConfig::createDefault()
 {
     QVR_INFO("creating default configuration");
 
 #ifdef HAVE_OCULUS
     QVRAttemptOculusInitialization();
     if (QVROculus) {
-        // Devices
-        QVRDeviceConfig deviceConf0, deviceConf1, deviceConf2;
-        deviceConf0._id = "oculus-head";
-        deviceConf0._trackingType = QVR_Device_Tracking_Oculus;
-        deviceConf1._trackingParameters = "head";
-        deviceConf1._id = "oculus-eye-left";
-        deviceConf1._trackingType = QVR_Device_Tracking_Oculus;
-        deviceConf1._trackingParameters = "eye-left";
-        deviceConf2._id = "oculus-eye-right";
-        deviceConf2._trackingType = QVR_Device_Tracking_Oculus;
-        deviceConf2._trackingParameters = "eye-right";
-        // One observer
-        QVRObserverConfig observerConf;
-        observerConf._id = "oculus-observer";
-        observerConf._navigationType = preferredNavigationType;
-        observerConf._trackingType = QVR_Tracking_Device;
-        observerConf._trackingParameters = "oculus-eye-left oculus-eye-right";
-        // One window
-        QVRWindowConfig windowConf;
-        windowConf._id = "oculus-window";
-        windowConf._observerIndex = 0;
-        windowConf._outputMode = QVR_Output_Stereo_Oculus;
-        // One process
-        QVRProcessConfig processConf;
-        processConf._id = "oculus-process";
-        processConf._windowConfigs.append(windowConf);
-        // Put it together
-        _deviceConfigs.append(deviceConf0);
-        _deviceConfigs.append(deviceConf1);
-        _deviceConfigs.append(deviceConf2);
-        _observerConfigs.append(observerConf);
-        _processConfigs.append(processConf);
+        bool ok = readFromFile(":/libqvr/default-config-oculus.qvr");
+        Q_ASSERT(ok);
         return;
     }
 #endif
 #ifdef HAVE_OPENVR
     QVRAttemptOpenVRInitialization();
     if (QVROpenVRSystem) {
-        // Devices
-        QVRDeviceConfig deviceConf0, deviceConf1, deviceConf2, deviceConf3, deviceConf4, deviceConf5;
-        deviceConf0._id = "openvr-head";
-        deviceConf0._trackingType = QVR_Device_Tracking_OpenVR;
-        deviceConf0._trackingParameters = "head";
-        deviceConf1._id = "openvr-eye-left";
-        deviceConf1._trackingType = QVR_Device_Tracking_OpenVR;
-        deviceConf1._trackingParameters = "eye-left";
-        deviceConf2._id = "openvr-eye-right";
-        deviceConf2._trackingType = QVR_Device_Tracking_OpenVR;
-        deviceConf2._trackingParameters = "eye-right";
-        deviceConf3._id = "openvr-controller-0";
-        deviceConf3._trackingType = QVR_Device_Tracking_OpenVR;
-        deviceConf3._trackingParameters = "controller-0";
-        deviceConf3._buttonsType = QVR_Device_Buttons_OpenVR;
-        deviceConf3._buttonsParameters = "controller-0";
-        deviceConf3._analogsType = QVR_Device_Analogs_OpenVR;
-        deviceConf3._analogsParameters = "controller-0";
-        deviceConf4._id = "openvr-controller-1";
-        deviceConf4._trackingType = QVR_Device_Tracking_OpenVR;
-        deviceConf4._trackingParameters = "controller-1";
-        deviceConf4._buttonsType = QVR_Device_Buttons_OpenVR;
-        deviceConf4._buttonsParameters = "controller-1";
-        deviceConf4._analogsType = QVR_Device_Analogs_OpenVR;
-        deviceConf4._analogsParameters = "controller-1";
-        deviceConf5._id = "openvr-navigation-device";
-        deviceConf5._trackingType = QVR_Device_Tracking_OpenVR;
-        deviceConf5._trackingParameters = "head";
-        deviceConf5._buttonsType = QVR_Device_Buttons_OpenVR;
-        deviceConf5._buttonsParameters = "controller-1";
-        deviceConf5._analogsType = QVR_Device_Analogs_OpenVR;
-        deviceConf5._analogsParameters = "controller-0";
-        // One observer
-        QVRObserverConfig observerConf;
-        observerConf._id = "openvr-observer";
-        observerConf._navigationType = QVR_Navigation_Device;
-        observerConf._navigationParameters = "openvr-navigation-device";
-        observerConf._trackingType = QVR_Tracking_Device;
-        observerConf._trackingParameters = "openvr-eye-left openvr-eye-right";
-        // One window
-        QVRWindowConfig windowConf;
-        windowConf._id = "openvr-window";
-        windowConf._observerIndex = 0;
-        windowConf._outputMode = QVR_Output_Stereo_OpenVR;
-        // One process
-        QVRProcessConfig processConf;
-        processConf._id = "openvr-process";
-        processConf._windowConfigs.append(windowConf);
-        // Put it together
-        _deviceConfigs.append(deviceConf0);
-        _deviceConfigs.append(deviceConf1);
-        _deviceConfigs.append(deviceConf2);
-        _deviceConfigs.append(deviceConf3);
-        _deviceConfigs.append(deviceConf4);
-        _deviceConfigs.append(deviceConf5);
-        _observerConfigs.append(observerConf);
-        _processConfigs.append(processConf);
+        bool ok = readFromFile(":/libqvr/default-config-openvr.qvr");
+        Q_ASSERT(ok);
         return;
     }
 #endif
@@ -202,68 +117,17 @@ void QVRConfig::createDefault(QVRNavigationType preferredNavigationType)
     if (QVROsvrClientContext) {
         OSVR_EyeCount eyes;
         osvrClientGetNumEyesForViewer(QVROsvrDisplayConfig, 0, &eyes);
-        // Devices
-        QVRDeviceConfig deviceConf0, deviceConf1, deviceConf2;
-        deviceConf0._id = "osvr-head";
-        deviceConf0._trackingType = QVR_Device_Tracking_OSVR;
-        deviceConf0._trackingParameters = "/me/head";
-        if (eyes == 2) {
-            deviceConf1._id = "osvr-eye-left";
-            deviceConf1._trackingType = QVR_Device_Tracking_OSVR;
-            deviceConf1._trackingParameters = "eye-left";
-            deviceConf2._id = "osvr-eye-right";
-            deviceConf2._trackingType = QVR_Device_Tracking_OSVR;
-            deviceConf2._trackingParameters = "eye-right";
-        } else { // eyes == 1
-            deviceConf1._id = "osvr-eye-center";
-            deviceConf1._trackingType = QVR_Device_Tracking_OSVR;
-            deviceConf1._trackingParameters = "eye-center";
-        }
-        // One observer
-        QVRObserverConfig observerConf;
-        observerConf._id = "osvr-observer";
-        observerConf._navigationType = preferredNavigationType;
-        observerConf._trackingType = QVR_Tracking_Device;
-        if (eyes == 2)
-            observerConf._trackingParameters = "osvr-eye-left osvr-eye-right";
+        bool ok;
+        if (eyes == 1)
+            ok = readFromFile(":/libqvr/default-config-osvr-mono.qvr");
         else
-            observerConf._trackingParameters = "osvr-eye-center";
-        // One window
-        QVRWindowConfig windowConf;
-        windowConf._id = "osvr-window";
-        windowConf._observerIndex = 0;
-        windowConf._outputMode = QVR_Output_OSVR;
-        // One process
-        QVRProcessConfig processConf;
-        processConf._id = "osvr-process";
-        processConf._windowConfigs.append(windowConf);
-        // Put it together
-        _deviceConfigs.append(deviceConf0);
-        _deviceConfigs.append(deviceConf1);
-        if (eyes == 2)
-            _deviceConfigs.append(deviceConf2);
-        _observerConfigs.append(observerConf);
-        _processConfigs.append(processConf);
+            ok = readFromFile(":/libqvr/default-config-osvr-stereo.qvr");
+        Q_ASSERT(ok);
         return;
     }
 #endif
-    // One observer
-    QVRObserverConfig observerConf;
-    observerConf._id = "qvr-default";
-    observerConf._navigationType = preferredNavigationType;
-    observerConf._trackingType = QVR_Tracking_Custom;
-    // One window
-    QVRWindowConfig windowConf;
-    windowConf._id = "qvr-default";
-    windowConf._observerIndex = 0;
-    windowConf._outputMode = QVR_Output_Center;
-    // One process
-    QVRProcessConfig processConf;
-    processConf._id = "qvr-default";
-    processConf._windowConfigs.append(windowConf);
-    // Put it together
-    _observerConfigs.append(observerConf);
-    _processConfigs.append(processConf);
+    bool ok = readFromFile(":/libqvr/default-config-desktop.qvr");
+    Q_ASSERT(ok);
 }
 
 bool QVRConfig::readFromFile(const QString& filename)

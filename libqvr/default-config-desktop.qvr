@@ -1,0 +1,8 @@
+observer desktop-observer
+    navigation wasdqe
+    tracking custom
+
+process desktop-process
+    window desktop-window
+        observer desktop-observer
+        output center

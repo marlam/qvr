@@ -1,6 +1,3 @@
-# Manual Oculus configuration.
-# This is of little use since Oculus is autodetected.
-
 device oculus-head
     tracking oculus head
 device oculus-eye-left
