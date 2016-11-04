@@ -881,7 +881,7 @@ void QVRWindow::renderOutput()
                 QVROsvrRenderBufferOpenGL[0],
                 QVROsvrRenderInfoOpenGL[0],
                 osvrDefaultViewport);
-        if (osvrRenderBufferOpenGL[1].colorBufferName != 0) {
+        if (QVROsvrRenderBufferOpenGL[1].colorBufferName != 0) {
             osvrRenderManagerPresentRenderBufferOpenGL(s,
                     QVROsvrRenderBufferOpenGL[1],
                     QVROsvrRenderInfoOpenGL[1],
