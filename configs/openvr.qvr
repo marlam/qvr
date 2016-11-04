@@ -1,0 +1,30 @@
+# Manual OpenVR configuration.
+# This is of little use since OpenVR is autodetected.
+
+device openvr-head
+    tracking openvr head
+device openvr-eye-left
+    tracking openvr eye-left
+device openvr-eye-right
+    tracking openvr eye-right
+device openvr-controller-0
+    tracking openvr controller-0
+    buttons openvr controller-0
+    analogs openvr controller-0
+device openvr-controller-1
+    tracking openvr controller-1
+    buttons openvr controller-1
+    analogs openvr controller-1
+device openvr-navigation-device
+    tracking openvr head
+    buttons openvr controller-1
+    analogs openvr controller-0
+
+observer openvr-observer
+    navigation device openvr-navigation-device
+    tracking device openvr-eye-left openvr-eye-right
+
+process openvr-process
+    window openvr-window
+        observer openvr-observer
+        output stereo openvr

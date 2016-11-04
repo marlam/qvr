@@ -344,29 +344,34 @@ bool QVRConfig::readFromFile(const QString& filename)
                 continue;
             } else if (cmd == "tracking" && arglist.length() >= 1
                     && (arglist[0] == "none" || arglist[0] == "static"
-                        || arglist[0] == "oculus" || arglist[0] == "vrpn"
-                        || arglist[0] == "osvr")) {
+                        || arglist[0] == "oculus" || arglist[0] == "openvr"
+                        || arglist[0] == "osvr" || arglist[0] == "vrpn")) {
                 deviceConfig._trackingType = (
                         arglist[0] == "none" ? QVR_Device_Tracking_None
                         : arglist[0] == "static" ? QVR_Device_Tracking_Static
                         : arglist[0] == "oculus" ? QVR_Device_Tracking_Oculus
-                        : arglist[0] == "vrpn" ? QVR_Device_Tracking_VRPN
-                        : QVR_Device_Tracking_OSVR);
+                        : arglist[0] == "openvr" ? QVR_Device_Tracking_OpenVR
+                        : arglist[0] == "osvr" ? QVR_Device_Tracking_OSVR
+                        : QVR_Device_Tracking_VRPN);
                 deviceConfig._trackingParameters = QStringList(arglist.mid(1)).join(' ');
                 continue;
             } else if (cmd == "buttons" && arglist.length() >= 1
-                    && (arglist[0] == "none" || arglist[0] == "static" || arglist[0] == "vrpn")) {
+                    && (arglist[0] == "none" || arglist[0] == "static"
+                        || arglist[0] == "openvr" || arglist[0] == "vrpn")) {
                 deviceConfig._buttonsType = (
                         arglist[0] == "none" ? QVR_Device_Buttons_None
                         : arglist[0] == "static" ? QVR_Device_Buttons_Static
+                        : arglist[0] == "openvr" ? QVR_Device_Buttons_OpenVR
                         : QVR_Device_Buttons_VRPN);
                 deviceConfig._buttonsParameters = QStringList(arglist.mid(1)).join(' ');
                 continue;
             } else if (cmd == "analogs" && arglist.length() >= 1
-                    && (arglist[0] == "none" || arglist[0] == "static" || arglist[0] == "vrpn")) {
+                    && (arglist[0] == "none" || arglist[0] == "static"
+                        || arglist[0] == "openvr" || arglist[0] == "vrpn")) {
                 deviceConfig._analogsType = (
                         arglist[0] == "none" ? QVR_Device_Analogs_None
                         : arglist[0] == "static" ? QVR_Device_Analogs_Static
+                        : arglist[0] == "openvr" ? QVR_Device_Analogs_OpenVR
                         : QVR_Device_Analogs_VRPN);
                 deviceConfig._analogsParameters = QStringList(arglist.mid(1)).join(' ');
                 continue;
@@ -405,7 +410,7 @@ bool QVRConfig::readFromFile(const QString& filename)
                 continue;
             } else if (cmd == "tracking" && arglist.length() >= 1
                     && (arglist[0] == "stationary" || arglist[0] == "device"
-                        || arglist[0] == "oculus" || arglist[0] == "custom")) {
+                        || arglist[0] == "custom")) {
                 observerConfig._trackingType = (
                         arglist[0] == "stationary" ? QVR_Tracking_Stationary
                         : arglist[0] == "device" ? QVR_Tracking_Device
@@ -517,6 +522,7 @@ bool QVRConfig::readFromFile(const QString& filename)
                             : arglist[1] == "green_magenta" ? QVR_Output_Stereo_Green_Magenta
                             : arglist[1] == "amber_blue" ? QVR_Output_Stereo_Amber_Blue
                             : arglist[1] == "oculus" ? QVR_Output_Stereo_Oculus
+                            : arglist[1] == "openvr" ? QVR_Output_Stereo_OpenVR
                             : QVR_Output_Stereo_Custom);
                     windowConfig._outputPlugin = QString();
                     if (arglist.length() > 1
