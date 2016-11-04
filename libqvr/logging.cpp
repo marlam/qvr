@@ -51,4 +51,5 @@ void QVRMsg(const char* s)
     bufIndex++;
     buf[std::min(bufIndex, QVR_MSG_BUFSIZE - 1)] = '\0';
     std::fputs(buf, QVRLogStream ? QVRLogStream : stderr);
+    std::fflush(QVRLogStream ? QVRLogStream : stderr);
 }
