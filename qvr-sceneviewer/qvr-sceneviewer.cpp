@@ -93,9 +93,7 @@ void QVRSceneViewer::render(QVRWindow* /* window */,
     glViewport(0, 0, width, height);
     glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    float frustum[6];
-    context.frustum(viewPass).getClippingPlanes(frustum);
-    _sceneViewer.render(frustum, context.viewMatrix(viewPass));
+    _sceneViewer.render(context.frustum(viewPass).toMatrix4x4(), context.viewMatrix(viewPass));
 }
 
 void QVRSceneViewer::keyPressEvent(const QVRRenderContext&, QKeyEvent* event)

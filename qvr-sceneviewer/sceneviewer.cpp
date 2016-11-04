@@ -395,11 +395,9 @@ bool SceneViewer::init(const aiScene* s, const QString& baseDirectory, const QMa
     return true;
 }
 
-void SceneViewer::render(const float* frustum, const QMatrix4x4& viewMatrix)
+void SceneViewer::render(const QMatrix4x4& projectionMatrix, const QMatrix4x4& viewMatrix)
 {
-    /* Set per-frame uniforms */
-    QMatrix4x4 projectionMatrix;
-    projectionMatrix.frustum(frustum[0], frustum[1], frustum[2], frustum[3], frustum[4], frustum[5]);
+    glUseProgram(_prg.programId());
     _prg.setUniformValue("projection_modelview_matrix", projectionMatrix * viewMatrix);
     _prg.setUniformValue("modelview_matrix", viewMatrix);
     _prg.setUniformValue("normal_matrix", viewMatrix.transposed().inverted());

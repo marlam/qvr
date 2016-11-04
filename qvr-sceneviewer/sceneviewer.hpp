@@ -123,7 +123,7 @@ public:
     bool init(const aiScene* s, const QString& baseDirectory, const QMatrix4x4& transformationMatrix);
     void exit();
 
-    void render(const float* frustumLrbtnf, const QMatrix4x4& viewMatrix);
+    void render(const QMatrix4x4& projectionMatrix, const QMatrix4x4& viewMatrix);
 
     bool mipmapping() const { return _mipmapping; }
     void setMipmapping(bool m) { _mipmapping = m; }
