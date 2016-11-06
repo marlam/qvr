@@ -208,5 +208,5 @@ void main(void)
     // Resulting color at this fragment
     vec3 color = lightness * (emissive_color + ambient_color + diffuse_color + specular_color);
 
-    fcolor = vec4(color, opacity);
+    fcolor = vec4(color, 1.0);
 }
