@@ -92,7 +92,6 @@ private:
     void renderToScreen();
     void asyncSwapBuffers();
     void waitForSwapBuffers();
-    void updateObserver();
 
     // to be called from _thread and QVRManager:
     QOpenGLContext* winContext() { return _winContext; }

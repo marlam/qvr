@@ -142,7 +142,7 @@ public:
      * @param rot      Navigation orientation
      *
      * This function is called internally by QVR except for custom observers,
-     * which may be modified from \a QVRApp::updateObservers().
+     * which may be modified from \a QVRApp::update().
      */
     void setNavigation(const QVector3D& pos, const QQuaternion& rot)
     {
@@ -172,7 +172,7 @@ public:
      * using \a eyeDistance().
      *
      * This function is called internally by QVR except for custom observers,
-     * which may be modified from \a QVRApp::updateObservers().
+     * which may be modified from \a QVRApp::update().
      */
     void setTracking(const QVector3D& pos, const QQuaternion& rot);
 
@@ -187,7 +187,7 @@ public:
      * from the information for the left and right eyes.
      *
      * This function is called internally by QVR except for custom observers,
-     * which may be modified from \a QVRApp::updateObservers().
+     * which may be modified from \a QVRApp::update().
      */
     void setTracking(const QVector3D& posLeft, const QQuaternion& rotLeft, const QVector3D& posRight, const QQuaternion& rotRight);
 };

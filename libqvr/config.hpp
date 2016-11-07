@@ -103,7 +103,7 @@ typedef enum {
      * activated by clicking in a window and deactivated by pressing ESC.
      */
     QVR_Navigation_WASDQE,
-    /*! \brief An observer with navigation implemented by QVRApp::updateObservers(). */
+    /*! \brief An observer with navigation implemented by QVRApp::update(). */
     QVR_Navigation_Custom
 } QVRNavigationType;
 
@@ -115,7 +115,7 @@ typedef enum {
     QVR_Tracking_Stationary,
     /*! \brief An observer that is tracked via a tracked device. */
     QVR_Tracking_Device,
-    /*! \brief An observer with tracking implemented by QVRApp::updateObservers(). */
+    /*! \brief An observer with tracking implemented by QVRApp::update(). */
     QVR_Tracking_Custom
 } QVRTrackingType;
 
@@ -567,14 +567,17 @@ public:
 
     /*!
      * \brief Create a default configuration.
+     * \param preferCustomNavigation   Use custom navigation for the default observer if feasible.
      *
      * This function will detect a head-mounted display and create a suitable
      * configuration for it.
-     *
      * If no special equipment is detected, the function will generate a single
      * observer viewing a single window on the master process.
+     *
+     * The observer created will a suitable default navigation type. If \a preferCustomNavigation
+     * is set, then the navigation type \a QVR_Navigation_Custom will be used if it makes sense.
      */
-    void createDefault();
+    void createDefault(bool preferCustomNavigation);
 
     /*!
      * \brief Read a configuration file.

@@ -331,14 +331,18 @@ public:
 
     /*!
      * \brief Initialize the QVR application.
-     * \param app       The QVR application.
+     * \param app                       The QVR application.
+     * \param preferCustomNavigation   Whether the application prefers its own navigation methods.
      * \return  False on failure.
      *
      * This function will create all slave processes and all windows, depending
      * on the QVR configuration, and it will call the initialization functions
      * of \a app.
+     *
+     * Applications that implement their own navigation methods in \a QVRApp::update() should
+     * set the \a preferCustomNavigation flag.
      */
-    bool init(QVRApp* app);
+    bool init(QVRApp* app, bool preferCustomNavigation = false);
 
     /*!
      * \brief Return the QVR manager instance.

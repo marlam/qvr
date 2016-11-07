@@ -55,8 +55,9 @@ class QVRProcess;
  *   preRenderProcess(), or postRenderProcess().
  * - For special window-specific actions, implement initWindow(), exitWindow(),
  *   preRenderWindow(), or postRenderWindow().
- * - To support your own tracking system that is unsupported by QVR, implement
- *   updateObservers().
+ * - To support your own navigation scheme, implement it in update(), and call
+ *   QVRManager::init() with the appropriate flag to signal that your applications
+ *   prefers its own navigation method.
  * - To support multi-process configurations (for multi-GPU or networked rendering),
  *   implement serializeDynamicData() and deserializeDynamicData(), and in special cases
  *   also serializeStaticData() and deserializeStaticData().
@@ -65,8 +66,7 @@ class QVRProcess;
  *   or wheelEvent() like you would in any Qt application.
  *
  * A key concept of QVR is that an application uses only one OpenGL context.
- * This context is available to all functions in the interface, with the exception
- * of the serialization functions.
+ * This context is available to almost all functions in the interface.
  */
 class QVRApp {
 public:
@@ -98,16 +98,19 @@ public:
     /*!
      * \brief Update scene state.
      * \param devices   A list of Virtual Reality interaction devices
+     * \param customObservers   A list of observers that the application may modify.
      *
-     * Update scene state, e.g. for animations.
+     * Update scene state, e.g. for animations and interaction.
      *
-     * The \a devices list can be used to implement your own interaction schemes
-     * based on VR interaction devices.
+     * The list of \a devices gives you the current state of interaction devices, so
+     * that you can implement interaction, tracking, and navigation functionality (all optional).
      *
-     * Called once before each frame on the master process. Immediately afterwards,
-     * \a updateObservers() is called.
+     * The list of \a customObservers contains all observers that have custom
+     * navigation and/or tracking. You can manipulate these observers here.
+     *
+     * Called once before each frame on the master process.
      */
-    virtual void update(const QList<const QVRDevice*>& devices) { Q_UNUSED(devices); }
+    virtual void update(const QList<const QVRDevice*>& devices, const QList<QVRObserver*>& customObservers) { Q_UNUSED(devices); Q_UNUSED(customObservers); }
 
     /*!
      * \brief Set the near and far clipping plane.
@@ -260,19 +263,6 @@ public:
     virtual void deserializeStaticData(QDataStream& ds) { Q_UNUSED(ds); }
 
     /*!
-     * \brief Update observers for custom tracking and navigation implementations.
-     * \param devices           A list of Virtual Reality interaction devices.
-     * \param customObservers   A list of observers that the application may modify.
-     *
-     * Update tracking and/or navigation information for observers of type
-     * \a QVR_Observer_Custom. Use this to implement your own navigation methods,
-     * and/or your own tracking system.
-     *
-     * Called once before each frame on the master process, after \a update().
-     */
-    virtual void updateObservers(const QList<const QVRDevice*>& devices, const QList<QVRObserver*>& customObservers) { Q_UNUSED(devices); Q_UNUSED(customObservers); }
-
-    /*!
      * \brief Handle a key press event.
      * \param context   The context that this event originated from
      * \param event     The event
@@ -280,7 +270,7 @@ public:
      * All events from all windows on all processes are gathered by the \a QVRManager.
      *
      * This function is called once before each frame on the master process, before
-     * update() and updateObservers().
+     * update().
      */
     virtual void keyPressEvent(const QVRRenderContext& context, QKeyEvent* event) { Q_UNUSED(context); Q_UNUSED(event); }
 
@@ -292,7 +282,7 @@ public:
      * All events from all windows on all processes are gathered by the \a QVRManager.
      *
      * This function is called once before each frame on the master process, before
-     * update() and updateObservers().
+     * update().
      */
     virtual void keyReleaseEvent(const QVRRenderContext& context, QKeyEvent* event) { Q_UNUSED(context); Q_UNUSED(event); }
 
@@ -304,7 +294,7 @@ public:
      * All events from all windows on all processes are gathered by the \a QVRManager.
      *
      * This function is called once before each frame on the master process, before
-     * update() and updateObservers().
+     * update().
      */
     virtual void mouseMoveEvent(const QVRRenderContext& context, QMouseEvent* event) { Q_UNUSED(context); Q_UNUSED(event); }
 
@@ -316,7 +306,7 @@ public:
      * All events from all windows on all processes are gathered by the \a QVRManager.
      *
      * This function is called once before each frame on the master process, before
-     * update() and updateObservers().
+     * update().
      */
     virtual void mousePressEvent(const QVRRenderContext& context, QMouseEvent* event) { Q_UNUSED(context); Q_UNUSED(event); }
 
@@ -328,7 +318,7 @@ public:
      * All events from all windows on all processes are gathered by the \a QVRManager.
      *
      * This function is called once before each frame on the master process, before
-     * update() and updateObservers().
+     * update().
      */
     virtual void mouseReleaseEvent(const QVRRenderContext& context, QMouseEvent* event) { Q_UNUSED(context); Q_UNUSED(event); }
 
@@ -340,7 +330,7 @@ public:
      * All events from all windows on all processes are gathered by the \a QVRManager.
      *
      * This function is called once before each frame on the master process, before
-     * update() and updateObservers().
+     * update().
      */
     virtual void mouseDoubleClickEvent(const QVRRenderContext& context, QMouseEvent* event) { Q_UNUSED(context); Q_UNUSED(event); }
 
@@ -352,7 +342,7 @@ public:
      * All events from all windows on all processes are gathered by the \a QVRManager.
      *
      * This function is called once before each frame on the master process, before
-     * update() and updateObservers().
+     * update().
      */
     virtual void wheelEvent(const QVRRenderContext& context, QWheelEvent* event) { Q_UNUSED(context); Q_UNUSED(event); }
 };

@@ -275,7 +275,7 @@ QVRManager::~QVRManager()
     manager = NULL;
 }
 
-bool QVRManager::init(QVRApp* app)
+bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
 {
     Q_ASSERT(!_app);
 
@@ -287,7 +287,7 @@ bool QVRManager::init(QVRApp* app)
     // Get configuration
     _config = new QVRConfig;
     if (_configFilename.isEmpty()) {
-        _config->createDefault();
+        _config->createDefault(preferCustomNavigation);
     } else {
         if (!_config->readFromFile(_configFilename)) {
             return false;
@@ -568,8 +568,7 @@ bool QVRManager::init(QVRApp* app)
         _masterWindow->winContext()->doneCurrent();
     if (_processIndex == 0) {
         updateDevices();
-        _app->update(_constDevices);
-        _app->updateObservers(_constDevices, _customObservers);
+        _app->update(_constDevices, _customObservers);
     }
 
     // Initialize FPS printing
@@ -778,8 +777,7 @@ void QVRManager::masterLoop()
     QApplication::processEvents();
     processEventQueue();
     QVR_FIREHOSE("  ... app update");
-    _app->update(_constDevices);
-    _app->updateObservers(_constDevices, _customObservers);
+    _app->update(_constDevices, _customObservers);
 
     // now wait for windows to finish buffer swap...
     waitForBufferSwaps();

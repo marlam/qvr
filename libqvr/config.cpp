@@ -92,7 +92,7 @@ QVRConfig::QVRConfig()
 {
 }
 
-void QVRConfig::createDefault()
+void QVRConfig::createDefault(bool preferCustomNavigation)
 {
     QVR_INFO("creating default configuration");
 
@@ -128,6 +128,11 @@ void QVRConfig::createDefault()
 #endif
     bool ok = readFromFile(":/libqvr/default-config-desktop.qvr");
     Q_ASSERT(ok);
+
+    if (preferCustomNavigation) {
+        _observerConfigs[0]._navigationType = QVR_Navigation_Custom;
+        _observerConfigs[0]._navigationParameters = QString();
+    }
 }
 
 bool QVRConfig::readFromFile(const QString& filename)

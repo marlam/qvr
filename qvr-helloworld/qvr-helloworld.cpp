@@ -135,7 +135,7 @@ void QVRHelloWorld::deserializeDynamicData(QDataStream& ds)
     ds >> _objectRotationAngle;
 }
 
-void QVRHelloWorld::update(const QList<const QVRDevice*>&)
+void QVRHelloWorld::update(const QList<const QVRDevice*>&, const QList<QVRObserver*>&)
 {
     float seconds = _timer.elapsed() / 1000.0f;
     _objectRotationAngle = seconds * 20.0f;

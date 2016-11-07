@@ -55,7 +55,7 @@ public:
     void render(QVRWindow* w, const QVRRenderContext& c,
             int viewPass, unsigned int texture) override;
 
-    void update(const QList<const QVRDevice*>& devices) override;
+    void update(const QList<const QVRDevice*>& devices, const QList<QVRObserver*>& customObservers) override;
 
     bool wantExit() override;
 
