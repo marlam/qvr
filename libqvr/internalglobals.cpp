@@ -201,20 +201,7 @@ static OSVR_CBool osvrToolkitSetVerticalSync(void*, OSVR_CBool) { return true; }
 static OSVR_CBool osvrToolkitHandleEvents(void*) { return true; }
 static OSVR_CBool osvrToolkitGetDisplayFrameBuffer(void*, size_t, GLuint* fb) { *fb = 0; return true; }
 static OSVR_CBool osvrToolkitGetDisplaySizeOverride(void*, size_t, int*, int*) { return false; }
-static OSVR_OpenGLToolkitFunctions osvrToolkit = {
-    .size = sizeof(OSVR_OpenGLToolkitFunctions),
-    .data = NULL,
-    .create = osvrToolkitCreate,
-    .destroy = osvrToolkitDestroy,
-    .addOpenGLContext = osvrToolkitAddOpenGLContext,
-    .removeOpenGLContexts = osvrToolkitRemoveOpenGLContexts,
-    .makeCurrent = osvrToolkitMakeCurrent,
-    .swapBuffers = osvrToolkitSwapBuffers,
-    .setVerticalSync = osvrToolkitSetVerticalSync,
-    .handleEvents = osvrToolkitHandleEvents,
-    .getDisplayFrameBuffer = osvrToolkitGetDisplayFrameBuffer,
-    .getDisplaySizeOverride = osvrToolkitGetDisplaySizeOverride
-};
+static OSVR_OpenGLToolkitFunctions osvrToolkit;
 void QVRAttemptOSVRInitialization()
 {
     bool osvr = false;
@@ -249,6 +236,18 @@ void QVRAttemptOSVRInitialization()
                     } else {
                         QVR_INFO("OSVR: display config is usable");
                         OSVR_GraphicsLibraryOpenGL library;
+                        osvrToolkit.size = sizeof(OSVR_OpenGLToolkitFunctions);
+                        osvrToolkit.data = NULL;
+                        osvrToolkit.create = osvrToolkitCreate;
+                        osvrToolkit.destroy = osvrToolkitDestroy;
+                        osvrToolkit.addOpenGLContext = osvrToolkitAddOpenGLContext;
+                        osvrToolkit.removeOpenGLContexts = osvrToolkitRemoveOpenGLContexts;
+                        osvrToolkit.makeCurrent = osvrToolkitMakeCurrent;
+                        osvrToolkit.swapBuffers = osvrToolkitSwapBuffers;
+                        osvrToolkit.setVerticalSync = osvrToolkitSetVerticalSync;
+                        osvrToolkit.handleEvents = osvrToolkitHandleEvents;
+                        osvrToolkit.getDisplayFrameBuffer = osvrToolkitGetDisplayFrameBuffer;
+                        osvrToolkit.getDisplaySizeOverride = osvrToolkitGetDisplaySizeOverride;
                         library.toolkit = &osvrToolkit;
                         if (osvrCreateRenderManagerOpenGL(QVROsvrClientContext, "OpenGL", library,
                                     &QVROsvrRenderManager, &QVROsvrRenderManagerOpenGL) != OSVR_RETURN_SUCCESS) {

@@ -862,7 +862,11 @@ void QVRWindow::renderOutput()
         _outputPluginFunc(this, _renderContext, _textures[0], _textures[1]);
     } else if (config().outputMode() == QVR_Output_OSVR) {
 #ifdef HAVE_OSVR
-        const OSVR_ViewportDescription osvrDefaultViewport = { .left = 0, .lower = 0, .width = 1, .height = 1 };
+        OSVR_ViewportDescription osvrDefaultViewport;
+        osvrDefaultViewport.left = 0;
+        osvrDefaultViewport.lower = 0;
+        osvrDefaultViewport.width = 1;
+        osvrDefaultViewport.height = 1;
         OSVR_RenderParams osvrDefaultRenderParams;
         osvrRenderManagerGetDefaultRenderParams(&osvrDefaultRenderParams);
         OSVR_RenderManagerPresentState s;
