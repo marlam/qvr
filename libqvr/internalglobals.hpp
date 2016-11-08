@@ -30,6 +30,9 @@
 #  define isnan std::isnan
 # endif
 # include <OVR_CAPI.h>
+# if (OVR_PRODUCT_VERSION < 1)
+#  undef isnan
+# endif
 # if (OVR_PRODUCT_VERSION >= 1)
 extern ovrSession QVROculus;
 extern ovrGraphicsLuid QVROculusLuid;
