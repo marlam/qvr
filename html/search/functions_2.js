@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['config',['config',['../class_q_v_r_manager.html#a6e0739e65d2c36165d7eb192583cb858',1,'QVRManager::config()'],['../class_q_v_r_device.html#ad2e48d6863b5ddd750f821bb55095e6a',1,'QVRDevice::config()'],['../class_q_v_r_observer.html#a12df7a05ff0b4e38fe8e654784921794',1,'QVRObserver::config()'],['../class_q_v_r_window.html#a8c9f347605e9ab067bd8f0ff9e88697b',1,'QVRWindow::config()'],['../class_q_v_r_process.html#adb4332377f038ae5ebe375ae098eed54',1,'QVRProcess::config()']]],
-  ['createdefault',['createDefault',['../class_q_v_r_config.html#a90002bc537adb415be681f9f05b801cc',1,'QVRConfig']]]
+  ['config',['config',['../class_q_v_r_manager.html#a6e0739e65d2c36165d7eb192583cb858',1,'QVRManager::config()'],['../class_q_v_r_device.html#a67384fed79acb1d337ab3e77f2799416',1,'QVRDevice::config()'],['../class_q_v_r_observer.html#afd819cf004f2ce99a07e8a8a76342dcf',1,'QVRObserver::config()'],['../class_q_v_r_window.html#af6bf4e626adec548df24ae614aa93b7d',1,'QVRWindow::config()'],['../class_q_v_r_process.html#a9f55cef550f8daa218ea8b98c1e7392c',1,'QVRProcess::config()']]],
+  ['createdefault',['createDefault',['../class_q_v_r_config.html#a969b867db860e17f9f9e61610020c619',1,'QVRConfig']]]
 ];
