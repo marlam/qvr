@@ -144,7 +144,7 @@ QVRDevice::QVRDevice(int deviceIndex) :
             int sensor = (args.length() >= 2 ? args[1].toInt() : vrpn_ALL_SENSORS);
             _internals->vrpnTrackerRemote = new vrpn_Tracker_Remote(qPrintable(name));
             vrpn_System_TextPrinter.set_ostream_to_use(stderr);
-            _internals->vrpnTrackerRemote->register_change_handler(this, QVRVrpnTrackerChangeHandler, sensor);
+            _internals->vrpnTrackerRemote->register_change_handler(_internals, QVRVrpnTrackerChangeHandler, sensor);
         }
 #endif
         break;
@@ -237,7 +237,7 @@ QVRDevice::QVRDevice(int deviceIndex) :
             if (QVRManager::processIndex() == config().processIndex()) {
                 _internals->vrpnButtonRemote = new vrpn_Button_Remote(qPrintable(name));
                 vrpn_System_TextPrinter.set_ostream_to_use(stderr);
-                _internals->vrpnButtonRemote->register_change_handler(this, QVRVrpnButtonChangeHandler);
+                _internals->vrpnButtonRemote->register_change_handler(_internals, QVRVrpnButtonChangeHandler);
             }
         }
 #endif
@@ -319,7 +319,7 @@ QVRDevice::QVRDevice(int deviceIndex) :
             if (QVRManager::processIndex() == config().processIndex()) {
                 _internals->vrpnAnalogRemote = new vrpn_Analog_Remote(qPrintable(name));
                 vrpn_System_TextPrinter.set_ostream_to_use(stderr);
-                _internals->vrpnAnalogRemote->register_change_handler(this, QVRVrpnAnalogChangeHandler);
+                _internals->vrpnAnalogRemote->register_change_handler(_internals, QVRVrpnAnalogChangeHandler);
             }
         }
 #endif
