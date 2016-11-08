@@ -11,6 +11,5 @@ observer oculus-observer
 
 process oculus-process
     window oculus-window
-        display_screen 1
         observer oculus-observer
         output stereo oculus
