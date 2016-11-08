@@ -26,11 +26,11 @@ Currently tested are Linux and Windows.
 
 Supported VR hardware includes:
 
-- Custom room-scale VR labs with multiple GPUs and/or render clusters
-
-- Oculus Rift with [Oculus SDK](https://www.oculus.com/)
+- Custom large-scale VR labs with multiple GPUs and/or render clusters
 
 - HTC Vive and SteamVR with [OpenVR](https://github.com/ValveSoftware/openvr)
+
+- Oculus Rift with [Oculus SDK](https://www.oculus.com/)
 
 - HDK and lots of other head-mounted displays with [OSVR](http://osvr.org/)
 
