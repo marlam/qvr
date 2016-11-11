@@ -13,8 +13,9 @@ different setup.
 
 The application only needs to implement a single interface with just a few
 easily understandable functions. All rendering happens in a single OpenGL
-context from a single thread. There are no context switching and sharing
-issues, and no threading problems!
+context so that there are no context switching and sharing issues. Furthermore
+the application does not need to care about threads, but is still free to
+implement any threading model.
 
 QVR allows writing VR applications in pure OpenGL as well as using arbitrary
 external rendering engines. Examples are provided.
