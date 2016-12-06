@@ -150,8 +150,10 @@ void QVRUpdateOpenVR()
     QVROpenVRConvertPose(QVROpenVRConvertMatrix(poses[QVROpenVRControllerIndices[1]].mDeviceToAbsoluteTracking),
             &(QVROpenVRTrackedOrientations[4]), &(QVROpenVRTrackedPositions[4]));
     // controller states:
-    QVROpenVRSystem->GetControllerState(QVROpenVRControllerIndices[0], &(QVROpenVRControllerStates[0]));
-    QVROpenVRSystem->GetControllerState(QVROpenVRControllerIndices[1], &(QVROpenVRControllerStates[1]));
+    QVROpenVRSystem->GetControllerState(QVROpenVRControllerIndices[0], &(QVROpenVRControllerStates[0]),
+            sizeof(QVROpenVRControllerStates[0]));
+    QVROpenVRSystem->GetControllerState(QVROpenVRControllerIndices[1], &(QVROpenVRControllerStates[1]),
+            sizeof(QVROpenVRControllerStates[1]));
 }
 void QVRAttemptOpenVRInitialization()
 {
