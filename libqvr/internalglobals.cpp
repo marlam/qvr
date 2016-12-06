@@ -104,14 +104,6 @@ vr::TrackedDevicePose_t QVROpenVRPoses[3];
 QQuaternion QVROpenVRTrackedOrientations[5]; // head, left eye, right eye, controller0, controller1
 QVector3D QVROpenVRTrackedPositions[5];      // head, left eye, right eye, controller0, controller1
 static QMatrix4x4 QVROpenVRHmdToEye[2];
-static QMatrix4x4 QVROpenVRConvertMatrix(const vr::HmdMatrix44_t& openVrMatrix)
-{
-    QMatrix4x4 m;
-    for (int r = 0; r < 4; r++)
-        for (int c = 0; c < 4; c++)
-            m(r, c) = openVrMatrix.m[r][c];
-    return m;
-}
 static QMatrix4x4 QVROpenVRConvertMatrix(const vr::HmdMatrix34_t& openVrMatrix)
 {
     QMatrix4x4 m;
