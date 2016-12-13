@@ -901,9 +901,9 @@ void QVRWindow::renderOutput()
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         if (config().outputMode() == QVR_Output_Stereo_OpenVR) {
 #ifdef HAVE_OPENVR
-            vr::Texture_t l = { reinterpret_cast<void*>(_textures[0]), vr::API_OpenGL, vr::ColorSpace_Linear };
+            vr::Texture_t l = { reinterpret_cast<void*>(_textures[0]), vr::TextureType_OpenGL, vr::ColorSpace_Linear };
             vr::VRCompositor()->Submit(vr::Eye_Left, &l, NULL, vr::Submit_Default);
-            vr::Texture_t r = { reinterpret_cast<void*>(_textures[1]), vr::API_OpenGL, vr::ColorSpace_Linear };
+            vr::Texture_t r = { reinterpret_cast<void*>(_textures[1]), vr::TextureType_OpenGL, vr::ColorSpace_Linear };
             vr::VRCompositor()->Submit(vr::Eye_Right, &r, NULL, vr::Submit_Default);
             glFlush(); // suggested by a comment in openvr.h
 #endif
