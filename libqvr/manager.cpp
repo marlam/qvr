@@ -864,9 +864,9 @@ void QVRManager::slaveLoop()
                 eventQueue->dequeue();
             }
             QVR_FIREHOSE("  ... sending command 'sync' to master");
-            _client->sendCmdSync();
             _client->flush();
             waitForBufferSwaps();
+            _client->sendCmdSync();
         } else if (cmd == QVRClientCmdQuit) {
             QVR_FIREHOSE("  ... got command 'quit' from master");
             _triggerTimer->stop();
