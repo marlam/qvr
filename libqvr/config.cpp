@@ -81,9 +81,10 @@ QVRWindowConfig::QVRWindowConfig() :
 
 QVRProcessConfig::QVRProcessConfig() :
     _id(),
-    _display(),
+    _ipc(QVR_IPC_Automatic),
     _address(),
     _launcher(),
+    _display(),
     _windowConfigs()
 {
 }
@@ -350,8 +351,16 @@ bool QVRConfig::readFromFile(const QString& filename)
             // or process or window properties.
             if (windowIndex == -1) {
                 // process properties:
-                if (cmd == "display" && arglist.length() == 1) {
-                    processConfig._display = arg;
+                if (cmd == "ipc" && arglist.length() == 1
+                        && (arglist[0] == "tcp-socket"
+                            || arglist[0] == "local-socket"
+                            || arglist[0] == "shared-memory"
+                            || arglist[0] == "auto")) {
+                    processConfig._ipc = (
+                            arglist[0] == "tcp-socket" ? QVR_IPC_TcpSocket
+                            : arglist[0] == "local-socket" ? QVR_IPC_LocalSocket
+                            : arglist[0] == "shared-memory" ? QVR_IPC_SharedMemory
+                            : QVR_IPC_Automatic);
                     continue;
                 }
                 if (cmd == "address" && arglist.length() >= 1) {
@@ -360,6 +369,10 @@ bool QVRConfig::readFromFile(const QString& filename)
                 }
                 if (cmd == "launcher" && arglist.length() >= 1) {
                     processConfig._launcher = arg;
+                    continue;
+                }
+                if (cmd == "display" && arglist.length() == 1) {
+                    processConfig._display = arg;
                     continue;
                 }
             } else {
@@ -587,4 +600,3 @@ bool QVRConfig::readFromFile(const QString& filename)
     }
     return true;
 }
-

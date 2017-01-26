@@ -24,35 +24,39 @@
 #ifndef QVR_IPC_HPP
 #define QVR_IPC_HPP
 
+#include <QByteArray>
 #include <QList>
+#include <QIODevice>
 
-class QLocalSocket;
-class QLocalServer;
 class QTcpSocket;
 class QTcpServer;
-class QIODevice;
+class QLocalSocket;
+class QLocalServer;
+class QSharedMemory;
+class QBuffer;
 
 class QVREvent;
 class QVRApp;
 class QVRDevice;
 class QVRObserver;
-class QByteArray;
+
+class QVRSharedMemoryDevice;
 
 
 /* This implements client/server Inter Process Communication (IPC).
  * These interfaces are only used internally and never exposed to applications.
  *
- * We use IPC either over local sockets (if all processes are on the same host,
- * which is assumed to be the case when all processes are configured without
- * a launcher), or over TCP sockets (if at least one process is on a remote host,
- * which is assumed to be the case if it is configured with a launcher).
+ * We use IPC either over shared memory or local sockets (if all processes are on
+ * the same host, which is assumed to be the case when all processes are configured
+ * without a launcher), or over TCP sockets (if at least one process is on a remote
+ * host, which is assumed to be the case if it is configured with a launcher).
  */
 
 /* A global timeout value, used whenever a communication function can time out.
  * TODO: this could be made configurable, e.g. via a master process attribute. */
 extern int QVRTimeoutMsecs;
 
-/* The client, for slave processes. Based on QLocalSocket/QTcpSocket.
+/* The client, for slave processes. Based on QVRSharedMemoryDevice/QLocalSocket/QTcpSocket.
  * Unfortunately QLocalSocket is not based on QAbstractSocket... */
 
 typedef enum {
@@ -69,24 +73,28 @@ typedef enum {
 class QVRClient
 {
 private:
-    QLocalSocket* _localSocket;
+    QByteArray _data;
     QTcpSocket* _tcpSocket;
+    QLocalSocket* _localSocket;
+    QSharedMemory* _sharedMem;
+    QVRSharedMemoryDevice* _sharedMemServerDevice;
+    QVRSharedMemoryDevice* _sharedMemClientDevice;
 
-    QIODevice* device();
-    void waitForBytesAvailable(int size);
+    QIODevice* inputDevice();
+    QIODevice* outputDevice();
 
 public:
     QVRClient();
     ~QVRClient();
 
     /* Start a client by connecting to the server. The server name is of
-     * the form local,name for a local server and tcp,host,port for a TCP server. */
-    bool start(const QString& serverName);
+     * the form local,name for a local server, tcp,host,port for a TCP server,
+     * and shmem,processes,key for a shared memory server. */
+    bool start(const QString& serverName, int processIndex);
 
     /* Commands that this client sends to the server */
     void sendReplyUpdateDevices(int n, const QByteArray& serializedDevices);
-    void sendCmdEvent(const QVREvent* e);
-    void sendCmdSync();
+    void sendCmdSync(int n, const QByteArray& serializedEvents);
     /* Explicit flushing of the underlying socket */
     void flush();
 
@@ -107,25 +115,32 @@ public:
 class QVRServer
 {
 private:
-    QLocalServer* _localServer;
-    QList<QLocalSocket*> _localSockets;
+    QByteArray _data;
     QTcpServer* _tcpServer;
     QList<QTcpSocket*> _tcpSockets;
+    QLocalServer* _localServer;
+    QList<QLocalSocket*> _localSockets;
+    QSharedMemory* _sharedMem;
+    QVRSharedMemoryDevice* _sharedMemServerDevice;
+    QList<QVRSharedMemoryDevice*> _sharedMemClientDevices;
 
-    int devices() const;
-    QIODevice* device(int i);
+    int inputDevices();
+    QIODevice* inputDevice(int i);
+
     void sendCmd(const char cmd,
-            const QByteArray& data0 = QByteArray(),
-            const QByteArray& data1 = QByteArray());
+            const QByteArray& data0 = QByteArray(NULL, 0),
+            const QByteArray& data1 = QByteArray(NULL, 0));
 
 public:
     QVRServer();
     ~QVRServer();
 
-    /* Start a server. You must choose to start either a local or a tcp server.
+    /* Start a server. You must choose to start either a tcp server or a local server
+     * or a shared memory server.
      * In case of a tcp server, you can optionally specify an IP address to listen on. */
-    bool startLocal();
     bool startTcp(const QString& address = QString());
+    bool startLocal();
+    bool startSharedMemory(int processes);
     /* Return the name of the server. This is either local,name for local servers
      * or tcp,host,port for tcp servers. Pass this name to QVRClient::start(). */
     QString name();
@@ -148,7 +163,7 @@ public:
     /* Commands that this server receives from all clients.
      * This is always a list of zero or more event commands followed by a sync command.
      * The events (if any) will be appended to the given list. */
-    bool receiveCmdsEventAndSync(QList<QVREvent>* eventList);
+    bool receiveCmdSync(QList<QVREvent>* eventList);
 };
 
 #endif

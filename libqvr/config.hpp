@@ -161,6 +161,22 @@ typedef enum {
 } QVROutputMode;
 
 /*!
+ * \brief Types of inter-process communication that can be used if multiple processes
+ * are configured.
+ */
+typedef enum {
+    /*! \brief TCP sockets. Processes may run on different hosts. */
+    QVR_IPC_TcpSocket,
+    /*! \brief Local sockets (UNIX domain sockets). All processes must run on the same host. */
+    QVR_IPC_LocalSocket,
+    /*! \brief Shared Memory. All processes must run on the same host. */
+    QVR_IPC_SharedMemory,
+    /*! \brief Automatic. QVR will choose \a QVR_IPC_TcpSocket if at least one process has
+     * a launch command configured, and \a QVR_IPC_SharedMemory otherwise. */
+    QVR_IPC_Automatic
+} QVRIpcType;
+
+/*!
  * \brief Configuration of a \a QVRDevice.
  */
 class QVRDeviceConfig
@@ -490,12 +506,16 @@ class QVRProcessConfig
 private:
     // Unique identification string
     QString _id;
-    // The display that this process works on. Only relevant for X11 at this time.
-    QString _display;
-    // The address to bind the QVR server to. Only relevant for the master process.
+    // The communication system to use for inter-process communication.
+    // Only relevant for the master process.
+    QVRIpcType _ipc;
+    // The IP address to bind the QVR server to. Only relevant with IPC type QVR_IPC_TcpScoket,
+    // and only for the master process.
     QString _address;
     // The launcher command, e.g. ssh
     QString _launcher;
+    // The display that this process works on. Only relevant for X11 at this time.
+    QString _display;
     // The windows driven by this process.
     QList<QVRWindowConfig> _windowConfigs;
 
@@ -507,15 +527,15 @@ public:
 
     /*! \brief Returns the unique id of this process. */
     const QString& id() const { return _id; }
-    /*! \brief Returns the display that this process works with. */
-    const QString& display() const { return _display; }
+    /*! \brief Returns the type of inter-process communication to use. */
+    QVRIpcType ipc() const { return _ipc; }
     /*! \brief Returns the IP address that the QVR server will listen on.
      *
      * A QVR server is only started on the master process (which is the application
      * process that is started first), and only if multiple processes are configured.
-     * A TCP QVR server that listens on a network address is only used if at least
-     * one of these processes is run on a remote host (which is assumed to be the case
-     * when a launcher is configured; see launcher()).
+     * A TCP QVR server that listens on a network address is only used if configured manually
+     * or if at least one of the processes is run on a remote host (which is assumed to be the
+     * case when a launcher is configured; see launcher()).
      *
      * By default, a TCP QVR server listens on all IP addresses of the host.
      */
@@ -537,6 +557,8 @@ public:
      * will be printed to the terminal.
      */
     const QString& launcher() const { return _launcher; }
+    /*! \brief Returns the display that this process works with. */
+    const QString& display() const { return _display; }
     /*! \brief Returns the configurations of the windows on this process. */
     const QList<QVRWindowConfig>& windowConfigs() const { return _windowConfigs; }
 };

@@ -113,10 +113,14 @@
  * Process definition (see \a QVRProcess and \a QVRProcessConfig):
  * - `process <id>`<br>
  *   Start a new process definition with the given unique id.
- * - `display <name>`<br>
- *   Display that this process is connected to.
+ * - `ipc <tcp-socket|local-socket|shared-memory|auto>`<br>
+ *   Select the inter-process communication method.
+ * - `address <ip-address>`<br>
+ *   Set the IP address to bind the server to when using tcp-based inter-process communication.
  * - `launcher <prg-and-args>`<br>
  *   Launcher commando used to start this process.
+ * - `display <name>`<br>
+ *   Display that this process is connected to.
  *
  * Window definition (see \a QVRWindow and \a QVRWindowConfig):
  * - `window <id>`<br>
@@ -178,6 +182,7 @@
 
 #include <QObject>
 #include <QVector3D>
+#include <QByteArray>
 
 template <typename T> class QList;
 class QTimer;
@@ -260,6 +265,7 @@ private:
     QString _masterName;
     QStringList _appArgs;
     // Data initialized by init():
+    QByteArray _serializationBuffer;
     QVRServer* _server; // only on the master process
     QVRClient* _client; // only on a client process
     QVRApp* _app;
@@ -332,7 +338,7 @@ public:
     /*!
      * \brief Initialize the QVR application.
      * \param app                       The QVR application.
-     * \param preferCustomNavigation   Whether the application prefers its own navigation methods.
+     * \param preferCustomNavigation    Whether the application prefers its own navigation methods.
      * \return  False on failure.
      *
      * This function will create all slave processes and all windows, depending

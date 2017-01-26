@@ -461,25 +461,37 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
     _thisProcess = new QVRProcess(_processIndex);
     if (_processIndex == 0) {
         if (_config->processConfigs().size() > 1) {
+            _serializationBuffer.reserve(1024 * 1024);
             QVR_INFO("starting IPC server");
-            _server = new QVRServer;
-            bool local = true;
-            for (int p = 1; p < _config->processConfigs().size(); p++) {
-                if (!_config->processConfigs()[p].launcher().isEmpty()) {
-                    // assume that the launcher starts the process on a remote
-                    // host and we need a TCP server to communicate
-                    local = false;
-                    break;
+            QVRIpcType ipc = _config->processConfigs()[0].ipc();
+            if (ipc == QVR_IPC_Automatic) {
+                // Choose TCP if a slave process has a launcher command (assuming this starts the
+                // process on a remote host)
+                for (int p = 1; p < _config->processConfigs().size(); p++) {
+                    if (!_config->processConfigs()[p].launcher().isEmpty()) {
+                        ipc = QVR_IPC_TcpSocket;
+                        break;
+                    }
+                }
+                // Use shared memory otherwise
+                if (ipc == QVR_IPC_Automatic) {
+                    ipc = QVR_IPC_SharedMemory;
                 }
             }
-            bool r = (local ? _server->startLocal()
-                    : _server->startTcp(_config->processConfigs()[0].address()));
+            _server = new QVRServer;
+            bool r;
+            if (ipc == QVR_IPC_TcpSocket)
+                r = _server->startTcp(_config->processConfigs()[0].address());
+            else if (ipc == QVR_IPC_LocalSocket)
+                r = _server->startLocal();
+            else
+                r = _server->startSharedMemory(_config->processConfigs().size());
             if (!r) {
                 QVR_FATAL("cannot start IPC server");
                 return false;
             }
-            QByteArray serializedStatData;
-            QDataStream serializationDataStream(&serializedStatData, QIODevice::WriteOnly);
+            _serializationBuffer.resize(0);
+            QDataStream serializationDataStream(&_serializationBuffer, QIODevice::WriteOnly);
             _app->serializeStaticData(serializationDataStream);
             for (int p = 1; p < _config->processConfigs().size(); p++) {
                 QVRProcess* process = new QVRProcess(p);
@@ -493,21 +505,26 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
             if (!_server->waitForClients(_config->processConfigs().size() - 1))
                 return false;
             QVR_INFO("... all clients connected");
-            QVR_INFO("initializing slave processes with %d bytes of static application data", serializedStatData.size());
-            _server->sendCmdInit(serializedStatData);
+            QVR_INFO("initializing slave processes with %d bytes of static application data", _serializationBuffer.size());
+            _server->sendCmdInit(_serializationBuffer);
             _server->flush();
         }
     } else {
+        _serializationBuffer.reserve(1024);
         _client = new QVRClient;
-        if (!_client->start(_masterName)) {
+        QVR_INFO("slave process %s (index %d) connecting to master ...", qPrintable(_thisProcess->id()), _processIndex);
+        if (!_client->start(_masterName, _processIndex)) {
             QVR_FATAL("cannot connect to master");
             return false;
         }
+        QVR_INFO("... done");
+        QVR_INFO("slave process %s (index %d) waiting for init command from master ...", qPrintable(_thisProcess->id()), _processIndex);
         QVRClientCmd cmd;
         if (!_client->receiveCmd(&cmd, true) || cmd != QVRClientCmdInit) {
             QVR_FATAL("cannot receive init command from master");
             return false;
         }
+        QVR_INFO("... done");
         QVR_INFO("initializing slave process %s (index %d) ...", qPrintable(_thisProcess->id()), _processIndex);
         _client->receiveCmdInitArgs(_app);
         QVR_INFO("... done");
@@ -741,31 +758,31 @@ void QVRManager::masterLoop()
 
     if (_slaveProcesses.size() > 0) {
         for (int d = 0; d < _devices.size(); d++) {
-            QByteArray serializedDevice;
-            QDataStream serializationDataStream(&serializedDevice, QIODevice::WriteOnly);
+            _serializationBuffer.resize(0);
+            QDataStream serializationDataStream(&_serializationBuffer, QIODevice::WriteOnly);
             serializationDataStream << (*_devices[d]);
-            QVR_FIREHOSE("  ... sending device %d (%d bytes) to slave processes", d, serializedDevice.size());
-            _server->sendCmdDevice(serializedDevice);
+            QVR_FIREHOSE("  ... sending device %d (%d bytes) to slave processes", d, _serializationBuffer.size());
+            _server->sendCmdDevice(_serializationBuffer);
         }
         if (_haveWasdqeObservers) {
-            QByteArray serializedWasdqeState;
-            QDataStream serializationDataStream(&serializedWasdqeState, QIODevice::WriteOnly);
+            _serializationBuffer.resize(0);
+            QDataStream serializationDataStream(&_serializationBuffer, QIODevice::WriteOnly);
             serializationDataStream << _wasdqeMouseProcessIndex << _wasdqeMouseWindowIndex << _wasdqeMouseInitialized;
-            QVR_FIREHOSE("  ... sending wasdqe state to slave processes");
-            _server->sendCmdWasdqeState(serializedWasdqeState);
+            QVR_FIREHOSE("  ... sending wasdqe state (%d bytes) to slave processes", _serializationBuffer.size());
+            _server->sendCmdWasdqeState(_serializationBuffer);
         }
         for (int o = 0; o < _observers.size(); o++) {
-            QByteArray serializedObserver;
-            QDataStream serializationDataStream(&serializedObserver, QIODevice::WriteOnly);
+            _serializationBuffer.resize(0);
+            QDataStream serializationDataStream(&_serializationBuffer, QIODevice::WriteOnly);
             serializationDataStream << (*_observers[o]);
-            QVR_FIREHOSE("  ... sending observer %d (%d bytes) to slave processes", o, serializedObserver.size());
-            _server->sendCmdObserver(serializedObserver);
+            QVR_FIREHOSE("  ... sending observer %d (%d bytes) to slave processes", o, _serializationBuffer.size());
+            _server->sendCmdObserver(_serializationBuffer);
         }
-        QByteArray serializedDynData;
-        QDataStream serializationDataStream(&serializedDynData, QIODevice::WriteOnly);
+        _serializationBuffer.resize(0);
+        QDataStream serializationDataStream(&_serializationBuffer, QIODevice::WriteOnly);
         _app->serializeDynamicData(serializationDataStream);
-        QVR_FIREHOSE("  ... sending dynamic application data (%d bytes) to slave processes", serializedDynData.size());
-        _server->sendCmdRender(_near, _far, serializedDynData);
+        QVR_FIREHOSE("  ... sending dynamic application data (%d bytes) to slave processes", _serializationBuffer.size());
+        _server->sendCmdRender(_near, _far, _serializationBuffer);
         _server->flush();
         QVR_FIREHOSE("  ... rendering commands are on their way");
     }
@@ -785,7 +802,7 @@ void QVRManager::masterLoop()
     if (_slaveProcesses.size() > 0) {
         QVR_FIREHOSE("  ... waiting for slaves to sync");
         QList<QVREvent> slaveEvents;
-        if (!_server->receiveCmdsEventAndSync(&slaveEvents)) {
+        if (!_server->receiveCmdSync(&slaveEvents)) {
             _wantExit = true;
         } else {
             QVR_FIREHOSE("  ... all slaves synced");
@@ -826,17 +843,17 @@ void QVRManager::slaveLoop()
             }
 #endif
             int n = 0;
-            QByteArray data;
-            QDataStream ds(&data, QIODevice::WriteOnly);
+            _serializationBuffer.resize(0);
+            QDataStream serializationDataStream(&_serializationBuffer, QIODevice::WriteOnly);
             for (int d = 0; d < _config->deviceConfigs().size(); d++) {
                 if (_devices[d]->config().processIndex() == processIndex()) {
                     _devices[d]->update();
-                    ds << *(_devices[d]);
+                    serializationDataStream << *(_devices[d]);
                     n++;
                 }
             }
             QVR_FIREHOSE("  ... sending %d updated devices to master", n);
-            _client->sendReplyUpdateDevices(n, data);
+            _client->sendReplyUpdateDevices(n, _serializationBuffer);
             _client->flush();
         } else if (cmd == QVRClientCmdDevice) {
             QVR_FIREHOSE("  ... got command 'device' from master");
@@ -857,24 +874,27 @@ void QVRManager::slaveLoop()
             _client->receiveCmdRenderArgs(&_near, &_far, _app);
             render();
             QApplication::processEvents();
+            int n = 0;
+            _serializationBuffer.resize(0);
+            QDataStream serializationDataStream(&_serializationBuffer, QIODevice::WriteOnly);
             while (!eventQueue->empty()) {
-                QVR_FIREHOSE("  ... sending command 'event' to master");
-                _client->sendCmdEvent(&eventQueue->front());
-                _client->flush(); // XXX: seems to be necessary at least on remote tcp sockets!?
-                eventQueue->dequeue();
+                serializationDataStream << eventQueue->dequeue();
+                n++;
             }
-            QVR_FIREHOSE("  ... sending command 'sync' to master");
-            _client->flush();
             waitForBufferSwaps();
-            _client->sendCmdSync();
+            QVR_FIREHOSE("  ... sending command 'sync' with %d events in %d bytes to master", n, _serializationBuffer.size());
+            _client->sendCmdSync(n, _serializationBuffer);
+            _client->flush();
         } else if (cmd == QVRClientCmdQuit) {
             QVR_FIREHOSE("  ... got command 'quit' from master");
             _triggerTimer->stop();
             quit();
+            break;
         } else {
             QVR_FATAL("  got unknown command from master!?");
             _triggerTimer->stop();
             quit();
+            break;
         }
     }
 }
