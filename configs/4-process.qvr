@@ -1,0 +1,43 @@
+observer o0
+    navigation wasdqe
+    tracking custom
+
+process master
+    #ipc tcp-socket
+    #ipc local-socket
+    ipc shared-memory
+    window 0
+        observer o0
+        output stereo red_cyan
+        display_screen -1
+        position 100 100
+        size 400 400
+        screen_is_fixed_to_observer true
+        screen_is_given_by_center true
+process slave0
+    window 1
+        observer o0
+        output stereo red_cyan
+        display_screen -1
+        position 510 100
+        size 400 400
+        screen_is_fixed_to_observer true
+        screen_is_given_by_center true
+process slave1
+    window 2
+        observer o0
+        output stereo red_cyan
+        display_screen -1
+        position 920 100
+        size 400 400
+        screen_is_fixed_to_observer true
+        screen_is_given_by_center true
+process slave2
+    window 3
+        observer o0
+        output stereo red_cyan
+        display_screen -1
+        position 1330 100
+        size 400 400
+        screen_is_fixed_to_observer true
+        screen_is_given_by_center true
