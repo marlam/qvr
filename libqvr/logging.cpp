@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,15 +26,31 @@
 #include "manager.hpp"
 #include "logging.hpp"
 
+static QByteArray QVRLogFile;
 static FILE* QVRLogStream = NULL;
 
-void QVRSetLogFile(const char* name)
+void QVRSetLogFile(const char* name, bool truncate)
 {
     if (!name) {
+        QVRLogFile.resize(0);
         QVRLogStream = NULL;
-    } else if (!(QVRLogStream = std::fopen(name, "w"))) {
-        QVR_WARNING("cannot open log file %s", name);
+    } else {
+        if (truncate)
+            std::remove(name);
+        if (!(QVRLogStream = std::fopen(name, "a"))) {
+            QVR_WARNING("cannot open log file %s", name);
+        } else {
+            std::setbuf(QVRLogStream, NULL);
+            QVRLogFile.clear();
+            QVRLogFile.append(name);
+            QVRLogFile.append('\0');
+        }
     }
+}
+
+const char* QVRGetLogFile()
+{
+    return QVRLogFile.isEmpty() ? NULL : QVRLogFile.data();
 }
 
 void QVRMsg(const char* s)
@@ -51,5 +67,4 @@ void QVRMsg(const char* s)
     bufIndex++;
     buf[std::min(bufIndex, QVR_MSG_BUFSIZE - 1)] = '\0';
     std::fputs(buf, QVRLogStream ? QVRLogStream : stderr);
-    std::fflush(QVRLogStream ? QVRLogStream : stderr);
 }

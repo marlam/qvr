@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -125,6 +125,15 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
         }
     }
 
+    // get process index (it is 0 == master by default)
+    for (int i = 1; i < argc; i++) {
+        if (strncmp(argv[i], "--qvr-process=", 14) == 0) {
+            _processIndex = ::atoi(argv[i] + 14);
+            removeArg(argc, argv, i);
+            break;
+        }
+    }
+
     // set log level
     if (::getenv("QVR_LOG_LEVEL"))
         parseLogLevel(::getenv("QVR_LOG_LEVEL"), &_logLevel);
@@ -143,11 +152,11 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
     // set log file
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--qvr-log-file") == 0 && i < argc - 1) {
-            QVRSetLogFile(argv[i + 1]);
+            QVRSetLogFile(argv[i + 1], _processIndex == 0);
             removeTwoArgs(argc, argv, i);
             break;
         } else if (strncmp(argv[i], "--qvr-log-file=", 15) == 0) {
-            QVRSetLogFile(argv[i] + 15);
+            QVRSetLogFile(argv[i] + 15, _processIndex == 0);
             removeArg(argc, argv, i);
             break;
         }
@@ -157,15 +166,6 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
     for (int i = 1; i < argc; i++) {
         if (strncmp(argv[i], "--qvr-wd=", 9) == 0) {
             _workingDir = argv[i] + 9;
-            removeArg(argc, argv, i);
-            break;
-        }
-    }
-
-    // get process index (it is 0 == master by default)
-    for (int i = 1; i < argc; i++) {
-        if (strncmp(argv[i], "--qvr-process=", 14) == 0) {
-            _processIndex = ::atoi(argv[i] + 14);
             removeArg(argc, argv, i);
             break;
         }

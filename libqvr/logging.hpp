@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,7 +28,9 @@
 
 #include "manager.hpp"
 
-void QVRSetLogFile(const char* name); /* NULL means use stderr */
+void QVRSetLogFile(const char* name, bool truncate); /* NULL means stderr */
+const char* QVRGetLogFile(); /* NULL means stderr */
+
 void QVRMsg(const char* s);
 
 #define QVR_MSG_BUFSIZE 1024

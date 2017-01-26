@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -78,16 +78,17 @@ bool QVRProcess::launch(const QString& masterName, const QString& configFilename
     }
     args << QString("--qvr-server=%1").arg(masterName);
     args << QString("--qvr-timeout=%1").arg(QVRTimeoutMsecs);
+    args << QString("--qvr-process=%1").arg(index());
     args << QString("--qvr-log-level=%1").arg(
             QVRManager::logLevel() == QVR_Log_Level_Fatal ? "fatal"
             : QVRManager::logLevel() == QVR_Log_Level_Warning ? "warning"
             : QVRManager::logLevel() == QVR_Log_Level_Info ? "info"
             : QVRManager::logLevel() == QVR_Log_Level_Debug ? "debug"
             : "firehose");
+    args << QString("--qvr-log-file=%1").arg(QVRGetLogFile());
     args << QString("--qvr-wd=%1").arg(QDir::currentPath());
-    args << QString("--qvr-config=%1").arg(configFilename);
-    args << QString("--qvr-process=%1").arg(index());
     args << QString("--qvr-sync-to-vblank=%1").arg(syncToVblank ? 1 : 0);
+    args << QString("--qvr-config=%1").arg(configFilename);
     args << appArgs;
     if (config().launcher() == "manual") {
         QString s = args.join(' ');
