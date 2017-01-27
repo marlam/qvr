@@ -85,7 +85,8 @@ bool QVRProcess::launch(const QString& masterName, const QString& configFilename
             : QVRManager::logLevel() == QVR_Log_Level_Info ? "info"
             : QVRManager::logLevel() == QVR_Log_Level_Debug ? "debug"
             : "firehose");
-    args << QString("--qvr-log-file=%1").arg(QVRGetLogFile());
+    if (QVRGetLogFile())
+        args << QString("--qvr-log-file=%1").arg(QVRGetLogFile());
     args << QString("--qvr-wd=%1").arg(QDir::currentPath());
     args << QString("--qvr-sync-to-vblank=%1").arg(syncToVblank ? 1 : 0);
     args << QString("--qvr-config=%1").arg(configFilename);
