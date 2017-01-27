@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -493,11 +493,10 @@ public:
 /*!
  * \brief Configuration of a \a QVRProcess.
  *
- * Each process works with only one display. The master process (which is the
- * application process that is started first) always talks to the display that
- * Qt initially uses. On Linux/X11, this can be changed via the -display command
- * line option or DISPLAY environment variable. Slave processes are usually
- * configured to use a different display.
+ * Each process works with only one display. The master process talks to the 
+ * display that Qt initially uses by default; if a different display is configured,
+ * QVR will relaunch the master process automatically so that Qt talks to the
+ * configured display insted. Slave processes are usually configured to use different displays.
  *
  * The idea is that one display (with potentially multiple screens) runs on one GPU.
  */
@@ -543,7 +542,8 @@ public:
     /*! \brief Returns the launcher command used to launch this process.
      *
      * This is only required when processes need to run on remote computers,
-     * but can also be useful for starting processes under e.g. <a href="http://valgrind.org/">valgrind</a>.
+     * but can also be useful for starting processes under e.g. <a href="http://valgrind.org/">valgrind</a>,
+     * or with specific operating system settings, e.g. using `taskset`.
      *
      * Example for ssh (passwordless login to remotehost must be set up):
      * `launcher ssh remotehost`

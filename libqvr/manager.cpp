@@ -90,6 +90,7 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
     _fpsMsecs(0),
     _fpsCounter(0),
     _configFilename(),
+    _isRelaunchedMaster(false),
     _server(NULL),
     _client(NULL),
     _app(NULL),
@@ -129,6 +130,8 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
     for (int i = 1; i < argc; i++) {
         if (strncmp(argv[i], "--qvr-process=", 14) == 0) {
             _processIndex = ::atoi(argv[i] + 14);
+            if (_processIndex == 0)
+                _isRelaunchedMaster = true;
             removeArg(argc, argv, i);
             break;
         }
@@ -275,6 +278,38 @@ QVRManager::~QVRManager()
     manager = NULL;
 }
 
+void QVRManager::buildProcessCommandLine(int processIndex, QString* prg, QStringList* args)
+{
+    const QVRProcessConfig& processConfig = _config->processConfigs()[processIndex];
+    *prg = QCoreApplication::applicationFilePath();
+    args->clear();
+    if (!processConfig.display().isEmpty())
+        *args << "-display" << processConfig.display();
+    if (processIndex != 0)
+        *args << QString("--qvr-server=%1").arg(_server->name());
+    *args << QString("--qvr-process=%1").arg(processIndex);
+    *args << QString("--qvr-timeout=%1").arg(QVRTimeoutMsecs);
+    *args << QString("--qvr-log-level=%1").arg(
+            QVRManager::logLevel() == QVR_Log_Level_Fatal ? "fatal"
+            : QVRManager::logLevel() == QVR_Log_Level_Warning ? "warning"
+            : QVRManager::logLevel() == QVR_Log_Level_Info ? "info"
+            : QVRManager::logLevel() == QVR_Log_Level_Debug ? "debug"
+            : "firehose");
+    if (QVRGetLogFile())
+        *args << QString("--qvr-log-file=%1").arg(QVRGetLogFile());
+    *args << QString("--qvr-wd=%1").arg(QDir::currentPath());
+    *args << QString("--qvr-sync-to-vblank=%1").arg(_syncToVblank ? 1 : 0);
+    *args << QString("--qvr-config=%1").arg(_configFilename);
+    *args << _appArgs;
+    if (!processConfig.launcher().isEmpty() && processConfig.launcher() != "manual") {
+        QStringList ll = processConfig.launcher().split(' ', QString::SkipEmptyParts);
+        args->prepend(*prg);
+        *prg = ll[0];
+        for (int i = ll.size() - 1; i >= 1; i--)
+            args->prepend(ll[i]);
+    }
+}
+
 bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
 {
     Q_ASSERT(!_app);
@@ -292,6 +327,33 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
         if (!_config->readFromFile(_configFilename)) {
             return false;
         }
+    }
+
+    // Check if we need to relaunch the master process to apply configuration
+    // settings such as "launcher" and "display"
+    if (_processIndex == 0 && !_isRelaunchedMaster
+            && _config->processConfigs()[0].launcher() != "manual"
+            && (!_config->processConfigs()[0].launcher().isEmpty()
+                || !_config->processConfigs()[0].display().isEmpty())) {
+        QVR_INFO("relaunching the master process...");
+        // relaunch, and be sure to use the --qvr-process= option so that
+        // the relaunched master knows that it was relaunched.
+        QString prg;
+        QStringList args;
+        buildProcessCommandLine(0, &prg, &args);
+        QProcess relaunchedMaster;
+        relaunchedMaster.setProcessChannelMode(QProcess::ForwardedErrorChannel);
+        QVR_DEBUG("    %s %s", qPrintable(prg), qPrintable(args.join(' ')));
+        relaunchedMaster.start(prg, args, QIODevice::ReadWrite);
+        if (!relaunchedMaster.waitForStarted(QVRTimeoutMsecs)) {
+            QVR_FATAL("failed to relaunch the master process");
+            return false;
+        }
+        relaunchedMaster.waitForFinished(-1);
+        QVR_INFO("... relaunched master process finished.");
+        // make the application exit as soon as it enters the main loop:
+        QTimer::singleShot(0, QApplication::instance(), SLOT(quit()));
+        return true;
     }
 
     // Initialize HMDs for this process if required by the configuration
@@ -497,9 +559,11 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
                 QVRProcess* process = new QVRProcess(p);
                 _slaveProcesses.append(process);
                 QVR_INFO("launching slave process %s (index %d) ...", qPrintable(process->id()), p);
-                if (!process->launch(_server->name(), _configFilename, _syncToVblank, _appArgs)) {
+                QString prg;
+                QStringList args;
+                buildProcessCommandLine(p, &prg, &args);
+                if (!process->launch(prg, args))
                     return false;
-                }
             }
             QVR_INFO("waiting for slave processes to connect to master ...");
             if (!_server->waitForClients(_config->processConfigs().size() - 1))

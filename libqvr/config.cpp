@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -492,11 +492,6 @@ bool QVRConfig::readFromFile(const QString& filename)
         windowCount += _processConfigs[i].windowConfigs().size();
     if (windowCount == 0) {
         QVR_FATAL("config file %s: no windows defined", qPrintable(filename));
-        return false;
-    }
-    if (!_processConfigs[0]._display.isEmpty()) {
-        QVR_FATAL("config file %s: the first process is the master process "
-                "and must not have the display property set", qPrintable(filename));
         return false;
     }
     for (int i = 0; i < _deviceConfigs.size(); i++) {

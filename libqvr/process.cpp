@@ -68,41 +68,13 @@ const QVRWindowConfig& QVRProcess::windowConfig(int windowIndex) const
     return config().windowConfigs().at(windowIndex);
 }
 
-bool QVRProcess::launch(const QString& masterName, const QString& configFilename,
-        bool syncToVblank, const QStringList& appArgs)
+bool QVRProcess::launch(const QString& prg, const QStringList& args)
 {
-    QString prg = QCoreApplication::applicationFilePath();
-    QStringList args;
-    if (!config().display().isEmpty()) {
-        args << "-display" << config().display();
-    }
-    args << QString("--qvr-server=%1").arg(masterName);
-    args << QString("--qvr-timeout=%1").arg(QVRTimeoutMsecs);
-    args << QString("--qvr-process=%1").arg(index());
-    args << QString("--qvr-log-level=%1").arg(
-            QVRManager::logLevel() == QVR_Log_Level_Fatal ? "fatal"
-            : QVRManager::logLevel() == QVR_Log_Level_Warning ? "warning"
-            : QVRManager::logLevel() == QVR_Log_Level_Info ? "info"
-            : QVRManager::logLevel() == QVR_Log_Level_Debug ? "debug"
-            : "firehose");
-    if (QVRGetLogFile())
-        args << QString("--qvr-log-file=%1").arg(QVRGetLogFile());
-    args << QString("--qvr-wd=%1").arg(QDir::currentPath());
-    args << QString("--qvr-sync-to-vblank=%1").arg(syncToVblank ? 1 : 0);
-    args << QString("--qvr-config=%1").arg(configFilename);
-    args << appArgs;
     if (config().launcher() == "manual") {
         QString s = args.join(' ');
         QVR_FATAL("start process %s manually with the following options:", qPrintable(id()));
         QVR_FATAL("%s", qPrintable(s));
     } else {
-        if (!config().launcher().isEmpty()) {
-            QStringList ll = config().launcher().split(' ', QString::SkipEmptyParts);
-            args.prepend(prg);
-            prg = ll[0];
-            for (int i = ll.size() - 1; i >= 1; i--)
-                args.prepend(ll[i]);
-        }
         start(prg, args, QIODevice::ReadWrite);
         if (!waitForStarted(QVRTimeoutMsecs)) {
             QVR_FATAL("failed to launch process %s", qPrintable(id()));

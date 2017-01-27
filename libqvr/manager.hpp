@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -74,10 +74,10 @@
  *
  * After that, the list of processes starts. There is always at least one process:
  * the master process. The master process is connected to the display that Qt initially
- * uses (this can be changed with the -display option or DISPLAY environment
- * variable). Slave processes can connect to different displays. Optionally, a
- * launcher command can be specified, e.g. to run a slave process on a different
- * host using ssh.
+ * uses by default; if a different display is configured, the master process will be
+ * relaunched automatically to take this into account. Slave processes typcially connect
+ * to different displays. Optionally, a launcher command can be specified, e.g. to run a
+ * slave process on a different host using ssh.
  *
  * Each process definition contains a list of windows for that process.
  * Since windows provide views into the virtual world, the geometry of the
@@ -264,6 +264,7 @@ private:
     QString _configFilename;
     QString _masterName;
     QStringList _appArgs;
+    bool _isRelaunchedMaster;
     // Data initialized by init():
     QByteArray _serializationBuffer;
     QVRServer* _server; // only on the master process
@@ -297,6 +298,8 @@ private:
     float _wasdqeHorzAngle;       // WASDQE observers: angle around the y axis
     float _wasdqeVertAngle;       // WASDQE observers: angle around the x axis
     bool _masterLoopFirstRun;
+
+    void buildProcessCommandLine(int processIndex, QString* prg, QStringList* args);
 
     void processEventQueue();
 

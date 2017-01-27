@@ -56,7 +56,7 @@ observer default
     tracking_forward  0 0 -1
 
 process x-screen-0
-    # display :0.0
+    display :0.0
     window wall1l
         observer default
         display_screen 0

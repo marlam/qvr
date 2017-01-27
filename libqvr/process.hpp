@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -53,8 +53,7 @@ private:
     int _index;
 
     // functions for the master to manage slave processes
-    bool launch(const QString& masterName, const QString& configFilename,
-            bool syncToVblank, const QStringList& appArgs);
+    bool launch(const QString& prg, const QStringList& args);
     bool exit();
 
     /*! \cond
