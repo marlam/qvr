@@ -24,6 +24,12 @@
 #ifndef QVR_INTERNALS_HPP
 #define QVR_INTERNALS_HPP
 
+#ifdef HAVE_QGAMEPAD
+# include <QGamepadManager>
+extern QList<int> QVRGamepads;
+void QVRDetectGamepads();
+#endif
+
 #ifdef HAVE_OCULUS
 # include <OVR_Version.h>
 # if (OVR_PRODUCT_VERSION < 1)

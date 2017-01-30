@@ -1,4 +1,4 @@
-# Copyright (C) 2016
+# Copyright (C) 2016, 2017
 # Computer Graphics Group, University of Siegen
 # Written by Martin Lambers <martin.lambers@uni-siegen.de>
 #
@@ -30,6 +30,7 @@ find_package(Qt5Widgets 5.5.0 REQUIRED)
 find_package(Qt5Network 5.5.0 REQUIRED)
 
 # Optional libraries
+find_package(Qt5Gamepad 5.7.0)
 find_package(VRPN)
 find_package(Oculus)
 find_package(OpenVR)
@@ -57,6 +58,10 @@ set_target_properties(libqvr PROPERTIES OUTPUT_NAME qvr)
 set_target_properties(libqvr PROPERTIES VERSION ${QVR_LIBVERSION})
 set_target_properties(libqvr PROPERTIES SOVERSION ${QVR_SOVERSION})
 target_link_libraries(libqvr Qt5::Widgets Qt5::Network)
+if(Qt5Gamepad_FOUND)
+    add_definitions(-DHAVE_QGAMEPAD)
+    target_link_libraries(libqvr Qt5::Gamepad)
+endif()
 if(VRPN_FOUND)
     add_definitions(-DHAVE_VRPN)
     include_directories(${VRPN_INCLUDE_DIRS})

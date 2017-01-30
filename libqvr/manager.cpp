@@ -432,15 +432,27 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
     }
 
     // Create devices
+    bool haveGamepadDevices = false;
     bool haveVrpnDevices = false;
     for (int d = 0; d < _config->deviceConfigs().size(); d++) {
         _devices.append(new QVRDevice(d));
         _constDevices.append(_devices.last());
+        if (_config->deviceConfigs()[d].buttonsType() == QVR_Device_Buttons_Gamepad
+                || _config->deviceConfigs()[d].analogsType() == QVR_Device_Analogs_Gamepad) {
+            haveGamepadDevices = true;
+        }
         if (_config->deviceConfigs()[d].trackingType() == QVR_Device_Tracking_VRPN
                 || _config->deviceConfigs()[d].buttonsType() == QVR_Device_Buttons_VRPN
                 || _config->deviceConfigs()[d].analogsType() == QVR_Device_Analogs_VRPN) {
             haveVrpnDevices = true;
         }
+    }
+    if (haveGamepadDevices) {
+#ifdef HAVE_QGAMEPAD
+#else
+        QVR_FATAL("devices configured to use gamepads, but the Qt Gamepad module is not available");
+        return false;
+#endif
     }
     if (haveVrpnDevices) {
 #ifdef HAVE_VRPN

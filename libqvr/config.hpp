@@ -58,6 +58,8 @@ typedef enum {
     QVR_Device_Buttons_None,
     /*! \brief A device with digital buttons that are static (never changed). */
     QVR_Device_Buttons_Static,
+    /*! \brief A gamepad with digital buttons. */
+    QVR_Device_Buttons_Gamepad,
     /*! \brief A device with digital buttons queried via <a href="https://github.com/vrpn/vrpn/wiki">VRPN</a>. */
     QVR_Device_Buttons_VRPN,
     /*! \brief A device with digital buttons queried via OpenVR (HTC Vive). */
@@ -74,6 +76,8 @@ typedef enum {
     QVR_Device_Analogs_None,
     /*! \brief A device with analog joystick elements that are static (never changed). */
     QVR_Device_Analogs_Static,
+    /*! \brief A gamepad with analog joystick elements. */
+    QVR_Device_Analogs_Gamepad,
     /*! \brief A device with analog joystick elements queried via <a href="https://github.com/vrpn/vrpn/wiki">VRPN</a>. */
     QVR_Device_Analogs_VRPN,
     /*! \brief A device with analog joystick elements queried via OpenVR (HTC Vive). */
@@ -254,6 +258,12 @@ public:
      * Each value represent the static state of one button and must be 0 (button
      * not pressed) or 1 (button pressed).
      *
+     * For \a QVR_Device_Buttons_Gamepad, the parameter string is the identifier
+     * of the gamepad. The default is 0 which identifies the first gamepad found
+     * by Qt; higher numbers identify additional controllers.
+     * There will be the following 18 gamepad buttons: up, down, left, right,
+     * l1, r1, l2, r2, l3, r3, a, b, x, y, center, guide, select, start.
+     *
      * For \a QVR_Device_Buttons_VRPN, the parameter string is of the form
      * `<name> [<button0> [<button1> [...]]]` where `<name>` is the VRPN tracker name,
      * e.g. Tracker0\@localhost
@@ -278,6 +288,12 @@ public:
      *
      * For \a QVR_Device_Analogs_Static, the parameter string is a list of values.
      * Each value represent the static state of one button and must be in [-1,+1].
+     *
+     * For \a QVR_Device_Analogs_Gamepad, the parameter string is the identifier
+     * of the gamepad. The default is 0 which identifies the first gamepad found
+     * by Qt; higher numbers identify additional controllers.
+     * There will be 4 gamepad analogs: right up/down, right left/right, left up/down,
+     * left left/right.
      *
      * For \a QVR_Device_Analogs_VRPN, the parameter string is of the form
      * `<name> [<analog0> [<analog1> [...]]]` where `<name>` is the VRPN tracker name,

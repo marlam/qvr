@@ -129,6 +129,26 @@ void QVRConfig::createDefault(bool preferCustomNavigation)
 #endif
     bool ok = readFromFile(":/libqvr/default-config-desktop.qvr");
     Q_ASSERT(ok);
+#ifdef HAVE_QGAMEPAD
+    QVRDetectGamepads();
+    for (int i = 0; i < QVRGamepads.size(); i++) {
+        int id = QVRGamepads[i];
+        QVR_DEBUG("autodetected gamepad %d with device id %d", i, id);
+        QVRDeviceConfig gamepadConfig;
+        gamepadConfig._id = "gamepad-" + QString::number(i);
+        gamepadConfig._processIndex = 0;
+        gamepadConfig._trackingType = QVR_Device_Tracking_None;
+        gamepadConfig._buttonsType = QVR_Device_Buttons_Gamepad;
+        gamepadConfig._buttonsParameters = QString::number(i);
+        gamepadConfig._analogsType = QVR_Device_Analogs_Gamepad;
+        gamepadConfig._analogsParameters = QString::number(i);
+        _deviceConfigs.append(gamepadConfig);
+        if (i == 0) {
+            _observerConfigs[0]._navigationType = QVR_Navigation_Device;
+            _observerConfigs[0]._navigationParameters = gamepadConfig.id();
+        }
+    }
+#endif
 
     if (preferCustomNavigation) {
         _observerConfigs[0]._navigationType = QVR_Navigation_Custom;

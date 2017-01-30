@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,6 +26,9 @@
 #include "logging.hpp"
 #include "internalglobals.hpp"
 
+#ifdef HAVE_QGAMEPAD
+# include <QGamepad>
+#endif
 #ifdef HAVE_VRPN
 # include <vrpn_Tracker.h>
 # include <vrpn_Analog.h>
@@ -38,6 +41,10 @@
 
 
 struct QVRDeviceInternals {
+#ifdef HAVE_QGAMEPAD
+    QGamepad* buttonsGamepad; // these pointers might actually...
+    QGamepad* analogsGamepad; // ...point to the same gamepad object!
+#endif
 #ifdef HAVE_VRPN
     QVector3D* vrpnPositionPtr; // pointer to _position
     QQuaternion* vrpnOrientationPtr; // pointer to _orientation
@@ -102,6 +109,10 @@ QVRDevice::QVRDevice(int deviceIndex) :
     _index(deviceIndex)
 {
     _internals = new struct QVRDeviceInternals;
+#ifdef HAVE_QGAMEPAD
+    _internals->buttonsGamepad = NULL;
+    _internals->analogsGamepad = NULL;
+#endif
 #ifdef HAVE_VRPN
     _internals->vrpnPositionPtr = &_position;
     _internals->vrpnOrientationPtr = &_orientation;
@@ -216,6 +227,24 @@ QVRDevice::QVRDevice(int deviceIndex) :
                 _buttons[i] = args[i].toInt();
         }
         break;
+    case QVR_Device_Buttons_Gamepad:
+#ifdef HAVE_QGAMEPAD
+        {
+            QString arg = config().buttonsParameters().trimmed();
+            int padId = arg.toInt();
+            if (padId < 0 || padId >= QVRGamepads.size()) {
+                QVR_WARNING("device %s: buttons gamepad %d is not connected", qPrintable(id()), padId);
+            } else {
+                int padDeviceId = QVRGamepads[padId];
+                _internals->buttonsGamepad = new QGamepad(padDeviceId);
+                QVR_DEBUG("device %s uses gamepad %d for buttons", qPrintable(id()), padId);
+            }
+            _buttons.resize(18);
+            for (int i = 0; i < _buttons.length(); i++)
+                _buttons[i] = false;
+        }
+#endif
+        break;
     case QVR_Device_Buttons_VRPN:
 #ifdef HAVE_VRPN
         {
@@ -298,6 +327,27 @@ QVRDevice::QVRDevice(int deviceIndex) :
                 _analogs[i] = args[i].toFloat();
         }
         break;
+    case QVR_Device_Analogs_Gamepad:
+#ifdef HAVE_QGAMEPAD
+        {
+            QString arg = config().analogsParameters().trimmed();
+            int padId = arg.toInt();
+            if (padId < 0 || padId >= QVRGamepads.size()) {
+                QVR_WARNING("device %s: analogs gamepad %d is not connected", qPrintable(id()), padId);
+            } else {
+                int padDeviceId = QVRGamepads[padId];
+                if (_internals->buttonsGamepad && padDeviceId == _internals->buttonsGamepad->deviceId())
+                    _internals->analogsGamepad = _internals->buttonsGamepad;
+                else
+                    _internals->analogsGamepad = new QGamepad(padDeviceId);
+                QVR_DEBUG("device %s uses gamepad %d for analogs", qPrintable(id()), padId);
+            }
+            _analogs.resize(4);
+            for (int i = 0; i < _analogs.length(); i++)
+                _analogs[i] = 0.0f;
+        }
+#endif
+        break;
     case QVR_Device_Analogs_VRPN:
 #ifdef HAVE_VRPN
         {
@@ -373,6 +423,11 @@ QVRDevice::QVRDevice(int deviceIndex) :
 QVRDevice::~QVRDevice()
 {
     if (_internals) {
+#ifdef HAVE_QGAMEPAD
+        delete _internals->buttonsGamepad;
+        if (_internals->analogsGamepad != _internals->buttonsGamepad)
+            delete _internals->analogsGamepad;
+#endif
 #ifdef HAVE_VRPN
         delete _internals->vrpnTrackerRemote;
         delete _internals->vrpnAnalogRemote;
@@ -414,6 +469,34 @@ const QVRDeviceConfig& QVRDevice::config() const
 void QVRDevice::update()
 {
     if (config().processIndex() == QVRManager::processIndex()) {
+#ifdef HAVE_QGAMEPAD
+        if (_internals->buttonsGamepad) {
+            _buttons[ 0] = _internals->buttonsGamepad->buttonUp();
+            _buttons[ 1] = _internals->buttonsGamepad->buttonDown();
+            _buttons[ 2] = _internals->buttonsGamepad->buttonLeft();
+            _buttons[ 3] = _internals->buttonsGamepad->buttonRight();
+            _buttons[ 4] = _internals->buttonsGamepad->buttonL1();
+            _buttons[ 5] = _internals->buttonsGamepad->buttonR1();
+            _buttons[ 6] = _internals->buttonsGamepad->buttonL2();
+            _buttons[ 7] = _internals->buttonsGamepad->buttonR2();
+            _buttons[ 8] = _internals->buttonsGamepad->buttonL3();
+            _buttons[ 9] = _internals->buttonsGamepad->buttonR3();
+            _buttons[10] = _internals->buttonsGamepad->buttonA();
+            _buttons[11] = _internals->buttonsGamepad->buttonB();
+            _buttons[12] = _internals->buttonsGamepad->buttonX();
+            _buttons[13] = _internals->buttonsGamepad->buttonY();
+            _buttons[14] = _internals->buttonsGamepad->buttonCenter();
+            _buttons[15] = _internals->buttonsGamepad->buttonGuide();
+            _buttons[16] = _internals->buttonsGamepad->buttonSelect();
+            _buttons[17] = _internals->buttonsGamepad->buttonStart();
+        }
+        if (_internals->analogsGamepad) {
+            _analogs[0] = _internals->analogsGamepad->axisRightY();
+            _analogs[1] = _internals->analogsGamepad->axisRightX();
+            _analogs[2] = _internals->analogsGamepad->axisLeftY();
+            _analogs[3] = _internals->analogsGamepad->axisLeftX();
+        }
+#endif
 #ifdef HAVE_VRPN
         if (_internals->vrpnTrackerRemote)
             _internals->vrpnTrackerRemote->mainloop();

@@ -31,6 +31,14 @@
 #endif
 
 
+#ifdef HAVE_QGAMEPAD
+QList<int> QVRGamepads;
+void QVRDetectGamepads()
+{
+    QVRGamepads = QGamepadManager::instance()->connectedGamepads();
+}
+#endif
+
 #ifdef HAVE_OCULUS
 # if (OVR_PRODUCT_VERSION >= 1)
 ovrSession QVROculus = NULL;
