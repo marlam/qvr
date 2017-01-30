@@ -128,8 +128,8 @@ private:
     QIODevice* inputDevice(int i);
 
     void sendCmd(const char cmd,
-            const QByteArray& data0 = QByteArray(NULL, 0),
-            const QByteArray& data1 = QByteArray(NULL, 0));
+            const QByteArray& data0 = QByteArray(static_cast<const char*>(0), 0),
+            const QByteArray& data1 = QByteArray(static_cast<const char*>(0), 0));
 
 public:
     QVRServer();
