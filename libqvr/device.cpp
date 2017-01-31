@@ -57,6 +57,9 @@ struct QVRDeviceInternals {
 #ifdef HAVE_VRPN
     QVector3D* vrpnPositionPtr; // pointer to _position
     QQuaternion* vrpnOrientationPtr; // pointer to _orientation
+    QVector3D* vrpnVelocityPtr; // pointer to _velocity
+    QVector3D* vrpnAngularVelocityPtr; // pointer to _angularVelocity;
+    bool vrpnHaveVelocity;
     QVector<bool>* vrpnButtonsPtr; // pointer to _buttons
     QVector<float>* vrpnAnalogsPtr; // pointer to _analogs
     vrpn_Tracker_Remote* vrpnTrackerRemote;
@@ -81,6 +84,14 @@ struct QVRDeviceInternals {
 #endif
 };
 
+static QVector3D QVRAngularVelocityFromQuaternions(const QQuaternion& q0, const QQuaternion& q1, double seconds)
+{
+    QQuaternion q = q1 * q0.conjugated(); // q=q1/q0 for unit length quaternions
+    QVector3D axis;
+    float angle;
+    q.getAxisAndAngle(&axis, &angle);
+    return axis * qDegreesToRadians(angle) / seconds;
+}
 
 #ifdef HAVE_VRPN
 void QVRVrpnTrackerChangeHandler(void* userdata, const vrpn_TRACKERCB info)
@@ -88,6 +99,16 @@ void QVRVrpnTrackerChangeHandler(void* userdata, const vrpn_TRACKERCB info)
     struct QVRDeviceInternals* d = reinterpret_cast<struct QVRDeviceInternals*>(userdata);
     *(d->vrpnPositionPtr) = QVector3D(info.pos[0], info.pos[1], info.pos[2]);
     *(d->vrpnOrientationPtr) = QQuaternion(info.quat[3], info.quat[0], info.quat[1], info.quat[2]);
+}
+void QVRVrpnTrackerVelocityChangeHandler(void* userdata, const vrpn_TRACKERVELCB info)
+{
+    struct QVRDeviceInternals* d = reinterpret_cast<struct QVRDeviceInternals*>(userdata);
+    *(d->vrpnVelocityPtr) = QVector3D(info.vel[0], info.vel[1], info.vel[2]);
+    *(d->vrpnAngularVelocityPtr) = QVRAngularVelocityFromQuaternions(
+            d->lastOrientation,
+            QQuaternion(info.vel_quat[3], info.vel_quat[0], info.vel_quat[1], info.vel_quat[2]),
+            info.vel_quat_dt);
+    d->vrpnHaveVelocity = true;
 }
 void QVRVrpnButtonChangeHandler(void* userdata, const vrpn_BUTTONCB info)
 {
@@ -126,6 +147,9 @@ QVRDevice::QVRDevice(int deviceIndex) :
 #ifdef HAVE_VRPN
     _internals->vrpnPositionPtr = &_position;
     _internals->vrpnOrientationPtr = &_orientation;
+    _internals->vrpnVelocityPtr = &_velocity;
+    _internals->vrpnAngularVelocityPtr = &_angularVelocity;
+    _internals->vrpnHaveVelocity = false;
     _internals->vrpnButtonsPtr = &_buttons;
     _internals->vrpnAnalogsPtr = &_analogs;
     _internals->vrpnTrackerRemote = NULL;
@@ -166,6 +190,7 @@ QVRDevice::QVRDevice(int deviceIndex) :
             _internals->vrpnTrackerRemote = new vrpn_Tracker_Remote(qPrintable(name));
             vrpn_System_TextPrinter.set_ostream_to_use(stderr);
             _internals->vrpnTrackerRemote->register_change_handler(_internals, QVRVrpnTrackerChangeHandler, sensor);
+            _internals->vrpnTrackerRemote->register_change_handler(_internals, QVRVrpnTrackerVelocityChangeHandler, sensor);
         }
 #endif
         break;
@@ -520,8 +545,12 @@ void QVRDevice::update()
         }
 #endif
 #ifdef HAVE_VRPN
-        if (_internals->vrpnTrackerRemote)
+        if (_internals->vrpnTrackerRemote) {
+            _internals->vrpnHaveVelocity = false;
             _internals->vrpnTrackerRemote->mainloop();
+            if (_internals->vrpnHaveVelocity)
+                wantVelocityCalculation = false;
+        }
         if (_internals->vrpnButtonRemote)
             _internals->vrpnButtonRemote->mainloop();
         if (_internals->vrpnAnalogRemote)
@@ -624,11 +653,8 @@ void QVRDevice::update()
             qint64 usecs = (_internals->currentTimestamp - _internals->lastTimestamp) / 1000;
             double secs = usecs / 1e6;
             _velocity = (_position - _internals->lastPosition) / secs;
-            QQuaternion q = _orientation * _internals->lastOrientation.conjugated(); // q=q1/q0 for unit length quaternions
-            QVector3D axis;
-            float angle;
-            q.getAxisAndAngle(&axis, &angle);
-            _angularVelocity = axis * qDegreesToRadians(angle) / secs;
+            _angularVelocity = QVRAngularVelocityFromQuaternions(
+                    _internals->lastOrientation.conjugated(), _orientation, secs);
         }
     }
 }
