@@ -684,6 +684,9 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
         _triggerTimer->start();
     }
 
+    // Start the global timer
+    QVRTimer.start();
+
     QApplication::processEvents();
 
     return true;

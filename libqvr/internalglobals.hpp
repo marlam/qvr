@@ -24,6 +24,9 @@
 #ifndef QVR_INTERNALS_HPP
 #define QVR_INTERNALS_HPP
 
+#include <QElapsedTimer>
+extern QElapsedTimer QVRTimer;
+
 #ifdef HAVE_QGAMEPAD
 # include <QGamepadManager>
 extern QList<int> QVRGamepads;
@@ -63,8 +66,11 @@ void QVRAttemptOculusInitialization();
 # include <openvr.h>
 extern vr::IVRSystem* QVROpenVRSystem;
 extern vr::VRControllerState_t QVROpenVRControllerStates[2];
-extern QQuaternion QVROpenVRTrackedOrientations[5]; // head, left eye, right eye, controller0, controller1
-extern QVector3D QVROpenVRTrackedPositions[5];      // head, left eye, right eye, controller0, controller1
+extern QQuaternion QVROpenVRTrackedOrientations[5];   // head, left eye, right eye, controller0, controller1
+extern QVector3D QVROpenVRTrackedPositions[5];        // head, left eye, right eye, controller0, controller1
+extern bool QVROpenVRHaveTrackedVelocities[5];        // head, left eye, right eye, controller0, controller1
+extern QVector3D QVROpenVRTrackedVelocities[5];       // head, left eye, right eye, controller0, controller1
+extern QVector3D QVROpenVRTrackedAngularVelocities[5];// head, left eye, right eye, controller0, controller1
 void QVRAttemptOpenVRInitialization();
 void QVRUpdateOpenVR();
 #endif

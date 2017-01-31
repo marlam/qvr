@@ -21,6 +21,8 @@
  * SOFTWARE.
  */
 
+#include <QtMath>
+
 #include "manager.hpp"
 #include "device.hpp"
 #include "logging.hpp"
@@ -41,6 +43,13 @@
 
 
 struct QVRDeviceInternals {
+    // Last known position and orientation, with timestamp.
+    // These are used to calculate velocity and angular velocity.
+    // If the timestamp is -1 then we do not have known values yet.
+    qint64 currentTimestamp;
+    qint64 lastTimestamp;
+    QVector3D lastPosition;
+    QQuaternion lastOrientation;
 #ifdef HAVE_QGAMEPAD
     QGamepad* buttonsGamepad; // these pointers might actually...
     QGamepad* analogsGamepad; // ...point to the same gamepad object!
@@ -109,6 +118,7 @@ QVRDevice::QVRDevice(int deviceIndex) :
     _index(deviceIndex)
 {
     _internals = new struct QVRDeviceInternals;
+    _internals->currentTimestamp = -1;
 #ifdef HAVE_QGAMEPAD
     _internals->buttonsGamepad = NULL;
     _internals->analogsGamepad = NULL;
@@ -473,6 +483,14 @@ const QVRDeviceConfig& QVRDevice::config() const
 void QVRDevice::update()
 {
     if (config().processIndex() == QVRManager::processIndex()) {
+        bool wantVelocityCalculation = (config().trackingType() != QVR_Device_Tracking_None
+                && config().trackingType() != QVR_Device_Tracking_Static);
+        if (wantVelocityCalculation) {
+            _internals->lastTimestamp = _internals->currentTimestamp;
+            _internals->lastPosition = _position;
+            _internals->lastOrientation = _orientation;
+            _internals->currentTimestamp = QVRTimer.nsecsElapsed();
+        }
 #ifdef HAVE_QGAMEPAD
         if (_internals->buttonsGamepad) {
             _buttons[ 0] = _internals->buttonsGamepad->buttonUp();
@@ -528,6 +546,11 @@ void QVRDevice::update()
         if (_internals->openVrTrackedEntity >= 0) {
             _orientation = QVROpenVRTrackedOrientations[_internals->openVrTrackedEntity];
             _position = QVROpenVRTrackedPositions[_internals->openVrTrackedEntity];
+            if (QVROpenVRHaveTrackedVelocities[_internals->openVrTrackedEntity]) {
+                _velocity = QVROpenVRTrackedVelocities[_internals->openVrTrackedEntity];
+                _angularVelocity = QVROpenVRTrackedAngularVelocities[_internals->openVrTrackedEntity];
+                wantVelocityCalculation = false;
+            }
         }
         if (_internals->openVrButtonsEntity >= 0) {
             _buttons[0] = QVROpenVRControllerStates[_internals->openVrButtonsEntity].rAxis[0].y > +0.5f;
@@ -597,17 +620,27 @@ void QVRDevice::update()
             }
         }
 #endif
+        if (wantVelocityCalculation && _internals->lastTimestamp >= 0) {
+            qint64 usecs = (_internals->currentTimestamp - _internals->lastTimestamp) / 1000;
+            double secs = usecs / 1e6;
+            _velocity = (_position - _internals->lastPosition) / secs;
+            QQuaternion q = _orientation * _internals->lastOrientation.conjugated(); // q=q1/q0 for unit length quaternions
+            QVector3D axis;
+            float angle;
+            q.getAxisAndAngle(&axis, &angle);
+            _angularVelocity = axis * qDegreesToRadians(angle) / secs;
+        }
     }
 }
 
 QDataStream &operator<<(QDataStream& ds, const QVRDevice& d)
 {
-    ds << d._index << d._position << d._orientation << d._buttons << d._analogs;
+    ds << d._index << d._position << d._orientation << d._velocity << d._angularVelocity << d._buttons << d._analogs;
     return ds;
 }
 
 QDataStream &operator>>(QDataStream& ds, QVRDevice& d)
 {
-    ds >> d._index >> d._position >> d._orientation >> d._buttons >> d._analogs;
+    ds >> d._index >> d._position >> d._orientation >> d._velocity >> d._angularVelocity >> d._buttons >> d._analogs;
     return ds;
 }

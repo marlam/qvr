@@ -55,6 +55,8 @@ private:
 
     QVector3D _position;
     QQuaternion _orientation;
+    QVector3D _velocity;
+    QVector3D _angularVelocity;
     QVector<bool> _buttons;
     QVector<float> _analogs;
 
@@ -91,6 +93,20 @@ public:
     const QQuaternion& orientation() const
     {
         return _orientation;
+    }
+
+    /*! \brief Returns the velocity, in m/s. */
+    const QVector3D& velocity() const
+    {
+        return _velocity;
+    }
+
+    /*! \brief Returns the angular velocity. The direction of the returned vector
+     * specifies the axis of rotation, and its length gives the rotation speed in
+     * radians/s. */
+    const QVector3D& angularVelocity() const
+    {
+        return _angularVelocity;
     }
 
     /*! \brief Returns the position and orientation as a matrix. */

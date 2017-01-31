@@ -109,8 +109,10 @@ void QVRAttemptOculusInitialization()
 vr::IVRSystem* QVROpenVRSystem = NULL;
 vr::VRControllerState_t QVROpenVRControllerStates[2];
 vr::TrackedDevicePose_t QVROpenVRPoses[3];
-QQuaternion QVROpenVRTrackedOrientations[5]; // head, left eye, right eye, controller0, controller1
-QVector3D QVROpenVRTrackedPositions[5];      // head, left eye, right eye, controller0, controller1
+QQuaternion QVROpenVRTrackedOrientations[5];   // head, left eye, right eye, controller0, controller1
+QVector3D QVROpenVRTrackedPositions[5];        // head, left eye, right eye, controller0, controller1
+QVector3D QVROpenVRTrackedVelocities[5];       // head, left eye, right eye, controller0, controller1
+QVector3D QVROpenVRTrackedAngularVelocities[5];// head, left eye, right eye, controller0, controller1
 static QMatrix4x4 QVROpenVRHmdToEye[2];
 static QMatrix4x4 QVROpenVRConvertMatrix(const vr::HmdMatrix34_t& openVrMatrix)
 {
@@ -137,18 +139,41 @@ void QVRUpdateOpenVR()
     // head:
     QMatrix4x4 headMatrix = QVROpenVRConvertMatrix(poses[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking);
     QVROpenVRConvertPose(headMatrix, &(QVROpenVRTrackedOrientations[0]), &(QVROpenVRTrackedPositions[0]));
+    QVROpenVRHaveTrackedVelocities[0] = true;
+    QVROpenVRTrackedVelocities[0] = QVector3D(poses[vr::k_unTrackedDeviceIndex_Hmd].vVelocity.v[0],
+                                              poses[vr::k_unTrackedDeviceIndex_Hmd].vVelocity.v[1],
+                                              poses[vr::k_unTrackedDeviceIndex_Hmd].vVelocity.v[2]);
+    QVROpenVRTrackedAngularVelocities[0] = QVector3D(poses[vr::k_unTrackedDeviceIndex_Hmd].vAngularVelocity.v[0],
+                                                     poses[vr::k_unTrackedDeviceIndex_Hmd].vAngularVelocity.v[1],
+                                                     poses[vr::k_unTrackedDeviceIndex_Hmd].vAngularVelocity.v[2]);
     // left eye:
     QMatrix4x4 leftEyeMatrix = headMatrix * QVROpenVRHmdToEye[0];
     QVROpenVRConvertPose(leftEyeMatrix, &(QVROpenVRTrackedOrientations[1]), &(QVROpenVRTrackedPositions[1]));
+    QVROpenVRHaveTrackedVelocities[1] = false;
     // right eye:
     QMatrix4x4 rightEyeMatrix = headMatrix * QVROpenVRHmdToEye[1];
     QVROpenVRConvertPose(rightEyeMatrix, &(QVROpenVRTrackedOrientations[2]), &(QVROpenVRTrackedPositions[2]));
+    QVROpenVRHaveTrackedVelocities[2] = false;
     // controller 0:
     QVROpenVRConvertPose(QVROpenVRConvertMatrix(poses[QVROpenVRControllerIndices[0]].mDeviceToAbsoluteTracking),
             &(QVROpenVRTrackedOrientations[3]), &(QVROpenVRTrackedPositions[3]));
+    QVROpenVRHaveTrackedVelocities[3] = true;
+    QVROpenVRTrackedVelocities[3] = QVector3D(poses[QVROpenVRControllerIndices[0]].vVelocity.v[0],
+                                              poses[QVROpenVRControllerIndices[0]].vVelocity.v[1],
+                                              poses[QVROpenVRControllerIndices[0]].vVelocity.v[2]);
+    QVROpenVRTrackedAngularVelocities[3] = QVector3D(poses[QVROpenVRControllerIndices[0]].vAngularVelocity.v[0],
+                                                     poses[QVROpenVRControllerIndices[0]].vAngularVelocity.v[1],
+                                                     poses[QVROpenVRControllerIndices[0]].vAngularVelocity.v[2]);
     // controller 1:
     QVROpenVRConvertPose(QVROpenVRConvertMatrix(poses[QVROpenVRControllerIndices[1]].mDeviceToAbsoluteTracking),
             &(QVROpenVRTrackedOrientations[4]), &(QVROpenVRTrackedPositions[4]));
+    QVROpenVRHaveTrackedVelocities[4] = true;
+    QVROpenVRTrackedVelocities[4] = QVector3D(poses[QVROpenVRControllerIndices[1]].vVelocity.v[0],
+                                              poses[QVROpenVRControllerIndices[1]].vVelocity.v[1],
+                                              poses[QVROpenVRControllerIndices[1]].vVelocity.v[2]);
+    QVROpenVRTrackedAngularVelocities[4] = QVector3D(poses[QVROpenVRControllerIndices[1]].vAngularVelocity.v[0],
+                                                     poses[QVROpenVRControllerIndices[1]].vAngularVelocity.v[1],
+                                                     poses[QVROpenVRControllerIndices[1]].vAngularVelocity.v[2]);
     // controller states:
     QVROpenVRSystem->GetControllerState(QVROpenVRControllerIndices[0], &(QVROpenVRControllerStates[0]),
             sizeof(QVROpenVRControllerStates[0]));
