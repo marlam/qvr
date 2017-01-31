@@ -84,9 +84,8 @@ struct QVRDeviceInternals {
 #endif
 };
 
-static QVector3D QVRAngularVelocityFromQuaternions(const QQuaternion& q0, const QQuaternion& q1, double seconds)
+static QVector3D QVRAngularVelocityFromDiffQuaternion(const QQuaternion& q, double seconds)
 {
-    QQuaternion q = q1 * q0.conjugated(); // q=q1/q0 for unit length quaternions
     QVector3D axis;
     float angle;
     q.getAxisAndAngle(&axis, &angle);
@@ -104,8 +103,7 @@ void QVRVrpnTrackerVelocityChangeHandler(void* userdata, const vrpn_TRACKERVELCB
 {
     struct QVRDeviceInternals* d = reinterpret_cast<struct QVRDeviceInternals*>(userdata);
     *(d->vrpnVelocityPtr) = QVector3D(info.vel[0], info.vel[1], info.vel[2]);
-    *(d->vrpnAngularVelocityPtr) = QVRAngularVelocityFromQuaternions(
-            d->lastOrientation,
+    *(d->vrpnAngularVelocityPtr) = QVRAngularVelocityFromDiffQuaternion(
             QQuaternion(info.vel_quat[3], info.vel_quat[0], info.vel_quat[1], info.vel_quat[2]),
             info.vel_quat_dt);
     d->vrpnHaveVelocity = true;
@@ -653,8 +651,8 @@ void QVRDevice::update()
             qint64 usecs = (_internals->currentTimestamp - _internals->lastTimestamp) / 1000;
             double secs = usecs / 1e6;
             _velocity = (_position - _internals->lastPosition) / secs;
-            _angularVelocity = QVRAngularVelocityFromQuaternions(
-                    _internals->lastOrientation.conjugated(), _orientation, secs);
+            _angularVelocity = QVRAngularVelocityFromDiffQuaternion(
+                    _orientation * _internals->lastOrientation.conjugated(), secs);
         }
     }
 }
