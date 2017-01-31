@@ -88,6 +88,16 @@
  * Please see the configuration file examples distributed with QVR to understand
  * how typical configurations look like.
  *
+ * Device definition (see \a QVRDevice and \a QVRDeviceConfig):
+ * - `device <id>`<br>
+ *   Start a new device definition with the given unique id.
+ * - `tracking <none|static|oculus|openvr|osvr|vprn>`<br>
+ *   Use the specified tracking method for this device.
+ * - `buttons <none|static|gamepad|openvr|vrpn>`<br>
+ *   Use the specified method to query digital buttons for this device.
+ * - `analogs <none|static|gamepad|openvr|vprn>`<br>
+ *   Use the specified method to query analog joystick elements for this device.
+ *
  * Observer definition (see \a QVRObserver and \a QVRObserverConfig):
  * - `observer <id>`<br>
  *   Start a new observer definition with the given unique id.

@@ -449,6 +449,8 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
     }
     if (haveGamepadDevices) {
 #ifdef HAVE_QGAMEPAD
+        if (QVRGamepads.size() == 0)
+            QVRDetectGamepads();
 #else
         QVR_FATAL("devices configured to use gamepads, but the Qt Gamepad module is not available");
         return false;

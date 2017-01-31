@@ -230,14 +230,16 @@ QVRDevice::QVRDevice(int deviceIndex) :
     case QVR_Device_Buttons_Gamepad:
 #ifdef HAVE_QGAMEPAD
         {
-            QString arg = config().buttonsParameters().trimmed();
-            int padId = arg.toInt();
-            if (padId < 0 || padId >= QVRGamepads.size()) {
-                QVR_WARNING("device %s: buttons gamepad %d is not connected", qPrintable(id()), padId);
-            } else {
-                int padDeviceId = QVRGamepads[padId];
-                _internals->buttonsGamepad = new QGamepad(padDeviceId);
-                QVR_DEBUG("device %s uses gamepad %d for buttons", qPrintable(id()), padId);
+            if (QVRManager::processIndex() == config().processIndex()) {
+                QString arg = config().buttonsParameters().trimmed();
+                int padId = arg.toInt();
+                if (padId < 0 || padId >= QVRGamepads.size()) {
+                    QVR_WARNING("device %s: buttons gamepad %d is not connected", qPrintable(id()), padId);
+                } else {
+                    int padDeviceId = QVRGamepads[padId];
+                    _internals->buttonsGamepad = new QGamepad(padDeviceId);
+                    QVR_DEBUG("device %s uses gamepad %d for buttons", qPrintable(id()), padId);
+                }
             }
             _buttons.resize(18);
             for (int i = 0; i < _buttons.length(); i++)
@@ -330,17 +332,19 @@ QVRDevice::QVRDevice(int deviceIndex) :
     case QVR_Device_Analogs_Gamepad:
 #ifdef HAVE_QGAMEPAD
         {
-            QString arg = config().analogsParameters().trimmed();
-            int padId = arg.toInt();
-            if (padId < 0 || padId >= QVRGamepads.size()) {
-                QVR_WARNING("device %s: analogs gamepad %d is not connected", qPrintable(id()), padId);
-            } else {
-                int padDeviceId = QVRGamepads[padId];
-                if (_internals->buttonsGamepad && padDeviceId == _internals->buttonsGamepad->deviceId())
-                    _internals->analogsGamepad = _internals->buttonsGamepad;
-                else
-                    _internals->analogsGamepad = new QGamepad(padDeviceId);
-                QVR_DEBUG("device %s uses gamepad %d for analogs", qPrintable(id()), padId);
+            if (QVRManager::processIndex() == config().processIndex()) {
+                QString arg = config().analogsParameters().trimmed();
+                int padId = arg.toInt();
+                if (padId < 0 || padId >= QVRGamepads.size()) {
+                    QVR_WARNING("device %s: analogs gamepad %d is not connected", qPrintable(id()), padId);
+                } else {
+                    int padDeviceId = QVRGamepads[padId];
+                    if (_internals->buttonsGamepad && padDeviceId == _internals->buttonsGamepad->deviceId())
+                        _internals->analogsGamepad = _internals->buttonsGamepad;
+                    else
+                        _internals->analogsGamepad = new QGamepad(padDeviceId);
+                    QVR_DEBUG("device %s uses gamepad %d for analogs", qPrintable(id()), padId);
+                }
             }
             _analogs.resize(4);
             for (int i = 0; i < _analogs.length(); i++)

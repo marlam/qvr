@@ -246,21 +246,23 @@ bool QVRConfig::readFromFile(const QString& filename)
                 deviceConfig._trackingParameters = QStringList(arglist.mid(1)).join(' ');
                 continue;
             } else if (cmd == "buttons" && arglist.length() >= 1
-                    && (arglist[0] == "none" || arglist[0] == "static"
+                    && (arglist[0] == "none" || arglist[0] == "static" || arglist[0] == "gamepad"
                         || arglist[0] == "openvr" || arglist[0] == "vrpn")) {
                 deviceConfig._buttonsType = (
                         arglist[0] == "none" ? QVR_Device_Buttons_None
                         : arglist[0] == "static" ? QVR_Device_Buttons_Static
+                        : arglist[0] == "gamepad" ? QVR_Device_Buttons_Gamepad
                         : arglist[0] == "openvr" ? QVR_Device_Buttons_OpenVR
                         : QVR_Device_Buttons_VRPN);
                 deviceConfig._buttonsParameters = QStringList(arglist.mid(1)).join(' ');
                 continue;
             } else if (cmd == "analogs" && arglist.length() >= 1
-                    && (arglist[0] == "none" || arglist[0] == "static"
+                    && (arglist[0] == "none" || arglist[0] == "static" || arglist[0] == "gamepad"
                         || arglist[0] == "openvr" || arglist[0] == "vrpn")) {
                 deviceConfig._analogsType = (
                         arglist[0] == "none" ? QVR_Device_Analogs_None
                         : arglist[0] == "static" ? QVR_Device_Analogs_Static
+                        : arglist[0] == "gamepad" ? QVR_Device_Analogs_Gamepad
                         : arglist[0] == "openvr" ? QVR_Device_Analogs_OpenVR
                         : QVR_Device_Analogs_VRPN);
                 deviceConfig._analogsParameters = QStringList(arglist.mid(1)).join(' ');
