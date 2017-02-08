@@ -31,6 +31,8 @@
 #endif
 
 
+QElapsedTimer QVRTimer;
+
 #ifdef HAVE_QGAMEPAD
 QList<int> QVRGamepads;
 void QVRDetectGamepads()
@@ -111,6 +113,7 @@ vr::VRControllerState_t QVROpenVRControllerStates[2];
 vr::TrackedDevicePose_t QVROpenVRPoses[3];
 QQuaternion QVROpenVRTrackedOrientations[5];   // head, left eye, right eye, controller0, controller1
 QVector3D QVROpenVRTrackedPositions[5];        // head, left eye, right eye, controller0, controller1
+bool QVROpenVRHaveTrackedVelocities[5];        // head, left eye, right eye, controller0, controller1
 QVector3D QVROpenVRTrackedVelocities[5];       // head, left eye, right eye, controller0, controller1
 QVector3D QVROpenVRTrackedAngularVelocities[5];// head, left eye, right eye, controller0, controller1
 static QMatrix4x4 QVROpenVRHmdToEye[2];
