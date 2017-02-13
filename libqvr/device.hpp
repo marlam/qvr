@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -64,6 +64,9 @@ private:
 
     friend QDataStream &operator<<(QDataStream& ds, const QVRDevice& d);
     friend QDataStream &operator>>(QDataStream& ds, QVRDevice& d);
+
+    friend class QVRManager;
+    void update();
 
 public:
     /*! \brief Constructor. */
@@ -143,11 +146,6 @@ public:
     {
         return _analogs.at(index);
     }
-
-    /*! \cond
-     * These functions are used internally to update the state of this device. */
-    void update();
-    /*! \endcond */
 };
 
 /*!
