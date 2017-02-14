@@ -93,9 +93,9 @@
  *   Start a new device definition with the given unique id.
  * - `tracking <none|static|oculus|openvr|osvr|vprn>`<br>
  *   Use the specified tracking method for this device.
- * - `buttons <none|static|gamepad|openvr|vrpn>`<br>
+ * - `buttons <none|static|gamepad|vprn|oculus|openvr|osvr>`<br>
  *   Use the specified method to query digital buttons for this device.
- * - `analogs <none|static|gamepad|openvr|vprn>`<br>
+ * - `analogs <none|static|gamepad|vrpn|oculus|openvr|osvr>`<br>
  *   Use the specified method to query analog joystick elements for this device.
  *
  * Observer definition (see \a QVRObserver and \a QVRObserverConfig):

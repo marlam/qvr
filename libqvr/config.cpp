@@ -102,6 +102,50 @@ void QVRConfig::createDefault(bool preferCustomNavigation)
     if (QVROculus) {
         bool ok = readFromFile(":/libqvr/default-config-oculus.qvr");
         Q_ASSERT(ok);
+        if (QVROculusControllers == 1) {
+            // Add XBOX controller device
+            QVRDeviceConfig deviceConfig;
+            deviceConfig._id = "oculus-controler";
+            deviceConfig._processIndex = 0;
+            deviceConfig._trackingType = QVR_Device_Tracking_None;
+            deviceConfig._buttonsType = QVR_Device_Buttons_Oculus;
+            deviceConfig._buttonsParameters = "xbox";
+            deviceConfig._analogsType = QVR_Device_Analogs_Oculus;
+            deviceConfig._analogsParameters = "xbox";
+            _deviceConfigs.append(deviceConfig);
+            _observerConfigs[0]._navigationType = QVR_Navigation_Device;
+            _observerConfigs[0]._navigationParameters = deviceConfig.id();
+        } else if (QVROculusControllers == 2 || QVROculusControllers == 3 || QVROculusControllers == 4) {
+            // Add left and/or right touch controller device
+            for (int i = 0; i < (QVROculusControllers == 4 ? 2 : 1); i++) {
+                QString side = (QVROculusControllers == 3 || i == 1) ? "right" : "left";
+                QVRDeviceConfig deviceConfig;
+                deviceConfig._id = "oculus-controler-" + side;
+                deviceConfig._processIndex = 0;
+                deviceConfig._trackingType = QVR_Device_Tracking_Oculus;
+                deviceConfig._trackingParameters = "controller-" + side;
+                deviceConfig._buttonsType = QVR_Device_Buttons_Oculus;
+                deviceConfig._buttonsParameters = "controller-" + side;
+                deviceConfig._analogsType = QVR_Device_Analogs_Oculus;
+                deviceConfig._analogsParameters = "controller-" + side;
+                _deviceConfigs.append(deviceConfig);
+            }
+            // If we have both left and right, use them for navigation
+            if (QVROculusControllers == 4) {
+                QVRDeviceConfig deviceConfig;
+                deviceConfig._id = "oculus-navigation-device";
+                deviceConfig._processIndex = 0;
+                deviceConfig._trackingType = QVR_Device_Tracking_Oculus;
+                deviceConfig._trackingParameters = "head";
+                deviceConfig._buttonsType = QVR_Device_Buttons_Oculus;
+                deviceConfig._buttonsParameters = "controller-right";
+                deviceConfig._analogsType = QVR_Device_Analogs_Oculus;
+                deviceConfig._analogsParameters = "controller-left";
+                _deviceConfigs.append(deviceConfig);
+                _observerConfigs[0]._navigationType = QVR_Navigation_Device;
+                _observerConfigs[0]._navigationParameters = "oculus-navigation-device";
+            }
+        }
         return;
     }
 #endif
@@ -130,22 +174,24 @@ void QVRConfig::createDefault(bool preferCustomNavigation)
     bool ok = readFromFile(":/libqvr/default-config-desktop.qvr");
     Q_ASSERT(ok);
 #ifdef HAVE_QGAMEPAD
-    QVRDetectGamepads();
-    for (int i = 0; i < QVRGamepads.size(); i++) {
-        int id = QVRGamepads[i];
-        QVR_DEBUG("autodetected gamepad %d with device id %d", i, id);
-        QVRDeviceConfig gamepadConfig;
-        gamepadConfig._id = "gamepad-" + QString::number(i);
-        gamepadConfig._processIndex = 0;
-        gamepadConfig._trackingType = QVR_Device_Tracking_None;
-        gamepadConfig._buttonsType = QVR_Device_Buttons_Gamepad;
-        gamepadConfig._buttonsParameters = QString::number(i);
-        gamepadConfig._analogsType = QVR_Device_Analogs_Gamepad;
-        gamepadConfig._analogsParameters = QString::number(i);
-        _deviceConfigs.append(gamepadConfig);
-        if (i == 0) {
-            _observerConfigs[0]._navigationType = QVR_Navigation_Device;
-            _observerConfigs[0]._navigationParameters = gamepadConfig.id();
+    if (!QVROculus && !QVROpenVRSystem) {
+        QVRDetectGamepads();
+        for (int i = 0; i < QVRGamepads.size(); i++) {
+            int id = QVRGamepads[i];
+            QVR_DEBUG("autodetected gamepad %d with device id %d", i, id);
+            QVRDeviceConfig gamepadConfig;
+            gamepadConfig._id = "gamepad-" + QString::number(i);
+            gamepadConfig._processIndex = 0;
+            gamepadConfig._trackingType = QVR_Device_Tracking_None;
+            gamepadConfig._buttonsType = QVR_Device_Buttons_Gamepad;
+            gamepadConfig._buttonsParameters = QString::number(i);
+            gamepadConfig._analogsType = QVR_Device_Analogs_Gamepad;
+            gamepadConfig._analogsParameters = QString::number(i);
+            _deviceConfigs.append(gamepadConfig);
+            if (i == 0) {
+                _observerConfigs[0]._navigationType = QVR_Navigation_Device;
+                _observerConfigs[0]._navigationParameters = gamepadConfig.id();
+            }
         }
     }
 #endif
@@ -246,25 +292,31 @@ bool QVRConfig::readFromFile(const QString& filename)
                 deviceConfig._trackingParameters = QStringList(arglist.mid(1)).join(' ');
                 continue;
             } else if (cmd == "buttons" && arglist.length() >= 1
-                    && (arglist[0] == "none" || arglist[0] == "static" || arglist[0] == "gamepad"
-                        || arglist[0] == "openvr" || arglist[0] == "vrpn")) {
+                    && (arglist[0] == "none" || arglist[0] == "static"
+                        || arglist[0] == "gamepad" || arglist[0] == "vrpn"
+                        || arglist[0] == "oculus" || arglist[0] == "openvr" || arglist[0] == "osvr")) {
                 deviceConfig._buttonsType = (
                         arglist[0] == "none" ? QVR_Device_Buttons_None
                         : arglist[0] == "static" ? QVR_Device_Buttons_Static
                         : arglist[0] == "gamepad" ? QVR_Device_Buttons_Gamepad
+                        : arglist[0] == "vrpn" ? QVR_Device_Buttons_VRPN
+                        : arglist[0] == "oculus" ? QVR_Device_Buttons_Oculus
                         : arglist[0] == "openvr" ? QVR_Device_Buttons_OpenVR
-                        : QVR_Device_Buttons_VRPN);
+                        : QVR_Device_Buttons_OSVR);
                 deviceConfig._buttonsParameters = QStringList(arglist.mid(1)).join(' ');
                 continue;
             } else if (cmd == "analogs" && arglist.length() >= 1
-                    && (arglist[0] == "none" || arglist[0] == "static" || arglist[0] == "gamepad"
-                        || arglist[0] == "openvr" || arglist[0] == "vrpn")) {
+                    && (arglist[0] == "none" || arglist[0] == "static"
+                        || arglist[0] == "gamepad" || arglist[0] == "vrpn"
+                        || arglist[0] == "oculus" || arglist[0] == "openvr" || arglist[0] == "osvr")) {
                 deviceConfig._analogsType = (
                         arglist[0] == "none" ? QVR_Device_Analogs_None
                         : arglist[0] == "static" ? QVR_Device_Analogs_Static
                         : arglist[0] == "gamepad" ? QVR_Device_Analogs_Gamepad
+                        : arglist[0] == "vrpn" ? QVR_Device_Analogs_VRPN
+                        : arglist[0] == "oculus" ? QVR_Device_Analogs_Oculus
                         : arglist[0] == "openvr" ? QVR_Device_Analogs_OpenVR
-                        : QVR_Device_Analogs_VRPN);
+                        : QVR_Device_Analogs_OSVR);
                 deviceConfig._analogsParameters = QStringList(arglist.mid(1)).join(' ');
                 continue;
             }

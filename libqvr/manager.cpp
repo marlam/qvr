@@ -362,7 +362,9 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
     bool needToInitializeOSVR = false;
     for (int d = 0; d < _config->deviceConfigs().size(); d++) {
         if (_config->deviceConfigs()[d].processIndex() == _processIndex) {
-            if (_config->deviceConfigs()[d].trackingType() == QVR_Device_Tracking_Oculus) {
+            if (_config->deviceConfigs()[d].trackingType() == QVR_Device_Tracking_Oculus
+                    || _config->deviceConfigs()[d].buttonsType() == QVR_Device_Buttons_Oculus
+                    || _config->deviceConfigs()[d].analogsType() == QVR_Device_Analogs_Oculus) {
                 needToInitializeOculus = true;
             }
             if (_config->deviceConfigs()[d].trackingType() == QVR_Device_Tracking_OpenVR
@@ -700,6 +702,10 @@ static void QVRUpdateOculus()
     double dt = ovr_GetPredictedDisplayTime(QVROculus, QVROculusFrameIndex);
     QVROculusTrackingState = ovr_GetTrackingState(QVROculus, dt, ovrTrue);
     ovr_CalcEyePoses(QVROculusTrackingState.HeadPose.ThePose, QVROculusHmdToEyeViewOffset, QVROculusRenderPoses);
+    if (QVROculusControllers == 1)
+        ovr_GetInputState(QVROculus, ovrControllerType_XBox, &QVROculusInputState);
+    else if (QVROculusControllers == 2 || QVROculusControllers == 3 || QVROculusControllers == 4)
+        ovr_GetInputState(QVROculus, ovrControllerType_Touch, &QVROculusInputState);
     QVROculusLayer.SensorSampleTime = ovr_GetTimeInSeconds();
 # else
     ovrHmd_BeginFrame(QVROculus, 0);

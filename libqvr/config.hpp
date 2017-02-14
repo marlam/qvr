@@ -62,6 +62,8 @@ typedef enum {
     QVR_Device_Buttons_Gamepad,
     /*! \brief A device with digital buttons queried via <a href="https://github.com/vrpn/vrpn/wiki">VRPN</a>. */
     QVR_Device_Buttons_VRPN,
+    /*! \brief A device with digital buttons queried via Oculus SDK. */
+    QVR_Device_Buttons_Oculus,
     /*! \brief A device with digital buttons queried via OpenVR (HTC Vive). */
     QVR_Device_Buttons_OpenVR,
     /*! \brief A device with digital buttons queried via <a href="http://www.osvr.org/">OSVR</a>. */
@@ -80,6 +82,8 @@ typedef enum {
     QVR_Device_Analogs_Gamepad,
     /*! \brief A device with analog joystick elements queried via <a href="https://github.com/vrpn/vrpn/wiki">VRPN</a>. */
     QVR_Device_Analogs_VRPN,
+    /*! \brief A device with analog joystick elements queried via Oculus SDK. */
+    QVR_Device_Analogs_Oculus,
     /*! \brief A device with analog joystick elements queried via OpenVR (HTC Vive). */
     QVR_Device_Analogs_OpenVR,
     /*! \brief A device with analog joystick elements queried via <a href="http://www.osvr.org/">OSVR</a>. */
@@ -234,8 +238,7 @@ public:
      * and `<sensor>` is the number of the sensor to be used (can be omitted to use all).
      *
      * For \a QVR_Device_Tracking_Oculus, the parameter string must be one of "head",
-     * "eye-left", and "eye-right". There can be only one device for each of these three
-     * Oculus tracker types.
+     * "eye-left", "eye-right", "controller-left", and "controller-right".
      *
      * For \a QVR_Device_Tracking_OpenVR, the parameter string must be one of "head",
      * "eye-left", "eye-right", "controller-0", and "controller-1".
@@ -269,6 +272,14 @@ public:
      * e.g. Tracker0\@localhost
      * and the optional button list specifies the number and order of VRPN buttons to use.
      *
+     * For \a QVR_Device_Buttons_Oculus, the parameter string must be "xbox", "controller-left",
+     * or "controller-right". The left controller has 8 buttons: Up, Down, Left, Right, X, Y,
+     * Shoulder, Menu. The right controller has 8 buttons: Up, Down, Left, Right, A, B, Shoulder,
+     * Menu. Note that the Up, Down, Left, Right buttons on controllers are only simulated:
+     * they will report to be pressed when the analog value of their direction exceeds 0.5.
+     * The xbox controller has 12 buttons: up, down, left, right, A, B, X, Y, left shoulder,
+     * right shoulder, Menu, Back.
+     *
      * For \a QVR_Device_Buttons_OpenVR, the parameter string must be either "controller-0"
      * or "controller-1". There will be 6 buttons: pad up (0), pad down (1), pad left (2),
      * pad right (3), menu (4), grip (5). Note that the four pad buttons are only simulated:
@@ -299,6 +310,12 @@ public:
      * `<name> [<analog0> [<analog1> [...]]]` where `<name>` is the VRPN tracker name,
      * e.g. Tracker0\@localhost
      * and the optional analogs list specifies the number and order of VRPN analog joystick elements to use.
+     *
+     * For \a QVR_Device_Analogs_Oculus, the parameter string must be "xbox", "controller-left",
+     * or "controller-right". The left and right controllers each have 4 analog elements: thumbstick up/down,
+     * thumbstick left/right, trigger, grip. The xbox controller has 8 analog elements: thumbstick left up/down,
+     * thumbstick left left/right, thumbstick right up/down, thumbstick right left/right, trigger left, trigger
+     * right, grip left, grip right.
      *
      * For \a QVR_Device_Analogs_OpenVR, the parameter string must be either "controller-0"
      * or "controller-1". There will be 3 analogs: pad left-right axis (0), pad up-down axis (1),

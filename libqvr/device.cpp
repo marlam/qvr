@@ -69,7 +69,9 @@ struct QVRDeviceInternals {
     QVector<float> vrpnAnalogs;
 #endif
 #ifdef HAVE_OCULUS
-    int oculusTrackedEye; // -1 = none, 0 = center/head, 1 = left, 2 = right
+    int oculusTrackedEntity; // -1 = none, 0 = center/head, 1 = left eye, 2 = right eye, 3 = left controller, 4 = right controller
+    int oculusButtonsEntity; // -1 = none, 0 = xbox, 1 = touch left, 2 = touch right
+    int oculusAnalogsEntity; // -1 = none, 0 = xbox, 1 = touch left, 2 = touch right
 #endif
 #ifdef HAVE_OPENVR
     int openVrTrackedEntity; // -1 = none, 0 = center/head, 1 = left eye, 2 = right eye, 3 = controller0, 4 = controller1
@@ -155,7 +157,9 @@ QVRDevice::QVRDevice(int deviceIndex) :
     _internals->vrpnButtonRemote = NULL;
 #endif
 #ifdef HAVE_OCULUS
-    _internals->oculusTrackedEye = -1;
+    _internals->oculusTrackedEntity = -1;
+    _internals->oculusButtonsEntity = -1;
+    _internals->oculusAnalogsEntity = -1;
 #endif
 #ifdef HAVE_OPENVR
     _internals->openVrTrackedEntity = -1;
@@ -197,11 +201,15 @@ QVRDevice::QVRDevice(int deviceIndex) :
         if (QVRManager::processIndex() == config().processIndex()) {
             QString arg = config().trackingParameters().trimmed();
             if (arg == "head")
-                _internals->oculusTrackedEye = 0;
+                _internals->oculusTrackedEntity = 0;
             else if (arg == "eye-left")
-                _internals->oculusTrackedEye = 1;
+                _internals->oculusTrackedEntity = 1;
             else if (arg == "eye-right")
-                _internals->oculusTrackedEye = 2;
+                _internals->oculusTrackedEntity = 2;
+            else if (arg == "controller-left")
+                _internals->oculusTrackedEntity = 3;
+            else if (arg == "controller-right")
+                _internals->oculusTrackedEntity = 4;
             else
                 QVR_WARNING("device %s: invalid Oculus tracking parameter", qPrintable(id()));
         }
@@ -302,6 +310,34 @@ QVRDevice::QVRDevice(int deviceIndex) :
                 _internals->vrpnButtonRemote = new vrpn_Button_Remote(qPrintable(name));
                 vrpn_System_TextPrinter.set_ostream_to_use(stderr);
                 _internals->vrpnButtonRemote->register_change_handler(_internals, QVRVrpnButtonChangeHandler);
+            }
+        }
+#endif
+        break;
+    case QVR_Device_Buttons_Oculus:
+#ifdef HAVE_OCULUS
+        {
+            QString arg = config().buttonsParameters().trimmed();
+            if (arg == "xbox") {
+                _buttons.resize(12);
+                if (QVRManager::processIndex() == config().processIndex()) {
+                    Q_ASSERT(QVROculus);
+                    _internals->oculusButtonsEntity = 0;
+                }
+            } else if (arg == "controller-left") {
+                _buttons.resize(8);
+                if (QVRManager::processIndex() == config().processIndex()) {
+                    Q_ASSERT(QVROculus);
+                    _internals->oculusButtonsEntity = 1;
+                }
+            } else if (arg == "controller-right") {
+                _buttons.resize(8);
+                if (QVRManager::processIndex() == config().processIndex()) {
+                    Q_ASSERT(QVROculus);
+                    _internals->oculusButtonsEntity = 2;
+                }
+            } else {
+                QVR_WARNING("device %s: invalid Oculus buttons parameter", qPrintable(id()));
             }
         }
 #endif
@@ -411,6 +447,34 @@ QVRDevice::QVRDevice(int deviceIndex) :
         }
 #endif
         break;
+    case QVR_Device_Analogs_Oculus:
+#ifdef HAVE_OCULUS
+        {
+            QString arg = config().analogsParameters().trimmed();
+            if (arg == "xbox") {
+                _analogs.resize(8);
+                if (QVRManager::processIndex() == config().processIndex()) {
+                    Q_ASSERT(QVROculus);
+                    _internals->oculusAnalogsEntity = 0;
+                }
+            } else if (arg == "controller-left") {
+                _analogs.resize(4);
+                if (QVRManager::processIndex() == config().processIndex()) {
+                    Q_ASSERT(QVROculus);
+                    _internals->oculusAnalogsEntity = 1;
+                }
+            } else if (arg == "controller-right") {
+                _analogs.resize(4);
+                if (QVRManager::processIndex() == config().processIndex()) {
+                    Q_ASSERT(QVROculus);
+                    _internals->oculusAnalogsEntity = 2;
+                }
+            } else {
+                QVR_WARNING("device %s: invalid Oculus analogs parameter", qPrintable(id()));
+            }
+        }
+#endif
+        break;
     case QVR_Device_Analogs_OpenVR:
 #ifdef HAVE_OPENVR
         {
@@ -503,6 +567,17 @@ const QVRDeviceConfig& QVRDevice::config() const
     return QVRManager::config().deviceConfigs().at(index());
 }
 
+#ifdef HAVE_OCULUS
+static QVector3D QVROculusConvert(const ovrVector3f& v)
+{
+    return QVector3D(v.x, v.y, v.z);
+}
+static QQuaternion QVROculusConvert(const ovrQuatf& q)
+{
+    return QQuaternion(q.w, q.x, q.y, q.z);
+}
+#endif
+
 void QVRDevice::update()
 {
     if (config().processIndex() == QVRManager::processIndex()) {
@@ -555,19 +630,95 @@ void QVRDevice::update()
             _internals->vrpnAnalogRemote->mainloop();
 #endif
 #ifdef HAVE_OCULUS
-        if (_internals->oculusTrackedEye >= 0) {
-            const ovrPosef* p;
-            if (_internals->oculusTrackedEye == 1)
-                p = &(QVROculusRenderPoses[0]);
-            else if (_internals->oculusTrackedEye == 2)
-                p = &(QVROculusRenderPoses[1]);
-            else
-                p = &(QVROculusTrackingState.HeadPose.ThePose);
-            // Note the position Y offset that moves the sitting user's eyes to a default standing height in
-            // the virtual world.
-            _position = QVector3D(p->Position.x, p->Position.y + QVRObserverConfig::defaultEyeHeight, p->Position.z);
-            _orientation = QQuaternion(p->Orientation.w, p->Orientation.x, p->Orientation.y, p->Orientation.z);
+        if (_internals->oculusTrackedEntity >= 0) {
+            if (_internals->oculusTrackedEntity == 0) {
+                _position = QVROculusConvert(QVROculusTrackingState.HeadPose.ThePose.Position);
+                _orientation = QVROculusConvert(QVROculusTrackingState.HeadPose.ThePose.Orientation);
+                _velocity = QVROculusConvert(QVROculusTrackingState.HeadPose.LinearVelocity);
+                _angularVelocity = QVROculusConvert(QVROculusTrackingState.HeadPose.AngularVelocity);
+                wantVelocityCalculation = false;
+            } else if (_internals->oculusTrackedEntity == 1) {
+                _position = QVROculusConvert(QVROculusRenderPoses[0].Position);
+                _orientation = QVROculusConvert(QVROculusRenderPoses[0].Orientation);
+            } else if (_internals->oculusTrackedEntity == 2) {
+                _position = QVROculusConvert(QVROculusRenderPoses[1].Position);
+                _orientation = QVROculusConvert(QVROculusRenderPoses[1].Orientation);
+# if (OVR_PRODUCT_VERSION >= 1)
+            } else if (_internals->oculusTrackedEntity == 3) {
+                _position = QVROculusConvert(QVROculusTrackingState.HandPoses[ovrHand_Left].ThePose.Position);
+                _orientation = QVROculusConvert(QVROculusTrackingState.HandPoses[ovrHand_Left].ThePose.Orientation);
+                _velocity = QVROculusConvert(QVROculusTrackingState.HandPoses[ovrHand_Left].LinearVelocity);
+                _angularVelocity = QVROculusConvert(QVROculusTrackingState.HandPoses[ovrHand_Left].AngularVelocity);
+                wantVelocityCalculation = false;
+            } else if (_internals->oculusTrackedEntity == 4) {
+                _position = QVROculusConvert(QVROculusTrackingState.HandPoses[ovrHand_Right].ThePose.Position);
+                _orientation = QVROculusConvert(QVROculusTrackingState.HandPoses[ovrHand_Right].ThePose.Orientation);
+                _velocity = QVROculusConvert(QVROculusTrackingState.HandPoses[ovrHand_Right].LinearVelocity);
+                _angularVelocity = QVROculusConvert(QVROculusTrackingState.HandPoses[ovrHand_Right].AngularVelocity);
+                wantVelocityCalculation = false;
+# endif
+            }
+            // This Y offset moves the sitting user's eyes to a default standing height in the virtual world:
+            _position.setY(_position.y() + QVRObserverConfig::defaultEyeHeight);
         }
+# if (OVR_PRODUCT_VERSION >= 1)
+        if (_internals->oculusButtonsEntity >= 0) {
+            if (_internals->oculusButtonsEntity == 1) {
+                _buttons[0] = QVROculusInputState.Thumbstick[ovrHand_Left].y > +0.5f;
+                _buttons[1] = QVROculusInputState.Thumbstick[ovrHand_Left].y < -0.5f;
+                _buttons[2] = QVROculusInputState.Thumbstick[ovrHand_Left].x > +0.5f;
+                _buttons[3] = QVROculusInputState.Thumbstick[ovrHand_Left].x < -0.5f;
+                _buttons[4] = QVROculusInputState.Buttons & ovrButton_X;
+                _buttons[5] = QVROculusInputState.Buttons & ovrButton_Y;
+                _buttons[6] = QVROculusInputState.Buttons & ovrButton_LShoulder;
+                _buttons[7] = QVROculusInputState.Buttons & ovrButton_Enter;
+            } else if (_internals->oculusButtonsEntity == 2) {
+                _buttons[0] = QVROculusInputState.Thumbstick[ovrHand_Right].y > +0.5f;
+                _buttons[1] = QVROculusInputState.Thumbstick[ovrHand_Right].y < -0.5f;
+                _buttons[2] = QVROculusInputState.Thumbstick[ovrHand_Right].x > +0.5f;
+                _buttons[3] = QVROculusInputState.Thumbstick[ovrHand_Right].x < -0.5f;
+                _buttons[4] = QVROculusInputState.Buttons & ovrButton_A;
+                _buttons[5] = QVROculusInputState.Buttons & ovrButton_B;
+                _buttons[6] = QVROculusInputState.Buttons & ovrButton_RShoulder;
+                _buttons[7] = QVROculusInputState.Buttons & ovrButton_Enter;
+            } else {
+                _buttons[0] = QVROculusInputState.Buttons & ovrButton_Up;
+                _buttons[1] = QVROculusInputState.Buttons & ovrButton_Down;
+                _buttons[2] = QVROculusInputState.Buttons & ovrButton_Left;
+                _buttons[3] = QVROculusInputState.Buttons & ovrButton_Right;
+                _buttons[4] = QVROculusInputState.Buttons & ovrButton_A;
+                _buttons[5] = QVROculusInputState.Buttons & ovrButton_B;
+                _buttons[6] = QVROculusInputState.Buttons & ovrButton_X;
+                _buttons[7] = QVROculusInputState.Buttons & ovrButton_Y;
+                _buttons[8] = QVROculusInputState.Buttons & ovrButton_LShoulder;
+                _buttons[9] = QVROculusInputState.Buttons & ovrButton_RShoulder;
+                _buttons[10] = QVROculusInputState.Buttons & ovrButton_Enter;
+                _buttons[11] = QVROculusInputState.Buttons & ovrButton_Back;
+            }
+        }
+        if (_internals->oculusAnalogsEntity >= 0) {
+            if (_internals->oculusAnalogsEntity == 1) {
+                _analogs[0] = QVROculusInputState.Thumbstick[ovrHand_Left].y;
+                _analogs[1] = QVROculusInputState.Thumbstick[ovrHand_Left].x;
+                _analogs[2] = QVROculusInputState.IndexTrigger[ovrHand_Left];
+                _analogs[3] = QVROculusInputState.HandTrigger[ovrHand_Left];
+            } else if (_internals->oculusAnalogsEntity == 2) {
+                _analogs[0] = QVROculusInputState.Thumbstick[ovrHand_Right].y;
+                _analogs[1] = QVROculusInputState.Thumbstick[ovrHand_Right].x;
+                _analogs[2] = QVROculusInputState.IndexTrigger[ovrHand_Right];
+                _analogs[3] = QVROculusInputState.HandTrigger[ovrHand_Right];
+            } else {
+                _analogs[0] = QVROculusInputState.Thumbstick[ovrHand_Left].y;
+                _analogs[1] = QVROculusInputState.Thumbstick[ovrHand_Left].x;
+                _analogs[2] = QVROculusInputState.Thumbstick[ovrHand_Right].y;
+                _analogs[3] = QVROculusInputState.Thumbstick[ovrHand_Right].x;
+                _analogs[4] = QVROculusInputState.IndexTrigger[ovrHand_Left];
+                _analogs[5] = QVROculusInputState.IndexTrigger[ovrHand_Right];
+                _analogs[6] = QVROculusInputState.HandTrigger[ovrHand_Right];
+                _analogs[7] = QVROculusInputState.HandTrigger[ovrHand_Left];
+            }
+        }
+# endif
 #endif
 #ifdef HAVE_OPENVR
         if (_internals->openVrTrackedEntity >= 0) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -50,6 +50,7 @@ ovrTextureSwapChain QVROculusTextureSwapChainR = 0;
 long long QVROculusFrameIndex = 0;
 ovrLayerEyeFov QVROculusLayer;
 ovrVector3f QVROculusHmdToEyeViewOffset[2];
+ovrInputState QVROculusInputState;
 # else
 ovrHmd QVROculus = NULL;
 # endif
@@ -70,6 +71,7 @@ static void oculusLogCallback(
         QVR_WARNING("Oculus log: %s", message);
     }
 }
+int QVROculusControllers = 0;
 void QVRAttemptOculusInitialization()
 {
     QVR_DEBUG("Oculus: SDK version %s", ovr_GetVersionString());
@@ -93,11 +95,26 @@ void QVRAttemptOculusInitialization()
     QVROculusEyeRenderDesc[1] = ovr_GetRenderDesc(QVROculus, ovrEye_Right, oculusHmdDesc.DefaultEyeFov[1]);
     QVROculusHmdToEyeViewOffset[0] = QVROculusEyeRenderDesc[0].HmdToEyeOffset;
     QVROculusHmdToEyeViewOffset[1] = QVROculusEyeRenderDesc[1].HmdToEyeOffset;
+    unsigned int connectedControllers = ovr_GetConnectedControllerTypes(QVROculus);
+    if (connectedControllers & ovrControllerType_XBox)
+        QVROculusControllers = 1;
+    else if (connectedControllers & ovrControllerType_Touch)
+        QVROculusControllers = 4;
+    else if (connectedControllers & ovrControllerType_LTouch)
+        QVROculusControllers = 2;
+    else if (connectedControllers & ovrControllerType_RTouch)
+        QVROculusControllers = 3;
 # else
 #  define oculusHmdDesc (*QVROculus)
 # endif
     QVR_DEBUG("Oculus: product name: %s", oculusHmdDesc.ProductName);
     QVR_DEBUG("Oculus: resolution: %dx%d", oculusHmdDesc.Resolution.w, oculusHmdDesc.Resolution.h);
+    QVR_INFO("Oculus: available controllers: %s",
+            QVROculusControllers == 1 ? "xbox"
+            : QVROculusControllers == 2 ? "touch (left)"
+            : QVROculusControllers == 3 ? "touch (right)"
+            : QVROculusControllers == 4 ? "touch (left and right)"
+            : "none");
 # if (OVR_PRODUCT_VERSION < 1)
     // this is done automatically with newer SDKs
     ovrHmd_ConfigureTracking(QVROculus,

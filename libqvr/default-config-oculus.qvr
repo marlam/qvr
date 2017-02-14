@@ -5,6 +5,9 @@ device oculus-eye-left
 device oculus-eye-right
     tracking oculus eye-right
 
+# devices for connected controllers will be added automatically
+# in config.cpp
+
 observer oculus-observer
     navigation wasdqe
     tracking device oculus-eye-left oculus-eye-right

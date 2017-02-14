@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -50,12 +50,14 @@ extern ovrTextureSwapChain QVROculusTextureSwapChainR;
 extern long long QVROculusFrameIndex;
 extern ovrLayerEyeFov QVROculusLayer;
 extern ovrVector3f QVROculusHmdToEyeViewOffset[2];
+extern ovrInputState QVROculusInputState;
 # else
 extern ovrHmd QVROculus;
 # endif
 extern ovrTrackingState QVROculusTrackingState;
 extern ovrPosef QVROculusRenderPoses[2];
 extern ovrEyeRenderDesc QVROculusEyeRenderDesc[2];
+extern int QVROculusControllers; // 0 = none, 1 = xbox, 2 = left touch, 3 = right touch, 4 = both touch
 void QVRAttemptOculusInitialization();
 #endif
 
