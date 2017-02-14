@@ -174,7 +174,16 @@ void QVRConfig::createDefault(bool preferCustomNavigation)
     bool ok = readFromFile(":/libqvr/default-config-desktop.qvr");
     Q_ASSERT(ok);
 #ifdef HAVE_QGAMEPAD
-    if (!QVROculus && !QVROpenVRSystem) {
+    bool wantGamepads = true;
+# ifdef HAVE_OCULUS
+    if (QVROculus)
+        wantGamepads = false;
+# endif
+# ifdef HAVE_OPENVR
+    if (QVROpenVRSystem)
+        wantGamepads = false;
+# endif
+    if (wantGamepads) {
         QVRDetectGamepads();
         for (int i = 0; i < QVRGamepads.size(); i++) {
             int id = QVRGamepads[i];
