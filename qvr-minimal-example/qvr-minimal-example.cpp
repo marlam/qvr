@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -140,7 +140,7 @@ void QVRMinimalExample::render(QVRWindow* /* w */,
     glDrawElements(GL_TRIANGLES, _vaoIndices, GL_UNSIGNED_INT, 0);
 }
 
-void QVRMinimalExample::update(const QList<const QVRDevice*>&, const QList<QVRObserver*>&)
+void QVRMinimalExample::update(const QList<QVRObserver*>&)
 {
     float seconds = _timer.elapsed() / 1000.0f;
     _rotationAngle = seconds * 20.0f;

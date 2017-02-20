@@ -287,7 +287,6 @@ private:
     QList<int> _observerNavigationDevices;
     QList<int> _observerTrackingDevices0;
     QList<int> _observerTrackingDevices1;
-    QList<QVRObserver*> _customObservers; // subset of _observers
     QVRWindow* _masterWindow;
     QOpenGLContext* _masterGLContext;
     QList<QVRWindow*> _windows;

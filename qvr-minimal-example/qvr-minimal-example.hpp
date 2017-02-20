@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -55,7 +55,7 @@ public:
     void render(QVRWindow* w, const QVRRenderContext& c,
             int viewPass, unsigned int texture) override;
 
-    void update(const QList<const QVRDevice*>& devices, const QList<QVRObserver*>& customObservers) override;
+    void update(const QList<QVRObserver*>& observers) override;
 
     bool wantExit() override;
 

@@ -97,7 +97,6 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
     _devices(),
     _constDevices(),
     _observers(),
-    _customObservers(),
     _masterWindow(NULL),
     _masterGLContext(NULL),
     _windows(),
@@ -470,9 +469,6 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
     bool haveWandNavigationObservers = false;
     for (int o = 0; o < _config->observerConfigs().size(); o++) {
         _observers.append(new QVRObserver(o));
-        if (_config->observerConfigs()[o].navigationType() == QVR_Navigation_Custom
-                || _config->observerConfigs()[o].trackingType() == QVR_Tracking_Custom)
-            _customObservers.append(_observers[o]);
         if (_config->observerConfigs()[o].navigationType() == QVR_Navigation_WASDQE)
             _haveWasdqeObservers = true;
         int navDev = -1;
@@ -664,7 +660,7 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
         _masterWindow->winContext()->doneCurrent();
     if (_processIndex == 0) {
         updateDevices();
-        _app->update(_constDevices, _customObservers);
+        _app->update(_observers);
     }
 
     // Initialize FPS printing
@@ -880,7 +876,7 @@ void QVRManager::masterLoop()
     QApplication::processEvents();
     processEventQueue();
     QVR_FIREHOSE("  ... app update");
-    _app->update(_constDevices, _customObservers);
+    _app->update(_observers);
 
     // now wait for windows to finish buffer swap...
     waitForBufferSwaps();

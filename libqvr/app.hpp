@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -97,20 +97,23 @@ public:
 
     /*!
      * \brief Update scene state.
-     * \param devices   A list of Virtual Reality interaction devices
-     * \param customObservers   A list of observers that the application may modify.
+     * \param observers         A list of observers that the application may modify.
      *
      * Update scene state, e.g. for animations and interaction.
      *
-     * The list of \a devices gives you the current state of interaction devices, so
-     * that you can implement interaction, tracking, and navigation functionality (all optional).
+     * You can query the state of interaction devices via \a QVRManager::deviceCount() and \a QVRManager::device().
+     * This is useful for implementing interaction, tracking, and navigation functionality (all optional).
      *
-     * The list of \a customObservers contains all observers that have custom
-     * navigation and/or tracking. You can manipulate these observers here.
+     * The list of \a observers contains all observers in the active configuration.
+     * You can update these observers to implement your own tracking and/or navigation functionality (optional).
+     * You should only update an observer's navigation information via \a QVRObserver::setNavigation()
+     * if its navigation type is \a QVR_Navigation_Custom.
+     * You should only update an observer's tracking information via \a QVRObserver::setTracking()
+     * if its tracking type is \a QVR_Tracking_Custom.
      *
      * Called once before each frame on the master process.
      */
-    virtual void update(const QList<const QVRDevice*>& devices, const QList<QVRObserver*>& customObservers) { Q_UNUSED(devices); Q_UNUSED(customObservers); }
+    virtual void update(const QList<QVRObserver*>& observers) { Q_UNUSED(observers); }
 
     /*!
      * \brief Set the near and far clipping plane.

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -256,7 +256,7 @@ void QVRVNCViewer::deserializeDynamicData(QDataStream& ds)
     }
 }
 
-void QVRVNCViewer::update(const QList<const QVRDevice*>&, const QList<QVRObserver*>&)
+void QVRVNCViewer::update(const QList<QVRObserver*>&)
 {
     _vncDirtyRectangles.clear();
     int i = WaitForMessage(_vncClient, 1);
