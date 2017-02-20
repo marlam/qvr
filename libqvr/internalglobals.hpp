@@ -24,6 +24,10 @@
 #ifndef QVR_INTERNALS_HPP
 #define QVR_INTERNALS_HPP
 
+#include <QQueue>
+#include "event.hpp"
+extern QQueue<QVREvent>* QVREventQueue;
+
 #include <QElapsedTimer>
 extern QElapsedTimer QVRTimer;
 

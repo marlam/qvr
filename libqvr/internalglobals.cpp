@@ -30,6 +30,7 @@
 # include <osvr/ClientKit/ServerAutoStartC.h>
 #endif
 
+QQueue<QVREvent>* QVREventQueue = NULL;
 
 QElapsedTimer QVRTimer;
 

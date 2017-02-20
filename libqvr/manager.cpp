@@ -44,7 +44,6 @@
 
 
 static QVRManager* manager = NULL; // singleton instance
-static QQueue<QVREvent>* eventQueue = NULL; // single event queue for the singleton
 
 static bool parseLogLevel(const QString& ll, QVRLogLevel* logLevel)
 {
@@ -110,7 +109,7 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
 {
     Q_ASSERT(!manager);  // there can be only one
     manager = this;
-    eventQueue = new QQueue<QVREvent>;
+    QVREventQueue = new QQueue<QVREvent>;
     Q_INIT_RESOURCE(qvr);
 
     // set global timeout value (-1 means never timeout)
@@ -271,10 +270,10 @@ QVRManager::~QVRManager()
     delete _fpsTimer;
     delete _wasdqeTimer;
     delete _wandNavigationTimer;
-    delete eventQueue;
+    delete QVREventQueue;
+    QVREventQueue = NULL;
     delete _server;
     delete _client;
-    eventQueue = NULL;
     manager = NULL;
 }
 
@@ -897,7 +896,7 @@ void QVRManager::masterLoop()
         for (int e = 0; e < slaveEvents.size(); e++) {
             QVR_FIREHOSE("  ... got an event from process %d window %d",
                     slaveEvents[e].context.processIndex(), slaveEvents[e].context.windowIndex());
-            eventQueue->enqueue(slaveEvents[e]);
+            QVREventQueue->enqueue(slaveEvents[e]);
         }
     }
 
@@ -964,8 +963,8 @@ void QVRManager::slaveLoop()
             int n = 0;
             _serializationBuffer.resize(0);
             QDataStream serializationDataStream(&_serializationBuffer, QIODevice::WriteOnly);
-            while (!eventQueue->empty()) {
-                serializationDataStream << eventQueue->dequeue();
+            while (!QVREventQueue->empty()) {
+                serializationDataStream << QVREventQueue->dequeue();
                 n++;
             }
             waitForBufferSwaps();
@@ -1177,46 +1176,11 @@ int QVRManager::processIndex()
     return manager->_processIndex;
 }
 
-void QVRManager::enqueueKeyPressEvent(const QVRRenderContext& c, QKeyEvent* event)
-{
-    eventQueue->enqueue(QVREvent(QVR_Event_KeyPress, c, *event));
-}
-
-void QVRManager::enqueueKeyReleaseEvent(const QVRRenderContext& c, QKeyEvent* event)
-{
-    eventQueue->enqueue(QVREvent(QVR_Event_KeyRelease, c, *event));
-}
-
-void QVRManager::enqueueMouseMoveEvent(const QVRRenderContext& c, QMouseEvent* event)
-{
-    eventQueue->enqueue(QVREvent(QVR_Event_MouseMove, c, *event));
-}
-
-void QVRManager::enqueueMousePressEvent(const QVRRenderContext& c, QMouseEvent* event)
-{
-    eventQueue->enqueue(QVREvent(QVR_Event_MousePress, c, *event));
-}
-
-void QVRManager::enqueueMouseReleaseEvent(const QVRRenderContext& c, QMouseEvent* event)
-{
-    eventQueue->enqueue(QVREvent(QVR_Event_MouseRelease, c, *event));
-}
-
-void QVRManager::enqueueMouseDoubleClickEvent(const QVRRenderContext& c, QMouseEvent* event)
-{
-    eventQueue->enqueue(QVREvent(QVR_Event_MouseDoubleClick, c, *event));
-}
-
-void QVRManager::enqueueWheelEvent(const QVRRenderContext& c, QWheelEvent* event)
-{
-    eventQueue->enqueue(QVREvent(QVR_Event_Wheel, c, *event));
-}
-
 void QVRManager::processEventQueue()
 {
-    while (!eventQueue->empty()) {
-        QVREvent e = eventQueue->front();
-        eventQueue->dequeue();
+    while (!QVREventQueue->empty()) {
+        QVREvent e = QVREventQueue->front();
+        QVREventQueue->dequeue();
         if (_haveWasdqeObservers
                 && observerConfig(windowConfig(e.context.processIndex(), e.context.windowIndex())
                     .observerIndex()).navigationType() == QVR_Navigation_WASDQE) {

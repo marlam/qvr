@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -923,36 +923,36 @@ void QVRWindow::keyPressEvent(QKeyEvent* event)
         else
             showFullScreen();
     } else {
-        QVRManager::enqueueKeyPressEvent(_renderContext, event);
+        QVREventQueue->enqueue(QVREvent(QVR_Event_KeyPress, _renderContext, *event));
     }
 }
 
 void QVRWindow::keyReleaseEvent(QKeyEvent* event)
 {
-    QVRManager::enqueueKeyReleaseEvent(_renderContext, event);
+    QVREventQueue->enqueue(QVREvent(QVR_Event_KeyRelease, _renderContext, *event));
 }
 
 void QVRWindow::mouseMoveEvent(QMouseEvent* event)
 {
-    QVRManager::enqueueMouseMoveEvent(_renderContext, event);
+    QVREventQueue->enqueue(QVREvent(QVR_Event_MouseMove, _renderContext, *event));
 }
 
 void QVRWindow::mousePressEvent(QMouseEvent* event)
 {
-    QVRManager::enqueueMousePressEvent(_renderContext, event);
+    QVREventQueue->enqueue(QVREvent(QVR_Event_MousePress, _renderContext, *event));
 }
 
 void QVRWindow::mouseReleaseEvent(QMouseEvent* event)
 {
-    QVRManager::enqueueMouseReleaseEvent(_renderContext, event);
+    QVREventQueue->enqueue(QVREvent(QVR_Event_MouseRelease, _renderContext, *event));
 }
 
 void QVRWindow::mouseDoubleClickEvent(QMouseEvent* event)
 {
-    QVRManager::enqueueMouseDoubleClickEvent(_renderContext, event);
+    QVREventQueue->enqueue(QVREvent(QVR_Event_MouseDoubleClick, _renderContext, *event));
 }
 
 void QVRWindow::wheelEvent(QWheelEvent* event)
 {
-    QVRManager::enqueueWheelEvent(_renderContext, event);
+    QVREventQueue->enqueue(QVREvent(QVR_Event_Wheel, _renderContext, *event));
 }

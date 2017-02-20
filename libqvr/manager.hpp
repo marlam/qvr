@@ -417,17 +417,6 @@ public:
      * This is a convenience function, you can also get this information from \a config().
      */
     static const QVRWindowConfig& windowConfig(int processIndex, int windowIndex);
-
-    /*! \cond
-     * These functions are only used internally. */
-    static void enqueueKeyPressEvent(const QVRRenderContext& c, QKeyEvent* event);
-    static void enqueueKeyReleaseEvent(const QVRRenderContext& c, QKeyEvent* event);
-    static void enqueueMouseMoveEvent(const QVRRenderContext& c, QMouseEvent* event);
-    static void enqueueMousePressEvent(const QVRRenderContext& c, QMouseEvent* event);
-    static void enqueueMouseReleaseEvent(const QVRRenderContext& c, QMouseEvent* event);
-    static void enqueueMouseDoubleClickEvent(const QVRRenderContext& c, QMouseEvent* event);
-    static void enqueueWheelEvent(const QVRRenderContext& c, QWheelEvent* event);
-    /*! \endcond */
 };
 
 #endif
