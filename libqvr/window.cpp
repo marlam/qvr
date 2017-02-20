@@ -121,15 +121,12 @@ void QVRWindowThread::run()
     _window->winContext()->moveToThread(QCoreApplication::instance()->thread());
 }
 
-QVRWindow::QVRWindow(QOpenGLContext* masterContext,
-        QVRObserver* observer,
-        int processIndex, int windowIndex) :
+QVRWindow::QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int windowIndex) :
     QWindow(),
     QOpenGLFunctions_3_3_Core(),
     _isValid(true),
     _thread(NULL),
     _observer(observer),
-    _processIndex(processIndex),
     _windowIndex(windowIndex),
     _textures { 0, 0 },
     _outputQuadVao(0),
@@ -287,7 +284,7 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext,
         _thread->swapbuffersMutex.lock();
         _thread->start();
 
-        _renderContext.setProcessIndex(this->processIndex());
+        _renderContext.setProcessIndex(QVRManager::processIndex());
         _renderContext.setWindowIndex(index());
 
         QVR_DEBUG("    ... done");
@@ -358,7 +355,7 @@ const QVRWindowConfig& QVRWindow::config() const
 
 int QVRWindow::processIndex() const
 {
-    return _processIndex;
+    return QVRManager::processIndex();
 }
 
 const QString& QVRWindow::processId() const

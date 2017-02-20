@@ -324,6 +324,11 @@ private slots:
     void printFps();
 
 public:
+    /**
+     * \name Constructor, Destructor, Initialization
+     */
+    /*@{*/
+
     /*!
      * \brief This constructor creates the manager object.
      *
@@ -349,6 +354,13 @@ public:
     ~QVRManager();
 
     /*!
+     * \brief Return the QVR manager instance.
+     *
+     * There can be only one instance of \a QVRManager. This function returns it.
+     */
+    static QVRManager* instance();
+
+    /*!
      * \brief Initialize the QVR application.
      * \param app                       The QVR application.
      * \param preferCustomNavigation    Whether the application prefers its own navigation methods.
@@ -363,12 +375,12 @@ public:
      */
     bool init(QVRApp* app, bool preferCustomNavigation = false);
 
-    /*!
-     * \brief Return the QVR manager instance.
-     *
-     * There can be only one instance of \a QVRManager. This function returns it.
+    /*@}*/
+
+    /**
+     * \name Configuration access
      */
-    static QVRManager* instance();
+    /*@{*/
 
     /*!
      * \brief Return the log level.
@@ -376,39 +388,84 @@ public:
     static QVRLogLevel logLevel();
 
     /*!
-     * \brief Return the index of this \a QVRProcess in the active configuration.
-     *
-     * The process with index 0 is the master process.
-     *
-     * See \a config().
-     */
-    static int processIndex();
-
-    /*!
      * \brief Return the active configuration.
      */
     static const QVRConfig& config();
+
+    /*!
+     * \brief Return the number of devices in the configuration.
+     *
+     * This is a convenience function, you can also get this information from \a config().
+     */
+    static int deviceCount()
+    {
+        return config().deviceConfigs().size();
+    }
 
     /*!
      * \brief Return the configuration of the device with index \a deviceIndex.
      *
      * This is a convenience function, you can also get this information from \a config().
      */
-    static const QVRDeviceConfig& deviceConfig(int deviceIndex);
+    static const QVRDeviceConfig& deviceConfig(int deviceIndex)
+    {
+        return config().deviceConfigs().at(deviceIndex);
+    }
+
+    /*!
+     * \brief Return the number of observers in the configuration.
+     *
+     * This is a convenience function, you can also get this information from \a config().
+     */
+    static int observerCount()
+    {
+        return config().observerConfigs().size();
+    }
 
     /*!
      * \brief Return the configuration of the observer with index \a observerIndex.
      *
      * This is a convenience function, you can also get this information from \a config().
      */
-    static const QVRObserverConfig& observerConfig(int observerIndex);
+    static const QVRObserverConfig& observerConfig(int observerIndex)
+    {
+        return config().observerConfigs().at(observerIndex);
+    }
+
+    /*!
+     * \brief Return the number of processes in the configuration.
+     *
+     * This is a convenience function, you can also get this information from \a config().
+     */
+    static int processCount()
+    {
+        return config().processConfigs().size();
+    }
+
+    /*!
+     * \brief Return the index of the running process. The process with index 0 is the master process.
+     */
+    static int processIndex();
 
     /*!
      * \brief Return the configuration of the process with the index \a processIndex.
      *
      * This is a convenience function, you can also get this information from \a config().
      */
-    static const QVRProcessConfig& processConfig(int processIndex = processIndex());
+    static const QVRProcessConfig& processConfig(int processIndex = processIndex())
+    {
+        return config().processConfigs().at(processIndex);
+    }
+
+    /*!
+     * \brief Return the number of windows in the configuration of the process with index \a processIndex.
+     *
+     * This is a convenience function, you can also get this information from \a config().
+     */
+    static int windowCount(int processIndex = processIndex())
+    {
+        return config().processConfigs().at(processIndex).windowConfigs().size();
+    }
 
     /*!
      * \brief Return the configuration of the window with the index \a windowIndex on
@@ -416,7 +473,31 @@ public:
      *
      * This is a convenience function, you can also get this information from \a config().
      */
-    static const QVRWindowConfig& windowConfig(int processIndex, int windowIndex);
+    static const QVRWindowConfig& windowConfig(int processIndex, int windowIndex)
+    {
+        return config().processConfigs().at(processIndex).windowConfigs().at(windowIndex);
+    }
+
+    /*@}*/
+
+    /**
+     * \name Object access
+     */
+    /*@{*/
+
+    /* \brief Return the device with index \a deviceIndex. See \a deviceCount(). */
+    static const QVRDevice& device(int deviceIndex);
+
+    /* \brief Return the observer with index \a observerIndex. See \a observerCount(). */
+    static const QVRObserver& observer(int observerIndex);
+
+    /* \brief Return the process. Only the running process is accessible in this way. See \a processIndex(). */
+    static const QVRProcess& process();
+
+    /* \brief Return the window with the given index in the running process. */
+    static const QVRWindow& window(int windowIndex);
+
+    /*@}*/
 };
 
 #endif

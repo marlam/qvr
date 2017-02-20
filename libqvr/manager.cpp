@@ -639,13 +639,13 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
         }
         _masterGLContext = new QOpenGLContext();
         QVR_INFO("  master window...");
-        _masterWindow = new QVRWindow(_masterGLContext, 0, -1, -1);
+        _masterWindow = new QVRWindow(_masterGLContext, 0, -1);
         if (!_masterWindow->isValid())
             return false;
         for (int w = 0; w < processConfig().windowConfigs().size(); w++) {
             QVR_INFO("  window %d...", w);
             QVRObserver* observer = _observers.at(windowConfig(_processIndex, w).observerIndex());
-            QVRWindow* window = new QVRWindow(_masterGLContext, observer, _processIndex, w);
+            QVRWindow* window = new QVRWindow(_masterGLContext, observer, w);
             if (!window->isValid())
                 return false;
             _windows.append(window);
@@ -1138,42 +1138,46 @@ QVRManager* QVRManager::instance()
     return manager;
 }
 
-const QVRConfig& QVRManager::config()
-{
-    Q_ASSERT(manager);
-    return *(manager->_config);
-}
-
-const QVRDeviceConfig& QVRManager::deviceConfig(int deviceIndex)
-{
-    return config().deviceConfigs().at(deviceIndex);
-}
-
-const QVRObserverConfig& QVRManager::observerConfig(int observerIndex)
-{
-    return config().observerConfigs().at(observerIndex);
-}
-
-const QVRProcessConfig& QVRManager::processConfig(int processIndex)
-{
-    return config().processConfigs().at(processIndex);
-}
-
-const QVRWindowConfig& QVRManager::windowConfig(int processIndex, int windowIndex)
-{
-    return processConfig(processIndex).windowConfigs().at(windowIndex);
-}
-
 QVRLogLevel QVRManager::logLevel()
 {
-    Q_ASSERT(manager);
-    return manager->_logLevel;
+    Q_ASSERT(instance());
+    return instance()->_logLevel;
 }
 
 int QVRManager::processIndex()
 {
-    Q_ASSERT(manager);
-    return manager->_processIndex;
+    Q_ASSERT(instance());
+    return instance()->_processIndex;
+}
+
+const QVRConfig& QVRManager::config()
+{
+    Q_ASSERT(instance());
+    return *(instance()->_config);
+}
+
+const QVRDevice& QVRManager::device(int deviceIndex)
+{
+    Q_ASSERT(instance());
+    return *(instance()->_devices.at(deviceIndex));
+}
+
+const QVRObserver& QVRManager::observer(int observerIndex)
+{
+    Q_ASSERT(instance());
+    return *(instance()->_observers.at(observerIndex));
+}
+
+const QVRProcess& QVRManager::process()
+{
+    Q_ASSERT(instance());
+    return *(instance()->_thisProcess);
+}
+
+const QVRWindow& QVRManager::window(int windowIndex)
+{
+    Q_ASSERT(instance());
+    return *(instance()->_windows.at(windowIndex));
 }
 
 void QVRManager::processEventQueue()

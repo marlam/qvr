@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -68,7 +68,6 @@ private:
     bool _isValid;
     QVRWindowThread* _thread;
     QVRObserver* _observer;
-    int _processIndex;
     int _windowIndex;
     unsigned int _textures[2];
     unsigned int _outputQuadVao;
@@ -121,11 +120,9 @@ public:
     /*! \brief Constructor.
      * @param masterContext     The master OpenGL context of the process
      * @param observer          The observer to provide a view for
-     * @param processIndex      The index of the process
-     * @param windowIndex       The index of this window
+     * @param windowIndex       The index of this window in this process
      */
-    QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer,
-            int processIndex, int windowIndex);
+    QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int windowIndex);
     /*! \brief Destructor. */
     virtual ~QVRWindow();
 
