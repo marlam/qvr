@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -360,16 +360,26 @@ QVRClient::~QVRClient()
 
 QIODevice* QVRClient::inputDevice()
 {
-    return (_tcpSocket ? dynamic_cast<QIODevice*>(_tcpSocket)
-            : _localSocket ? dynamic_cast<QIODevice*>(_localSocket)
-            : dynamic_cast<QIODevice*>(_sharedMemServerDevice));
+    QIODevice* dev;
+    if (_tcpSocket)
+        dev = _tcpSocket;
+    else if (_localSocket)
+        dev = _localSocket;
+    else
+        dev = _sharedMemServerDevice;
+    return dev;
 }
 
 QIODevice* QVRClient::outputDevice()
 {
-    return (_tcpSocket ? dynamic_cast<QIODevice*>(_tcpSocket)
-            : _localSocket ? dynamic_cast<QIODevice*>(_localSocket)
-            : dynamic_cast<QIODevice*>(_sharedMemClientDevice));
+    QIODevice* dev;
+    if (_tcpSocket)
+        dev = _tcpSocket;
+    else if (_localSocket)
+        dev = _localSocket;
+    else
+        dev = _sharedMemClientDevice;
+    return dev;
 }
 
 bool QVRClient::start(const QString& serverName, int processIndex)
@@ -537,9 +547,14 @@ int QVRServer::inputDevices()
 
 QIODevice* QVRServer::inputDevice(int i)
 {
-    return (_tcpServer ? dynamic_cast<QIODevice*>(_tcpSockets[i])
-            : _localServer ? dynamic_cast<QIODevice*>(_localSockets[i])
-            : dynamic_cast<QIODevice*>(_sharedMemClientDevices[i]));
+    QIODevice* dev;
+    if (_tcpServer)
+        dev = _tcpSockets[i];
+    else if (_localServer)
+        dev = _localSockets[i];
+    else
+        dev = _sharedMemClientDevices[i];
+    return dev;
 }
 
 bool QVRServer::startTcp(const QString& address)
@@ -673,15 +688,18 @@ void QVRServer::sendCmd(const char cmd, const QByteArray& data0, const QByteArra
 {
     int n = (_tcpServer ? _tcpSockets.size() : _localServer ? _localSockets.size() : 1);
     for (int i = 0; i < n; i++) {
-        QIODevice* device = (
-                _tcpServer ? dynamic_cast<QIODevice*>(_tcpSockets[i])
-                : _localServer ? dynamic_cast<QIODevice*>(_localSockets[i])
-                : dynamic_cast<QIODevice*>(_sharedMemServerDevice));
-        QVRWriteData(device, &cmd, sizeof(char));
+        QIODevice* dev;
+        if (_tcpServer)
+            dev = _tcpSockets[i];
+        else if (_localServer)
+            dev = _localSockets[i];
+        else
+            dev = _sharedMemServerDevice;
+        QVRWriteData(dev, &cmd, sizeof(char));
         if (!data0.isNull())
-            QVRWriteData(device, data0);
+            QVRWriteData(dev, data0);
         if (!data1.isNull())
-            QVRWriteData(device, data1);
+            QVRWriteData(dev, data1);
     }
 }
 
