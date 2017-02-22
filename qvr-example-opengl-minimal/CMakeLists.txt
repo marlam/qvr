@@ -1,4 +1,4 @@
-# Copyright (C) 2016
+# Copyright (C) 2016, 2017
 # Computer Graphics Group, University of Siegen
 # Written by Martin Lambers <martin.lambers@uni-siegen.de>
 #
@@ -11,7 +11,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR} ${CMAKE_MODULE_PATH})
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-project(qvr-osgviewer)
+project(qvr-example-opengl-minimal)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -Wall -Wextra")
@@ -19,12 +19,13 @@ endif()
 
 find_package(Qt5Widgets REQUIRED)
 find_package(QVR REQUIRED)
-set(OpenSceneGraph_MARK_AS_ADVANCED ON)
-find_package(OpenSceneGraph REQUIRED COMPONENTS osgViewer osgDB)
 
-include_directories(${OPENSCENEGRAPH_INCLUDE_DIRS} ${QVR_INCLUDE_DIRS})
-link_directories(${OPENSCENEGRAPH_LIBRARY_DIRS} ${QVR_LIBRARY_DIRS})
-add_executable(qvr-osgviewer qvr-osgviewer.cpp qvr-osgviewer.hpp)
-set_target_properties(qvr-osgviewer PROPERTIES WIN32_EXECUTABLE TRUE)
-target_link_libraries(qvr-osgviewer ${OPENSCENEGRAPH_LIBRARIES} ${QVR_LIBRARIES} Qt5::Widgets)
-install(TARGETS qvr-osgviewer RUNTIME DESTINATION bin)
+include_directories(${QVR_INCLUDE_DIRS})
+link_directories(${QVR_LIBRARY_DIRS})
+qt5_add_resources(RESOURCES resources.qrc)
+add_executable(qvr-example-opengl-minimal
+    qvr-example-opengl-minimal.cpp qvr-example-opengl-minimal.hpp
+    ${RESOURCES})
+set_target_properties(qvr-example-opengl-minimal PROPERTIES WIN32_EXECUTABLE TRUE)
+target_link_libraries(qvr-example-opengl-minimal ${QVR_LIBRARIES} Qt5::Widgets)
+install(TARGETS qvr-example-opengl-minimal RUNTIME DESTINATION bin)

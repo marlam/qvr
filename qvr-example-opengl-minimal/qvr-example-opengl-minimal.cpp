@@ -26,17 +26,17 @@
 
 #include <qvr/manager.hpp>
 
-#include "qvr-minimal-example.hpp"
+#include "qvr-example-opengl-minimal.hpp"
 
 
-QVRMinimalExample::QVRMinimalExample() :
+QVRExampleOpenGLMinimal::QVRExampleOpenGLMinimal() :
     _wantExit(false),
     _rotationAngle(0.0f)
 {
     _timer.start();
 }
 
-bool QVRMinimalExample::initProcess(QVRProcess* /* p */)
+bool QVRExampleOpenGLMinimal::initProcess(QVRProcess* /* p */)
 {
     // Qt-based OpenGL function pointers
     initializeOpenGLFunctions();
@@ -103,7 +103,7 @@ bool QVRMinimalExample::initProcess(QVRProcess* /* p */)
     return true;
 }
 
-void QVRMinimalExample::render(QVRWindow* /* w */,
+void QVRExampleOpenGLMinimal::render(QVRWindow* /* w */,
         const QVRRenderContext& context, int viewPass,
         unsigned int texture)
 {
@@ -140,28 +140,28 @@ void QVRMinimalExample::render(QVRWindow* /* w */,
     glDrawElements(GL_TRIANGLES, _vaoIndices, GL_UNSIGNED_INT, 0);
 }
 
-void QVRMinimalExample::update(const QList<QVRObserver*>&)
+void QVRExampleOpenGLMinimal::update(const QList<QVRObserver*>&)
 {
     float seconds = _timer.elapsed() / 1000.0f;
     _rotationAngle = seconds * 20.0f;
 }
 
-bool QVRMinimalExample::wantExit()
+bool QVRExampleOpenGLMinimal::wantExit()
 {
     return _wantExit;
 }
 
-void QVRMinimalExample::serializeDynamicData(QDataStream& ds) const
+void QVRExampleOpenGLMinimal::serializeDynamicData(QDataStream& ds) const
 {
     ds << _rotationAngle;
 }
 
-void QVRMinimalExample::deserializeDynamicData(QDataStream& ds)
+void QVRExampleOpenGLMinimal::deserializeDynamicData(QDataStream& ds)
 {
     ds >> _rotationAngle;
 }
 
-void QVRMinimalExample::keyPressEvent(const QVRRenderContext& /* context */, QKeyEvent* event)
+void QVRExampleOpenGLMinimal::keyPressEvent(const QVRRenderContext& /* context */, QKeyEvent* event)
 {
     switch (event->key())
     {
@@ -183,7 +183,7 @@ int main(int argc, char* argv[])
     QSurfaceFormat::setDefaultFormat(format);
 
     /* Then start QVR with the app */
-    QVRMinimalExample qvrapp;
+    QVRExampleOpenGLMinimal qvrapp;
     if (!manager.init(&qvrapp)) {
         qCritical("Cannot initialize QVR manager");
         return 1;

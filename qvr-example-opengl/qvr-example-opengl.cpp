@@ -29,19 +29,19 @@
 #include <qvr/window.hpp>
 #include <qvr/device.hpp>
 
-#include "qvr-helloworld.hpp"
+#include "qvr-example-opengl.hpp"
 
 #include "geometries.hpp"
 
 
-QVRHelloWorld::QVRHelloWorld() :
+QVRExampleOpenGL::QVRExampleOpenGL() :
     _wantExit(false),
     _objectRotationAngle(0.0f)
 {
     _timer.start();
 }
 
-unsigned int QVRHelloWorld::setupTex(const QString& filename)
+unsigned int QVRExampleOpenGL::setupTex(const QString& filename)
 {
     QImage img;
     img.load(filename);
@@ -50,7 +50,7 @@ unsigned int QVRHelloWorld::setupTex(const QString& filename)
     return setupTex(img);
 }
 
-unsigned int QVRHelloWorld::setupTex(const QImage& img)
+unsigned int QVRExampleOpenGL::setupTex(const QImage& img)
 {
     unsigned int tex;
     glGenTextures(1, &tex);
@@ -67,7 +67,7 @@ unsigned int QVRHelloWorld::setupTex(const QImage& img)
     return tex;
 }
 
-unsigned int QVRHelloWorld::setupVao(int vertexCount,
+unsigned int QVRExampleOpenGL::setupVao(int vertexCount,
         const float* positions, const float* normals, const float* texcoords,
         int indexCount, const unsigned short* indices)
 {
@@ -97,7 +97,7 @@ unsigned int QVRHelloWorld::setupVao(int vertexCount,
     return vao;
 }
 
-void QVRHelloWorld::setMaterial(const Material& m)
+void QVRExampleOpenGL::setMaterial(const Material& m)
 {
     _prg.setUniformValue("material_color", m.r, m.g, m.b);
     _prg.setUniformValue("material_kd", m.kd);
@@ -118,7 +118,7 @@ void QVRHelloWorld::setMaterial(const Material& m)
     glBindTexture(GL_TEXTURE_2D, m.specTex);
 }
 
-void QVRHelloWorld::renderVao(
+void QVRExampleOpenGL::renderVao(
         const QMatrix4x4& viewMatrix, const QMatrix4x4& modelMatrix,
         unsigned int vao, unsigned int indices)
 {
@@ -129,28 +129,28 @@ void QVRHelloWorld::renderVao(
     glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_SHORT, 0);
 }
 
-void QVRHelloWorld::serializeDynamicData(QDataStream& ds) const
+void QVRExampleOpenGL::serializeDynamicData(QDataStream& ds) const
 {
     ds << _objectRotationAngle;
 }
 
-void QVRHelloWorld::deserializeDynamicData(QDataStream& ds)
+void QVRExampleOpenGL::deserializeDynamicData(QDataStream& ds)
 {
     ds >> _objectRotationAngle;
 }
 
-void QVRHelloWorld::update(const QList<QVRObserver*>&)
+void QVRExampleOpenGL::update(const QList<QVRObserver*>&)
 {
     float seconds = _timer.elapsed() / 1000.0f;
     _objectRotationAngle = seconds * 20.0f;
 }
 
-bool QVRHelloWorld::wantExit()
+bool QVRExampleOpenGL::wantExit()
 {
     return _wantExit;
 }
 
-bool QVRHelloWorld::initProcess(QVRProcess* /* p */)
+bool QVRExampleOpenGL::initProcess(QVRProcess* /* p */)
 {
     /* Initialize per-process OpenGL resources and state here */
     std::vector<float> positions;
@@ -252,7 +252,7 @@ bool QVRHelloWorld::initProcess(QVRProcess* /* p */)
     return true;
 }
 
-void QVRHelloWorld::render(QVRWindow* /* w */,
+void QVRExampleOpenGL::render(QVRWindow* /* w */,
         const QVRRenderContext& context, int viewPass,
         unsigned int texture)
 {
@@ -313,7 +313,7 @@ void QVRHelloWorld::render(QVRWindow* /* w */,
         for (int j = 0; j < device.modelNodeCount(); j++) {
             QMatrix4x4 nodeMatrix = device.matrix();
             nodeMatrix.translate(device.modelNodePosition(j));
-            nodeMatrix.rotate(device.modelNodeRotation(j));
+            nodeMatrix.rotate(device.modelNodeOrientation(j));
             int vertexDataIndex = device.modelNodeVertexDataIndex(j);
             int textureIndex = device.modelNodeTextureIndex(j);
             Material material(1.0f, 1.0f, 1.0f,
@@ -328,7 +328,7 @@ void QVRHelloWorld::render(QVRWindow* /* w */,
     }
 }
 
-void QVRHelloWorld::keyPressEvent(const QVRRenderContext& /* context */, QKeyEvent* event)
+void QVRExampleOpenGL::keyPressEvent(const QVRRenderContext& /* context */, QKeyEvent* event)
 {
     switch (event->key())
     {
@@ -350,7 +350,7 @@ int main(int argc, char* argv[])
     QSurfaceFormat::setDefaultFormat(format);
 
     /* Then start QVR with your app */
-    QVRHelloWorld qvrapp;
+    QVRExampleOpenGL qvrapp;
     if (!manager.init(&qvrapp)) {
         qCritical("Cannot initialize QVR manager");
         return 1;

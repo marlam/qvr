@@ -21,8 +21,8 @@
  * SOFTWARE.
  */
 
-#ifndef QVR_HELLOWORLD_HPP
-#define QVR_HELLOWORLD_HPP
+#ifndef QVR_EXAMPLE_OPENGL_HPP
+#define QVR_EXAMPLE_OPENGL_HPP
 
 #include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLShaderProgram>
@@ -49,10 +49,10 @@ public:
     {}
 };
 
-class QVRHelloWorld : public QVRApp, protected QOpenGLFunctions_3_3_Core
+class QVRExampleOpenGL : public QVRApp, protected QOpenGLFunctions_3_3_Core
 {
 public:
-    QVRHelloWorld();
+    QVRExampleOpenGL();
 
 private:
     /* Data not directly relevant for rendering */

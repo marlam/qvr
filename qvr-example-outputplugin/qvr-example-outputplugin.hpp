@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,40 +21,34 @@
  * SOFTWARE.
  */
 
-#ifndef QVR_OSGVIEWER_HPP
-#define QVR_OSGVIEWER_HPP
+#ifndef QVR_EXAMPLE_OUTPUTPLUGIN_HPP
+#define QVR_EXAMPLE_OUTPUTPLUGIN_HPP
 
 #include <QOpenGLFunctions_3_3_Core>
 
-#include <qvr/app.hpp>
+class QVRWindow;
+class QElapsedTimer;
+class QStringList;
+class QOpenGLShaderProgram;
+class QMatrix4x4;
 
-#include <osgViewer/Viewer>
-
-
-class QVROSGViewer : public QVRApp, protected QOpenGLFunctions_3_3_Core
+class QVRExampleOutputPlugin : protected QOpenGLFunctions_3_3_Core
 {
-public:
-    QVROSGViewer(osg::ref_ptr<osg::Node> model);
-
 private:
-    bool _wantExit;
-    // OSG objects
-    osg::ref_ptr<osg::Node> _model;
-    osgViewer::Viewer _viewer;
-    osg::ref_ptr<osgViewer::GraphicsWindowEmbedded> _graphicsWindow;
-    // OpenGL objects
-    unsigned int _fbo;
-    unsigned int _fboDepthTex;
+    QVRWindow* _window;
+    QElapsedTimer* _timer;
+    bool _ripple_effect;
+    bool _edge_effect;
+    unsigned int _vao;
+    QOpenGLShaderProgram* _prg;
 
 public:
-    bool wantExit() override;
+    QVRExampleOutputPlugin(QVRWindow* window);
+    ~QVRExampleOutputPlugin();
 
-    bool initProcess(QVRProcess* p) override;
-
-    void render(QVRWindow* w, const QVRRenderContext& context,
-            int viewPass, unsigned int texture) override;
-
-    void keyPressEvent(const QVRRenderContext& context, QKeyEvent* event) override;
+    bool init(const QStringList& args);
+    void exit();
+    void output(const QVRRenderContext& context, unsigned int tex0, unsigned int tex1);
 };
 
 #endif

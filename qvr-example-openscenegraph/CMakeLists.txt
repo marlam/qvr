@@ -11,7 +11,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR} ${CMAKE_MODULE_PATH})
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-project(qvr-minimal-example)
+project(qvr-example-openscenegraph)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -Wall -Wextra")
@@ -19,13 +19,12 @@ endif()
 
 find_package(Qt5Widgets REQUIRED)
 find_package(QVR REQUIRED)
+set(OpenSceneGraph_MARK_AS_ADVANCED ON)
+find_package(OpenSceneGraph REQUIRED COMPONENTS osgViewer osgDB)
 
-include_directories(${QVR_INCLUDE_DIRS})
-link_directories(${QVR_LIBRARY_DIRS})
-qt5_add_resources(RESOURCES resources.qrc)
-add_executable(qvr-minimal-example
-    qvr-minimal-example.cpp qvr-minimal-example.hpp
-    ${RESOURCES})
-set_target_properties(qvr-minimal-example PROPERTIES WIN32_EXECUTABLE TRUE)
-target_link_libraries(qvr-minimal-example ${QVR_LIBRARIES} Qt5::Widgets)
-install(TARGETS qvr-minimal-example RUNTIME DESTINATION bin)
+include_directories(${OPENSCENEGRAPH_INCLUDE_DIRS} ${QVR_INCLUDE_DIRS})
+link_directories(${OPENSCENEGRAPH_LIBRARY_DIRS} ${QVR_LIBRARY_DIRS})
+add_executable(qvr-example-openscenegraph qvr-example-openscenegraph.cpp qvr-example-openscenegraph.hpp)
+set_target_properties(qvr-example-openscenegraph PROPERTIES WIN32_EXECUTABLE TRUE)
+target_link_libraries(qvr-example-openscenegraph ${OPENSCENEGRAPH_LIBRARIES} ${QVR_LIBRARIES} Qt5::Widgets)
+install(TARGETS qvr-example-openscenegraph RUNTIME DESTINATION bin)

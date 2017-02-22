@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,23 +27,23 @@
 #include <qvr/manager.hpp>
 #include <qvr/window.hpp>
 
-#include "qvr-osgviewer.hpp"
+#include "qvr-example-openscenegraph.hpp"
 
 #include <osgDB/ReadFile>
 
 
-QVROSGViewer::QVROSGViewer(osg::ref_ptr<osg::Node> model) :
+QVRExampleOSG::QVRExampleOSG(osg::ref_ptr<osg::Node> model) :
     _wantExit(false),
     _model(model)
 {
 }
 
-bool QVROSGViewer::wantExit()
+bool QVRExampleOSG::wantExit()
 {
     return _wantExit;
 }
 
-bool QVROSGViewer::initProcess(QVRProcess* /* p */)
+bool QVRExampleOSG::initProcess(QVRProcess* /* p */)
 {
     // Qt-based OpenGL function pointers
     initializeOpenGLFunctions();
@@ -70,7 +70,7 @@ bool QVROSGViewer::initProcess(QVRProcess* /* p */)
     return true;
 }
 
-void QVROSGViewer::render(QVRWindow* /* w */,
+void QVRExampleOSG::render(QVRWindow* /* w */,
         const QVRRenderContext& context, int viewPass, unsigned int texture)
 {
     // Set up framebuffer object to render into
@@ -97,7 +97,7 @@ void QVROSGViewer::render(QVRWindow* /* w */,
     _viewer.frame();
 }
 
-void QVROSGViewer::keyPressEvent(const QVRRenderContext& /* context */, QKeyEvent* event)
+void QVRExampleOSG::keyPressEvent(const QVRRenderContext& /* context */, QKeyEvent* event)
 {
     switch (event->key())
     {
@@ -132,7 +132,7 @@ int main(int argc, char* argv[])
     QSurfaceFormat::setDefaultFormat(format);
 
     /* Then start QVR with your app */
-    QVROSGViewer qvrapp(model);
+    QVRExampleOSG qvrapp(model);
     if (!manager.init(&qvrapp)) {
         qCritical("Cannot initialize QVR manager");
         return 1;

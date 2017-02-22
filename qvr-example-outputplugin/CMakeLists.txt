@@ -1,4 +1,4 @@
-# Copyright (C) 2016
+# Copyright (C) 2016, 2017
 # Computer Graphics Group, University of Siegen
 # Written by Martin Lambers <martin.lambers@uni-siegen.de>
 #
@@ -11,7 +11,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR} ${CMAKE_MODULE_PATH})
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-project(qvr-helloworld)
+project(qvr-example-outputplugin)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -Wall -Wextra")
@@ -22,11 +22,16 @@ find_package(QVR REQUIRED)
 
 include_directories(${QVR_INCLUDE_DIRS})
 link_directories(${QVR_LIBRARY_DIRS})
-qt5_add_resources(RESOURCES resources.qrc)
-add_executable(qvr-helloworld
-    geometries.cpp geometries.hpp
-    qvr-helloworld.cpp qvr-helloworld.hpp
-    ${RESOURCES})
-set_target_properties(qvr-helloworld PROPERTIES WIN32_EXECUTABLE TRUE)
-target_link_libraries(qvr-helloworld ${QVR_LIBRARIES} Qt5::Widgets)
-install(TARGETS qvr-helloworld RUNTIME DESTINATION bin)
+qt5_add_resources(RESOURCES qvr-example-outputplugin.qrc)
+add_library(libqvr-example-outputplugin SHARED
+    qvr-example-outputplugin.cpp qvr-example-outputplugin.hpp ${RESOURCES})
+set_target_properties(libqvr-example-outputplugin
+    PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+set_target_properties(libqvr-example-outputplugin
+    PROPERTIES OUTPUT_NAME qvr-example-outputplugin)
+target_link_libraries(libqvr-example-outputplugin
+    ${QVR_LIBRARIES} Qt5::Widgets)
+install(TARGETS libqvr-example-outputplugin
+    LIBRARY DESTINATION "lib${LIB_SUFFIX}"
+    ARCHIVE DESTINATION "lib${LIB_SUFFIX}"
+)

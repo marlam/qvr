@@ -1,4 +1,4 @@
-# Copyright (C) 2016
+# Copyright (C) 2016, 2017
 # Computer Graphics Group, University of Siegen
 # Written by Martin Lambers <martin.lambers@uni-siegen.de>
 #
@@ -11,7 +11,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR} ${CMAKE_MODULE_PATH})
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-project(qvr-vtk-example)
+project(qvr-example-vtk)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -Wall -Wextra")
@@ -24,7 +24,7 @@ include(${VTK_USE_FILE})
 
 include_directories(${VTK_INCLUDE_DIRS} ${QVR_INCLUDE_DIRS})
 link_directories(${VTK_LIBRARY_DIRS} ${QVR_LIBRARY_DIRS})
-add_executable(qvr-vtk-example qvr-vtk-example.cpp qvr-vtk-example.hpp)
-set_target_properties(qvr-vtk-example PROPERTIES WIN32_EXECUTABLE TRUE)
-target_link_libraries(qvr-vtk-example ${VTK_LIBRARIES} ${QVR_LIBRARIES} Qt5::Widgets)
-install(TARGETS qvr-vtk-example RUNTIME DESTINATION bin)
+add_executable(qvr-example-vtk qvr-example-vtk.cpp qvr-example-vtk.hpp)
+set_target_properties(qvr-example-vtk PROPERTIES WIN32_EXECUTABLE TRUE)
+target_link_libraries(qvr-example-vtk ${VTK_LIBRARIES} ${QVR_LIBRARIES} Qt5::Widgets)
+install(TARGETS qvr-example-vtk RUNTIME DESTINATION bin)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,20 +31,20 @@
 #include <qvr/outputplugin.hpp>
 #include <qvr/window.hpp>
 
-#include "qvr-outputplugin-example.hpp"
+#include "qvr-example-outputplugin.hpp"
 
 
-QVROutputPluginExample::QVROutputPluginExample(QVRWindow* window) :
+QVRExampleOutputPlugin::QVRExampleOutputPlugin(QVRWindow* window) :
     _window(window), _timer(new QElapsedTimer)
 {
 }
 
-QVROutputPluginExample::~QVROutputPluginExample()
+QVRExampleOutputPlugin::~QVRExampleOutputPlugin()
 {
     delete _timer;
 }
 
-bool QVROutputPluginExample::init(const QStringList& args)
+bool QVRExampleOutputPlugin::init(const QStringList& args)
 {
     _timer->start();
     _ripple_effect = args.contains("ripple");
@@ -107,13 +107,13 @@ bool QVROutputPluginExample::init(const QStringList& args)
     return true;
 }
 
-void QVROutputPluginExample::exit()
+void QVRExampleOutputPlugin::exit()
 {
     glDeleteVertexArrays(1, &_vao);
     delete _prg;
 }
 
-void QVROutputPluginExample::output(const QVRRenderContext& /* context */,
+void QVRExampleOutputPlugin::output(const QVRRenderContext& /* context */,
         unsigned int tex0, unsigned int /* tex1 */)
 {
     // This toy example plugin only uses the texture of the first view pass
@@ -132,13 +132,13 @@ void QVROutputPluginExample::output(const QVRRenderContext& /* context */,
 
 /* The plugin interface manages one instance of our plugin per window. */
 
-QMap<QString, QVROutputPluginExample*> instanceMap;
+QMap<QString, QVRExampleOutputPlugin*> instanceMap;
 extern int qInitResources_qvr_outputplugin_example();
 
 extern "C" bool QVROutputPluginInit(QVRWindow* window, const QStringList& args)
 {
     Q_INIT_RESOURCE(qvr_outputplugin_example);
-    instanceMap.insert(window->id(), new QVROutputPluginExample(window));
+    instanceMap.insert(window->id(), new QVRExampleOutputPlugin(window));
     return instanceMap[window->id()]->init(args);
 }
 

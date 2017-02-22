@@ -21,46 +21,38 @@
  * SOFTWARE.
  */
 
-#ifndef QVR_MINIMAL_EXAMPLE_HPP
-#define QVR_MINIMAL_EXAMPLE_HPP
+#ifndef QVR_EXAMPLE_OPENSCENEGRAPH_HPP
+#define QVR_EXAMPLE_OPENSCENEGRAPH_HPP
 
 #include <QOpenGLFunctions_3_3_Core>
-#include <QOpenGLShaderProgram>
-#include <QElapsedTimer>
 
 #include <qvr/app.hpp>
 
-class QVRMinimalExample : public QVRApp, protected QOpenGLFunctions_3_3_Core
+#include <osgViewer/Viewer>
+
+
+class QVRExampleOSG : public QVRApp, protected QOpenGLFunctions_3_3_Core
 {
+public:
+    QVRExampleOSG(osg::ref_ptr<osg::Node> model);
+
 private:
-    /* Data not directly relevant for rendering */
-    bool _wantExit;             // do we want to exit the app?
-    QElapsedTimer _timer;       // used for rotating the box
-
-    /* Static data for rendering, initialized per process. */
-    unsigned int _fbo;          // Framebuffer object to render into
-    unsigned int _fboDepthTex;  // Depth attachment for the FBO
-    unsigned int _vao;          // Vertex array object for the box
-    unsigned int _vaoIndices;   // Number of indices to render for the box
-    QOpenGLShaderProgram _prg;  // Shader program for rendering
-
-    /* Dynamic data for rendering. Needs to be serialized. */
-    float _rotationAngle;       // animated box rotation
+    bool _wantExit;
+    // OSG objects
+    osg::ref_ptr<osg::Node> _model;
+    osgViewer::Viewer _viewer;
+    osg::ref_ptr<osgViewer::GraphicsWindowEmbedded> _graphicsWindow;
+    // OpenGL objects
+    unsigned int _fbo;
+    unsigned int _fboDepthTex;
 
 public:
-    QVRMinimalExample();
+    bool wantExit() override;
 
     bool initProcess(QVRProcess* p) override;
 
-    void render(QVRWindow* w, const QVRRenderContext& c,
+    void render(QVRWindow* w, const QVRRenderContext& context,
             int viewPass, unsigned int texture) override;
-
-    void update(const QList<QVRObserver*>& observers) override;
-
-    bool wantExit() override;
-
-    void serializeDynamicData(QDataStream& ds) const override;
-    void deserializeDynamicData(QDataStream& ds) override;
 
     void keyPressEvent(const QVRRenderContext& context, QKeyEvent* event) override;
 };

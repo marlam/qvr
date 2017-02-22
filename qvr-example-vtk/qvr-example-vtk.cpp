@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,7 +27,7 @@
 #include <qvr/manager.hpp>
 #include <qvr/window.hpp>
 
-#include "qvr-vtk-example.hpp"
+#include "qvr-example-vtk.hpp"
 
 #include <vtkPolyDataMapper.h>
 #include <vtkActor.h>
@@ -39,7 +39,7 @@
 #include <vtkImageData.h>
 
 
-QVRVTKExample::QVRVTKExample() :
+QVRExampleVTK::QVRExampleVTK() :
     _wantExit(false),
     _vtkRenderer(vtkSmartPointer<vtkRenderer>::New()),
     _vtkRenderWindow(vtkSmartPointer<vtkRenderWindow>::New()),
@@ -47,12 +47,12 @@ QVRVTKExample::QVRVTKExample() :
 {
 }
 
-bool QVRVTKExample::wantExit()
+bool QVRExampleVTK::wantExit()
 {
     return _wantExit;
 }
 
-bool QVRVTKExample::initProcess(QVRProcess* /* p */)
+bool QVRExampleVTK::initProcess(QVRProcess* /* p */)
 {
     // Qt-based OpenGL function pointers
     initializeOpenGLFunctions();
@@ -119,7 +119,7 @@ static void qMatrixToVtkMatrix(const QMatrix4x4& qM, double vtkM[16])
         vtkM[i] = qM.constData()[i];
 }
 
-void QVRVTKExample::render(QVRWindow* /* w */,
+void QVRExampleVTK::render(QVRWindow* /* w */,
         const QVRRenderContext& context, int viewPass, unsigned int texture)
 {
     // Set up framebuffer object to render into
@@ -147,7 +147,7 @@ void QVRVTKExample::render(QVRWindow* /* w */,
     _vtkRenderWindow->Render();
 }
 
-void QVRVTKExample::keyPressEvent(const QVRRenderContext& /* context */, QKeyEvent* event)
+void QVRExampleVTK::keyPressEvent(const QVRRenderContext& /* context */, QKeyEvent* event)
 {
     switch (event->key())
     {
@@ -169,7 +169,7 @@ int main(int argc, char* argv[])
     QSurfaceFormat::setDefaultFormat(format);
 
     /* Then start QVR with your app */
-    QVRVTKExample qvrapp;
+    QVRExampleVTK qvrapp;
     if (!manager.init(&qvrapp)) {
         qCritical("Cannot initialize QVR manager");
         return 1;

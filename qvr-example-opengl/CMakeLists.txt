@@ -1,4 +1,4 @@
-# Copyright (C) 2016
+# Copyright (C) 2016, 2017
 # Computer Graphics Group, University of Siegen
 # Written by Martin Lambers <martin.lambers@uni-siegen.de>
 #
@@ -11,7 +11,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR} ${CMAKE_MODULE_PATH})
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-project(qvr-outputplugin-example)
+project(qvr-example-opengl)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -Wall -Wextra")
@@ -22,16 +22,11 @@ find_package(QVR REQUIRED)
 
 include_directories(${QVR_INCLUDE_DIRS})
 link_directories(${QVR_LIBRARY_DIRS})
-qt5_add_resources(RESOURCES qvr-outputplugin-example.qrc)
-add_library(libqvr-outputplugin-example SHARED
-    qvr-outputplugin-example.cpp qvr-outputplugin-example.hpp ${RESOURCES})
-set_target_properties(libqvr-outputplugin-example
-    PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
-set_target_properties(libqvr-outputplugin-example
-    PROPERTIES OUTPUT_NAME qvr-outputplugin-example)
-target_link_libraries(libqvr-outputplugin-example
-    ${QVR_LIBRARIES} Qt5::Widgets)
-install(TARGETS libqvr-outputplugin-example
-    LIBRARY DESTINATION "lib${LIB_SUFFIX}"
-    ARCHIVE DESTINATION "lib${LIB_SUFFIX}"
-)
+qt5_add_resources(RESOURCES resources.qrc)
+add_executable(qvr-example-opengl
+    geometries.cpp geometries.hpp
+    qvr-example-opengl.cpp qvr-example-opengl.hpp
+    ${RESOURCES})
+set_target_properties(qvr-example-opengl PROPERTIES WIN32_EXECUTABLE TRUE)
+target_link_libraries(qvr-example-opengl ${QVR_LIBRARIES} Qt5::Widgets)
+install(TARGETS qvr-example-opengl RUNTIME DESTINATION bin)
