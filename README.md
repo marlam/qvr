@@ -53,21 +53,21 @@ explaining the concepts of libqvr and how to use it, and a
 
 ## Example applications
 
-- `qvr-minimal-example`:
-  a minimal example application that displays a rotating box.
+- `qvr-example-opengl-minimal`:
+  a minimal OpenGL-based example application that displays a rotating box.
 
-- `qvr-helloworld`:
+- `qvr-example-opengl`:
   a simple demo scene based on OpenGL.
+
+- `qvr-example-openscenegraph`:
+  a full-featured [OpenSceneGraph](http://www.openscenegraph.com) viewer.
+
+- `qvr-example-vtk`:
+  a simple example of a [VTK](http://www.vtk.org) visualization pipeline within
+  a QVR application.
 
 - `qvr-sceneviewer`:
   a viewer for 3D models and scenes in many file formats.
-
-- `qvr-osgviewer`:
-  a full-featured [OpenSceneGraph](http://www.openscenegraph.com) viewer.
-
-- `qvr-vtk-example`:
-  a simple example of a [VTK](http://www.vtk.org) visualization pipeline within
-  a QVR application.
 
 - `qvr-vncviewer`: a [VNC](https://en.wikipedia.org/wiki/Virtual_Network_Computing)
   viewer. Put a remote desktop in your virtual world!
