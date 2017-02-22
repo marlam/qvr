@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013, 2014, 2015, 2016
+ * Copyright (C) 2013, 2014, 2015, 2016, 2017
  * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
@@ -37,7 +37,7 @@ void geom_quad(
         std::vector<float>& positions,
         std::vector<float>& normals,
         std::vector<float>& texcoords,
-        std::vector<unsigned int>& indices)
+        std::vector<unsigned short>& indices)
 {
     static const float p[] = {
         -1.0f, +1.0f, 0.0f,
@@ -57,20 +57,20 @@ void geom_quad(
         1.0f, 0.0f,
         0.0f, 0.0f
     };
-    static const unsigned int i[] = {
+    static const unsigned short i[] = {
         0, 3, 1, 1, 3, 2
     };
     positions.assign(p, p + sizeof(p) / sizeof(float));
     normals.assign(n, n + sizeof(n) / sizeof(float));
     texcoords.assign(t, t + sizeof(t) / sizeof(float));
-    indices.assign(i, i + sizeof(i) / sizeof(unsigned int));
+    indices.assign(i, i + sizeof(i) / sizeof(unsigned short));
 }
 
 void geom_cube(
         std::vector<float>& positions,
         std::vector<float>& normals,
         std::vector<float>& texcoords,
-        std::vector<unsigned int>& indices)
+        std::vector<unsigned short>& indices)
 {
     static const float p[] = {
         -1.0f, +1.0f, +1.0f,   +1.0f, +1.0f, +1.0f,   +1.0f, -1.0f, +1.0f,   -1.0f, -1.0f, +1.0f, // front
@@ -96,7 +96,7 @@ void geom_cube(
           0.0f, 0.0f,   1.0f, 0.0f,   1.0f, 1.0f,   0.0f, 1.0f, // top
           0.0f, 1.0f,   1.0f, 1.0f,   1.0f, 0.0f,   0.0f, 0.0f, // bottom
     };
-    static const unsigned int i[] = {
+    static const unsigned short i[] = {
         0, 3, 1, 1, 3, 2, // front face
         4, 5, 7, 5, 6, 7, // back face
         8, 9, 11, 9, 10, 11, // right face
@@ -107,14 +107,14 @@ void geom_cube(
     positions.assign(p, p + sizeof(p) / sizeof(float));
     normals.assign(n, n + sizeof(n) / sizeof(float));
     texcoords.assign(t, t + sizeof(t) / sizeof(float));
-    indices.assign(i, i + sizeof(i) / sizeof(unsigned int));
+    indices.assign(i, i + sizeof(i) / sizeof(unsigned short));
 }
 
 void geom_disk(
         std::vector<float>& positions,
         std::vector<float>& normals,
         std::vector<float>& texcoords,
-        std::vector<unsigned int>& indices,
+        std::vector<unsigned short>& indices,
         float inner_radius, int slices)
 {
     const int loops = 1;
@@ -159,7 +159,7 @@ void geom_sphere(
         std::vector<float>& positions,
         std::vector<float>& normals,
         std::vector<float>& texcoords,
-        std::vector<unsigned int>& indices,
+        std::vector<unsigned short>& indices,
         int slices, int stacks)
 {
     assert(slices >= 4);
@@ -207,7 +207,7 @@ void geom_cylinder(
         std::vector<float>& positions,
         std::vector<float>& normals,
         std::vector<float>& texcoords,
-        std::vector<unsigned int>& indices,
+        std::vector<unsigned short>& indices,
         int slices)
 {
     const int stacks = 1;
@@ -249,7 +249,7 @@ void geom_cone(
         std::vector<float>& positions,
         std::vector<float>& normals,
         std::vector<float>& texcoords,
-        std::vector<unsigned int>& indices,
+        std::vector<unsigned short>& indices,
         int slices, int stacks)
 {
     assert(slices >= 4);
@@ -296,7 +296,7 @@ void geom_torus(
         std::vector<float>& positions,
         std::vector<float>& normals,
         std::vector<float>& texcoords,
-        std::vector<unsigned int>& indices,
+        std::vector<unsigned short>& indices,
         float inner_radius, int sides, int rings)
 {
     assert(inner_radius >= 0.0f);
@@ -360,7 +360,7 @@ void geom_teapot(
         std::vector<float>& positions,
         std::vector<float>& normals,
         std::vector<float>& texcoords,
-        std::vector<unsigned int>& indices)
+        std::vector<unsigned short>& indices)
 {
     // The teapot data was obtained as follows:
     // - download http://cggmwww.csie.nctu.edu.tw/courses/cgu/2002/prog1/teapot.obj
@@ -4701,7 +4701,7 @@ void geom_teapot(
           0.615457f, 0.539766f,   0.635365f, 0.545085f,   0.651407f, 0.549371f,
           0.662113f, 0.552232f,   0.666009f, 0.553273f
     };
-    static const unsigned int i[] = {
+    static const unsigned short i[] = {
            0,    1,    2,    2,    3,    0,    3,    2,    4,    4,    5,    3,
            5,    4,    6,    6,    7,    5,    7,    6,    8,    8,    9,    7,
            9,    8,   10,   10,   11,    9,   11,   10,   12,   12,   13,   11,
@@ -6286,5 +6286,5 @@ void geom_teapot(
     positions.assign(p, p + sizeof(p) / sizeof(float));
     normals.assign(n, n + sizeof(n) / sizeof(float));
     texcoords.assign(t, t + sizeof(t) / sizeof(float));
-    indices.assign(i, i + sizeof(i) / sizeof(unsigned int));
+    indices.assign(i, i + sizeof(i) / sizeof(unsigned short));
 }

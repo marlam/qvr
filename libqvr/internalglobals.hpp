@@ -24,19 +24,33 @@
 #ifndef QVR_INTERNALS_HPP
 #define QVR_INTERNALS_HPP
 
+/* Global event queue */
 #include <QQueue>
 #include "event.hpp"
 extern QQueue<QVREvent>* QVREventQueue;
 
+/* Global timer */
 #include <QElapsedTimer>
 extern QElapsedTimer QVRTimer;
 
+/* Global renderable device model data */
+#include <QList>
+#include <QVector>
+#include <QImage>
+extern QList<QVector<float>> QVRDeviceModelVertexPositions;
+extern QList<QVector<float>> QVRDeviceModelVertexNormals;
+extern QList<QVector<float>> QVRDeviceModelVertexTexCoords;
+extern QList<QVector<unsigned short>> QVRDeviceModelVertexIndices;
+extern QList<QImage> QVRDeviceModelTextures;
+
+/* Global list of gamepads */
 #ifdef HAVE_QGAMEPAD
 # include <QGamepadManager>
 extern QList<int> QVRGamepads;
 void QVRDetectGamepads();
 #endif
 
+/* Global variables and functions for Oculus Rift support */
 #ifdef HAVE_OCULUS
 # include <OVR_Version.h>
 # if (OVR_PRODUCT_VERSION < 1)
@@ -65,6 +79,7 @@ extern int QVROculusControllers; // 0 = none, 1 = xbox, 2 = left touch, 3 = righ
 void QVRAttemptOculusInitialization();
 #endif
 
+/* Global variables and functions for OpenVR (HTC Vive) support */
 #ifdef HAVE_OPENVR
 # include <QMatrix4x4>
 # include <QQuaternion>
@@ -77,10 +92,15 @@ extern QVector3D QVROpenVRTrackedPositions[5];        // head, left eye, right e
 extern bool QVROpenVRHaveTrackedVelocities[5];        // head, left eye, right eye, controller0, controller1
 extern QVector3D QVROpenVRTrackedVelocities[5];       // head, left eye, right eye, controller0, controller1
 extern QVector3D QVROpenVRTrackedAngularVelocities[5];// head, left eye, right eye, controller0, controller1
+extern QVector<QVector3D> QVROpenVRControllerModelPositions[2];
+extern QVector<QQuaternion> QVROpenVRControllerModelOrientations[2];
+extern QVector<int> QVROpenVRControllerModelVertexDataIndices[2];
+extern QVector<int> QVROpenVRControllerModelTextureIndices[2];
 void QVRAttemptOpenVRInitialization();
 void QVRUpdateOpenVR();
 #endif
 
+/* Global variables and functions for OSVR support */
 #ifdef HAVE_OSVR
 # include <osvr/ClientKit/DisplayC.h>
 # include <osvr/ClientKit/ContextC.h>

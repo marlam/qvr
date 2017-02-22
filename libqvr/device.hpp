@@ -69,6 +69,11 @@ private:
     void update();
 
 public:
+    /**
+     * \name Constructor / Destructor
+     */
+    /*@{*/
+
     /*! \brief Constructor. */
     QVRDevice();
     /*! \brief Constructor for the device with the given \a index in the QVR configuration. */
@@ -79,12 +84,26 @@ public:
     /*! \brief Assignment operator. */
     const QVRDevice& operator=(const QVRDevice& d);
 
+    /*@}*/
+
+    /**
+     * \name Configuration
+     */
+    /*@{*/
+
     /*! \brief Returns the index of the device in the QVR configuration. */
     int index() const;
     /*! \brief Returns the unique id. */
     const QString& id() const;
     /*! \brief Returns the configuration. */
     const QVRDeviceConfig& config() const;
+
+    /*@}*/
+
+    /**
+     * \name Pose and velocity
+     */
+    /*@{*/
 
     /*! \brief Returns the position. */
     const QVector3D& position() const
@@ -121,8 +140,15 @@ public:
         return m;
     }
 
+    /*@}*/
+
+    /**
+     * \name State of buttons and analog elements
+     */
+    /*@{*/
+
     /*! \brief Returns the number of digital buttons on this device. */
-    int buttons() const
+    int buttonCount() const
     {
         return _buttons.length();
     }
@@ -136,7 +162,7 @@ public:
     /*! \brief Returns the number of analog joystick elements on this device.
      * Usually index 0 will be the x axis and index 1 the y axis for two-dimensional
      * joysticks. */
-    int analogs() const
+    int analogCount() const
     {
         return _analogs.length();
     }
@@ -146,6 +172,64 @@ public:
     {
         return _analogs.at(index);
     }
+
+    /*@}*/
+
+    /**
+     * \name Rendering a device representation
+     *
+     * A renderable representation of a device consists of one or more nodes.
+     * Each node has its own transformation (position and orientation) and contains
+     * vertex data (positions, normals, texture coordinates) and optionally a texture.
+     *
+     * You can query the number of nodes with \a modelNodeCount() and then render all nodes
+     * sequentially to get the full device representation.
+     *
+     * Since the representation of the device depends on its state (buttons, analog elements, ...),
+     * the number of nodes and their transformations may change between frames. However, vertex
+     * data and textures with a given index are constant and can therefore be uploaded
+     * to GPU buffers once and then reused.
+     */
+    /*@{*/
+
+    /*! \brief Returns the number of nodes that are currently in the renderable device
+     * model, or 0 if there is no such model.
+     * This depends on the current state of the device and can therefore change between frames. */
+    int modelNodeCount() const;
+
+    /*! \brief Returns the current position of the renderable device model node with the given index.
+     * This depends on the current state of the device and can therefore change between frames. */
+    QVector3D modelNodePosition(int nodeIndex) const;
+
+    /*! \brief Returns the current orientation of the renderable device model node with the given index.
+     * This depends on the current state of the device and can therefore change between frames. */
+    QQuaternion modelNodeOrientation(int nodeIndex) const;
+
+    /*! \brief Returns the position and orientation of the renderable device model node with the given index as a matrix.
+     * This depends on the current state of the device and can therefore change between frames. */
+    QMatrix4x4 modelNodeMatrix(int nodeIndex) const
+    {
+        QMatrix4x4 m;
+        m.translate(modelNodePosition(nodeIndex));
+        m.rotate(modelNodeOrientation(nodeIndex));
+        return m;
+    }
+
+    /*! \brief Returns the index of the vertex data block associated with the given renderable device
+     * model node. Pass this index to \a QVRManager::deviceModelVertexCound(), \a QVRManager::deviceModelVertexPositions(),
+     * \a QVRManager::deviceModelVertexNormals(), and \a QVRManager::deviceModelVertexTexCoords()
+     * to get the actual vertex data.
+     * Vertex data with a given index never changes, so you can e.g. upload this data to a GPU buffer once
+     * and reuse it. */
+    int modelNodeVertexDataIndex(int nodeIndex) const;
+
+    /*! \brief Returns the index of the texture associated with the given renderable device model node.
+     * Pass this index to \a QVRManager::deviceModelTexture() to get the actual texture data.
+     * Texture data with a given index never changes, so you can e.g. upload this data to a GPU buffer once
+     * and reuse it. */
+    int modelNodeTextureIndex(int nodeIndex) const;
+
+    /*@}*/
 };
 
 /*!

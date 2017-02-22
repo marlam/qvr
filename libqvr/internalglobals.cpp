@@ -30,10 +30,20 @@
 # include <osvr/ClientKit/ServerAutoStartC.h>
 #endif
 
+/* Global event queue */
 QQueue<QVREvent>* QVREventQueue = NULL;
 
+/* Global timer */
 QElapsedTimer QVRTimer;
 
+/* Global renderable device model data */
+QList<QVector<float>> QVRDeviceModelVertexPositions;
+QList<QVector<float>> QVRDeviceModelVertexNormals;
+QList<QVector<float>> QVRDeviceModelVertexTexCoords;
+QList<QVector<unsigned short>> QVRDeviceModelVertexIndices;
+QList<QImage> QVRDeviceModelTextures;
+
+/* Global list of gamepads */
 #ifdef HAVE_QGAMEPAD
 QList<int> QVRGamepads;
 void QVRDetectGamepads()
@@ -42,6 +52,7 @@ void QVRDetectGamepads()
 }
 #endif
 
+/* Global variables and functions for Oculus Rift support */
 #ifdef HAVE_OCULUS
 # if (OVR_PRODUCT_VERSION >= 1)
 ovrSession QVROculus = NULL;
@@ -125,6 +136,7 @@ void QVRAttemptOculusInitialization()
 }
 #endif
 
+/* Global variables and functions for OpenVR (HTC Vive) support */
 #ifdef HAVE_OPENVR
 vr::IVRSystem* QVROpenVRSystem = NULL;
 vr::VRControllerState_t QVROpenVRControllerStates[2];
@@ -134,6 +146,10 @@ QVector3D QVROpenVRTrackedPositions[5];        // head, left eye, right eye, con
 bool QVROpenVRHaveTrackedVelocities[5];        // head, left eye, right eye, controller0, controller1
 QVector3D QVROpenVRTrackedVelocities[5];       // head, left eye, right eye, controller0, controller1
 QVector3D QVROpenVRTrackedAngularVelocities[5];// head, left eye, right eye, controller0, controller1
+QVector<QVector3D> QVROpenVRControllerModelPositions[2];
+QVector<QQuaternion> QVROpenVRControllerModelOrientations[2];
+QVector<int> QVROpenVRControllerModelVertexDataIndices[2];
+QVector<int> QVROpenVRControllerModelTextureIndices[2];
 static QMatrix4x4 QVROpenVRHmdToEye[2];
 static QMatrix4x4 QVROpenVRConvertMatrix(const vr::HmdMatrix34_t& openVrMatrix)
 {
@@ -153,6 +169,145 @@ static void QVROpenVRConvertPose(const QMatrix4x4& matrix, QQuaternion* orientat
     *position = QVector3D(matrix(0, 3), matrix(1, 3), matrix(2, 3));
 }
 static unsigned int QVROpenVRControllerIndices[2];
+static QMap<QString, int> QVROpenVRNameToVertexDataIndexMap;
+static QMap<QString, int> QVROpenVRNameToTextureIndexMap;
+static QMap<int, int> QVROpenVRTexIdToIndexMap;
+void QVRAttemptOpenVRInitialization()
+{
+    if (!vr::VR_IsHmdPresent()) {
+        QVR_INFO("OpenVR: no HMD available");
+        return;
+    }
+    QVR_DEBUG("OpenVR: attempting initialization");
+    vr::EVRInitError e = vr::VRInitError_None;
+    QVROpenVRSystem = vr::VR_Init(&e, vr::VRApplication_Scene);
+    if (!QVROpenVRSystem) {
+        QVR_INFO("OpenVR: initialization failed: %s", vr::VR_GetVRInitErrorAsEnglishDescription(e));
+        return;
+    }
+    QVR_INFO("OpenVR: initialization succeeded");
+    std::memset(QVROpenVRControllerStates, 0, sizeof(QVROpenVRControllerStates));
+    QVROpenVRSystem->CaptureInputFocus();
+    QVROpenVRHmdToEye[0] = QVROpenVRConvertMatrix(QVROpenVRSystem->GetEyeToHeadTransform(vr::Eye_Left));
+    QVROpenVRHmdToEye[1] = QVROpenVRConvertMatrix(QVROpenVRSystem->GetEyeToHeadTransform(vr::Eye_Right));
+    int controllerIndex = 0;
+    for (unsigned int i = 0; i < vr::k_unMaxTrackedDeviceCount; i++) {
+        if (QVROpenVRSystem->GetTrackedDeviceClass(i) == vr::TrackedDeviceClass_Controller) {
+            QVROpenVRControllerIndices[controllerIndex] = i;
+            QVR_DEBUG("OpenVR: controller %d has device index %u", controllerIndex, i);
+            controllerIndex++;
+            if (controllerIndex >= 2)
+                break;
+        }
+    }
+
+    // Get render models for the two controllers
+    QVector<char> buffer;
+    int bufSize;
+    for (int i = 0; i < 2; i++) {
+        int deviceIndex = QVROpenVRControllerIndices[i];
+        buffer.clear();
+        buffer.resize(vr::k_unMaxPropertyStringSize);
+        QVROpenVRSystem->GetStringTrackedDeviceProperty(deviceIndex, vr::Prop_RenderModelName_String, buffer.data(), vr::k_unMaxPropertyStringSize, 0);
+        QString renderModelName(buffer.data());
+        if (renderModelName.isEmpty()) {
+            QVR_DEBUG("OpenVR controller %d has no render model", i);
+        } else {
+            QVR_DEBUG("OpenVR controller %d has render model %s", i, qPrintable(renderModelName));
+            int m = vr::VRRenderModels()->GetComponentCount(qPrintable(renderModelName));
+            QVR_DEBUG("    %d components", m);
+            // reserve the space to avoid repeated reallocation in QVRUpdateOpenVR()
+            QVROpenVRControllerModelPositions[i].reserve(m);
+            QVROpenVRControllerModelOrientations[i].reserve(m);
+            QVROpenVRControllerModelVertexDataIndices[i].reserve(m);
+            QVROpenVRControllerModelTextureIndices[i].reserve(m);
+            for (int j = 0; j < m; j++) {
+                bufSize = vr::VRRenderModels()->GetComponentName(qPrintable(renderModelName), j, 0, 0);
+                buffer.clear();
+                buffer.resize(qMin(1, bufSize));
+                vr::VRRenderModels()->GetComponentName(qPrintable(renderModelName), j, buffer.data(), bufSize);
+                QString componentName(buffer.data());
+                QVR_DEBUG("    component %d: name %s", j, qPrintable(componentName));
+                bufSize = vr::VRRenderModels()->GetComponentRenderModelName(qPrintable(renderModelName), qPrintable(componentName), 0, 0);
+                buffer.clear();
+                buffer.resize(qMin(1, bufSize));
+                vr::VRRenderModels()->GetComponentRenderModelName(qPrintable(renderModelName), qPrintable(componentName), buffer.data(), bufSize);
+                QString componentRenderModelName(buffer.data());
+                if (componentRenderModelName.isEmpty()) {
+                    QVR_DEBUG("        component has no render model");
+                } else if (QVROpenVRNameToVertexDataIndexMap.contains(componentRenderModelName)) {
+                    QVR_DEBUG("        render model %s already loaded", qPrintable(componentRenderModelName));
+                    QVROpenVRControllerModelVertexDataIndices[i].append(QVROpenVRNameToVertexDataIndexMap.value(componentRenderModelName));
+                    QVROpenVRControllerModelTextureIndices[i].append(QVROpenVRNameToTextureIndexMap.value(componentRenderModelName));
+                } else {
+                    QVR_DEBUG("        loading render model %s...", qPrintable(componentRenderModelName));
+                    vr::RenderModel_t* renderModel;
+                    vr::EVRRenderModelError renderModelError;
+                    while ((renderModelError = vr::VRRenderModels()->LoadRenderModel_Async(
+                                    qPrintable(componentRenderModelName), &renderModel))
+                            == vr::VRRenderModelError_Loading) {
+                    }
+                    if (renderModelError != vr::VRRenderModelError_None) {
+                        QVR_DEBUG("        ...failed: %s",
+                                vr::VRRenderModels()->GetRenderModelErrorNameFromEnum(renderModelError));
+                        continue;
+                    }
+                    QVR_DEBUG("        ...done");
+                    int texId = renderModel->diffuseTextureId;
+                    if (QVROpenVRTexIdToIndexMap.contains(texId)) {
+                        QVR_DEBUG("            texture already loaded");
+                        QVROpenVRNameToTextureIndexMap.insert(componentRenderModelName, QVROpenVRTexIdToIndexMap.value(texId));
+                    } else {
+                        QVR_DEBUG("            loading texture...");
+                        vr::RenderModel_TextureMap_t* textureMap;
+                        while ((renderModelError = vr::VRRenderModels()->LoadTexture_Async(texId, &textureMap))
+                                == vr::VRRenderModelError_Loading) {
+                        }
+                        if (renderModelError != vr::VRRenderModelError_None) {
+                            QVR_WARNING("cannot load OpenVR controller %d render model component %s texture id %d: %s", i,
+                                    qPrintable(componentRenderModelName), texId,
+                                    vr::VRRenderModels()->GetRenderModelErrorNameFromEnum(renderModelError));
+                            vr::VRRenderModels()->FreeRenderModel(renderModel);
+                            continue;
+                        }
+                        QImage textureRaw(textureMap->rubTextureMapData,
+                                textureMap->unWidth, textureMap->unHeight,
+                                QImage::Format_RGBA8888);
+                        QImage texture = textureRaw.copy(textureRaw.rect());
+                        vr::VRRenderModels()->FreeTexture(textureMap);
+                        QVRDeviceModelTextures.append(texture);
+                        QVROpenVRNameToTextureIndexMap.insert(componentRenderModelName, QVRDeviceModelTextures.size() - 1);
+                    }
+                    int vertexCount = renderModel->unVertexCount;
+                    QVector<float> vertexPositions(3 * vertexCount);
+                    QVector<float> vertexNormals(3 * vertexCount);
+                    QVector<float> vertexTexCoords(2 * vertexCount);
+                    for (int k = 0; k < vertexCount; k++) {
+                        vertexPositions[3 * k + 0] = renderModel->rVertexData[k].vPosition.v[0];
+                        vertexPositions[3 * k + 1] = renderModel->rVertexData[k].vPosition.v[1];
+                        vertexPositions[3 * k + 2] = renderModel->rVertexData[k].vPosition.v[2];
+                        vertexNormals[3 * k + 0] = renderModel->rVertexData[k].vNormal.v[0];
+                        vertexNormals[3 * k + 1] = renderModel->rVertexData[k].vNormal.v[1];
+                        vertexNormals[3 * k + 2] = renderModel->rVertexData[k].vNormal.v[2];
+                        vertexTexCoords[2 * k + 0] = renderModel->rVertexData[k].rfTextureCoord[0];
+                        vertexTexCoords[2 * k + 1] = renderModel->rVertexData[k].rfTextureCoord[1];
+                    }
+                    int indexCount = 3 * renderModel->unTriangleCount;
+                    QVector<unsigned short> vertexIndices(indexCount);
+                    for (int k = 0; k < indexCount; k++) {
+                        vertexIndices[k] = renderModel->rIndexData[k];
+                    }
+                    QVRDeviceModelVertexPositions.append(vertexPositions);
+                    QVRDeviceModelVertexNormals.append(vertexNormals);
+                    QVRDeviceModelVertexTexCoords.append(vertexTexCoords);
+                    QVRDeviceModelVertexIndices.append(vertexIndices);
+                    QVROpenVRNameToVertexDataIndexMap.insert(componentRenderModelName, QVRDeviceModelVertexPositions.size() - 1);
+                    vr::VRRenderModels()->FreeRenderModel(renderModel);
+                }
+            }
+        }
+    }
+}
 void QVRUpdateOpenVR()
 {
     vr::TrackedDevicePose_t poses[vr::k_unMaxTrackedDeviceCount];
@@ -200,38 +355,59 @@ void QVRUpdateOpenVR()
             sizeof(QVROpenVRControllerStates[0]));
     QVROpenVRSystem->GetControllerState(QVROpenVRControllerIndices[1], &(QVROpenVRControllerStates[1]),
             sizeof(QVROpenVRControllerStates[1]));
-}
-void QVRAttemptOpenVRInitialization()
-{
-    if (!vr::VR_IsHmdPresent()) {
-        QVR_INFO("OpenVR: no HMD available");
-        return;
-    }
-    QVR_DEBUG("OpenVR: attempting initialization");
-    vr::EVRInitError e = vr::VRInitError_None;
-    QVROpenVRSystem = vr::VR_Init(&e, vr::VRApplication_Scene);
-    if (!QVROpenVRSystem) {
-        QVR_INFO("OpenVR: initialization failed: %s", vr::VR_GetVRInitErrorAsEnglishDescription(e));
-        return;
-    }
-    QVR_INFO("OpenVR: initialization succeeded");
-    std::memset(QVROpenVRControllerStates, 0, sizeof(QVROpenVRControllerStates));
-    QVROpenVRSystem->CaptureInputFocus();
-    QVROpenVRHmdToEye[0] = QVROpenVRConvertMatrix(QVROpenVRSystem->GetEyeToHeadTransform(vr::Eye_Left));
-    QVROpenVRHmdToEye[1] = QVROpenVRConvertMatrix(QVROpenVRSystem->GetEyeToHeadTransform(vr::Eye_Right));
-    int controllerIndex = 0;
-    for (unsigned int i = 0; i < vr::k_unMaxTrackedDeviceCount; i++) {
-        if (QVROpenVRSystem->GetTrackedDeviceClass(i) == vr::TrackedDeviceClass_Controller) {
-            QVROpenVRControllerIndices[controllerIndex] = i;
-            QVR_DEBUG("OpenVR: controller %d has device index %u", controllerIndex, i);
-            controllerIndex++;
-            if (controllerIndex >= 2)
-                break;
+
+    // update render models for the two controllers
+    QVector<char> buffer;
+    int bufSize;
+    for (int i = 0; i < 2; i++) {
+        QVROpenVRControllerModelPositions[i].clear();
+        QVROpenVRControllerModelOrientations[i].clear();
+        QVROpenVRControllerModelVertexDataIndices[i].clear();
+        QVROpenVRControllerModelTextureIndices[i].clear();
+        int deviceIndex = QVROpenVRControllerIndices[i];
+        buffer.clear();
+        buffer.resize(vr::k_unMaxPropertyStringSize);
+        QVROpenVRSystem->GetStringTrackedDeviceProperty(deviceIndex, vr::Prop_RenderModelName_String, buffer.data(), vr::k_unMaxPropertyStringSize, 0);
+        QString renderModelName(buffer.data());
+        if (!renderModelName.isEmpty()) {
+            int m = vr::VRRenderModels()->GetComponentCount(qPrintable(renderModelName));
+            for (int j = 0; j < m; j++) {
+                bufSize = vr::VRRenderModels()->GetComponentName(qPrintable(renderModelName), j, 0, 0);
+                buffer.clear();
+                buffer.resize(qMin(1, bufSize));
+                vr::VRRenderModels()->GetComponentName(qPrintable(renderModelName), j, buffer.data(), bufSize);
+                QString componentName(buffer.data());
+                bufSize = vr::VRRenderModels()->GetComponentRenderModelName(qPrintable(renderModelName), qPrintable(componentName), 0, 0);
+                buffer.clear();
+                buffer.resize(qMin(1, bufSize));
+                vr::VRRenderModels()->GetComponentRenderModelName(qPrintable(renderModelName), qPrintable(componentName), buffer.data(), bufSize);
+                QString componentRenderModelName(buffer.data());
+                if (!componentRenderModelName.isEmpty()) {
+                    vr::RenderModel_ControllerMode_State_t state;
+                    state.bScrollWheelVisible = false;
+                    vr::RenderModel_ComponentState_t componentState;
+                    vr::VRRenderModels()->GetComponentState(qPrintable(renderModelName), qPrintable(componentName),
+                            &(QVROpenVRControllerStates[i]), &state, &componentState);
+                    if (componentState.uProperties & vr::VRComponentProperty_IsVisible) {
+                        QMatrix4x4 M = QVROpenVRConvertMatrix(componentState.mTrackingToComponentRenderModel);
+                        QQuaternion q;
+                        QVector3D p;
+                        QVROpenVRConvertPose(M, &q, &p);
+                        QVROpenVRControllerModelPositions[i].append(p);
+                        QVROpenVRControllerModelOrientations[i].append(q);
+                        Q_ASSERT(QVROpenVRNameToVertexDataIndexMap.contains(componentRenderModelName));
+                        QVROpenVRControllerModelVertexDataIndices[i].append(QVROpenVRNameToVertexDataIndexMap.value(componentRenderModelName));
+                        Q_ASSERT(QVROpenVRNameToTextureIndexMap.contains(componentRenderModelName));
+                        QVROpenVRControllerModelTextureIndices[i].append(QVROpenVRNameToTextureIndexMap.value(componentRenderModelName));
+                    }
+                }
+            }
         }
     }
 }
 #endif
 
+/* Global variables and functions for OSVR support */
 #ifdef HAVE_OSVR
 OSVR_ClientContext QVROsvrClientContext = NULL;
 OSVR_DisplayConfig QVROsvrDisplayConfig = NULL;

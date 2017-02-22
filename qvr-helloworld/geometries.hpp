@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013, 2014, 2015, 2016
+ * Copyright (C) 2013, 2014, 2015, 2016, 2017
  * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
@@ -35,53 +35,53 @@ void geom_quad(
         std::vector<float>& positions,
         std::vector<float>& normals,
         std::vector<float>& texcoords,
-        std::vector<unsigned int>& indices);
+        std::vector<unsigned short>& indices);
 
 void geom_cube(
         std::vector<float>& positions,
         std::vector<float>& normals,
         std::vector<float>& texcoords,
-        std::vector<unsigned int>& indices);
+        std::vector<unsigned short>& indices);
 
 void geom_disk(
         std::vector<float>& positions,
         std::vector<float>& normals,
         std::vector<float>& texcoords,
-        std::vector<unsigned int>& indices,
+        std::vector<unsigned short>& indices,
         float inner_radius = 0.2f, int slices = 40);
 
 void geom_sphere(
         std::vector<float>& positions,
         std::vector<float>& normals,
         std::vector<float>& texcoords,
-        std::vector<unsigned int>& indices,
+        std::vector<unsigned short>& indices,
         int slices = 40, int stacks = 20);
 
 void geom_cylinder(
         std::vector<float>& positions,
         std::vector<float>& normals,
         std::vector<float>& texcoords,
-        std::vector<unsigned int>& indices,
+        std::vector<unsigned short>& indices,
         int slices = 40);
 
 void geom_cone(
         std::vector<float>& positions,
         std::vector<float>& normals,
         std::vector<float>& texcoords,
-        std::vector<unsigned int>& indices,
+        std::vector<unsigned short>& indices,
         int slices = 40, int stacks = 20);
 
 void geom_torus(
         std::vector<float>& positions,
         std::vector<float>& normals,
         std::vector<float>& texcoords,
-        std::vector<unsigned int>& indices,
+        std::vector<unsigned short>& indices,
         float inner_radius = 0.4f, int sides = 40, int rings = 40);
 
 void geom_teapot(
         std::vector<float>& positions,
         std::vector<float>& normals,
         std::vector<float>& texcoords,
-        std::vector<unsigned int>& indices);
+        std::vector<unsigned short>& indices);
 
 #endif

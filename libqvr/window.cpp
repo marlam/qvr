@@ -647,6 +647,10 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
             viewPos = eyePosition;
             viewRot = QQuaternion::fromDirection(-eyeProjection, planeUp);
         }
+        QMatrix4x4 viewMatrixPure;
+        viewMatrixPure.rotate(viewRot.inverted());
+        viewMatrixPure.translate(-viewPos);
+        _renderContext.setViewMatrixPure(i, viewMatrixPure);
         QMatrix4x4 viewMatrix;
         if (config().screenIsFixedToObserver()) {
             // XXX why is this special case necessary?? the code below should always work!

@@ -567,6 +567,66 @@ const QVRDeviceConfig& QVRDevice::config() const
     return QVRManager::config().deviceConfigs().at(index());
 }
 
+int QVRDevice::modelNodeCount() const
+{
+    int ret = 0;
+#ifdef HAVE_OPENVR
+    if (_internals->openVrTrackedEntity == 3)
+        ret = QVROpenVRControllerModelPositions[0].size();
+    else if (_internals->openVrTrackedEntity == 4)
+        ret = QVROpenVRControllerModelPositions[1].size();
+#endif
+    return ret;
+}
+
+QVector3D QVRDevice::modelNodePosition(int nodeIndex) const
+{
+    QVector3D ret;
+#ifdef HAVE_OPENVR
+    if (_internals->openVrTrackedEntity == 3)
+        ret = QVROpenVRControllerModelPositions[0].at(nodeIndex);
+    else if (_internals->openVrTrackedEntity == 4)
+        ret = QVROpenVRControllerModelPositions[1].at(nodeIndex);
+#endif
+    return ret;
+}
+
+QQuaternion QVRDevice::modelNodeOrientation(int nodeIndex) const
+{
+    QQuaternion ret;
+#ifdef HAVE_OPENVR
+    if (_internals->openVrTrackedEntity == 3)
+        ret = QVROpenVRControllerModelOrientations[0].at(nodeIndex);
+    else if (_internals->openVrTrackedEntity == 4)
+        ret = QVROpenVRControllerModelOrientations[1].at(nodeIndex);
+#endif
+    return ret;
+}
+
+int QVRDevice::modelNodeVertexDataIndex(int nodeIndex) const
+{
+    int ret = -1;
+#ifdef HAVE_OPENVR
+    if (_internals->openVrTrackedEntity == 3)
+        ret = QVROpenVRControllerModelVertexDataIndices[0].at(nodeIndex);
+    else if (_internals->openVrTrackedEntity == 4)
+        ret = QVROpenVRControllerModelVertexDataIndices[1].at(nodeIndex);
+#endif
+    return ret;
+}
+
+int QVRDevice::modelNodeTextureIndex(int nodeIndex) const
+{
+    int ret = -1;
+#ifdef HAVE_OPENVR
+    if (_internals->openVrTrackedEntity == 3)
+        ret = QVROpenVRControllerModelTextureIndices[0].at(nodeIndex);
+    else if (_internals->openVrTrackedEntity == 4)
+        ret = QVROpenVRControllerModelTextureIndices[1].at(nodeIndex);
+#endif
+    return ret;
+}
+
 #ifdef HAVE_OCULUS
 static QVector3D QVROculusConvert(const ovrVector3f& v)
 {

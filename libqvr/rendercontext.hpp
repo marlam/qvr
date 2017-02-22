@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -68,9 +68,25 @@ private:
     QQuaternion _trackingOrientation[2];
     QVRFrustum _frustum[2];
     QMatrix4x4 _viewMatrix[2];
+    QMatrix4x4 _viewMatrixPure[2];
 
     friend QDataStream &operator<<(QDataStream& ds, const QVRRenderContext& rc);
     friend QDataStream &operator>>(QDataStream& ds, QVRRenderContext& rc);
+
+    // These functions are used internally by QVRWindow when computing the render context information.
+    friend class QVRWindow;
+    void setProcessIndex(int pi) { _processIndex = pi; }
+    void setWindowIndex(int wi) { _windowIndex = wi; }
+    void setWindowGeometry(const QRect& r) { _windowGeometry = r; }
+    void setScreenGeometry(const QRect& r) { _screenGeometry = r; }
+    void setNavigation(const QVector3D& p, const QQuaternion& r) { _navigationPosition = p; _navigationOrientation = r; }
+    void setScreenWall(const QVector3D& bl, const QVector3D& br, const QVector3D& tl)
+    { _screenWall[0] = bl; _screenWall[1]= br; _screenWall[2] = tl; }
+    void setOutputConf(QVROutputMode om);
+    void setTracking(int vp, const QVector3D& p, const QQuaternion& r) { _trackingPosition[vp] = p; _trackingOrientation[vp] = r; }
+    void setFrustum(int vp, const QVRFrustum f) { _frustum[vp] = f; }
+    void setViewMatrix(int vp, const QMatrix4x4& vm) { _viewMatrix[vp] = vm; }
+    void setViewMatrixPure(int vp, const QMatrix4x4& vmp) { _viewMatrixPure[vp] = vmp; }
 
 public:
     /*! \brief Constructor. */
@@ -112,22 +128,8 @@ public:
     const QVRFrustum& frustum(int viewPass) const { return _frustum[viewPass]; }
     /*! \brief Returns the view matrix for rendering pass \a viewPass. */
     const QMatrix4x4& viewMatrix(int viewPass) const { return _viewMatrix[viewPass]; }
-
-    /*! \cond
-     * These functions are only used internally by QVRWindow when computing the
-     * render context information. */
-    void setProcessIndex(int pi) { _processIndex = pi; }
-    void setWindowIndex(int wi) { _windowIndex = wi; }
-    void setWindowGeometry(const QRect& r) { _windowGeometry = r; }
-    void setScreenGeometry(const QRect& r) { _screenGeometry = r; }
-    void setNavigation(const QVector3D& p, const QQuaternion& r) { _navigationPosition = p; _navigationOrientation = r; }
-    void setScreenWall(const QVector3D& bl, const QVector3D& br, const QVector3D& tl)
-    { _screenWall[0] = bl; _screenWall[1]= br; _screenWall[2] = tl; }
-    void setOutputConf(QVROutputMode om);
-    void setTracking(int vp, const QVector3D& p, const QQuaternion& r) { _trackingPosition[vp] = p; _trackingOrientation[vp] = r; }
-    void setFrustum(int vp, const QVRFrustum f) { _frustum[vp] = f; }
-    void setViewMatrix(int vp, const QMatrix4x4& vm) { _viewMatrix[vp] = vm; }
-    /*! \endcond */
+    /*! \brief Returns the pure view matrix (i.e. in tracking space, without navigation) for rendering pass \a viewPass. */
+    const QMatrix4x4& viewMatrixPure(int viewPass) const { return _viewMatrixPure[viewPass]; }
 };
 
 QDataStream &operator<<(QDataStream& ds, const QVRRenderContext& rc);

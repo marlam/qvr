@@ -484,17 +484,49 @@ public:
      */
     /*@{*/
 
-    /* \brief Return the device with index \a deviceIndex. See \a deviceCount(). */
+    /*! \brief Return the device with index \a deviceIndex. See \a deviceCount(). */
     static const QVRDevice& device(int deviceIndex);
 
-    /* \brief Return the observer with index \a observerIndex. See \a observerCount(). */
+    /*! \brief Return the observer with index \a observerIndex. See \a observerCount(). */
     static const QVRObserver& observer(int observerIndex);
 
-    /* \brief Return the process. Only the running process is accessible in this way. See \a processIndex(). */
+    /*! \brief Return the process. Only the running process is accessible in this way. See \a processIndex(). */
     static const QVRProcess& process();
 
-    /* \brief Return the window with the given index in the running process. */
+    /*! \brief Return the window with the given index in the running process. */
     static const QVRWindow& window(int windowIndex);
+
+    /*@}*/
+
+    /**
+     * \name Renderable device models
+     *
+     * See the documentation of \a QVRDevice for information on how to use this model data to render
+     * representations of interaction devices into the virtual world.
+     *
+     * The data returned by these functions does not change, so you can upload it once to the GPU
+     * and reuse it.
+     */
+    /*@{*/
+
+    /*! \brief Return the number of vertex data blocks. */
+    static int deviceModelVertexDataCount();
+    /*! \brief Return the number of vertices in vertex data block \a vertexDataIndex. */
+    static int deviceModelVertexCount(int vertexDataIndex);
+    /*! \brief Return the vertex positions in vertex data block \a vertexDataIndex. Each position consists of three values (x, y, z). */
+    static const float* deviceModelVertexPositions(int vertexDataIndex);
+    /*! \brief Return the vertex normals in vertex data block \a vertexDataIndex. Each normal consists of three values (nx, ny, nz). */
+    static const float* deviceModelVertexNormals(int vertexDataIndex);
+    /*! \brief Return the vertex texture coordinates in vertex data block \a vertexDataIndex. Each texture coordinate consists of two values (u, v). */
+    static const float* deviceModelVertexTexCoords(int vertexDataIndex);
+    /*! \brief Return the number of vertex indices in vertex data block \a vertexDataIndex. */
+    static int deviceModelVertexIndexCount(int vertexDataIndex);
+    /*! \brief Return the vertex indices in vertex data block \a vertexDataIndex. */
+    static const unsigned short* deviceModelVertexIndices(int vertexDataIndex);
+    /*! \brief Return the number of textures. */
+    static int deviceModelTextureCount();
+    /*! \brief Return the texture \a textureIndex. */
+    static const QImage& deviceModelTexture(int textureIndex);
 
     /*@}*/
 };

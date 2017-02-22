@@ -27,6 +27,7 @@
 #include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLShaderProgram>
 #include <QElapsedTimer>
+class QImage;
 
 #include <qvr/app.hpp>
 
@@ -74,6 +75,10 @@ private:
     Material     _objectMaterials[5]; // Materials of the objects
     QMatrix4x4   _objectMatrices[5];  // Base transformation matrices of the objs
     QOpenGLShaderProgram _prg;        // GLSL program for rendering
+    // Data to render device models
+    QVector<unsigned int> _devModelVaos;
+    QVector<unsigned int> _devModelVaoIndices;
+    QVector<unsigned int> _devModelTextures;
 
     /* Dynamic data for rendering. This needs to be serialized for multi-process
      * rendering) */
@@ -81,12 +86,11 @@ private:
 
     /* Helper function for texture loading */
     unsigned int setupTex(const QString& filename);
+    unsigned int setupTex(const QImage& img);
     /* Helper function for VAO setup */
-    unsigned int setupVao(
-            const std::vector<float>& positions,
-            const std::vector<float>& normals,
-            const std::vector<float>& texcoords,
-            const std::vector<unsigned int>& indices);
+    unsigned int setupVao(int vertexCount,
+            const float* positions, const float* normals, const float* texcoords,
+            int indexCount, const unsigned short* indices);
     /* Helper function to set materials */
     void setMaterial(const Material& m);
     /* Helper function for GL VAO rendering */

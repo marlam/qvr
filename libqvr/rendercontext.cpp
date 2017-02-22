@@ -42,6 +42,8 @@ QVRRenderContext::QVRRenderContext() :
     _trackingOrientation { QQuaternion(0.0f, 0.0f, 0.0f, 0.0f), QQuaternion(0.0f, 0.0f, 0.0f, 0.0f) },
     _frustum { { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f } },
     _viewMatrix { QMatrix4x4(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f),
+                  QMatrix4x4(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f) },
+    _viewMatrixPure { QMatrix4x4(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f),
                   QMatrix4x4(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f) }
 {
 }
@@ -104,7 +106,8 @@ QDataStream &operator<<(QDataStream& ds, const QVRRenderContext& rc)
         << rc._trackingPosition[0] << rc._trackingPosition[1]
         << rc._trackingOrientation[0] << rc._trackingOrientation[1]
         << rc._frustum[0] << rc._frustum[1]
-        << rc._viewMatrix[0] << rc._viewMatrix[1];
+        << rc._viewMatrix[0] << rc._viewMatrix[1]
+        << rc._viewMatrixPure[0] << rc._viewMatrixPure[1];
     return ds;
 }
 
@@ -121,7 +124,8 @@ QDataStream &operator>>(QDataStream& ds, QVRRenderContext& rc)
         >> rc._trackingPosition[0] >> rc._trackingPosition[1]
         >> rc._trackingOrientation[0] >> rc._trackingOrientation[1]
         >> rc._frustum[0] >> rc._frustum[1]
-        >> rc._viewMatrix[0] >> rc._viewMatrix[1];
+        >> rc._viewMatrix[0] >> rc._viewMatrix[1]
+        >> rc._viewMatrixPure[0] << rc._viewMatrixPure[1];
     rc._outputMode = static_cast<QVROutputMode>(om);
     rc._eye[0] = static_cast<QVREye>(e0);
     rc._eye[1] = static_cast<QVREye>(e1);

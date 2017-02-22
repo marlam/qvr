@@ -477,12 +477,12 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
             const QString devId = _config->observerConfigs()[o].navigationParameters().trimmed();
             for (int d = 0; d < _devices.size(); d++) {
                 if (_devices[d]->config().id() == devId) {
-                    if (_devices[d]->buttons() < 4) {
+                    if (_devices[d]->buttonCount() < 4) {
                         QVR_FATAL("observer %s: navigation device %s has less than 4 buttons",
                                 qPrintable(_observers[o]->id()), qPrintable(_devices[d]->id()));
                         return false;
                     }
-                    if (_devices[d]->analogs() < 2) {
+                    if (_devices[d]->analogCount() < 2) {
                         QVR_FATAL("observer %s: navigation device %s has less than 2 analog joystick elements",
                                 qPrintable(_observers[o]->id()), qPrintable(_devices[d]->id()));
                         return false;
@@ -1129,53 +1129,6 @@ void QVRManager::printFps()
     }
 }
 
-QVRManager* QVRManager::instance()
-{
-    return manager;
-}
-
-QVRLogLevel QVRManager::logLevel()
-{
-    Q_ASSERT(instance());
-    return instance()->_logLevel;
-}
-
-int QVRManager::processIndex()
-{
-    Q_ASSERT(instance());
-    return instance()->_processIndex;
-}
-
-const QVRConfig& QVRManager::config()
-{
-    Q_ASSERT(instance());
-    return *(instance()->_config);
-}
-
-const QVRDevice& QVRManager::device(int deviceIndex)
-{
-    Q_ASSERT(instance());
-    return *(instance()->_devices.at(deviceIndex));
-}
-
-const QVRObserver& QVRManager::observer(int observerIndex)
-{
-    Q_ASSERT(instance());
-    return *(instance()->_observers.at(observerIndex));
-}
-
-const QVRProcess& QVRManager::process()
-{
-    Q_ASSERT(instance());
-    return *(instance()->_thisProcess);
-}
-
-const QVRWindow& QVRManager::window(int windowIndex)
-{
-    Q_ASSERT(instance());
-    return *(instance()->_windows.at(windowIndex));
-}
-
 void QVRManager::processEventQueue()
 {
     while (!QVREventQueue->empty()) {
@@ -1304,4 +1257,96 @@ void QVRManager::processEventQueue()
             break;
         }
     }
+}
+
+QVRManager* QVRManager::instance()
+{
+    return manager;
+}
+
+QVRLogLevel QVRManager::logLevel()
+{
+    Q_ASSERT(instance());
+    return instance()->_logLevel;
+}
+
+int QVRManager::processIndex()
+{
+    Q_ASSERT(instance());
+    return instance()->_processIndex;
+}
+
+const QVRConfig& QVRManager::config()
+{
+    Q_ASSERT(instance());
+    return *(instance()->_config);
+}
+
+const QVRDevice& QVRManager::device(int deviceIndex)
+{
+    Q_ASSERT(instance());
+    return *(instance()->_devices.at(deviceIndex));
+}
+
+const QVRObserver& QVRManager::observer(int observerIndex)
+{
+    Q_ASSERT(instance());
+    return *(instance()->_observers.at(observerIndex));
+}
+
+const QVRProcess& QVRManager::process()
+{
+    Q_ASSERT(instance());
+    return *(instance()->_thisProcess);
+}
+
+const QVRWindow& QVRManager::window(int windowIndex)
+{
+    Q_ASSERT(instance());
+    return *(instance()->_windows.at(windowIndex));
+}
+
+int QVRManager::deviceModelVertexDataCount()
+{
+    return QVRDeviceModelVertexPositions.size();
+}
+
+int QVRManager::deviceModelVertexCount(int vertexDataIndex)
+{
+    return QVRDeviceModelVertexPositions.at(vertexDataIndex).size() / 3;
+}
+
+const float* QVRManager::deviceModelVertexPositions(int vertexDataIndex)
+{
+    return QVRDeviceModelVertexPositions.at(vertexDataIndex).data();
+}
+
+const float* QVRManager::deviceModelVertexNormals(int vertexDataIndex)
+{
+    return QVRDeviceModelVertexNormals.at(vertexDataIndex).data();
+}
+
+const float* QVRManager::deviceModelVertexTexCoords(int vertexDataIndex)
+{
+    return QVRDeviceModelVertexTexCoords.at(vertexDataIndex).data();
+}
+
+int QVRManager::deviceModelVertexIndexCount(int vertexDataIndex)
+{
+    return QVRDeviceModelVertexIndices.at(vertexDataIndex).size();
+}
+
+const unsigned short* QVRManager::deviceModelVertexIndices(int vertexDataIndex)
+{
+    return QVRDeviceModelVertexIndices.at(vertexDataIndex).data();
+}
+
+int QVRManager::deviceModelTextureCount()
+{
+    return QVRDeviceModelTextures.size();
+}
+
+const QImage& QVRManager::deviceModelTexture(int textureIndex)
+{
+    return QVRDeviceModelTextures.at(textureIndex);
 }

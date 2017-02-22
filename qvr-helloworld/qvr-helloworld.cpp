@@ -27,6 +27,7 @@
 
 #include <qvr/manager.hpp>
 #include <qvr/window.hpp>
+#include <qvr/device.hpp>
 
 #include "qvr-helloworld.hpp"
 
@@ -42,16 +43,21 @@ QVRHelloWorld::QVRHelloWorld() :
 
 unsigned int QVRHelloWorld::setupTex(const QString& filename)
 {
-    unsigned int tex;
     QImage img;
     img.load(filename);
     img = img.mirrored(false, true);
-    img = img.convertToFormat(QImage::Format_ARGB32);
+    img = img.convertToFormat(QImage::Format_RGBA8888);
+    return setupTex(img);
+}
+
+unsigned int QVRHelloWorld::setupTex(const QImage& img)
+{
+    unsigned int tex;
     glGenTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D, tex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
             img.width(), img.height(), 0,
-            GL_BGRA, GL_UNSIGNED_BYTE, img.constBits());
+            GL_RGBA, GL_UNSIGNED_BYTE, img.constBits());
     glGenerateMipmap(GL_TEXTURE_2D);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -61,11 +67,9 @@ unsigned int QVRHelloWorld::setupTex(const QString& filename)
     return tex;
 }
 
-unsigned int QVRHelloWorld::setupVao(
-        const std::vector<float>& positions,
-        const std::vector<float>& normals,
-        const std::vector<float>& texcoords,
-        const std::vector<unsigned int>& indices)
+unsigned int QVRHelloWorld::setupVao(int vertexCount,
+        const float* positions, const float* normals, const float* texcoords,
+        int indexCount, const unsigned short* indices)
 {
     GLuint vao;
     GLuint positionBuf, normalBuf, texcoordBuf, indexBuf;
@@ -74,22 +78,22 @@ unsigned int QVRHelloWorld::setupVao(
     glBindVertexArray(vao);
     glGenBuffers(1, &positionBuf);
     glBindBuffer(GL_ARRAY_BUFFER, positionBuf);
-    glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(float), positions.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertexCount * 3 * sizeof(float), positions, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(0);
     glGenBuffers(1, &normalBuf);
     glBindBuffer(GL_ARRAY_BUFFER, normalBuf);
-    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(float), normals.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertexCount * 3 * sizeof(float), normals, GL_STATIC_DRAW);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(1);
     glGenBuffers(1, &texcoordBuf);
     glBindBuffer(GL_ARRAY_BUFFER, texcoordBuf);
-    glBufferData(GL_ARRAY_BUFFER, texcoords.size() * sizeof(float), texcoords.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertexCount * 2 * sizeof(float), texcoords, GL_STATIC_DRAW);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(2);
     glGenBuffers(1, &indexBuf);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuf);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(unsigned short), indices, GL_STATIC_DRAW);
     return vao;
 }
 
@@ -122,7 +126,7 @@ void QVRHelloWorld::renderVao(
     _prg.setUniformValue("model_view_matrix", modelViewMatrix);
     _prg.setUniformValue("normal_matrix", modelViewMatrix.normalMatrix());
     glBindVertexArray(vao);
-    glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_SHORT, 0);
 }
 
 void QVRHelloWorld::serializeDynamicData(QDataStream& ds) const
@@ -152,7 +156,7 @@ bool QVRHelloWorld::initProcess(QVRProcess* /* p */)
     std::vector<float> positions;
     std::vector<float> normals;
     std::vector<float> texcoords;
-    std::vector<unsigned int> indices;
+    std::vector<unsigned short> indices;
 
     // Qt-based OpenGL function pointers
     initializeOpenGLFunctions();
@@ -170,47 +174,55 @@ bool QVRHelloWorld::initProcess(QVRProcess* /* p */)
 
     // Floor
     geom_quad(positions, normals, texcoords, indices);
-    _floorVao = setupVao(positions, normals, texcoords, indices);
+    _floorVao = setupVao(positions.size() / 3, positions.data(), normals.data(), texcoords.data(),
+            indices.size(), indices.data());
     _floorIndices = indices.size();
     _floorMaterial = Material(0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f,
             setupTex(":floor-diff.jpg"), setupTex(":floor-norm.jpg"), 0, 10.0f);
 
     // Pillar
     geom_cylinder(positions, normals, texcoords, indices);
-    _pillarVaos[0] = setupVao(positions, normals, texcoords, indices);
+    _pillarVaos[0] = setupVao(positions.size() / 3, positions.data(), normals.data(), texcoords.data(),
+            indices.size(), indices.data());
     _pillarIndices[0] = indices.size();
     geom_disk(positions, normals, texcoords, indices, 0.0f);
-    _pillarVaos[1] = setupVao(positions, normals, texcoords, indices);
+    _pillarVaos[1] = setupVao(positions.size() / 3, positions.data(), normals.data(), texcoords.data(),
+            indices.size(), indices.data());
     _pillarIndices[1] = indices.size();
     _pillarMaterial = Material(0.5f, 0.5f, 0.3f, 0.5f, 0.5f, 100.0f,
             setupTex(":pillar-diff.jpg"), setupTex(":pillar-norm.jpg"), setupTex(":pillar-spec.jpg"));
 
     // Object
     geom_cube(positions, normals, texcoords, indices);
-    _objectVaos[0] = setupVao(positions, normals, texcoords, indices);
+    _objectVaos[0] = setupVao(positions.size() / 3, positions.data(), normals.data(), texcoords.data(),
+            indices.size(), indices.data());
     _objectIndices[0] = indices.size();
     _objectMaterials[0] = Material(0.8f, 0.3f, 0.3f, 0.8f, 0.2f, 20.0f);
     _objectMatrices[0].rotate(15.0f, 1.0f, 1.0f, 0.0f);
     _objectMatrices[0].scale(0.5f);
     geom_cone(positions, normals, texcoords, indices);
-    _objectVaos[1] = setupVao(positions, normals, texcoords, indices);
+    _objectVaos[1] = setupVao(positions.size() / 3, positions.data(), normals.data(), texcoords.data(),
+            indices.size(), indices.data());
     _objectIndices[1] = indices.size();
     _objectMaterials[1] = Material(0.8f, 0.6f, 0.3f, 0.8f, 0.2f, 20.0f);
     _objectMatrices[1].rotate(15.0f, 1.0f, 1.0f, 0.0f);
     _objectMatrices[1].scale(0.5f);
     geom_torus(positions, normals, texcoords, indices);
-    _objectVaos[2] = setupVao(positions, normals, texcoords, indices);
+    _objectVaos[2] = setupVao(positions.size() / 3, positions.data(), normals.data(), texcoords.data(),
+            indices.size(), indices.data());
     _objectIndices[2] = indices.size();
     _objectMaterials[2] = Material(0.4f, 0.8f, 0.3f, 0.8f, 0.2f, 20.0f);
     _objectMatrices[2].rotate(15.0f, 1.0f, 1.0f, 0.0f);
     _objectMatrices[2].scale(0.5f);
     geom_teapot(positions, normals, texcoords, indices);
-    _objectVaos[3] = setupVao(positions, normals, texcoords, indices);
+    _objectVaos[3] = setupVao(positions.size() / 3, positions.data(), normals.data(), texcoords.data(),
+            indices.size(), indices.data());
     _objectIndices[3] = indices.size();
     _objectMaterials[3] = Material(0.3f, 0.3f, 0.8f, 0.8f, 0.2f, 20.0f);
     _objectMatrices[3].rotate(15.0f, 1.0f, 1.0f, 0.0f);
     geom_cylinder(positions, normals, texcoords, indices);
-    _objectVaos[4] = setupVao(positions, normals, texcoords, indices);
+    _objectVaos[4] = setupVao(positions.size() / 3, positions.data(), normals.data(), texcoords.data(),
+            indices.size(), indices.data());
     _objectIndices[4] = indices.size();
     _objectMaterials[4] = Material(0.3f, 0.8f, 0.8f, 0.8f, 0.2f, 20.0f);
     _objectMatrices[4].rotate(15.0f, 1.0f, 1.0f, 0.0f);
@@ -221,6 +233,21 @@ bool QVRHelloWorld::initProcess(QVRProcess* /* p */)
     _prg.addShaderFromSourceFile(QOpenGLShader::Vertex, ":vertex-shader.glsl");
     _prg.addShaderFromSourceFile(QOpenGLShader::Fragment, ":fragment-shader.glsl");
     _prg.link();
+
+    // Device model data
+    for (int i = 0; i < QVRManager::deviceModelVertexDataCount(); i++) {
+        _devModelVaos.append(setupVao(
+                    QVRManager::deviceModelVertexCount(i),
+                    QVRManager::deviceModelVertexPositions(i),
+                    QVRManager::deviceModelVertexNormals(i),
+                    QVRManager::deviceModelVertexTexCoords(i),
+                    QVRManager::deviceModelVertexIndexCount(i),
+                    QVRManager::deviceModelVertexIndices(i)));
+        _devModelVaoIndices.append(QVRManager::deviceModelVertexIndexCount(i));
+    }
+    for (int i = 0; i < QVRManager::deviceModelTextureCount(); i++) {
+        _devModelTextures.append(setupTex(QVRManager::deviceModelTexture(i)));
+    }
 
     return true;
 }
@@ -252,7 +279,7 @@ void QVRHelloWorld::render(QVRWindow* /* w */,
     //glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
 
-    // Render
+    // Render scene
     setMaterial(_floorMaterial);
     QMatrix4x4 groundMatrix;
     groundMatrix.scale(5.0f);
@@ -278,6 +305,26 @@ void QVRHelloWorld::render(QVRWindow* /* w */,
         objectMatrix.rotate(_objectRotationAngle, 0.0f, 1.0f, 0.0f);
         objectMatrix *= _objectMatrices[i];
         renderVao(viewMatrix, objectMatrix, _objectVaos[i], _objectIndices[i]);
+    }
+
+    // Render device models (optional)
+    for (int i = 0; i < QVRManager::deviceCount(); i++) {
+        const QVRDevice& device = QVRManager::device(i);
+        for (int j = 0; j < device.modelNodeCount(); j++) {
+            QMatrix4x4 nodeMatrix = device.matrix();
+            nodeMatrix.translate(device.modelNodePosition(j));
+            nodeMatrix.rotate(device.modelNodeRotation(j));
+            int vertexDataIndex = device.modelNodeVertexDataIndex(j);
+            int textureIndex = device.modelNodeTextureIndex(j);
+            Material material(1.0f, 1.0f, 1.0f,
+                    1.0f, 0.0f, 0.0f,
+                    _devModelTextures[textureIndex], 0, 0,
+                    1.0f);
+            setMaterial(material);
+            renderVao(viewMatrix, nodeMatrix,
+                    _devModelVaos[vertexDataIndex],
+                    _devModelVaoIndices[vertexDataIndex]);
+        }
     }
 }
 
