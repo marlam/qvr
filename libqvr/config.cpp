@@ -97,93 +97,98 @@ void QVRConfig::createDefault(bool preferCustomNavigation)
 {
     QVR_INFO("creating default configuration");
 
+    bool haveOculus = false;
+    bool haveOpenVR = false;
+    bool haveOSVR = false;
+    if (!haveOculus && !haveOpenVR && !haveOSVR) {
 #ifdef HAVE_OCULUS
-    QVRAttemptOculusInitialization();
-    if (QVROculus) {
-        bool ok = readFromFile(":/libqvr/default-config-oculus.qvr");
-        Q_ASSERT(ok);
-        if (QVROculusControllers == 1) {
-            // Add XBOX controller device
-            QVRDeviceConfig deviceConfig;
-            deviceConfig._id = "oculus-controler";
-            deviceConfig._processIndex = 0;
-            deviceConfig._trackingType = QVR_Device_Tracking_None;
-            deviceConfig._buttonsType = QVR_Device_Buttons_Oculus;
-            deviceConfig._buttonsParameters = "xbox";
-            deviceConfig._analogsType = QVR_Device_Analogs_Oculus;
-            deviceConfig._analogsParameters = "xbox";
-            _deviceConfigs.append(deviceConfig);
-            _observerConfigs[0]._navigationType = QVR_Navigation_Device;
-            _observerConfigs[0]._navigationParameters = deviceConfig.id();
-        } else if (QVROculusControllers == 2 || QVROculusControllers == 3 || QVROculusControllers == 4) {
-            // Add left and/or right touch controller device
-            for (int i = 0; i < (QVROculusControllers == 4 ? 2 : 1); i++) {
-                QString side = (QVROculusControllers == 3 || i == 1) ? "right" : "left";
+        QVRAttemptOculusInitialization();
+        if (QVROculus) {
+            bool ok = readFromFile(":/libqvr/default-config-oculus.qvr");
+            Q_ASSERT(ok);
+            if (QVROculusControllers == 1) {
+                // Add XBOX controller device
                 QVRDeviceConfig deviceConfig;
-                deviceConfig._id = "oculus-controler-" + side;
+                deviceConfig._id = "oculus-controler";
                 deviceConfig._processIndex = 0;
-                deviceConfig._trackingType = QVR_Device_Tracking_Oculus;
-                deviceConfig._trackingParameters = "controller-" + side;
+                deviceConfig._trackingType = QVR_Device_Tracking_None;
                 deviceConfig._buttonsType = QVR_Device_Buttons_Oculus;
-                deviceConfig._buttonsParameters = "controller-" + side;
+                deviceConfig._buttonsParameters = "xbox";
                 deviceConfig._analogsType = QVR_Device_Analogs_Oculus;
-                deviceConfig._analogsParameters = "controller-" + side;
-                _deviceConfigs.append(deviceConfig);
-            }
-            // If we have both left and right, use them for navigation
-            if (QVROculusControllers == 4) {
-                QVRDeviceConfig deviceConfig;
-                deviceConfig._id = "oculus-navigation-device";
-                deviceConfig._processIndex = 0;
-                deviceConfig._trackingType = QVR_Device_Tracking_Oculus;
-                deviceConfig._trackingParameters = "head";
-                deviceConfig._buttonsType = QVR_Device_Buttons_Oculus;
-                deviceConfig._buttonsParameters = "controller-right";
-                deviceConfig._analogsType = QVR_Device_Analogs_Oculus;
-                deviceConfig._analogsParameters = "controller-left";
+                deviceConfig._analogsParameters = "xbox";
                 _deviceConfigs.append(deviceConfig);
                 _observerConfigs[0]._navigationType = QVR_Navigation_Device;
-                _observerConfigs[0]._navigationParameters = "oculus-navigation-device";
+                _observerConfigs[0]._navigationParameters = deviceConfig.id();
+            } else if (QVROculusControllers == 2 || QVROculusControllers == 3 || QVROculusControllers == 4) {
+                // Add left and/or right touch controller device
+                for (int i = 0; i < (QVROculusControllers == 4 ? 2 : 1); i++) {
+                    QString side = (QVROculusControllers == 3 || i == 1) ? "right" : "left";
+                    QVRDeviceConfig deviceConfig;
+                    deviceConfig._id = "oculus-controler-" + side;
+                    deviceConfig._processIndex = 0;
+                    deviceConfig._trackingType = QVR_Device_Tracking_Oculus;
+                    deviceConfig._trackingParameters = "controller-" + side;
+                    deviceConfig._buttonsType = QVR_Device_Buttons_Oculus;
+                    deviceConfig._buttonsParameters = "controller-" + side;
+                    deviceConfig._analogsType = QVR_Device_Analogs_Oculus;
+                    deviceConfig._analogsParameters = "controller-" + side;
+                    _deviceConfigs.append(deviceConfig);
+                }
+                // If we have both left and right, use them for navigation
+                if (QVROculusControllers == 4) {
+                    QVRDeviceConfig deviceConfig;
+                    deviceConfig._id = "oculus-navigation-device";
+                    deviceConfig._processIndex = 0;
+                    deviceConfig._trackingType = QVR_Device_Tracking_Oculus;
+                    deviceConfig._trackingParameters = "head";
+                    deviceConfig._buttonsType = QVR_Device_Buttons_Oculus;
+                    deviceConfig._buttonsParameters = "controller-right";
+                    deviceConfig._analogsType = QVR_Device_Analogs_Oculus;
+                    deviceConfig._analogsParameters = "controller-left";
+                    _deviceConfigs.append(deviceConfig);
+                    _observerConfigs[0]._navigationType = QVR_Navigation_Device;
+                    _observerConfigs[0]._navigationParameters = "oculus-navigation-device";
+                }
             }
+            haveOculus = true;
         }
-        return;
-    }
 #endif
+    }
+    if (!haveOculus && !haveOpenVR && !haveOSVR) {
 #ifdef HAVE_OPENVR
-    QVRAttemptOpenVRInitialization();
-    if (QVROpenVRSystem) {
-        bool ok = readFromFile(":/libqvr/default-config-openvr.qvr");
-        Q_ASSERT(ok);
-        return;
-    }
+        QVRAttemptOpenVRInitialization();
+        if (QVROpenVRSystem) {
+            bool ok = readFromFile(":/libqvr/default-config-openvr.qvr");
+            Q_ASSERT(ok);
+            haveOpenVR = true;
+        }
 #endif
+    }
+    if (!haveOculus && !haveOpenVR && !haveOSVR) {
 #ifdef HAVE_OSVR
-    QVRAttemptOSVRInitialization();
-    if (QVROsvrClientContext) {
-        OSVR_EyeCount eyes;
-        osvrClientGetNumEyesForViewer(QVROsvrDisplayConfig, 0, &eyes);
-        bool ok;
-        if (eyes == 1)
-            ok = readFromFile(":/libqvr/default-config-osvr-mono.qvr");
-        else
-            ok = readFromFile(":/libqvr/default-config-osvr-stereo.qvr");
-        Q_ASSERT(ok);
-        return;
-    }
+        QVRAttemptOSVRInitialization();
+        if (QVROsvrClientContext) {
+            OSVR_EyeCount eyes;
+            osvrClientGetNumEyesForViewer(QVROsvrDisplayConfig, 0, &eyes);
+            bool ok;
+            if (eyes == 1)
+                ok = readFromFile(":/libqvr/default-config-osvr-mono.qvr");
+            else
+                ok = readFromFile(":/libqvr/default-config-osvr-stereo.qvr");
+            Q_ASSERT(ok);
+            haveOSVR = true;
+        }
 #endif
-    bool ok = readFromFile(":/libqvr/default-config-desktop.qvr");
-    Q_ASSERT(ok);
-#ifdef HAVE_QGAMEPAD
+    }
+    if (!haveOculus && !haveOpenVR && !haveOSVR) {
+        bool ok = readFromFile(":/libqvr/default-config-desktop.qvr");
+        Q_ASSERT(ok);
+    }
     bool wantGamepads = true;
-# ifdef HAVE_OCULUS
-    if (QVROculus)
+    if (haveOculus || haveOpenVR)
         wantGamepads = false;
-# endif
-# ifdef HAVE_OPENVR
-    if (QVROpenVRSystem)
-        wantGamepads = false;
-# endif
     if (wantGamepads) {
+#ifdef HAVE_QGAMEPAD
         QVRDetectGamepads();
         for (int i = 0; i < QVRGamepads.size(); i++) {
             int id = QVRGamepads[i];
@@ -202,8 +207,8 @@ void QVRConfig::createDefault(bool preferCustomNavigation)
                 _observerConfigs[0]._navigationParameters = gamepadConfig.id();
             }
         }
-    }
 #endif
+    }
 
     if (preferCustomNavigation) {
         _observerConfigs[0]._navigationType = QVR_Navigation_Custom;

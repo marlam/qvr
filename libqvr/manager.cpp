@@ -477,16 +477,6 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
             const QString devId = _config->observerConfigs()[o].navigationParameters().trimmed();
             for (int d = 0; d < _devices.size(); d++) {
                 if (_devices[d]->config().id() == devId) {
-                    if (_devices[d]->buttonCount() < 4) {
-                        QVR_FATAL("observer %s: navigation device %s has less than 4 buttons",
-                                qPrintable(_observers[o]->id()), qPrintable(_devices[d]->id()));
-                        return false;
-                    }
-                    if (_devices[d]->analogCount() < 2) {
-                        QVR_FATAL("observer %s: navigation device %s has less than 2 analog joystick elements",
-                                qPrintable(_observers[o]->id()), qPrintable(_devices[d]->id()));
-                        return false;
-                    }
                     navDev = d;
                     break;
                 }
@@ -793,7 +783,8 @@ void QVRManager::masterLoop()
             } else {
                 _wandNavigationTimer->start();
             }
-            if (std::abs(dev->analog(0)) > 0.0f || std::abs(dev->analog(1)) > 0.0f) {
+            if (std::abs(dev->analog(QVR_Analog_Axis_Y)) > 0.0f
+                    || std::abs(dev->analog(QVR_Analog_Axis_X)) > 0.0f) {
                 QQuaternion wandRot = dev->orientation() * QQuaternion::fromEulerAngles(0.0f, _wandNavigationRotY, 0.0f);
                 QVector3D forwardDir = wandRot * QVector3D(0.0f, 0.0f, -1.0f);
                 forwardDir.setY(0.0f);
@@ -801,20 +792,21 @@ void QVRManager::masterLoop()
                 QVector3D rightDir = wandRot * QVector3D(1.0f, 0.0f, 0.0f);
                 rightDir.setY(0.0f);
                 rightDir.normalize();
-                _wandNavigationPos += speed * seconds * (forwardDir * dev->analog(0) + rightDir * dev->analog(1));
+                _wandNavigationPos += speed * seconds * (forwardDir * dev->analog(QVR_Analog_Axis_Y)
+                        + rightDir * dev->analog(QVR_Analog_Axis_X));
             }
-            if (dev->button(0)) {
+            if (dev->button(QVR_Button_Up)) {
                 _wandNavigationPos += speed * seconds * QVector3D(0.0f, +1.0f, 0.0f);
             }
-            if (dev->button(1)) {
+            if (dev->button(QVR_Button_Down)) {
                 _wandNavigationPos += speed * seconds * QVector3D(0.0f, -1.0f, 0.0f);
             }
-            if (dev->button(2)) {
+            if (dev->button(QVR_Button_Left)) {
                 _wandNavigationRotY += 1.0f;
                 if (_wandNavigationRotY >= 360.0f)
                     _wandNavigationRotY -= 360.0f;
             }
-            if (dev->button(3)) {
+            if (dev->button(QVR_Button_Right)) {
                 _wandNavigationRotY -= 1.0f;
                 if (_wandNavigationRotY <= 0.0f)
                     _wandNavigationRotY += 360.0f;

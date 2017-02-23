@@ -33,7 +33,7 @@
 
 
 /*!
- * \brief Device tracking type.
+ * \brief Device tracking method.
  */
 typedef enum {
     /*! \brief An untracked device without position and orientation. */
@@ -47,14 +47,14 @@ typedef enum {
     /*! \brief A device with position and orientation tracked via OpenVR (HTC Vive). */
     QVR_Device_Tracking_OpenVR,
     /*! \brief A device with position and orientation tracked via <a href="http://www.osvr.org/">OSVR</a>. */
-    QVR_Device_Tracking_OSVR,
+    QVR_Device_Tracking_OSVR
 } QVRDeviceTrackingType;
 
 /*!
- * \brief Device buttons type.
+ * \brief Device buttons query method.
  */
 typedef enum {
-    /*! \brief An device without digital buttons. */
+    /*! \brief A device without digital buttons. */
     QVR_Device_Buttons_None,
     /*! \brief A device with digital buttons that are static (never changed). */
     QVR_Device_Buttons_Static,
@@ -71,7 +71,7 @@ typedef enum {
 } QVRDeviceButtonsType;
 
 /*!
- * \brief Device analogs type.
+ * \brief Device analogs query method.
  */
 typedef enum {
     /*! \brief An device without analog joystick elements. */
@@ -89,6 +89,82 @@ typedef enum {
     /*! \brief A device with analog joystick elements queried via <a href="http://www.osvr.org/">OSVR</a>. */
     QVR_Device_Analogs_OSVR
 } QVRDeviceAnalogsType;
+
+/*!
+ * \brief Device buttons.
+ */
+typedef enum {
+    /*! \brief L1 button, typically found on gamepads. */
+    QVR_Button_L1,
+    /*! \brief L2 button, typically found on gamepads. */
+    QVR_Button_L2,
+    /*! \brief L3 button, typically found on some gamepads. */
+    QVR_Button_L3,
+    /*! \brief R1 button, typically found on gamepads. */
+    QVR_Button_R1,
+    /*! \brief R2 button, typically found on gamepads. */
+    QVR_Button_R2,
+    /*! \brief R3 button, typically found on some gamepads. */
+    QVR_Button_R3,
+    /*! \brief A button, typically found on gamepads. */
+    QVR_Button_A,
+    /*! \brief B button, typically found on gamepads. */
+    QVR_Button_B,
+    /*! \brief X button, typically found on gamepads. */
+    QVR_Button_X,
+    /*! \brief Y button, typically found on gamepads. */
+    QVR_Button_Y,
+    /*! \brief Up button, typically used together with other direction buttons. */
+    QVR_Button_Up,
+    /*! \brief Down button, typically used together with other direction buttons. */
+    QVR_Button_Down,
+    /*! \brief Left button, typically used together with other direction buttons. */
+    QVR_Button_Left,
+    /*! \brief Right button, typically used together with other direction buttons. */
+    QVR_Button_Right,
+    /*! \brief Center button, typically found on some gamepads. */
+    QVR_Button_Center,
+    /*! \brief Select button, typically found on some gamepads. */
+    QVR_Button_Select,
+    /*! \brief Start button, typically found on some gamepads. */
+    QVR_Button_Start,
+    /*! \brief Menu button. */
+    QVR_Button_Menu,
+    /*! \brief Back button. */
+    QVR_Button_Back,
+    /*! \brief Trigger button. */
+    QVR_Button_Trigger,
+} QVRButton;
+
+/*!
+ * \brief Device analog elements.
+ */
+typedef enum {
+    /*! \brief Trigger element, with values in [0,1]. */
+    QVR_Analog_Trigger,
+    /*! \brief Left hand trigger element, with values in [0,1]. */
+    QVR_Analog_Left_Trigger = QVR_Analog_Trigger,
+    /*! \brief Right hand trigger element, with values in [0,1]. */
+    QVR_Analog_Right_Trigger,
+    /*! \brief Grip element, with values in [0,1]. */
+    QVR_Analog_Grip,
+    /*! \brief Left hand grip element, with values in [0,1]. */
+    QVR_Analog_Left_Grip = QVR_Analog_Grip,
+    /*! \brief Right hand grip element, with values in [0,1]. */
+    QVR_Analog_Right_Grip,
+    /*! \brief Horizontal axis with values in [-1,1]. */
+    QVR_Analog_Axis_X,
+    /*! \brief Vertical axis with values in [-1,1]. */
+    QVR_Analog_Axis_Y,
+    /*! \brief Left hand horizontal axis with values in [-1,1]. */
+    QVR_Analog_Left_Axis_X = QVR_Analog_Axis_X,
+    /*! \brief Left hand vertical axis with values in [-1,1]. */
+    QVR_Analog_Left_Axis_Y = QVR_Analog_Axis_Y,
+    /*! \brief Right hand horizontal axis with values in [-1,1]. */
+    QVR_Analog_Right_Axis_X,
+    /*! \brief Right hand vertical axis with values in [-1,1]. */
+    QVR_Analog_Right_Axis_Y
+} QVRAnalog;
 
 /*!
  * \brief Observer navigation type.
@@ -255,38 +331,46 @@ public:
 
     /*! \brief Returns the buttons parameters.
      *
+     * These parameters sometimes define button names. The following button names
+     * have a special meaning that translates to a \a QVRButton value: l1, l2, l3,
+     * r1, r2, r3, a, b, x, y, up, down, left, right, center, select, start, menu,
+     * back.
+     *
      * For \a QVR_Device_Buttons_None, parameters are ignored.
      *
-     * For \a QVR_Device_Buttons_Static, the parameter string is a list of values.
-     * Each value represent the static state of one button and must be 0 (button
-     * not pressed) or 1 (button pressed).
+     * For \a QVR_Device_Buttons_Static, the parameter string is a list of name / value pairs,
+     * e.g. `up 0 down 1 left 0 right 0`. The value must be either 0 (button not pressed) or 1
+     * (button pressed).
      *
      * For \a QVR_Device_Buttons_Gamepad, the parameter string is the identifier
      * of the gamepad. The default is 0 which identifies the first gamepad found
      * by Qt; higher numbers identify additional controllers.
      * There will be the following 18 gamepad buttons: up, down, left, right,
-     * l1, r1, l2, r2, l3, r3, a, b, x, y, center, guide, select, start.
+     * l1, r1, l2, r2, l3, r3, a, b, x, y, center, menu, select, start.
      *
      * For \a QVR_Device_Buttons_VRPN, the parameter string is of the form
-     * `<name> [<button0> [<button1> [...]]]` where `<name>` is the VRPN tracker name,
+     * `<tracker> [<name0> [<name1> [...]]]` where `<tracker>` is the VRPN tracker name,
      * e.g. Tracker0\@localhost
-     * and the optional button list specifies the number and order of VRPN buttons to use.
+     * and the optional button name list specifies how many buttons the device has and
+     * what meaning each button has. Example: `Tracker0\@localhost up down left right l1 l2`
+     * defines 6 buttons (VRPN button indices 0, 1, 2, 3, 4, 5) and gives them a meaning
+     * according to their name.
      *
      * For \a QVR_Device_Buttons_Oculus, the parameter string must be "xbox", "controller-left",
-     * or "controller-right". The left controller has 8 buttons: Up, Down, Left, Right, X, Y,
-     * Shoulder, Menu. The right controller has 8 buttons: Up, Down, Left, Right, A, B, Shoulder,
-     * Menu. Note that the Up, Down, Left, Right buttons on controllers are only simulated:
+     * or "controller-right". The left controller has 8 buttons: up, down, left, right, x, y,
+     * l1, menu. The right controller has 8 buttons: up, down, left, right, a, b, r1, menu.
+     * Note that the up, down, left, right buttons on controllers are only simulated:
      * they will report to be pressed when the analog value of their direction exceeds 0.5.
-     * The xbox controller has 12 buttons: up, down, left, right, A, B, X, Y, left shoulder,
-     * right shoulder, Menu, Back.
+     * The xbox controller has 12 buttons: up, down, left, right, a, b, x, y, l1, r1, menu, back.
      *
      * For \a QVR_Device_Buttons_OpenVR, the parameter string must be either "controller-0"
-     * or "controller-1". There will be 6 buttons: pad up (0), pad down (1), pad left (2),
-     * pad right (3), menu (4), grip (5). Note that the four pad buttons are only simulated:
-     * they will report to be pressed when the analog value of their direction exceeds 0.5.
+     * or "controller-1". There will be 6 buttons: up, down, left, right, menu, grip.
+     * Note that the four direction buttons are only simulated: they will report to be pressed
+     * when the analog value of their direction exceeds 0.5.
      *
      * For \a QVR_Device_Buttons_OSVR, the parameter string is a space-separated list
-     * of path names of OSVR button interfaces (one path name for each button managed by this device).
+     * of button name / path name pairs. The button name defines the meaning of a name,
+     * and the path name defines the OSVR button interface.
      */
     const QString& buttonsParameters() const { return _buttonsParameters; }
 
@@ -295,31 +379,38 @@ public:
 
     /*! \brief Returns the analogs parameters.
      *
+     * These parameters sometimes define analog elemt names. The following names
+     * have a special meaning that translates to a \a QVRAnalog value: trigger,
+     * left-trigger, right-trigger, grip, left-grip, right-grip,
+     * axis-x, axis-y, left-axis-x, left-axis-y, right-axis-x, right-axis-y.
+     * Triggers and grips have values in [0,1], while axes have values in [-1,1].
+     *
      * For \a QVR_Device_Analogs_None, parameters are ignored.
      *
-     * For \a QVR_Device_Analogs_Static, the parameter string is a list of values.
-     * Each value represent the static state of one button and must be in [-1,+1].
+     * For \a QVR_Device_Analogs_Static, the parameter string is a list of name / value pairs,
+     * e.g. `trigger 0 axis-x 0.5`. The value must be in [0,1] or [-1,1].
      *
      * For \a QVR_Device_Analogs_Gamepad, the parameter string is the identifier
      * of the gamepad. The default is 0 which identifies the first gamepad found
      * by Qt; higher numbers identify additional controllers.
-     * There will be 4 gamepad analogs: right up/down, right left/right, left up/down,
-     * left left/right.
+     * There will be 4 gamepad analogs: right-axis-y, right-axis-x, left-axis-y, left-axis-x.
      *
      * For \a QVR_Device_Analogs_VRPN, the parameter string is of the form
-     * `<name> [<analog0> [<analog1> [...]]]` where `<name>` is the VRPN tracker name,
+     * `<tracker> [<name0> [<name1> [...]]]` where `<tracker>` is the VRPN tracker name,
      * e.g. Tracker0\@localhost
-     * and the optional analogs list specifies the number and order of VRPN analog joystick elements to use.
+     * and the optional analog name list specifies how many analog elements the device has and
+     * what meaning each of them has. Example: `Tracker0\@localhost trigger axis-x axis-y`
+     * defines 3 analog elements (VRPN analog element indices 0, 1, 2) and gives them a meaning
+     * according to their name.
      *
      * For \a QVR_Device_Analogs_Oculus, the parameter string must be "xbox", "controller-left",
-     * or "controller-right". The left and right controllers each have 4 analog elements: thumbstick up/down,
-     * thumbstick left/right, trigger, grip. The xbox controller has 8 analog elements: thumbstick left up/down,
-     * thumbstick left left/right, thumbstick right up/down, thumbstick right left/right, trigger left, trigger
-     * right, grip left, grip right.
+     * or "controller-right". The left and right controllers each have 4 analog elements:
+     * axis-y, axis-x, trigger, grip. The xbox controller has 8 analog elements:
+     * left-axis-y, left-axis-x, right-axis-y, right-axis-x, left-trigger, right-trigger,
+     * left-grip, right-grip.
      *
      * For \a QVR_Device_Analogs_OpenVR, the parameter string must be either "controller-0"
-     * or "controller-1". There will be 3 analogs: pad left-right axis (0), pad up-down axis (1),
-     * trigger (2). Note that the pad axes will go from -1 to 1 while the trigger will go from 0 to 1.
+     * or "controller-1". There will be 3 analogs: axis-y, axis-x, trigger.
      *
      * For \a QVR_Device_Analogs_OSVR, the parameter string is a space-separated list
      * of path names of OSVR analog interfaces (one path name for each analog managed by this device).

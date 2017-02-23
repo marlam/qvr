@@ -21,6 +21,7 @@
  * SOFTWARE.
  */
 
+#include <cstring>
 #include <QtMath>
 
 #include "manager.hpp"
@@ -64,9 +65,7 @@ struct QVRDeviceInternals {
     QVector<float>* vrpnAnalogsPtr; // pointer to _analogs
     vrpn_Tracker_Remote* vrpnTrackerRemote;
     vrpn_Button_Remote* vrpnButtonRemote;
-    QVector<int> vrpnButtons;
     vrpn_Analog_Remote* vrpnAnalogRemote;
-    QVector<float> vrpnAnalogs;
 #endif
 #ifdef HAVE_OCULUS
     int oculusTrackedEntity; // -1 = none, 0 = center/head, 1 = left eye, 2 = right eye, 3 = left controller, 4 = right controller
@@ -113,25 +112,104 @@ void QVRVrpnTrackerVelocityChangeHandler(void* userdata, const vrpn_TRACKERVELCB
 void QVRVrpnButtonChangeHandler(void* userdata, const vrpn_BUTTONCB info)
 {
     struct QVRDeviceInternals* d = reinterpret_cast<struct QVRDeviceInternals*>(userdata);
-    for (int i = 0; i < d->vrpnButtonsPtr->length(); i++) {
-        if (info.button == d->vrpnButtons[i])
-            (*(d->vrpnButtonsPtr))[i] = info.state;
-    }
+    if (info.button >= 0 && info.button < d->vrpnButtonsPtr->size())
+        (*(d->vrpnButtonsPtr))[info.button] = info.state;
 }
 void QVRVrpnAnalogChangeHandler(void* userdata, const vrpn_ANALOGCB info)
 {
     struct QVRDeviceInternals* d = reinterpret_cast<struct QVRDeviceInternals*>(userdata);
-    for (int i = 0; i < d->vrpnAnalogsPtr->length(); i++) {
-        int j = d->vrpnAnalogs[i];
-        if (j >= 0 && j < info.num_channel)
-            (*(d->vrpnAnalogsPtr))[i] = info.channel[j];
+    for (int i = 0; i < d->vrpnAnalogsPtr->size(); i++) {
+        if (i < info.num_channel)
+            (*(d->vrpnAnalogsPtr))[i] = info.channel[i];
     }
 }
 #endif
 
+static bool QVRButtonFromName(const QString& name, QVRButton* btn)
+{
+    bool ret = true;
+    if (name == "l1")
+        *btn = QVR_Button_L1;
+    else if (name == "l2")
+        *btn = QVR_Button_L2;
+    else if (name == "l3")
+        *btn = QVR_Button_L3;
+    else if (name == "r1")
+        *btn = QVR_Button_R1;
+    else if (name == "r2")
+        *btn = QVR_Button_R2;
+    else if (name == "r3")
+        *btn = QVR_Button_R3;
+    else if (name == "a")
+        *btn = QVR_Button_A;
+    else if (name == "b")
+        *btn = QVR_Button_B;
+    else if (name == "x")
+        *btn = QVR_Button_X;
+    else if (name == "y")
+        *btn = QVR_Button_Y;
+    else if (name == "up")
+        *btn = QVR_Button_Up;
+    else if (name == "down")
+        *btn = QVR_Button_Down;
+    else if (name == "left")
+        *btn = QVR_Button_Left;
+    else if (name == "right")
+        *btn = QVR_Button_Right;
+    else if (name == "center")
+        *btn = QVR_Button_Center;
+    else if (name == "select")
+        *btn = QVR_Button_Select;
+    else if (name == "start")
+        *btn = QVR_Button_Start;
+    else if (name == "menu")
+        *btn = QVR_Button_Menu;
+    else if (name == "back")
+        *btn = QVR_Button_Back;
+    else if (name == "trigger")
+        *btn = QVR_Button_Trigger;
+    else
+        ret = false;
+    return ret;
+}
+
+static bool QVRAnalogFromName(const QString& name, QVRAnalog* anlg)
+{
+    bool ret = true;
+    if (name == "trigger")
+        *anlg = QVR_Analog_Trigger;
+    else if (name == "left-trigger")
+        *anlg = QVR_Analog_Left_Trigger;
+    else if (name == "right-trigger")
+        *anlg = QVR_Analog_Right_Trigger;
+    else if (name == "grip")
+        *anlg = QVR_Analog_Grip;
+    else if (name == "left-grip")
+        *anlg = QVR_Analog_Left_Grip;
+    else if (name == "right-grip")
+        *anlg = QVR_Analog_Right_Grip;
+    else if (name == "axis-x")
+        *anlg = QVR_Analog_Axis_X;
+    else if (name == "axis-y")
+        *anlg = QVR_Analog_Axis_Y;
+    else if (name == "left-axis-x")
+        *anlg = QVR_Analog_Left_Axis_X;
+    else if (name == "left-axis-y")
+        *anlg = QVR_Analog_Left_Axis_Y;
+    else if (name == "right-axis-x")
+        *anlg = QVR_Analog_Right_Axis_X;
+    else if (name == "right-axis-y")
+        *anlg = QVR_Analog_Right_Axis_Y;
+    else
+        ret = false;
+    return ret;
+}
 
 QVRDevice::QVRDevice() :
-    _index(-1), _internals(NULL)
+    _index(-1),
+    _buttonsMap { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 },
+    _analogsMap { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 },
+    _internals(NULL)
 {
 }
 
@@ -263,9 +341,15 @@ QVRDevice::QVRDevice(int deviceIndex) :
     case QVR_Device_Buttons_Static:
         {
             QStringList args = config().buttonsParameters().split(' ', QString::SkipEmptyParts);
-            _buttons.resize(args.length());
-            for (int i = 0; i < _buttons.length(); i++)
-                _buttons[i] = args[i].toInt();
+            int n = qMax(32, args.length() / 2);
+            _buttons.resize(n);
+            for (int i = 0; i < _buttons.length(); i++) {
+                QString name = args[2 * i + 0];
+                QVRButton btn;
+                if (QVRButtonFromName(name, &btn))
+                    _buttonsMap[btn] = i;
+                _buttons[i] = args[2 * i + 1].toInt();
+            }
         }
         break;
     case QVR_Device_Buttons_Gamepad:
@@ -283,8 +367,24 @@ QVRDevice::QVRDevice(int deviceIndex) :
                 }
             }
             _buttons.resize(18);
-            for (int i = 0; i < _buttons.length(); i++)
-                _buttons[i] = false;
+            _buttonsMap[QVR_Button_L1] = 0;
+            _buttonsMap[QVR_Button_L2] = 1;
+            _buttonsMap[QVR_Button_L3] = 2;
+            _buttonsMap[QVR_Button_R1] = 3;
+            _buttonsMap[QVR_Button_R2] = 4;
+            _buttonsMap[QVR_Button_R3] = 5;
+            _buttonsMap[QVR_Button_A] = 6;
+            _buttonsMap[QVR_Button_B] = 7;
+            _buttonsMap[QVR_Button_X] = 8;
+            _buttonsMap[QVR_Button_Y] = 9;
+            _buttonsMap[QVR_Button_Up] = 10;
+            _buttonsMap[QVR_Button_Down] = 11;
+            _buttonsMap[QVR_Button_Left] = 12;
+            _buttonsMap[QVR_Button_Right] = 13;
+            _buttonsMap[QVR_Button_Center] = 14;
+            _buttonsMap[QVR_Button_Select] = 15;
+            _buttonsMap[QVR_Button_Start] = 16;
+            _buttonsMap[QVR_Button_Menu] = 17;
         }
 #endif
         break;
@@ -294,18 +394,14 @@ QVRDevice::QVRDevice(int deviceIndex) :
             QStringList args = config().buttonsParameters().split(' ', QString::SkipEmptyParts);
             QString name = (args.length() >= 1 ? args[0] : config().buttonsParameters());
             if (args.length() > 1) {
-                _buttons.resize(args.length() - 1);
-                _internals->vrpnButtons.resize(_buttons.length());
+                _buttons.resize(qMax(32, args.length() - 1));
+                QVRButton btn;
                 for (int i = 0; i < _buttons.length(); i++)
-                    _internals->vrpnButtons[i] = args[i + 1].toInt();
+                    if (QVRButtonFromName(args[i + 1], &btn))
+                        _buttonsMap[btn] = i;
             } else {
                 _buttons.resize(32);
-                _internals->vrpnButtons.resize(_buttons.length());
-                for (int i = 0; i < _buttons.length(); i++)
-                    _internals->vrpnButtons[i] = i;
             }
-            for (int i = 0; i < _buttons.length(); i++)
-                _buttons[i] = false;
             if (QVRManager::processIndex() == config().processIndex()) {
                 _internals->vrpnButtonRemote = new vrpn_Button_Remote(qPrintable(name));
                 vrpn_System_TextPrinter.set_ostream_to_use(stderr);
@@ -320,18 +416,46 @@ QVRDevice::QVRDevice(int deviceIndex) :
             QString arg = config().buttonsParameters().trimmed();
             if (arg == "xbox") {
                 _buttons.resize(12);
+                _buttonsMap[QVR_Button_Up] = 0;
+                _buttonsMap[QVR_Button_Down] = 1;
+                _buttonsMap[QVR_Button_Left] = 2;
+                _buttonsMap[QVR_Button_Right] = 3;
+                _buttonsMap[QVR_Button_A] = 4;
+                _buttonsMap[QVR_Button_B] = 5;
+                _buttonsMap[QVR_Button_X] = 6;
+                _buttonsMap[QVR_Button_Y] = 7;
+                _buttonsMap[QVR_Button_L1] = 8;
+                _buttonsMap[QVR_Button_R1] = 9;
+                _buttonsMap[QVR_Button_Menu] = 10;
+                _buttonsMap[QVR_Button_Back] = 11;
                 if (QVRManager::processIndex() == config().processIndex()) {
                     Q_ASSERT(QVROculus);
                     _internals->oculusButtonsEntity = 0;
                 }
             } else if (arg == "controller-left") {
                 _buttons.resize(8);
+                _buttonsMap[QVR_Button_Up] = 0;
+                _buttonsMap[QVR_Button_Down] = 1;
+                _buttonsMap[QVR_Button_Left] = 2;
+                _buttonsMap[QVR_Button_Right] = 3;
+                _buttonsMap[QVR_Button_X] = 4;
+                _buttonsMap[QVR_Button_Y] = 5;
+                _buttonsMap[QVR_Button_L1] = 6;
+                _buttonsMap[QVR_Button_Menu] = 7;
                 if (QVRManager::processIndex() == config().processIndex()) {
                     Q_ASSERT(QVROculus);
                     _internals->oculusButtonsEntity = 1;
                 }
             } else if (arg == "controller-right") {
                 _buttons.resize(8);
+                _buttonsMap[QVR_Button_Up] = 0;
+                _buttonsMap[QVR_Button_Down] = 1;
+                _buttonsMap[QVR_Button_Left] = 2;
+                _buttonsMap[QVR_Button_Right] = 3;
+                _buttonsMap[QVR_Button_A] = 4;
+                _buttonsMap[QVR_Button_B] = 5;
+                _buttonsMap[QVR_Button_R1] = 6;
+                _buttonsMap[QVR_Button_Menu] = 7;
                 if (QVRManager::processIndex() == config().processIndex()) {
                     Q_ASSERT(QVROculus);
                     _internals->oculusButtonsEntity = 2;
@@ -348,12 +472,24 @@ QVRDevice::QVRDevice(int deviceIndex) :
             QString arg = config().buttonsParameters().trimmed();
             if (arg == "controller-0") {
                 _buttons.resize(6);
+                _buttonsMap[QVR_Button_Up] = 0;
+                _buttonsMap[QVR_Button_Down] = 1;
+                _buttonsMap[QVR_Button_Left] = 2;
+                _buttonsMap[QVR_Button_Right] = 3;
+                _buttonsMap[QVR_Button_Menu] = 4;
+                _buttonsMap[QVR_Button_Trigger] = 5;
                 if (QVRManager::processIndex() == config().processIndex()) {
                     Q_ASSERT(QVROpenVRSystem);
                     _internals->openVrButtonsEntity = 0;
                 }
             } else if (arg == "controller-1") {
                 _buttons.resize(6);
+                _buttonsMap[QVR_Button_Up] = 0;
+                _buttonsMap[QVR_Button_Down] = 1;
+                _buttonsMap[QVR_Button_Left] = 2;
+                _buttonsMap[QVR_Button_Right] = 3;
+                _buttonsMap[QVR_Button_Menu] = 4;
+                _buttonsMap[QVR_Button_Trigger] = 5;
                 if (QVRManager::processIndex() == config().processIndex()) {
                     Q_ASSERT(QVROpenVRSystem);
                     _internals->openVrButtonsEntity = 1;
@@ -368,16 +504,21 @@ QVRDevice::QVRDevice(int deviceIndex) :
 #ifdef HAVE_OSVR
         {
             QStringList args = config().buttonsParameters().split(' ', QString::SkipEmptyParts);
-            _buttons.resize(args.length());
+            int n = qMax(32, args.length() / 2);
+            _buttons.resize(n);
             if (QVRManager::processIndex() == config().processIndex()) {
                 Q_ASSERT(QVROsvrClientContext);
                 for (int i = 0; i < _buttons.length(); i++) {
-                    const QString& osvrPath = args[i];
+                    const QString& name = args[2 * i + 0];
+                    const QString& path = args[2 * i + 1];
+                    QVRButton btn;
+                    if (QVRButtonFromName(name, &btn))
+                        _buttonsMap[btn] = i;
                     OSVR_ClientInterface osvrInterface;
-                    osvrClientGetInterface(QVROsvrClientContext, qPrintable(osvrPath), &osvrInterface);
+                    osvrClientGetInterface(QVROsvrClientContext, qPrintable(path), &osvrInterface);
                     if (!osvrInterface) {
                         QVR_WARNING("device %s: OSVR interface path %s does not exist",
-                                qPrintable(id()), qPrintable(osvrPath));
+                                qPrintable(id()), qPrintable(path));
                     }
                     _internals->osvrButtonsInterfaces.append(osvrInterface);
                 }
@@ -394,8 +535,15 @@ QVRDevice::QVRDevice(int deviceIndex) :
         {
             QStringList args = config().analogsParameters().split(' ', QString::SkipEmptyParts);
             _analogs.resize(args.length());
-            for (int i = 0; i < _analogs.length(); i++)
-                _analogs[i] = args[i].toFloat();
+            int n = qMax(16, args.length() / 2);
+            _buttons.resize(n);
+            for (int i = 0; i < _analogs.length(); i++) {
+                QString name = args[2 * i + 0];
+                QVRAnalog anlg;
+                if (QVRAnalogFromName(name, &anlg))
+                    _analogsMap[anlg] = i;
+                _analogs[i] = args[2 * i + 1].toFloat();
+            }
         }
         break;
     case QVR_Device_Analogs_Gamepad:
@@ -416,8 +564,10 @@ QVRDevice::QVRDevice(int deviceIndex) :
                 }
             }
             _analogs.resize(4);
-            for (int i = 0; i < _analogs.length(); i++)
-                _analogs[i] = 0.0f;
+            _analogsMap[QVR_Analog_Right_Axis_Y] = 0;
+            _analogsMap[QVR_Analog_Right_Axis_X] = 1;
+            _analogsMap[QVR_Analog_Left_Axis_Y] = 2;
+            _analogsMap[QVR_Analog_Left_Axis_X] = 3;
         }
 #endif
         break;
@@ -427,18 +577,14 @@ QVRDevice::QVRDevice(int deviceIndex) :
             QStringList args = config().analogsParameters().split(' ', QString::SkipEmptyParts);
             QString name = (args.length() >= 1 ? args[0] : config().analogsParameters());
             if (args.length() > 1) {
-                _analogs.resize(args.length() - 1);
-                _internals->vrpnAnalogs.resize(_analogs.length());
+                _analogs.resize(qMax(16, args.length() - 1));
+                QVRAnalog anlg;
                 for (int i = 0; i < _analogs.length(); i++)
-                    _internals->vrpnAnalogs[i] = args[i + 1].toInt();
+                    if (QVRAnalogFromName(args[i + 1], &anlg))
+                        _analogsMap[anlg] = i;
             } else {
-                _analogs.resize(8);
-                _internals->vrpnAnalogs.resize(_analogs.length());
-                for (int i = 0; i < _analogs.length(); i++)
-                    _internals->vrpnAnalogs[i] = i;
+                _analogs.resize(16);
             }
-            for (int i = 0; i < _analogs.length(); i++)
-                _analogs[i] = 0.0f;
             if (QVRManager::processIndex() == config().processIndex()) {
                 _internals->vrpnAnalogRemote = new vrpn_Analog_Remote(qPrintable(name));
                 vrpn_System_TextPrinter.set_ostream_to_use(stderr);
@@ -453,18 +599,34 @@ QVRDevice::QVRDevice(int deviceIndex) :
             QString arg = config().analogsParameters().trimmed();
             if (arg == "xbox") {
                 _analogs.resize(8);
+                _analogsMap[QVR_Analog_Left_Axis_Y] = 0;
+                _analogsMap[QVR_Analog_Left_Axis_X] = 1;
+                _analogsMap[QVR_Analog_Right_Axis_Y] = 2;
+                _analogsMap[QVR_Analog_Right_Axis_X] = 3;
+                _analogsMap[QVR_Analog_Left_Trigger] = 4;
+                _analogsMap[QVR_Analog_Right_Trigger] = 5;
+                _analogsMap[QVR_Analog_Left_Grip] = 6;
+                _analogsMap[QVR_Analog_Right_Grip] = 7;
                 if (QVRManager::processIndex() == config().processIndex()) {
                     Q_ASSERT(QVROculus);
                     _internals->oculusAnalogsEntity = 0;
                 }
             } else if (arg == "controller-left") {
                 _analogs.resize(4);
+                _analogsMap[QVR_Analog_Axis_Y] = 0;
+                _analogsMap[QVR_Analog_Axis_X] = 1;
+                _analogsMap[QVR_Analog_Trigger] = 2;
+                _analogsMap[QVR_Analog_Grip] = 3;
                 if (QVRManager::processIndex() == config().processIndex()) {
                     Q_ASSERT(QVROculus);
                     _internals->oculusAnalogsEntity = 1;
                 }
             } else if (arg == "controller-right") {
                 _analogs.resize(4);
+                _analogsMap[QVR_Analog_Axis_Y] = 0;
+                _analogsMap[QVR_Analog_Axis_X] = 1;
+                _analogsMap[QVR_Analog_Trigger] = 2;
+                _analogsMap[QVR_Analog_Grip] = 3;
                 if (QVRManager::processIndex() == config().processIndex()) {
                     Q_ASSERT(QVROculus);
                     _internals->oculusAnalogsEntity = 2;
@@ -481,12 +643,18 @@ QVRDevice::QVRDevice(int deviceIndex) :
             QString arg = config().analogsParameters().trimmed();
             if (arg == "controller-0") {
                 _analogs.resize(3);
+                _analogsMap[QVR_Analog_Axis_Y] = 0;
+                _analogsMap[QVR_Analog_Axis_X] = 1;
+                _analogsMap[QVR_Analog_Trigger] = 2;
                 if (QVRManager::processIndex() == config().processIndex()) {
                     Q_ASSERT(QVROpenVRSystem);
                     _internals->openVrAnalogsEntity = 0;
                 }
             } else if (arg == "controller-1") {
                 _analogs.resize(3);
+                _analogsMap[QVR_Analog_Axis_Y] = 0;
+                _analogsMap[QVR_Analog_Axis_X] = 1;
+                _analogsMap[QVR_Analog_Trigger] = 2;
                 if (QVRManager::processIndex() == config().processIndex()) {
                     Q_ASSERT(QVROpenVRSystem);
                     _internals->openVrAnalogsEntity = 1;
@@ -501,16 +669,21 @@ QVRDevice::QVRDevice(int deviceIndex) :
 #ifdef HAVE_OSVR
         {
             QStringList args = config().analogsParameters().split(' ', QString::SkipEmptyParts);
-            _analogs.resize(args.length());
+            int n = qMax(16, args.length() / 2);
+            _analogs.resize(n);
             if (QVRManager::processIndex() == config().processIndex()) {
                 Q_ASSERT(QVROsvrClientContext);
                 for (int i = 0; i < _analogs.length(); i++) {
-                    const QString& osvrPath = args[i];
+                    const QString& name = args[2 * i + 0];
+                    const QString& path = args[2 * i + 1];
+                    QVRAnalog anlg;
+                    if (QVRAnalogFromName(name, &anlg))
+                        _analogsMap[anlg] = i;
                     OSVR_ClientInterface osvrInterface;
-                    osvrClientGetInterface(QVROsvrClientContext, qPrintable(osvrPath), &osvrInterface);
+                    osvrClientGetInterface(QVROsvrClientContext, qPrintable(path), &osvrInterface);
                     if (!osvrInterface) {
                         QVR_WARNING("device %s: OSVR interface path %s does not exist",
-                                qPrintable(id()), qPrintable(osvrPath));
+                                qPrintable(id()), qPrintable(path));
                     }
                     _internals->osvrAnalogsInterfaces.append(osvrInterface);
                 }
@@ -547,7 +720,9 @@ const QVRDevice& QVRDevice::operator=(const QVRDevice& d)
     _index = d._index;
     _position = d._position;
     _orientation = d._orientation;
+    std::memcpy(_buttonsMap, d._buttonsMap, sizeof(_buttonsMap));
     _buttons = d._buttons;
+    std::memcpy(_analogsMap, d._analogsMap, sizeof(_analogsMap));
     _analogs = d._analogs;
     return *this;
 }
@@ -651,30 +826,30 @@ void QVRDevice::update()
         }
 #ifdef HAVE_QGAMEPAD
         if (_internals->buttonsGamepad) {
-            _buttons[ 0] = _internals->buttonsGamepad->buttonUp();
-            _buttons[ 1] = _internals->buttonsGamepad->buttonDown();
-            _buttons[ 2] = _internals->buttonsGamepad->buttonLeft();
-            _buttons[ 3] = _internals->buttonsGamepad->buttonRight();
-            _buttons[ 4] = _internals->buttonsGamepad->buttonL1();
-            _buttons[ 5] = _internals->buttonsGamepad->buttonR1();
-            _buttons[ 6] = _internals->buttonsGamepad->buttonL2();
-            _buttons[ 7] = _internals->buttonsGamepad->buttonR2();
-            _buttons[ 8] = _internals->buttonsGamepad->buttonL3();
-            _buttons[ 9] = _internals->buttonsGamepad->buttonR3();
-            _buttons[10] = _internals->buttonsGamepad->buttonA();
-            _buttons[11] = _internals->buttonsGamepad->buttonB();
-            _buttons[12] = _internals->buttonsGamepad->buttonX();
-            _buttons[13] = _internals->buttonsGamepad->buttonY();
-            _buttons[14] = _internals->buttonsGamepad->buttonCenter();
-            _buttons[15] = _internals->buttonsGamepad->buttonGuide();
-            _buttons[16] = _internals->buttonsGamepad->buttonSelect();
-            _buttons[17] = _internals->buttonsGamepad->buttonStart();
+            _buttons[_buttonsMap[QVR_Button_L1]] = _internals->buttonsGamepad->buttonL1();
+            _buttons[_buttonsMap[QVR_Button_L2]] = _internals->buttonsGamepad->buttonL2();
+            _buttons[_buttonsMap[QVR_Button_L3]] = _internals->buttonsGamepad->buttonL3();
+            _buttons[_buttonsMap[QVR_Button_R1]] = _internals->buttonsGamepad->buttonR1();
+            _buttons[_buttonsMap[QVR_Button_R2]] = _internals->buttonsGamepad->buttonR2();
+            _buttons[_buttonsMap[QVR_Button_R3]] = _internals->buttonsGamepad->buttonR3();
+            _buttons[_buttonsMap[QVR_Button_A]] = _internals->buttonsGamepad->buttonA();
+            _buttons[_buttonsMap[QVR_Button_B]] = _internals->buttonsGamepad->buttonB();
+            _buttons[_buttonsMap[QVR_Button_X]] = _internals->buttonsGamepad->buttonX();
+            _buttons[_buttonsMap[QVR_Button_Y]] = _internals->buttonsGamepad->buttonY();
+            _buttons[_buttonsMap[QVR_Button_Up]] = _internals->buttonsGamepad->buttonUp();
+            _buttons[_buttonsMap[QVR_Button_Down]] = _internals->buttonsGamepad->buttonDown();
+            _buttons[_buttonsMap[QVR_Button_Left]] = _internals->buttonsGamepad->buttonLeft();
+            _buttons[_buttonsMap[QVR_Button_Right]] = _internals->buttonsGamepad->buttonRight();
+            _buttons[_buttonsMap[QVR_Button_Center]] = _internals->buttonsGamepad->buttonCenter();
+            _buttons[_buttonsMap[QVR_Button_Select]] = _internals->buttonsGamepad->buttonSelect();
+            _buttons[_buttonsMap[QVR_Button_Start]] = _internals->buttonsGamepad->buttonStart();
+            _buttons[_buttonsMap[QVR_Button_Menu]] = _internals->buttonsGamepad->buttonMenu();
         }
         if (_internals->analogsGamepad) {
-            _analogs[0] = _internals->analogsGamepad->axisRightY();
-            _analogs[1] = _internals->analogsGamepad->axisRightX();
-            _analogs[2] = _internals->analogsGamepad->axisLeftY();
-            _analogs[3] = _internals->analogsGamepad->axisLeftX();
+            _analogs[_analogsMap[QVR_Analog_Right_Axis_Y]] = _internals->analogsGamepad->axisRightY();
+            _analogs[_analogsMap[QVR_Analog_Right_Axis_X]] = _internals->analogsGamepad->axisRightX();
+            _analogs[_analogsMap[QVR_Analog_Left_Axis_Y]] = _internals->analogsGamepad->axisLeftY();
+            _analogs[_analogsMap[QVR_Analog_Left_Axis_X]] = _internals->analogsGamepad->axisLeftX();
         }
 #endif
 #ifdef HAVE_VRPN
@@ -871,11 +1046,15 @@ void QVRDevice::update()
 QDataStream &operator<<(QDataStream& ds, const QVRDevice& d)
 {
     ds << d._index << d._position << d._orientation << d._velocity << d._angularVelocity << d._buttons << d._analogs;
+    ds.writeRawData(reinterpret_cast<const char*>(d._buttonsMap), sizeof(d._buttonsMap));
+    ds.writeRawData(reinterpret_cast<const char*>(d._analogsMap), sizeof(d._analogsMap));
     return ds;
 }
 
 QDataStream &operator>>(QDataStream& ds, QVRDevice& d)
 {
     ds >> d._index >> d._position >> d._orientation >> d._velocity >> d._angularVelocity >> d._buttons >> d._analogs;
+    ds.readRawData(reinterpret_cast<char*>(d._buttonsMap), sizeof(d._buttonsMap));
+    ds.readRawData(reinterpret_cast<char*>(d._analogsMap), sizeof(d._analogsMap));
     return ds;
 }

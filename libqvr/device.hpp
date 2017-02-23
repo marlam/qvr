@@ -57,7 +57,9 @@ private:
     QQuaternion _orientation;
     QVector3D _velocity;
     QVector3D _angularVelocity;
+    signed char _buttonsMap[32]; // the size fixes the maximum number of QVRButton values that can be represented
     QVector<bool> _buttons;
+    signed char _analogsMap[16]; // the size fixes the maximum number of QVRAnalog values that can be represented
     QVector<float> _analogs;
 
     QVRDeviceInternals* _internals;
@@ -147,16 +149,28 @@ public:
      */
     /*@{*/
 
-    /*! \brief Returns the number of digital buttons on this device. */
+    /*! \brief Returns the number of buttons on this device. */
     int buttonCount() const
     {
         return _buttons.length();
     }
 
+    /*! \brief Returns the index of the button \a btn, or -1 if this device does not have that button. */
+    int buttonIndex(QVRButton btn) const
+    {
+        return _buttonsMap[btn];
+    }
+
     /*! \brief Returns whether the button with the given index is pressed. */
     bool button(int index) const
     {
-        return _buttons.at(index);
+        return (index >= 0 && index < buttonCount()) ? _buttons[index] : false;
+    }
+
+    /*! \brief Returns whether the button \a btn is pressed. Returns false if this device does not have that button. */
+    bool button(QVRButton btn) const
+    {
+        return button(buttonIndex(btn));
     }
 
     /*! \brief Returns the number of analog joystick elements on this device.
@@ -167,10 +181,22 @@ public:
         return _analogs.length();
     }
 
+    /*! \brief Returns the index of the analog element \a anlg, or -1 if this device does not have that element. */
+    int analogIndex(QVRAnalog anlg) const
+    {
+        return _analogsMap[anlg];
+    }
+
     /*! \brief Returns the value of the analog joystick element with the given index. */
     float analog(int index) const
     {
-        return _analogs.at(index);
+        return (index >= 0 && index < analogCount()) ? _analogs[index] : 0.0f;
+    }
+
+    /*! \brief Returns the value of the analog element \a anlg. Returns 0 if this device does not have that element. */
+    float analog(QVRAnalog anlg) const
+    {
+        return analog(analogIndex(anlg));
     }
 
     /*@}*/
