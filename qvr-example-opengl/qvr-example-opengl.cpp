@@ -147,7 +147,7 @@ void QVRExampleOpenGL::update(const QList<QVRObserver*>&)
     // Trigger a haptic pulse on devices that support it
     for (int i = 0; i < QVRManager::deviceCount(); i++) {
         const QVRDevice& device = QVRManager::device(i);
-        if (device.supportsHapticPulse() && device.hasAnalog(QVR_Analog_Trigger)) {
+        if (device.supportsHapticPulse() && device.hasAnalog(QVR_Analog_Trigger) && device.analog(QVR_Analog_Trigger) > 0.0f) {
             int microseconds = device.analog(QVR_Analog_Trigger) * 3999;
             device.triggerHapticPulse(microseconds);
         }
@@ -330,7 +330,7 @@ void QVRExampleOpenGL::render(QVRWindow* /* w */,
                     _devModelTextures[textureIndex], 0, 0,
                     1.0f);
             setMaterial(material);
-            renderVao(viewMatrix, nodeMatrix,
+            renderVao(context.viewMatrixPure(viewPass), nodeMatrix,
                     _devModelVaos[vertexDataIndex],
                     _devModelVaoIndices[vertexDataIndex]);
         }
