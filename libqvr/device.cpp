@@ -37,6 +37,11 @@
 # include <vrpn_Analog.h>
 # include <vrpn_Button.h>
 #endif
+#ifdef HAVE_OCULUS
+# if (OVR_PRODUCT_VERSION >= 1)
+#  include <QTimer>
+# endif
+#endif
 #ifdef HAVE_OSVR
 # include <osvr/ClientKit/InterfaceStateC.h>
 # include <osvr/ClientKit/InterfaceC.h>
@@ -879,7 +884,7 @@ void QVRDevice::update()
             _buttons[_buttonsMap[QVR_Button_Center]] = _internals->buttonsGamepad->buttonCenter();
             _buttons[_buttonsMap[QVR_Button_Select]] = _internals->buttonsGamepad->buttonSelect();
             _buttons[_buttonsMap[QVR_Button_Start]] = _internals->buttonsGamepad->buttonStart();
-            _buttons[_buttonsMap[QVR_Button_Menu]] = _internals->buttonsGamepad->buttonMenu();
+            _buttons[_buttonsMap[QVR_Button_Menu]] = _internals->buttonsGamepad->buttonGuide();
         }
         if (_internals->analogsGamepad) {
             _analogs[_analogsMap[QVR_Analog_Right_Axis_Y]] = _internals->analogsGamepad->axisRightY();
