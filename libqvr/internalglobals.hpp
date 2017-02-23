@@ -86,6 +86,7 @@ void QVRAttemptOculusInitialization();
 # include <QVector3D>
 # include <openvr.h>
 extern vr::IVRSystem* QVROpenVRSystem;
+extern unsigned int QVROpenVRControllerIndices[2];
 extern vr::VRControllerState_t QVROpenVRControllerStates[2];
 extern QQuaternion QVROpenVRTrackedOrientations[5];   // head, left eye, right eye, controller0, controller1
 extern QVector3D QVROpenVRTrackedPositions[5];        // head, left eye, right eye, controller0, controller1

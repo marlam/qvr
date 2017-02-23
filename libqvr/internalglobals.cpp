@@ -139,6 +139,7 @@ void QVRAttemptOculusInitialization()
 /* Global variables and functions for OpenVR (HTC Vive) support */
 #ifdef HAVE_OPENVR
 vr::IVRSystem* QVROpenVRSystem = NULL;
+unsigned int QVROpenVRControllerIndices[2];
 vr::VRControllerState_t QVROpenVRControllerStates[2];
 vr::TrackedDevicePose_t QVROpenVRPoses[3];
 QQuaternion QVROpenVRTrackedOrientations[5];   // head, left eye, right eye, controller0, controller1
@@ -168,7 +169,6 @@ static void QVROpenVRConvertPose(const QMatrix4x4& matrix, QQuaternion* orientat
     *orientation = QQuaternion::fromRotationMatrix(matrix.toGenericMatrix<3, 3>());
     *position = QVector3D(matrix(0, 3), matrix(1, 3), matrix(2, 3));
 }
-static unsigned int QVROpenVRControllerIndices[2];
 static QMap<QString, int> QVROpenVRNameToVertexDataIndexMap;
 static QMap<QString, int> QVROpenVRNameToTextureIndexMap;
 static QMap<int, int> QVROpenVRTexIdToIndexMap;

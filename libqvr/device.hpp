@@ -161,6 +161,12 @@ public:
         return _buttonsMap[btn];
     }
 
+    /*! \brief Returns whether this device has button \a btn. */
+    bool hasButton(QVRButton btn) const
+    {
+        return buttonIndex(btn) >= 0;
+    }
+
     /*! \brief Returns whether the button with the given index is pressed. */
     bool button(int index) const
     {
@@ -185,6 +191,12 @@ public:
     int analogIndex(QVRAnalog anlg) const
     {
         return _analogsMap[anlg];
+    }
+
+    /*! \brief Returns whether this device has analog element \a anlg. */
+    bool hasAnalog(QVRAnalog anlg) const
+    {
+        return analogIndex(anlg) >= 0;
     }
 
     /*! \brief Returns the value of the analog joystick element with the given index. */
@@ -254,6 +266,23 @@ public:
      * Texture data with a given index never changes, so you can e.g. upload this data to a GPU buffer once
      * and reuse it. */
     int modelNodeTextureIndex(int nodeIndex) const;
+
+    /*@}*/
+
+    /**
+     * \name Haptic feedback
+     *
+     * Some devices, usually hand-held controllers, support haptic pulses.
+     */
+    /*@{*/
+
+    /*! \brief Returns whether this device supports haptic pulses. */
+    bool supportsHapticPulse() const;
+
+    /*! \brief Triggers a haptic pulse with the given duration in microseconds.
+     * Note that there may be a device-dependent limit on the duration; for now, avoid values
+     * larger than 3999. */
+    void triggerHapticPulse(int microseconds) const;
 
     /*@}*/
 };

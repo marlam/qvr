@@ -802,6 +802,42 @@ int QVRDevice::modelNodeTextureIndex(int nodeIndex) const
     return ret;
 }
 
+bool QVRDevice::supportsHapticPulse() const
+{
+    int ret = false;
+#ifdef HAVE_OCULUS
+# if (OVR_PRODUCT_VERSION >= 1)
+    if (_internals->oculusTrackedEntity == 3 || _internals->oculusTrackedEntity == 4)
+        ret = true;
+# endif
+#endif
+#ifdef HAVE_OPENVR
+    if (_internals->openVrTrackedEntity == 3 || _internals->openVrTrackedEntity == 4)
+        ret = true;
+#endif
+    return ret;
+}
+
+void QVRDevice::triggerHapticPulse(int microseconds) const
+{
+#ifdef HAVE_OCULUS
+# if (OVR_PRODUCT_VERSION >= 1)
+    if (_internals->oculusTrackedEntity == 3 || _internals->oculusTrackedEntity == 4) {
+        ovrControllerType ct = (_internals->oculusTrackedEntity == 3 ?
+                ovrControllerType_LTouch : ovrControllerType_RTouch);
+        ovr_SetControllerVibration(QVROculus, ct, 0.5f, 1.0f);
+        QTimer::singleShot(std::round(microseconds / 1e3f), [ct]() { ovr_SetControllerVibration(QVROculus, ct, 0.5f, 0.0f); } );
+    }
+# endif
+#endif
+#ifdef HAVE_OPENVR
+    if (_internals->openVrTrackedEntity == 3 || _internals->openVrTrackedEntity == 4) {
+        int deviceIndex = QVROpenVRControllerIndices[_internals->openVrTrackedEntity - 3];
+        QVROpenVRSystem->TriggerHapticPulse(deviceIndex, 0, microseconds);
+    }
+#endif
+}
+
 #ifdef HAVE_OCULUS
 static QVector3D QVROculusConvert(const ovrVector3f& v)
 {

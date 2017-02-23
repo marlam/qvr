@@ -143,6 +143,15 @@ void QVRExampleOpenGL::update(const QList<QVRObserver*>&)
 {
     float seconds = _timer.elapsed() / 1000.0f;
     _objectRotationAngle = seconds * 20.0f;
+
+    // Trigger a haptic pulse on devices that support it
+    for (int i = 0; i < QVRManager::deviceCount(); i++) {
+        const QVRDevice& device = QVRManager::device(i);
+        if (device.supportsHapticPulse() && device.hasAnalog(QVR_Analog_Trigger)) {
+            int microseconds = device.analog(QVR_Analog_Trigger) * 3999;
+            device.triggerHapticPulse(microseconds);
+        }
+    }
 }
 
 bool QVRExampleOpenGL::wantExit()
