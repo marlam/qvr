@@ -148,13 +148,15 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int w
         wantDoubleBuffer = false;
     }
     format.setSwapBehavior(wantDoubleBuffer ? QSurfaceFormat::DoubleBuffer : QSurfaceFormat::SingleBuffer);
+    bool wantStereo = (!isMaster() && config().outputMode() == QVR_Output_Stereo_GL);
+    format.setStereo(wantStereo);
+    setFormat(format);
     if (isMaster()) {
         _winContext = masterContext;
     } else {
         _winContext = new QOpenGLContext;
         _winContext->setShareContext(masterContext);
     }
-    setFormat(format);
     _winContext->setFormat(format);
     _winContext->create();
     if (!_winContext->isValid()) {
@@ -164,6 +166,11 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int w
     }
     if (!isMaster() && !QOpenGLContext::areSharing(_winContext, masterContext)) {
         QVR_FATAL("Cannot get a sharing OpenGL context");
+        _isValid = false;
+        return;
+    }
+    if (wantStereo && !_winContext->format().stereo()) {
+        QVR_FATAL("Cannot get a stereo OpenGL context");
         _isValid = false;
         return;
     }
@@ -899,8 +906,15 @@ void QVRWindow::renderOutput()
             glUniform1i(glGetUniformLocation(_outputPrg->programId(), "tex_r"), 1);
         }
         glViewport(0, 0, width(), height());
+        if (config().outputMode() == QVR_Output_Stereo_GL)
+            glDrawBuffer(GL_BACK_LEFT);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        if (config().outputMode() == QVR_Output_Stereo_OpenVR) {
+        if (config().outputMode() == QVR_Output_Stereo_GL) {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, _textures[1]);
+            glDrawBuffer(GL_BACK_RIGHT);
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        } else if (config().outputMode() == QVR_Output_Stereo_OpenVR) {
 #ifdef HAVE_OPENVR
             vr::Texture_t l = { reinterpret_cast<void*>(_textures[0]), vr::TextureType_OpenGL, vr::ColorSpace_Linear };
             vr::VRCompositor()->Submit(vr::Eye_Left, &l, NULL, vr::Submit_Default);
