@@ -1,5 +1,24 @@
 var searchData=
 [
-  ['keypressevent',['keyPressEvent',['../class_q_v_r_app.html#a3a797c428a252b0ee1be82f39c8fb9bb',1,'QVRApp']]],
-  ['keyreleaseevent',['keyReleaseEvent',['../class_q_v_r_app.html#a251a3c6fcf5f84e7ad9d056f108b4edb',1,'QVRApp']]]
+  ['id',['id',['../class_q_v_r_device_config.html#a95fc4eea28d0e9c4185f3e1ec52c1b0c',1,'QVRDeviceConfig::id()'],['../class_q_v_r_observer_config.html#a5f1f41125a161d84deff5b34ca977307',1,'QVRObserverConfig::id()'],['../class_q_v_r_window_config.html#a0e001492c8a7d45f99ffa7a758c1be0f',1,'QVRWindowConfig::id()'],['../class_q_v_r_process_config.html#aca30b6d1887e4f45aaf387e2faa304cf',1,'QVRProcessConfig::id()'],['../class_q_v_r_device.html#a3c68a43eba0d00f5c931ecff90a4285e',1,'QVRDevice::id()'],['../class_q_v_r_observer.html#ae048fd607f185d3d557168c3613fd0fb',1,'QVRObserver::id()'],['../class_q_v_r_window.html#a7a850bbc3e29ae2594e8fc280beb03fd',1,'QVRWindow::id()'],['../class_q_v_r_process.html#ad0260e6adca1b63a59d816f8943fa080',1,'QVRProcess::id()']]],
+  ['index',['index',['../class_q_v_r_device.html#ab5c1172cf9180bd6e14a41edea9b1fbb',1,'QVRDevice::index()'],['../class_q_v_r_observer.html#a3b2c8659f2eb931409eaf7f6b00afcf7',1,'QVRObserver::index()'],['../class_q_v_r_window.html#afc2836feaef53f4e70fbe84b1c8c849d',1,'QVRWindow::index()'],['../class_q_v_r_process.html#ab88a339649d57a020be9d7e6b4496ff1',1,'QVRProcess::index()']]],
+  ['init',['init',['../class_q_v_r_manager.html#a7a04686c9ab0c26385aeb6fcd371dc80',1,'QVRManager']]],
+  ['initialdisplayscreen',['initialDisplayScreen',['../class_q_v_r_window_config.html#ab069380db8fcf4fea8b828c0a3ff75f0',1,'QVRWindowConfig']]],
+  ['initialeyedistance',['initialEyeDistance',['../class_q_v_r_observer_config.html#ace8c694a56b3a0b163dfd0c009f34728',1,'QVRObserverConfig']]],
+  ['initialfullscreen',['initialFullscreen',['../class_q_v_r_window_config.html#a6aa0f86adb17c5a174a8af1ba0227eb7',1,'QVRWindowConfig']]],
+  ['initialgeometry',['initialGeometry',['../class_q_v_r_window_config.html#aa8e9ec5c3a10f214f4bb1589a66db4d8',1,'QVRWindowConfig']]],
+  ['initialnavigationforwarddirection',['initialNavigationForwardDirection',['../class_q_v_r_observer_config.html#aa592add5a40f9ee3706711e63840a097',1,'QVRObserverConfig']]],
+  ['initialnavigationorientation',['initialNavigationOrientation',['../class_q_v_r_observer_config.html#a327e74e2fc2d1b3b971bcae2f3155e3f',1,'QVRObserverConfig']]],
+  ['initialnavigationposition',['initialNavigationPosition',['../class_q_v_r_observer_config.html#a93686a7bd11498ca79c5a7b6400f7afe',1,'QVRObserverConfig']]],
+  ['initialnavigationupdirection',['initialNavigationUpDirection',['../class_q_v_r_observer_config.html#a12af65c88490a61388ff11d787d85579',1,'QVRObserverConfig']]],
+  ['initialposition',['initialPosition',['../class_q_v_r_window_config.html#a6f451fa1bf842a0a9b563a6fba05ea15',1,'QVRWindowConfig']]],
+  ['initialsize',['initialSize',['../class_q_v_r_window_config.html#a0d40ffce72b46ea1b814186fc463ea5e',1,'QVRWindowConfig']]],
+  ['initialtrackingforwarddirection',['initialTrackingForwardDirection',['../class_q_v_r_observer_config.html#a74ab7292e6bfdc3214cbbb9d5d1fc551',1,'QVRObserverConfig']]],
+  ['initialtrackingorientation',['initialTrackingOrientation',['../class_q_v_r_observer_config.html#a13c84dcb1d0a15c66d3746061588962f',1,'QVRObserverConfig']]],
+  ['initialtrackingposition',['initialTrackingPosition',['../class_q_v_r_observer_config.html#a9e93a6dbcb11ee4b8e0239af6e0b06e5',1,'QVRObserverConfig']]],
+  ['initialtrackingupdirection',['initialTrackingUpDirection',['../class_q_v_r_observer_config.html#aa4f8a5b09883d8d1f603891f6ef51b52',1,'QVRObserverConfig']]],
+  ['initprocess',['initProcess',['../class_q_v_r_app.html#a2f01acee4df19c7a6825fbf1ce8f2bce',1,'QVRApp']]],
+  ['initwindow',['initWindow',['../class_q_v_r_app.html#ab7acda3b040a34b1bac616b94d704336',1,'QVRApp']]],
+  ['instance',['instance',['../class_q_v_r_manager.html#a6edaea65e7b2dd1765225f3cff137486',1,'QVRManager']]],
+  ['ipc',['ipc',['../class_q_v_r_process_config.html#a2c2ccabcdf269e8e9608c36714a74d03',1,'QVRProcessConfig']]]
 ];

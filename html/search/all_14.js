@@ -1,11 +1,7 @@
 var searchData=
 [
-  ['wantexit',['wantExit',['../class_q_v_r_app.html#abd64fa10d6ba3a9e4d3614e48013f521',1,'QVRApp']]],
-  ['wheelevent',['wheelEvent',['../class_q_v_r_app.html#abf50d5cad7857a5855a12625492cf754',1,'QVRApp']]],
-  ['window_2ehpp',['window.hpp',['../window_8hpp.html',1,'']]],
-  ['windowconfig',['windowConfig',['../class_q_v_r_manager.html#a751434c1d1a7e232a73424dbbf9d0ed0',1,'QVRManager::windowConfig()'],['../class_q_v_r_process.html#a84bb7dabdaf41c6a4d61c08678c6eaeb',1,'QVRProcess::windowConfig()']]],
-  ['windowconfigs',['windowConfigs',['../class_q_v_r_process_config.html#a469dbba8c1d62ee273dd9e9a323e6420',1,'QVRProcessConfig']]],
-  ['windowgeometry',['windowGeometry',['../class_q_v_r_render_context.html#ad125161da00959f341a1c42f72d17196',1,'QVRRenderContext']]],
-  ['windowid',['windowId',['../class_q_v_r_process.html#a9366afe48299c4b3d7ffe5acc1e641d2',1,'QVRProcess']]],
-  ['windowindex',['windowIndex',['../class_q_v_r_render_context.html#a95ce7baf104b691db4f8f91c7ceb1ec1',1,'QVRRenderContext']]]
+  ['velocity',['velocity',['../class_q_v_r_device.html#a23dd070609b0fda52e30c2ea682e422d',1,'QVRDevice']]],
+  ['viewmatrix',['viewMatrix',['../class_q_v_r_render_context.html#a1b6d536a06dd944fdda6a037c02f32a0',1,'QVRRenderContext']]],
+  ['viewmatrixpure',['viewMatrixPure',['../class_q_v_r_render_context.html#ab5615f33944e5a77e268f2929778bb36',1,'QVRRenderContext']]],
+  ['viewpasses',['viewPasses',['../class_q_v_r_render_context.html#a117353d25c332194632ce20fb648bb3c',1,'QVRRenderContext']]]
 ];
