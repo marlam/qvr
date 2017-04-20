@@ -182,12 +182,6 @@
  * launch slave processes as required by the configuration file, and it will
  * handle all necessary synchronization and data exchange with these slave
  * processes.
- *
- * \section Notes
- *
- * - Oculus Rift: Currently the DK2 was tested on Linux with SDK 0.5. It should
- *   be configured as a separate X11 screen, and the orientation of that screen
- *   should be fixed with `xrandr -display :0.1 -o left`.
  */
 
 #include <QObject>
