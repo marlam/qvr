@@ -24,7 +24,7 @@
 #ifndef QVR_EXAMPLE_VTK_HPP
 #define QVR_EXAMPLE_VTK_HPP
 
-#include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLExtraFunctions>
 
 #include <qvr/app.hpp>
 
@@ -34,7 +34,7 @@
 #include <vtkSmartPointer.h>
 
 
-class QVRExampleVTK : public QVRApp, protected QOpenGLFunctions_3_3_Core
+class QVRExampleVTK : public QVRApp, protected QOpenGLExtraFunctions
 {
 public:
     QVRExampleVTK();

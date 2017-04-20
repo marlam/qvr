@@ -14,7 +14,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Project
 project(libqvr)
 set(QVR_VERSION 1.1.0)
-set(QVR_LIBVERSION 1.0.0)
+set(QVR_LIBVERSION 2.0.0)
 set(QVR_SOVERSION 1)
 
 # Build options
@@ -26,8 +26,8 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 # Required libraries
-find_package(Qt5Widgets 5.5.0 REQUIRED)
-find_package(Qt5Network 5.5.0 REQUIRED)
+find_package(Qt5Widgets 5.6.0 REQUIRED)
+find_package(Qt5Network 5.6.0 REQUIRED)
 
 # Optional libraries
 find_package(Qt5Gamepad 5.7.0)

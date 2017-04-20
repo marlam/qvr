@@ -24,7 +24,7 @@
 #ifndef QVR_EXAMPLE_OPENGL_HPP
 #define QVR_EXAMPLE_OPENGL_HPP
 
-#include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLExtraFunctions>
 #include <QOpenGLShaderProgram>
 #include <QElapsedTimer>
 class QImage;
@@ -49,7 +49,7 @@ public:
     {}
 };
 
-class QVRExampleOpenGL : public QVRApp, protected QOpenGLFunctions_3_3_Core
+class QVRExampleOpenGL : public QVRApp, protected QOpenGLExtraFunctions
 {
 public:
     QVRExampleOpenGL();

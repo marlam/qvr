@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -69,7 +69,7 @@ bool QVRSceneViewer::initProcess(QVRProcess* /* p */)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1, 1,
             0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _fboDepthTex, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _fboDepthTex, 0);
 
     return true;
 }
@@ -93,7 +93,7 @@ void QVRSceneViewer::render(QVRWindow* /* window */,
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height,
             0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 
     // Render
     glViewport(0, 0, width, height);

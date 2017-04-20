@@ -48,7 +48,7 @@ bool QVRExampleOpenGLMinimal::initProcess(QVRProcess* /* p */)
     glBindTexture(GL_TEXTURE_2D, _fboDepthTex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1, 1,
             0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _fboDepthTex, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _fboDepthTex, 0);
 
     // Vertex array object
     static const GLfloat boxPositions[] = {
@@ -116,7 +116,7 @@ void QVRExampleOpenGLMinimal::render(QVRWindow* /* w */,
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height,
             0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 
     // Set up view
     glViewport(0, 0, width, height);

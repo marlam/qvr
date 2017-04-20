@@ -66,7 +66,7 @@ bool QVRExampleVTK::initProcess(QVRProcess* /* p */)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1, 1,
             0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _fboDepthTex, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _fboDepthTex, 0);
 
     // VTK: Pipeline. This one is a shortened version of the Marching Cubes example.
     vtkSmartPointer<vtkSphereSource> sphereSource = vtkSmartPointer<vtkSphereSource>::New();
@@ -131,7 +131,7 @@ void QVRExampleVTK::render(QVRWindow* /* w */,
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height,
             0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 
     // Set up VTK render window
     _vtkRenderWindow->SetSize(width, height);

@@ -57,7 +57,7 @@ bool QVRExampleOSG::initProcess(QVRProcess* /* p */)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1, 1,
             0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _fboDepthTex, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _fboDepthTex, 0);
 
     // OSG
     // Since we always only have to deal with one OpenGL context, we set up
@@ -82,7 +82,7 @@ void QVRExampleOSG::render(QVRWindow* /* w */,
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height,
             0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 
     // Set up OSG graphics window
     _graphicsWindow->resized(0, 0, width, height);

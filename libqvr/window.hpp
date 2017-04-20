@@ -25,7 +25,7 @@
 #define QVR_WINDOW_HPP
 
 #include <QWindow>
-#include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLExtraFunctions>
 
 #include "config.hpp"
 #include "rendercontext.hpp"
@@ -62,7 +62,7 @@ class QStringList;
  *
  * An window is configured via \a QVRWindowConfig.
  */
-class QVRWindow : public QWindow, protected QOpenGLFunctions_3_3_Core
+class QVRWindow : public QWindow, protected QOpenGLExtraFunctions
 {
 private:
     bool _isValid;

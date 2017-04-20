@@ -24,13 +24,13 @@
 #ifndef QVR_EXAMPLE_OPENGL_MINIMAL_HPP
 #define QVR_EXAMPLE_OPENGL_MINIMAL_HPP
 
-#include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLExtraFunctions>
 #include <QOpenGLShaderProgram>
 #include <QElapsedTimer>
 
 #include <qvr/app.hpp>
 
-class QVRExampleOpenGLMinimal : public QVRApp, protected QOpenGLFunctions_3_3_Core
+class QVRExampleOpenGLMinimal : public QVRApp, protected QOpenGLExtraFunctions
 {
 private:
     /* Data not directly relevant for rendering */

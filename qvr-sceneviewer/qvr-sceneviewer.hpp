@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,7 +24,7 @@
 #ifndef QVR_SCENEVIEWER_HPP
 #define QVR_SCENEVIEWER_HPP
 
-#include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLExtraFunctions>
 #include <QMatrix4x4>
 
 #include <qvr/app.hpp>
@@ -32,7 +32,7 @@
 #include <sceneviewer.hpp>
 
 
-class QVRSceneViewer : public QVRApp, protected QOpenGLFunctions_3_3_Core
+class QVRSceneViewer : public QVRApp, protected QOpenGLExtraFunctions
 {
 public:
     QVRSceneViewer(const QString& sceneFilename, const aiScene* scene, const QMatrix4x4& M);

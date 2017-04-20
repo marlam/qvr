@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,7 +26,7 @@
 
 #include <vector>
 
-#include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLExtraFunctions>
 #include <QOpenGLShaderProgram>
 #include <QMap>
 
@@ -101,7 +101,7 @@ public:
 
 /* A viewer for the scene description defined above */
 
-class SceneViewer : protected QOpenGLFunctions_3_3_Core
+class SceneViewer : protected QOpenGLExtraFunctions
 {
 private:
     Scene _scene;

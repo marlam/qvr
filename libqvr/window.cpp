@@ -123,7 +123,7 @@ void QVRWindowThread::run()
 
 QVRWindow::QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int windowIndex) :
     QWindow(),
-    QOpenGLFunctions_3_3_Core(),
+    QOpenGLExtraFunctions(),
     _isValid(true),
     _thread(NULL),
     _observer(observer),
@@ -395,10 +395,7 @@ bool QVRWindow::initGL()
     Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
 
     _winContext->makeCurrent(this);
-    if (!initializeOpenGLFunctions()) {
-        QVR_FATAL("Cannot initialize OpenGL functions");
-        return false;
-    }
+    initializeOpenGLFunctions();
 
     if (!isMaster()) {
         if (config().outputPlugin().isEmpty()) {

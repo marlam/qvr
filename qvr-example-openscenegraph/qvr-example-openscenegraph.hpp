@@ -24,14 +24,14 @@
 #ifndef QVR_EXAMPLE_OPENSCENEGRAPH_HPP
 #define QVR_EXAMPLE_OPENSCENEGRAPH_HPP
 
-#include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLExtraFunctions>
 
 #include <qvr/app.hpp>
 
 #include <osgViewer/Viewer>
 
 
-class QVRExampleOSG : public QVRApp, protected QOpenGLFunctions_3_3_Core
+class QVRExampleOSG : public QVRApp, protected QOpenGLExtraFunctions
 {
 public:
     QVRExampleOSG(osg::ref_ptr<osg::Node> model);

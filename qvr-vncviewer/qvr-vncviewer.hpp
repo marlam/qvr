@@ -24,7 +24,7 @@
 #ifndef QVR_VNCVIEWER_HPP
 #define QVR_VNCVIEWER_HPP
 
-#include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLExtraFunctions>
 #include <QOpenGLShaderProgram>
 
 #include <qvr/app.hpp>
@@ -32,7 +32,7 @@
 #include <rfb/rfbclient.h>
 
 
-class QVRVNCViewer : public QVRApp, protected QOpenGLFunctions_3_3_Core
+class QVRVNCViewer : public QVRApp, protected QOpenGLExtraFunctions
 {
 public:
     QVRVNCViewer(int& argc, char* argv[]);
