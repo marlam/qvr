@@ -816,7 +816,7 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
             }
             glTexImage2D(GL_TEXTURE_2D, 0,
                     wantSRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8,
-                    w, h, 0, GL_BGRA, GL_UNSIGNED_BYTE, NULL);
+                    w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 #ifdef HAVE_OSVR
             texturesNeedRegistering = true;
 #endif
@@ -903,14 +903,19 @@ void QVRWindow::renderOutput()
             glUniform1i(glGetUniformLocation(_outputPrg->programId(), "tex_r"), 1);
         }
         glViewport(0, 0, width(), height());
-        if (config().outputMode() == QVR_Output_Stereo_GL)
+        if (config().outputMode() == QVR_Output_Stereo_GL) {
+#ifdef GL_BACK_LEFT
             glDrawBuffer(GL_BACK_LEFT);
+#endif
+        }
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         if (config().outputMode() == QVR_Output_Stereo_GL) {
+#ifdef GL_BACK_RIGHT
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, _textures[1]);
             glDrawBuffer(GL_BACK_RIGHT);
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+#endif
         } else if (config().outputMode() == QVR_Output_Stereo_OpenVR) {
 #ifdef HAVE_OPENVR
             vr::Texture_t l = { reinterpret_cast<void*>(_textures[0]), vr::TextureType_OpenGL, vr::ColorSpace_Linear };
