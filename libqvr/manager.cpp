@@ -1038,7 +1038,9 @@ void QVRManager::render()
 
     if (_masterWindow) {
         _masterWindow->winContext()->makeCurrent(_masterWindow);
+#ifdef GL_FRAMEBUFFER_SRGB
         _masterWindow->glEnable(GL_FRAMEBUFFER_SRGB);
+#endif
     }
 
     if (_windows.size() > 0) {
