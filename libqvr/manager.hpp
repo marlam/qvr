@@ -441,23 +441,23 @@ public:
     static int processIndex();
 
     /*!
-     * \brief Return the configuration of the process with the index \a processIndex.
+     * \brief Return the configuration of the process with the index \a pi.
      *
      * This is a convenience function, you can also get this information from \a config().
      */
-    static const QVRProcessConfig& processConfig(int processIndex = processIndex())
+    static const QVRProcessConfig& processConfig(int pi = processIndex())
     {
-        return config().processConfigs().at(processIndex);
+        return config().processConfigs().at(pi);
     }
 
     /*!
-     * \brief Return the number of windows in the configuration of the process with index \a processIndex.
+     * \brief Return the number of windows in the configuration of the process with index \a pi.
      *
      * This is a convenience function, you can also get this information from \a config().
      */
-    static int windowCount(int processIndex = processIndex())
+    static int windowCount(int pi = processIndex())
     {
-        return config().processConfigs().at(processIndex).windowConfigs().size();
+        return config().processConfigs().at(pi).windowConfigs().size();
     }
 
     /*!
