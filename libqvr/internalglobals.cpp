@@ -395,9 +395,7 @@ void QVRUpdateOpenVR()
                         QVROpenVRConvertPose(M, &q, &p);
                         QVROpenVRControllerModelPositions[i].append(p);
                         QVROpenVRControllerModelOrientations[i].append(q);
-                        Q_ASSERT(QVROpenVRNameToVertexDataIndexMap.contains(componentRenderModelName));
                         QVROpenVRControllerModelVertexDataIndices[i].append(QVROpenVRNameToVertexDataIndexMap.value(componentRenderModelName));
-                        Q_ASSERT(QVROpenVRNameToTextureIndexMap.contains(componentRenderModelName));
                         QVROpenVRControllerModelTextureIndices[i].append(QVROpenVRNameToTextureIndexMap.value(componentRenderModelName));
                     }
                 }
