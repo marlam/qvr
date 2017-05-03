@@ -905,7 +905,8 @@ void QVRWindow::renderOutput()
         glViewport(0, 0, width(), height());
         if (config().outputMode() == QVR_Output_Stereo_GL) {
 #ifdef GL_BACK_LEFT
-            glDrawBuffer(GL_BACK_LEFT);
+            GLenum buf = GL_BACK_LEFT;
+            glDrawBuffers(1, &buf);
 #endif
         }
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -913,7 +914,8 @@ void QVRWindow::renderOutput()
 #ifdef GL_BACK_RIGHT
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, _textures[1]);
-            glDrawBuffer(GL_BACK_RIGHT);
+            GLenum buf = GL_BACK_RIGHT;
+            glDrawBuffers(1, &buf);
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 #endif
         } else if (config().outputMode() == QVR_Output_Stereo_OpenVR) {
