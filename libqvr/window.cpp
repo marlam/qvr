@@ -863,8 +863,16 @@ void QVRWindow::renderOutput()
     Q_ASSERT(QThread::currentThread() == _thread);
     Q_ASSERT(QOpenGLContext::currentContext() == _winContext);
 
+    unsigned int tex0 = _textures[0];
+    unsigned int tex1 = _textures[1];
+#if defined(HAVE_OCULUS) && (OVR_PRODUCT_VERSION >= 1)
+    if (config().outputMode() == QVR_Output_Stereo_Oculus) {
+        ovr_GetTextureSwapChainBufferGL(QVROculus, QVROculusTextureSwapChainL, -1, &tex0);
+        ovr_GetTextureSwapChainBufferGL(QVROculus, QVROculusTextureSwapChainR, -1, &tex1);
+    }
+#endif
     if (!config().outputPlugin().isEmpty()) {
-        _outputPluginFunc(this, _renderContext, _textures[0], _textures[1]);
+        _outputPluginFunc(this, _renderContext, tex0, tex1);
     } else if (config().outputMode() == QVR_Output_OSVR) {
 #ifdef HAVE_OSVR
         OSVR_ViewportDescription osvrDefaultViewport;
@@ -892,14 +900,14 @@ void QVRWindow::renderOutput()
         glDisable(GL_DEPTH_TEST);
         glUseProgram(_outputPrg->programId());
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, _textures[0]);
+        glBindTexture(GL_TEXTURE_2D, tex0);
         glUniform1i(glGetUniformLocation(_outputPrg->programId(), "tex_l"), 0);
         glUniform1i(glGetUniformLocation(_outputPrg->programId(), "tex_r"), 0);
         glUniform1i(glGetUniformLocation(_outputPrg->programId(), "output_mode"), config().outputMode());
         glBindVertexArray(_outputQuadVao);
-        if (_textures[1] != 0) {
+        if (tex1 != 0) {
             glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, _textures[1]);
+            glBindTexture(GL_TEXTURE_2D, tex1);
             glUniform1i(glGetUniformLocation(_outputPrg->programId(), "tex_r"), 1);
         }
         glViewport(0, 0, width(), height());
@@ -913,16 +921,16 @@ void QVRWindow::renderOutput()
         if (config().outputMode() == QVR_Output_Stereo_GL) {
 #ifdef GL_BACK_RIGHT
             glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, _textures[1]);
+            glBindTexture(GL_TEXTURE_2D, tex1);
             GLenum buf = GL_BACK_RIGHT;
             glDrawBuffers(1, &buf);
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 #endif
         } else if (config().outputMode() == QVR_Output_Stereo_OpenVR) {
 #ifdef HAVE_OPENVR
-            vr::Texture_t l = { reinterpret_cast<void*>(_textures[0]), vr::TextureType_OpenGL, vr::ColorSpace_Linear };
+            vr::Texture_t l = { reinterpret_cast<void*>(tex0), vr::TextureType_OpenGL, vr::ColorSpace_Linear };
             vr::VRCompositor()->Submit(vr::Eye_Left, &l, NULL, vr::Submit_Default);
-            vr::Texture_t r = { reinterpret_cast<void*>(_textures[1]), vr::TextureType_OpenGL, vr::ColorSpace_Linear };
+            vr::Texture_t r = { reinterpret_cast<void*>(tex1), vr::TextureType_OpenGL, vr::ColorSpace_Linear };
             vr::VRCompositor()->Submit(vr::Eye_Right, &r, NULL, vr::Submit_Default);
             glFlush(); // suggested by a comment in openvr.h
 #endif
