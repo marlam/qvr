@@ -186,7 +186,7 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int w
 
     if (!isMaster()) {
         QVR_DEBUG("    creating window %s...", qPrintable(config().id()));
-        if (QVRManager::config().processConfigs().size() > 0) {
+        if (QVRManager::config().processConfigs().size() > 1) {
             setTitle(processConfig().id() + " - " + config().id());
         } else {
             setTitle(config().id());
