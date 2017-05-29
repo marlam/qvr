@@ -125,7 +125,7 @@ QDataStream &operator>>(QDataStream& ds, QVRRenderContext& rc)
         >> rc._trackingOrientation[0] >> rc._trackingOrientation[1]
         >> rc._frustum[0] >> rc._frustum[1]
         >> rc._viewMatrix[0] >> rc._viewMatrix[1]
-        >> rc._viewMatrixPure[0] << rc._viewMatrixPure[1];
+        >> rc._viewMatrixPure[0] >> rc._viewMatrixPure[1];
     rc._outputMode = static_cast<QVROutputMode>(om);
     rc._eye[0] = static_cast<QVREye>(e0);
     rc._eye[1] = static_cast<QVREye>(e1);
