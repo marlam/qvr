@@ -17,6 +17,13 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -Wall -Wextra")
 endif()
 
+if(ANDROID)
+    # Work around missing defines in QOpenGLExtraFunctions
+    add_definitions(-DGL_TEXTURE_WIDTH=0x1000)
+    add_definitions(-DGL_TEXTURE_HEIGHT=0x1001)
+    add_definitions(-DGL_RGBA8=0x8058)
+endif()
+
 find_package(Qt5Widgets REQUIRED)
 find_package(QVR REQUIRED)
 
