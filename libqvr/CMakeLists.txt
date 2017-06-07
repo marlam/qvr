@@ -20,9 +20,16 @@ set(QVR_SOVERSION 2)
 # Build options
 option(QVR_BUILD_DOCUMENTATION "Build API reference documentation (requires Doxygen)" OFF)
 
-# Compiler
+# Compiler and system
 if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -Wall -Wextra")
+endif()
+if(ANDROID)
+    # Work around missing defines in QOpenGLExtraFunctions
+    add_definitions(-DGL_TEXTURE_WIDTH=0x1000)
+    add_definitions(-DGL_TEXTURE_HEIGHT=0x1001)
+    add_definitions(-DGL_SRGB8_ALPHA8=0x8C43)
+    add_definitions(-DGL_RGBA8=0x8058)
 endif()
 
 # Required libraries
@@ -83,6 +90,12 @@ if(OSVRCORE_FOUND)
         include_directories(${OSVRCORE_INCLUDE_DIRS} ${OSVRRENDERMANAGER_INCLUDE_DIRS})
         target_link_libraries(libqvr ${OSVRCORE_LIBRARIES} ${OSVRRENDERMANAGER_LIBRARIES})
     endif()
+endif()
+if(ANDROID)
+    # Work around undefined references to GLES functions in QOpenGLFunctions
+    target_link_libraries(libqvr -lGLESv3)
+    # Link against the system logging library
+    target_link_libraries(libqvr -llog)
 endif()
 install(TARGETS libqvr
     RUNTIME DESTINATION bin
