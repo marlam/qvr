@@ -761,6 +761,7 @@ int QVRDevice::modelNodeCount() const
 
 QVector3D QVRDevice::modelNodePosition(int nodeIndex) const
 {
+    Q_UNUSED(nodeIndex);
     QVector3D ret;
 #ifdef HAVE_OPENVR
     if (_internals->openVrTrackedEntity == 3)
@@ -773,6 +774,7 @@ QVector3D QVRDevice::modelNodePosition(int nodeIndex) const
 
 QQuaternion QVRDevice::modelNodeOrientation(int nodeIndex) const
 {
+    Q_UNUSED(nodeIndex);
     QQuaternion ret;
 #ifdef HAVE_OPENVR
     if (_internals->openVrTrackedEntity == 3)
@@ -785,6 +787,7 @@ QQuaternion QVRDevice::modelNodeOrientation(int nodeIndex) const
 
 int QVRDevice::modelNodeVertexDataIndex(int nodeIndex) const
 {
+    Q_UNUSED(nodeIndex);
     int ret = -1;
 #ifdef HAVE_OPENVR
     if (_internals->openVrTrackedEntity == 3)
@@ -797,6 +800,7 @@ int QVRDevice::modelNodeVertexDataIndex(int nodeIndex) const
 
 int QVRDevice::modelNodeTextureIndex(int nodeIndex) const
 {
+    Q_UNUSED(nodeIndex);
     int ret = -1;
 #ifdef HAVE_OPENVR
     if (_internals->openVrTrackedEntity == 3)
@@ -825,6 +829,7 @@ bool QVRDevice::supportsHapticPulse() const
 
 void QVRDevice::triggerHapticPulse(int microseconds) const
 {
+    Q_UNUSED(microseconds);
 #ifdef HAVE_OCULUS
 # if (OVR_PRODUCT_VERSION >= 1)
     if (_internals->oculusTrackedEntity == 3 || _internals->oculusTrackedEntity == 4) {
