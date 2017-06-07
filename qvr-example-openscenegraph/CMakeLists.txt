@@ -17,7 +17,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -Wall -Wextra")
 endif()
 
-find_package(Qt5Widgets REQUIRED)
+find_package(Qt5 5.6.0 COMPONENTS Widgets)
 find_package(QVR REQUIRED)
 set(OpenSceneGraph_MARK_AS_ADVANCED ON)
 find_package(OpenSceneGraph REQUIRED COMPONENTS osgViewer osgDB)

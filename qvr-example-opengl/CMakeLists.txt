@@ -24,7 +24,7 @@ if(ANDROID)
     add_definitions(-DGL_RGBA8=0x8058)
 endif()
 
-find_package(Qt5Widgets REQUIRED)
+find_package(Qt5 5.6.0 COMPONENTS Widgets)
 find_package(QVR REQUIRED)
 
 include_directories(${QVR_INCLUDE_DIRS})

@@ -33,11 +33,9 @@ if(ANDROID)
 endif()
 
 # Required libraries
-find_package(Qt5Widgets 5.6.0 REQUIRED)
-find_package(Qt5Network 5.6.0 REQUIRED)
+find_package(Qt5 5.6.0 COMPONENTS Widgets Network OPTIONAL_COMPONENTS Gamepad)
 
 # Optional libraries
-find_package(Qt5Gamepad 5.7.0)
 find_package(VRPN)
 find_package(Oculus)
 find_package(OpenVR)
