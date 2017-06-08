@@ -70,6 +70,7 @@ private:
     QVRObserver* _observer;
     int _windowIndex;
     unsigned int _textures[2];
+    int _textureWidths[2], _textureHeights[2];
     unsigned int _outputQuadVao;
     QOpenGLShaderProgram* _outputPrg;
     bool (*_outputPluginInitFunc)(QVRWindow*, const QStringList&);

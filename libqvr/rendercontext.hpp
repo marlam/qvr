@@ -64,6 +64,7 @@ private:
     QVROutputMode _outputMode;
     int _viewPasses;
     QVREye _eye[2];
+    QSize _textureSize[2];
     QVector3D _trackingPosition[2];
     QQuaternion _trackingOrientation[2];
     QVRFrustum _frustum[2];
@@ -83,6 +84,7 @@ private:
     void setScreenWall(const QVector3D& bl, const QVector3D& br, const QVector3D& tl)
     { _screenWall[0] = bl; _screenWall[1]= br; _screenWall[2] = tl; }
     void setOutputConf(QVROutputMode om);
+    void setTextureSize(int vp, const QSize& size) { _textureSize[vp] = size; }
     void setTracking(int vp, const QVector3D& p, const QQuaternion& r) { _trackingPosition[vp] = p; _trackingOrientation[vp] = r; }
     void setFrustum(int vp, const QVRFrustum f) { _frustum[vp] = f; }
     void setViewMatrix(int vp, const QMatrix4x4& vm) { _viewMatrix[vp] = vm; }
@@ -118,6 +120,8 @@ public:
     int viewPasses() const { return _viewPasses; }
     /*! \brief Returns the eye for rendering pass \a viewPass. */
     QVREye eye(int viewPass) const { return _eye[viewPass]; }
+    /*! \brief Returns the texture size for rendering pass \a viewPass. */
+    QSize textureSize(int viewPass) const { return _textureSize[viewPass]; }
     /*! \brief Returns the observer tracking position for rendering pass \a viewPass. */
     const QVector3D& trackingPosition(int viewPass) const { return _trackingPosition[viewPass]; }
     /*! \brief Returns the observer tracking orientation for rendering pass \a viewPass. */

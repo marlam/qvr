@@ -82,7 +82,11 @@ static void removeArg(int& argc, char* argv[], int i)
 QVRManager::QVRManager(int& argc, char* argv[]) :
     _triggerTimer(new QTimer),
     _fpsTimer(new QTimer),
+#ifdef ANDROID
+    _logLevel(QVR_Log_Level_Debug),
+#else
     _logLevel(QVR_Log_Level_Warning),
+#endif
     _workingDir(),
     _processIndex(0),
     _syncToVblank(true),

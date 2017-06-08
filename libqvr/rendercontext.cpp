@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -38,6 +38,7 @@ QVRRenderContext::QVRRenderContext() :
     _outputMode(QVR_Output_Center),
     _viewPasses(0),
     _eye { QVR_Eye_Center, QVR_Eye_Center },
+    _textureSize { QSize(-1, -1), QSize(-1, -1) },
     _trackingPosition { QVector3D(0.0f, 0.0f, 0.0f), QVector3D(0.0f, 0.0f, 0.0f) },
     _trackingOrientation { QQuaternion(0.0f, 0.0f, 0.0f, 0.0f), QQuaternion(0.0f, 0.0f, 0.0f, 0.0f) },
     _frustum { { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f } },
@@ -103,6 +104,7 @@ QDataStream &operator<<(QDataStream& ds, const QVRRenderContext& rc)
         << static_cast<int>(rc._outputMode)
         << rc._viewPasses
         << static_cast<int>(rc._eye[0]) << static_cast<int>(rc._eye[1])
+        << rc._textureSize[0] << rc._textureSize[1]
         << rc._trackingPosition[0] << rc._trackingPosition[1]
         << rc._trackingOrientation[0] << rc._trackingOrientation[1]
         << rc._frustum[0] << rc._frustum[1]
@@ -121,6 +123,7 @@ QDataStream &operator>>(QDataStream& ds, QVRRenderContext& rc)
         >> om
         >> rc._viewPasses
         >> e0 >> e1
+        >> rc._textureSize[0] >> rc._textureSize[1]
         >> rc._trackingPosition[0] >> rc._trackingPosition[1]
         >> rc._trackingOrientation[0] >> rc._trackingOrientation[1]
         >> rc._frustum[0] >> rc._frustum[1]

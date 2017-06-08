@@ -57,23 +57,23 @@ const char* QVRGetLogFile()
     return QVRLogFile.isEmpty() ? NULL : QVRLogFile.data();
 }
 
-void QVRMsg(const char* s)
+void QVRMsg(QVRLogLevel level, const char* s)
 {
 #ifdef ANDROID
     // On Android, if there is no log file we always use the system log facility
     // instead of stderr so that all messages are easily available in the Android monitor.
     if (!QVRLogStream) {
-        QVRLogLevel qvrLogLevel = QVRManager::logLevel();
         int androidLogLevel = (
-                  qvrLogLevel == QVR_Log_Level_Fatal   ? ANDROID_LOG_ERROR
-                : qvrLogLevel == QVR_Log_Level_Warning ? ANDROID_LOG_WARN
-                : qvrLogLevel == QVR_Log_Level_Info    ? ANDROID_LOG_INFO
-                : qvrLogLevel == QVR_Log_Level_Debug   ? ANDROID_LOG_DEBUG
+                  level == QVR_Log_Level_Fatal   ? ANDROID_LOG_ERROR
+                : level == QVR_Log_Level_Warning ? ANDROID_LOG_WARN
+                : level == QVR_Log_Level_Info    ? ANDROID_LOG_INFO
+                : level == QVR_Log_Level_Debug   ? ANDROID_LOG_DEBUG
                 : ANDROID_LOG_VERBOSE);
         __android_log_write(androidLogLevel, "QVR", s);
         return;
     }
 #endif
+    Q_UNUSED(level);
     // We want to print one complete line with exactly one call to fputs to
     // line-buffered stderr so that the output of different processes is not
     // mangled. Therefore we buffer what we want to print.

@@ -31,15 +31,15 @@
 void QVRSetLogFile(const char* name, bool truncate); /* NULL means stderr */
 const char* QVRGetLogFile(); /* NULL means stderr */
 
-void QVRMsg(const char* s);
+void QVRMsg(QVRLogLevel level, const char* s);
 
 #define QVR_MSG_BUFSIZE 1024
 
-#define QVR_MSG(...)      { char buf[QVR_MSG_BUFSIZE]; snprintf(buf, QVR_MSG_BUFSIZE, __VA_ARGS__); QVRMsg(buf); }
-#define QVR_FATAL(...)    { QVR_MSG(__VA_ARGS__); }
-#define QVR_WARNING(...)  { if (QVRManager::logLevel() >= QVR_Log_Level_Warning)  { QVR_MSG(__VA_ARGS__); } }
-#define QVR_INFO(...)     { if (QVRManager::logLevel() >= QVR_Log_Level_Info)     { QVR_MSG(__VA_ARGS__); } }
-#define QVR_DEBUG(...)    { if (QVRManager::logLevel() >= QVR_Log_Level_Debug)    { QVR_MSG(__VA_ARGS__); } }
-#define QVR_FIREHOSE(...) { if (QVRManager::logLevel() >= QVR_Log_Level_Firehose) { QVR_MSG(__VA_ARGS__); } }
+#define QVR_MSG(level, ...) { char buf[QVR_MSG_BUFSIZE]; snprintf(buf, QVR_MSG_BUFSIZE, __VA_ARGS__); QVRMsg(level, buf); }
+#define QVR_FATAL(...)      { QVR_MSG(QVR_Log_Level_Fatal, __VA_ARGS__); }
+#define QVR_WARNING(...)    { if (QVRManager::logLevel() >= QVR_Log_Level_Warning)  { QVR_MSG(QVR_Log_Level_Warning, __VA_ARGS__); } }
+#define QVR_INFO(...)       { if (QVRManager::logLevel() >= QVR_Log_Level_Info)     { QVR_MSG(QVR_Log_Level_Info, __VA_ARGS__); } }
+#define QVR_DEBUG(...)      { if (QVRManager::logLevel() >= QVR_Log_Level_Debug)    { QVR_MSG(QVR_Log_Level_Debug, __VA_ARGS__); } }
+#define QVR_FIREHOSE(...)   { if (QVRManager::logLevel() >= QVR_Log_Level_Firehose) { QVR_MSG(QVR_Log_Level_Firehose, __VA_ARGS__); } }
 
 #endif
