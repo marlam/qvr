@@ -159,6 +159,15 @@ bool QVRExampleOpenGL::wantExit()
     return _wantExit;
 }
 
+// Helper function: read a complete file into a QString (without error checking)
+static QString readFile(const char* fileName)
+{
+    QFile f(fileName);
+    f.open(QIODevice::ReadOnly);
+    QTextStream in(&f);
+    return in.readAll();
+}
+
 bool QVRExampleOpenGL::initProcess(QVRProcess* /* p */)
 {
     /* Initialize per-process OpenGL resources and state here */
@@ -177,8 +186,8 @@ bool QVRExampleOpenGL::initProcess(QVRProcess* /* p */)
     glBindTexture(GL_TEXTURE_2D, _fboDepthTex);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1, 1,
-            0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1, 1,
+            0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _fboDepthTex, 0);
 
     // Floor
@@ -239,8 +248,17 @@ bool QVRExampleOpenGL::initProcess(QVRProcess* /* p */)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     // Shader program
-    _prg.addShaderFromSourceFile(QOpenGLShader::Vertex, ":vertex-shader.glsl");
-    _prg.addShaderFromSourceFile(QOpenGLShader::Fragment, ":fragment-shader.glsl");
+    QString vertexShaderSource = readFile(":vertex-shader.glsl");
+    QString fragmentShaderSource  = readFile(":fragment-shader.glsl");
+    if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES) {
+        vertexShaderSource.prepend("#version 300 es\n");
+        fragmentShaderSource.prepend("#version 300 es\n");
+    } else {
+        vertexShaderSource.prepend("#version 330\n");
+        fragmentShaderSource.prepend("#version 330\n");
+    }
+    _prg.addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource);
+    _prg.addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource);
     _prg.link();
 
     // Device model data
@@ -266,13 +284,11 @@ void QVRExampleOpenGL::render(QVRWindow* /* w */,
         unsigned int texture)
 {
     // Set up framebuffer object to render into
-    GLint width, height;
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
-    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
+    GLint width = context.textureSize(viewPass).width();
+    GLint height = context.textureSize(viewPass).height();
     glBindTexture(GL_TEXTURE_2D, _fboDepthTex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height,
-            0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, width, height,
+            0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
     glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 
@@ -354,8 +370,12 @@ int main(int argc, char* argv[])
 
     /* First set the default surface format that all windows will use */
     QSurfaceFormat format;
-    format.setProfile(QSurfaceFormat::CoreProfile);
-    format.setVersion(3, 3);
+    if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES) {
+        format.setVersion(3, 0);
+    } else {
+        format.setProfile(QSurfaceFormat::CoreProfile);
+        format.setVersion(3, 3);
+    }
     QSurfaceFormat::setDefaultFormat(format);
 
     /* Then start QVR with your app */
