@@ -22,8 +22,6 @@ CONFIG += staticlib c++11
 
 DEFINES += QT_DEPRECATED_WARNINGS \
 	HAVE_QGAMEPAD \
-	GL_TEXTURE_WIDTH=0x1000  \
-	GL_TEXTURE_HEIGHT=0x1001 \
 	GL_SRGB8_ALPHA8=0x8C43   \
 	GL_RGBA8=0x8058
 
@@ -58,7 +56,7 @@ HEADERS += \
 RESOURCES += qvr.qrc
 
 lib.path = /var/tmp/libqvr-android/lib
-lib.files = libqvr.a
+lib.files = $$OUT_PWD/libqvr.a
 headers.path = /var/tmp/libqvr-android/include/qvr
 headers.files = app.hpp manager.hpp config.hpp device.hpp observer.hpp window.hpp process.hpp rendercontext.hpp outputplugin.hpp frustum.hpp
 INSTALLS += lib headers
