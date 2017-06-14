@@ -833,7 +833,7 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
         _textureWidths[0] = vpL.Size.w;
         _textureHeights[0] = vpL.Size.h;
         _textureWidths[1] = vpR.Size.w;
-        _textureHeitghs[1] = vpR.Size.h;
+        _textureHeights[1] = vpR.Size.h;
     }
 #endif
 #ifdef HAVE_OSVR
