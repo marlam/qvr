@@ -24,19 +24,28 @@
 #ifndef QVR_INTERNALS_HPP
 #define QVR_INTERNALS_HPP
 
-/* Global event queue */
+#include <QMatrix4x4>
+#include <QQuaternion>
+#include <QVector3D>
 #include <QQueue>
-#include "event.hpp"
-extern QQueue<QVREvent>* QVREventQueue;
-
-/* Global timer */
 #include <QElapsedTimer>
-extern QElapsedTimer QVRTimer;
-
-/* Global renderable device model data */
 #include <QList>
 #include <QVector>
 #include <QImage>
+
+#include "event.hpp"
+
+
+/* Global helper functions */
+void QVRMatrixToPose(const QMatrix4x4& matrix, QQuaternion* orientation, QVector3D* position);
+
+/* Global event queue */
+extern QQueue<QVREvent>* QVREventQueue;
+
+/* Global timer */
+extern QElapsedTimer QVRTimer;
+
+/* Global renderable device model data */
 extern QList<QVector<float>> QVRDeviceModelVertexPositions;
 extern QList<QVector<float>> QVRDeviceModelVertexNormals;
 extern QList<QVector<float>> QVRDeviceModelVertexTexCoords;
@@ -45,7 +54,6 @@ extern QList<QImage> QVRDeviceModelTextures;
 
 /* Global list of gamepads */
 #ifdef HAVE_QGAMEPAD
-# include <QGamepadManager>
 extern QList<int> QVRGamepads;
 void QVRDetectGamepads();
 #endif
@@ -77,13 +85,11 @@ extern ovrPosef QVROculusRenderPoses[2];
 extern ovrEyeRenderDesc QVROculusEyeRenderDesc[2];
 extern int QVROculusControllers; // 0 = none, 1 = xbox, 2 = left touch, 3 = right touch, 4 = both touch
 void QVRAttemptOculusInitialization();
+void QVRUpdateOculus()
 #endif
 
 /* Global variables and functions for OpenVR (HTC Vive) support */
 #ifdef HAVE_OPENVR
-# include <QMatrix4x4>
-# include <QQuaternion>
-# include <QVector3D>
 # include <openvr.h>
 extern vr::IVRSystem* QVROpenVRSystem;
 extern unsigned int QVROpenVRControllerIndices[2];
@@ -111,6 +117,16 @@ extern OSVR_DisplayConfig QVROsvrDisplayConfig;
 extern OSVR_RenderManager QVROsvrRenderManager;
 extern OSVR_RenderManagerOpenGL QVROsvrRenderManagerOpenGL;
 void QVRAttemptOSVRInitialization();
+#endif
+
+/* Global variables and functions for Google VR support */
+#ifdef ANDROID
+# include <vr/gvr/capi/include/gvr.h>
+extern gvr_context* QVRGoogleVR;
+extern gvr_mat4f QVRGoogleVRHeadMatrix; // same as QVRGoogleVRMatrices[2], but as a gvr_mat4f
+extern QMatrix4x4 QVRGoogleVRMatrices[3]; // 0 = left eye, 1 = right eye, 2 = head
+void QVRAttemptGoogleVRInitialization();
+void QVRUpdateGoogleVR();
 #endif
 
 #endif

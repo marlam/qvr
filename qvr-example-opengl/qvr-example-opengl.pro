@@ -3,13 +3,20 @@
 # This file is only intended to be used for Android apps.
 #
 # Use it as follows:
-# - First build a static libqvr for Android and install it in a directory of
-#   your choice. See ../libqvr/libqvr.pro for instructions.
-# - Edit INCLUDEPATH and LIBS below to match that directory.
-# - Use Qt Creator to open this project file.
+# - Build a static version of libqvr for Android. See libqvr.pro.
+# - Adjust GOOGLEVRNDK_DIR and LIBQVR_DIR below to match the values
+#   you used in libqvr.pro.
+# - Use Qt Creator to open this app project file.
 # - You should now be able to build and run this app.
 
-QT += widgets network gamepad
+
+# Directory that contains the Google VR NDK. Same as in libqvr.pro.
+GOOGLEVRNDK_DIR = /var/tmp/googlevr-ndk
+# Directory where libqvr will be installed (required for the app .pro file)
+LIBQVR_DIR = /var/tmp/libqvr-android
+
+
+QT += widgets network gamepad androidextras
 
 TARGET = qvr-example-opengl
 
@@ -18,8 +25,6 @@ TEMPLATE = app
 CONFIG += mobility c++11
 
 DEFINES += QT_DEPRECATED_WARNINGS \
-	GL_TEXTURE_WIDTH=0x1000  \
-	GL_TEXTURE_HEIGHT=0x1001 \
 	GL_RGBA8=0x8058
 
 SOURCES += geometries.cpp qvr-example-opengl.cpp
@@ -28,7 +33,30 @@ HEADERS += geometries.hpp qvr-example-opengl.hpp
 
 RESOURCES += resources.qrc
 
-INCLUDEPATH += /var/tmp/libqvr-android/include
-LIBS += -L/var/tmp/libqvr-android/lib -lqvr
+INCLUDEPATH += $$LIBQVR_DIR/include
+LIBS += -L$$LIBQVR_DIR/lib -lqvr \
+	-L$$GOOGLEVRNDK_DIR/libraries/jni/armeabi-v7a -lgvr -lgvr_audio
 
 MOBILITY = 
+
+DISTFILES += \
+    android/AndroidManifest.xml \
+    android/gradle/wrapper/gradle-wrapper.jar \
+    android/gradlew \
+    android/res/values/libs.xml \
+    android/build.gradle \
+    android/gradle/wrapper/gradle-wrapper.properties \
+    android/gradlew.bat \
+    android/AndroidManifest.xml \
+    android/gradle/wrapper/gradle-wrapper.jar \
+    android/gradlew \
+    android/res/values/libs.xml \
+    android/build.gradle \
+    android/gradle/wrapper/gradle-wrapper.properties \
+    android/gradlew.bat
+
+ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
+
+ANDROID_EXTRA_LIBS += \
+	$$GOOGLEVRNDK_DIR/libraries/jni/armeabi-v7a/libgvr.so \
+	$$GOOGLEVRNDK_DIR/libraries/jni/armeabi-v7a/libgvr_audio.so

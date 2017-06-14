@@ -47,7 +47,9 @@ typedef enum {
     /*! \brief A device with position and orientation tracked via OpenVR (HTC Vive). */
     QVR_Device_Tracking_OpenVR,
     /*! \brief A device with position and orientation tracked via <a href="http://www.osvr.org/">OSVR</a>. */
-    QVR_Device_Tracking_OSVR
+    QVR_Device_Tracking_OSVR,
+    /*! \brief A device with position and orientation tracked via Google VR (Cardboard, Daydream). */
+    QVR_Device_Tracking_GoogleVR
 } QVRDeviceTrackingType;
 
 /*!
@@ -240,6 +242,8 @@ typedef enum {
     QVR_Output_Stereo_Oculus = 7,
     /*! \brief Output a stereoscopic view for the HTC Vive head-mounted display. */
     QVR_Output_Stereo_OpenVR = 10,
+    /*! \brief Output a stereoscopic view for Google VR devices (Cardboard, Daydream). */
+    QVR_Output_Stereo_GoogleVR = 11,
     /*! \brief Output a stereoscopic view via an output plugin; see \a QVROutputPlugin(). */
     QVR_Output_Stereo_Custom = 8
 } QVROutputMode;
@@ -323,6 +327,9 @@ public:
      * name of an OSVR tracker interface. The special strings "eye-center", "eye-left",
      * and "eye-right" identify the center, left, and right eyes of the viewer (these are
      * unfortunately not available via path names in OSVR).
+     *
+     * For \a QVR_Device_Tracking_GoogleVR, the parameter string must be one of "head",
+     * "eye-left", "eye-right".
      */
     const QString& trackingParameters() const { return _trackingParameters; }
 

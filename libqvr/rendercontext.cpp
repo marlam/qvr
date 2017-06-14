@@ -87,6 +87,7 @@ void QVRRenderContext::setOutputConf(QVROutputMode om)
     case QVR_Output_Stereo_Amber_Blue:
     case QVR_Output_Stereo_Oculus:
     case QVR_Output_Stereo_OpenVR:
+    case QVR_Output_Stereo_GoogleVR:
     case QVR_Output_Stereo_Custom:
         _viewPasses = 2;
         _eye[0] = QVR_Eye_Left;

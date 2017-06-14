@@ -88,6 +88,9 @@ struct QVRDeviceInternals {
     QVector<OSVR_ClientInterface> osvrButtonsInterfaces;
     QVector<OSVR_ClientInterface> osvrAnalogsInterfaces;
 #endif
+#ifdef ANDROID
+    int googleVrTrackedEntity; // -1 = none, 0 = left eye, 1 = right eye, 2 = head
+#endif
 };
 
 static QVector3D QVRAngularVelocityFromDiffQuaternion(const QQuaternion& q, double seconds)
@@ -253,6 +256,9 @@ QVRDevice::QVRDevice(int deviceIndex) :
     _internals->osvrTrackedEye = -1;
     _internals->osvrTrackingInterface = NULL;
 #endif
+#ifdef ANDROID
+    _internals->googleVrTrackedEntity = -1;
+#endif
 
     switch (config().trackingType()) {
     case QVR_Device_Tracking_None:
@@ -335,6 +341,21 @@ QVRDevice::QVRDevice(int deviceIndex) :
                             qPrintable(id()), qPrintable(osvrPath));
                 }
             }
+        }
+#endif
+        break;
+    case QVR_Device_Tracking_GoogleVR:
+#ifdef ANDROID
+        if (QVRManager::processIndex() == config().processIndex()) {
+            QString arg = config().trackingParameters().trimmed();
+            if (arg == "head")
+                _internals->googleVrTrackedEntity = 2;
+            else if (arg == "eye-left")
+                _internals->googleVrTrackedEntity = 0;
+            else if (arg == "eye-right")
+                _internals->googleVrTrackedEntity = 1;
+            else
+                QVR_WARNING("device %s: invalid Google VR tracking parameter", qPrintable(id()));
         }
 #endif
         break;
@@ -716,6 +737,9 @@ QVRDevice::~QVRDevice()
         // the OSVR interfaces do not need to be cleaned up,
         // this will happen when the OSVR context exits.
 #endif
+#ifdef ANDROID
+        // nothing to do here; we do not own Google VR objects
+#endif
         delete _internals;
     }
 }
@@ -1077,6 +1101,11 @@ void QVRDevice::update()
                     _analogs[i] = state;
                 }
             }
+        }
+#endif
+#ifdef ANDROID
+        if (_internals->googleVrTrackedEntity >= 0) {
+            QVRMatrixToPose(QVRGoogleVRMatrices[_internals->googleVrTrackedEntity], &_orientation, &_position);
         }
 #endif
         if (wantVelocityCalculation && _internals->lastTimestamp >= 0) {

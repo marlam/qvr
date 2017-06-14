@@ -1,0 +1,16 @@
+device googlevr-head
+    tracking googlevr head
+device googlevr-eye-left
+    tracking googlevr eye-left
+device googlevr-eye-right
+    tracking googlevr eye-right
+
+observer googlevr-observer
+    navigation wasdqe
+    tracking device googlevr-eye-left googlevr-eye-right
+
+process googlevr-process
+    window googlevr-window
+        observer googlevr-observer
+        fullscreen true
+        output stereo googlevr

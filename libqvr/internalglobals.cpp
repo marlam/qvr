@@ -21,14 +21,29 @@
  * SOFTWARE.
  */
 
+#include <QGuiApplication>
+#include <QScreen>
+
 #include <cstring>
 
 #include "internalglobals.hpp"
 #include "logging.hpp"
 
+#ifdef HAVE_QGAMEPAD
+# include <QGamepadManager>
+#endif
+
 #ifdef HAVE_OSVR
 # include <osvr/ClientKit/ServerAutoStartC.h>
 #endif
+
+
+/* Global helper functions */
+void QVRMatrixToPose(const QMatrix4x4& matrix, QQuaternion* orientation, QVector3D* position)
+{
+    *orientation = QQuaternion::fromRotationMatrix(matrix.toGenericMatrix<3, 3>());
+    *position = QVector3D(matrix(0, 3), matrix(1, 3), matrix(2, 3));
+}
 
 /* Global event queue */
 QQueue<QVREvent>* QVREventQueue = NULL;
@@ -134,6 +149,28 @@ void QVRAttemptOculusInitialization()
             ovrTrackingCap_Orientation | ovrTrackingCap_Position);
 # endif
 }
+void QVRUpdateOculus()
+{
+# if (OVR_PRODUCT_VERSION >= 1)
+    QVROculusFrameIndex++;
+    double dt = ovr_GetPredictedDisplayTime(QVROculus, QVROculusFrameIndex);
+    QVROculusTrackingState = ovr_GetTrackingState(QVROculus, dt, ovrTrue);
+    ovr_CalcEyePoses(QVROculusTrackingState.HeadPose.ThePose, QVROculusHmdToEyeViewOffset, QVROculusRenderPoses);
+    if (QVROculusControllers == 1)
+        ovr_GetInputState(QVROculus, ovrControllerType_XBox, &QVROculusInputState);
+    else if (QVROculusControllers == 2 || QVROculusControllers == 3 || QVROculusControllers == 4)
+        ovr_GetInputState(QVROculus, ovrControllerType_Touch, &QVROculusInputState);
+    QVROculusLayer.SensorSampleTime = ovr_GetTimeInSeconds();
+# else
+    ovrHmd_BeginFrame(QVROculus, 0);
+    ovrVector3f hmdToEyeViewOffset[2] = {
+        QVROculusEyeRenderDesc[0].HmdToEyeViewOffset,
+        QVROculusEyeRenderDesc[1].HmdToEyeViewOffset
+    };
+    ovrHmd_GetEyePoses(QVROculus, 0, hmdToEyeViewOffset,
+            QVROculusRenderPoses, &QVROculusTrackingState);
+# endif
+}
 #endif
 
 /* Global variables and functions for OpenVR (HTC Vive) support */
@@ -163,11 +200,6 @@ static QMatrix4x4 QVROpenVRConvertMatrix(const vr::HmdMatrix34_t& openVrMatrix)
     m(3, 2) = 0;
     m(3, 3) = 1;
     return m;
-}
-static void QVROpenVRConvertPose(const QMatrix4x4& matrix, QQuaternion* orientation, QVector3D* position)
-{
-    *orientation = QQuaternion::fromRotationMatrix(matrix.toGenericMatrix<3, 3>());
-    *position = QVector3D(matrix(0, 3), matrix(1, 3), matrix(2, 3));
 }
 static QMap<QString, int> QVROpenVRNameToVertexDataIndexMap;
 static QMap<QString, int> QVROpenVRNameToTextureIndexMap;
@@ -314,7 +346,7 @@ void QVRUpdateOpenVR()
     vr::VRCompositor()->WaitGetPoses(poses, vr::k_unMaxTrackedDeviceCount, NULL, 0);
     // head:
     QMatrix4x4 headMatrix = QVROpenVRConvertMatrix(poses[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking);
-    QVROpenVRConvertPose(headMatrix, &(QVROpenVRTrackedOrientations[0]), &(QVROpenVRTrackedPositions[0]));
+    QVRMatrixToPose(headMatrix, &(QVROpenVRTrackedOrientations[0]), &(QVROpenVRTrackedPositions[0]));
     QVROpenVRHaveTrackedVelocities[0] = true;
     QVROpenVRTrackedVelocities[0] = QVector3D(poses[vr::k_unTrackedDeviceIndex_Hmd].vVelocity.v[0],
                                               poses[vr::k_unTrackedDeviceIndex_Hmd].vVelocity.v[1],
@@ -324,14 +356,14 @@ void QVRUpdateOpenVR()
                                                      poses[vr::k_unTrackedDeviceIndex_Hmd].vAngularVelocity.v[2]);
     // left eye:
     QMatrix4x4 leftEyeMatrix = headMatrix * QVROpenVRHmdToEye[0];
-    QVROpenVRConvertPose(leftEyeMatrix, &(QVROpenVRTrackedOrientations[1]), &(QVROpenVRTrackedPositions[1]));
+    QVRMatrixToPose(leftEyeMatrix, &(QVROpenVRTrackedOrientations[1]), &(QVROpenVRTrackedPositions[1]));
     QVROpenVRHaveTrackedVelocities[1] = false;
     // right eye:
     QMatrix4x4 rightEyeMatrix = headMatrix * QVROpenVRHmdToEye[1];
-    QVROpenVRConvertPose(rightEyeMatrix, &(QVROpenVRTrackedOrientations[2]), &(QVROpenVRTrackedPositions[2]));
+    QVRMatrixToPose(rightEyeMatrix, &(QVROpenVRTrackedOrientations[2]), &(QVROpenVRTrackedPositions[2]));
     QVROpenVRHaveTrackedVelocities[2] = false;
     // controller 0:
-    QVROpenVRConvertPose(QVROpenVRConvertMatrix(poses[QVROpenVRControllerIndices[0]].mDeviceToAbsoluteTracking),
+    QVRMatrixToPose(QVROpenVRConvertMatrix(poses[QVROpenVRControllerIndices[0]].mDeviceToAbsoluteTracking),
             &(QVROpenVRTrackedOrientations[3]), &(QVROpenVRTrackedPositions[3]));
     QVROpenVRHaveTrackedVelocities[3] = true;
     QVROpenVRTrackedVelocities[3] = QVector3D(poses[QVROpenVRControllerIndices[0]].vVelocity.v[0],
@@ -341,7 +373,7 @@ void QVRUpdateOpenVR()
                                                      poses[QVROpenVRControllerIndices[0]].vAngularVelocity.v[1],
                                                      poses[QVROpenVRControllerIndices[0]].vAngularVelocity.v[2]);
     // controller 1:
-    QVROpenVRConvertPose(QVROpenVRConvertMatrix(poses[QVROpenVRControllerIndices[1]].mDeviceToAbsoluteTracking),
+    QVRMatrixToPose(QVROpenVRConvertMatrix(poses[QVROpenVRControllerIndices[1]].mDeviceToAbsoluteTracking),
             &(QVROpenVRTrackedOrientations[4]), &(QVROpenVRTrackedPositions[4]));
     QVROpenVRHaveTrackedVelocities[4] = true;
     QVROpenVRTrackedVelocities[4] = QVector3D(poses[QVROpenVRControllerIndices[1]].vVelocity.v[0],
@@ -392,7 +424,7 @@ void QVRUpdateOpenVR()
                         QMatrix4x4 M = QVROpenVRConvertMatrix(componentState.mTrackingToComponentRenderModel);
                         QQuaternion q;
                         QVector3D p;
-                        QVROpenVRConvertPose(M, &q, &p);
+                        QVRMatrixToPose(M, &q, &p);
                         QVROpenVRControllerModelPositions[i].append(p);
                         QVROpenVRControllerModelOrientations[i].append(q);
                         QVROpenVRControllerModelVertexDataIndices[i].append(QVROpenVRNameToVertexDataIndexMap.value(componentRenderModelName));
@@ -504,6 +536,47 @@ void QVRAttemptOSVRInitialization()
         osvrClientShutdown(QVROsvrClientContext);
         QVROsvrDisplayConfig = NULL;
         QVROsvrClientContext = NULL;
+    }
+}
+#endif
+
+/* Global functions and variables for Google VR support */
+#ifdef ANDROID
+#include <QtAndroid>
+#include <QAndroidJniObject>
+gvr_context* QVRGoogleVR = NULL;
+gvr_mat4f QVRGoogleVRHeadMatrix; // same as QVRGoogleVRMatrices[2], but as a gvr_mat4f
+QMatrix4x4 QVRGoogleVRMatrices[3]; // 0 = left eye, 1 = right eye, 2 = head
+void QVRAttemptGoogleVRInitialization()
+{
+    QVR_INFO("GoogleVR: version: %s", gvr_get_version_string());
+
+    QAndroidJniObject activity = QtAndroid::androidActivity();
+    jlong nativeGvrContext = activity.callMethod<jlong>("getNativeGvrContext");
+    QVRGoogleVR = reinterpret_cast<gvr_context*>(nativeGvrContext);
+    if (!QVRGoogleVR) {
+        QVR_WARNING("GoogleVR: cannot get native context");
+        return;
+    }
+    int32_t viewerType = gvr_get_viewer_type(QVRGoogleVR);
+    QVR_INFO("GoogleVR: VR flavor is %s",
+              viewerType == GVR_VIEWER_TYPE_CARDBOARD ? "cardboard"
+            : viewerType == GVR_VIEWER_TYPE_DAYDREAM ? "daydream"
+            : "unknown");
+}
+void QVRUpdateGoogleVR()
+{
+    gvr_clock_time_point t = gvr_get_time_point_now();
+    // TODO: calculate time of next vsync
+    // There should really be a simple function in the Google VR NDK for this.
+    // For now we just guess based on screen refresh rate.
+    float displayFps = QGuiApplication::primaryScreen()->refreshRate();
+    t.monotonic_system_time_nanos += 1e9f / displayFps;
+    QVRGoogleVRHeadMatrix = gvr_get_head_space_from_start_space_rotation(QVRGoogleVR, t);
+    QVRGoogleVRMatrices[2] = QMatrix4x4(reinterpret_cast<const float*>(QVRGoogleVRHeadMatrix.m));
+    for (int i = 0; i < 2; i++) {
+        gvr_mat4f eyeMatrix = gvr_get_eye_from_head_matrix(QVRGoogleVR, i);
+        QVRGoogleVRMatrices[i] = QMatrix4x4(reinterpret_cast<const float*>(eyeMatrix.m)) * QVRGoogleVRMatrices[2];
     }
 }
 #endif

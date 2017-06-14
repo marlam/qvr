@@ -100,7 +100,8 @@ void QVRConfig::createDefault(bool preferCustomNavigation)
     bool haveOculus = false;
     bool haveOpenVR = false;
     bool haveOSVR = false;
-    if (!haveOculus && !haveOpenVR && !haveOSVR) {
+    bool haveGoogleVR = false;
+    if (!haveOculus && !haveOpenVR && !haveOSVR && !haveGoogleVR) {
 #ifdef HAVE_OCULUS
         QVRAttemptOculusInitialization();
         if (QVROculus) {
@@ -154,7 +155,7 @@ void QVRConfig::createDefault(bool preferCustomNavigation)
         }
 #endif
     }
-    if (!haveOculus && !haveOpenVR && !haveOSVR) {
+    if (!haveOculus && !haveOpenVR && !haveOSVR && !haveGoogleVR) {
 #ifdef HAVE_OPENVR
         QVRAttemptOpenVRInitialization();
         if (QVROpenVRSystem) {
@@ -164,7 +165,7 @@ void QVRConfig::createDefault(bool preferCustomNavigation)
         }
 #endif
     }
-    if (!haveOculus && !haveOpenVR && !haveOSVR) {
+    if (!haveOculus && !haveOpenVR && !haveOSVR && !haveGoogleVR) {
 #ifdef HAVE_OSVR
         QVRAttemptOSVRInitialization();
         if (QVROsvrClientContext) {
@@ -180,7 +181,17 @@ void QVRConfig::createDefault(bool preferCustomNavigation)
         }
 #endif
     }
-    if (!haveOculus && !haveOpenVR && !haveOSVR) {
+    if (!haveOculus && !haveOpenVR && !haveOSVR && !haveGoogleVR) {
+#ifdef ANDROID
+        QVRAttemptGoogleVRInitialization();
+        if (QVRGoogleVR) {
+            bool ok = readFromFile(":/libqvr/default-config-googlevr.qvr");
+            Q_ASSERT(ok);
+            haveGoogleVR = true;
+        }
+#endif
+    }
+    if (!haveOculus && !haveOpenVR && !haveOSVR && !haveGoogleVR) {
         bool ok = readFromFile(":/libqvr/default-config-desktop.qvr");
         Q_ASSERT(ok);
     }
@@ -293,16 +304,17 @@ bool QVRConfig::readFromFile(const QString& filename)
                 deviceProcessId = arg;
                 continue;
             } else if (cmd == "tracking" && arglist.length() >= 1
-                    && (arglist[0] == "none" || arglist[0] == "static"
+                    && (arglist[0] == "none" || arglist[0] == "static" || arglist[0] == "vrpn"
                         || arglist[0] == "oculus" || arglist[0] == "openvr"
-                        || arglist[0] == "osvr" || arglist[0] == "vrpn")) {
+                        || arglist[0] == "osvr" || arglist[0] == "googlevr")) {
                 deviceConfig._trackingType = (
                         arglist[0] == "none" ? QVR_Device_Tracking_None
                         : arglist[0] == "static" ? QVR_Device_Tracking_Static
+                        : arglist[0] == "vrpn" ? QVR_Device_Tracking_VRPN
                         : arglist[0] == "oculus" ? QVR_Device_Tracking_Oculus
                         : arglist[0] == "openvr" ? QVR_Device_Tracking_OpenVR
                         : arglist[0] == "osvr" ? QVR_Device_Tracking_OSVR
-                        : QVR_Device_Tracking_VRPN);
+                        : QVR_Device_Tracking_GoogleVR);
                 deviceConfig._trackingParameters = QStringList(arglist.mid(1)).join(' ');
                 continue;
             } else if (cmd == "buttons" && arglist.length() >= 1
@@ -493,6 +505,7 @@ bool QVRConfig::readFromFile(const QString& filename)
                             : arglist[1] == "amber_blue" ? QVR_Output_Stereo_Amber_Blue
                             : arglist[1] == "oculus" ? QVR_Output_Stereo_Oculus
                             : arglist[1] == "openvr" ? QVR_Output_Stereo_OpenVR
+                            : arglist[1] == "googlevr" ? QVR_Output_Stereo_GoogleVR
                             : QVR_Output_Stereo_Custom);
                     windowConfig._outputPlugin = QString();
                     if (arglist.length() > 1

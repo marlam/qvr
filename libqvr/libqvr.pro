@@ -3,16 +3,23 @@
 # This file is only intended to be used for Android apps.
 #
 # Use it as follows:
-# - Edit lib.path and headers.path at the bottom of this file
+# - Adjust GOOGLEVRNDK_DIR and LIBQVR_DIR to match your needs.
 # - Run the following commands (with suitable paths):
 #   $ export ANDROID_NDK_ROOT=/path/to/ndk-bundle
 #   $ /path/to/qmake
 #   $ make install_lib install_headers
-# You now have a static libqvr for Android installed in a directory of your
-# choice. Now set up your app to build and link against this library.
+# You now have a static libqvr for Android installed in LIBQVR_DIR.
+# Now set up your app to build and link against this library.
 # See qvr-example-opengl for an example.
 
-QT += widgets network gamepad
+
+# Directory that contains the Google VR NDK
+GOOGLEVRNDK_DIR = /var/tmp/googlevr-ndk
+# Directory where libqvr will be installed (required for the app .pro file)
+LIBQVR_DIR = /var/tmp/libqvr-android
+
+
+QT += widgets network gamepad androidextras
 
 TARGET = qvr
 
@@ -55,8 +62,14 @@ HEADERS += \
 
 RESOURCES += qvr.qrc
 
-lib.path = /var/tmp/libqvr-android/lib
+INCLUDEPATH += $$GOOGLEVRNDK_DIR/libraries/headers
+
+ANDROID_EXTRA_LIBS += \
+	$$GOOGLEVRNDK_DIR/libraries/jni/armeabi-v7a/libgvr.so \
+	$$GOOGLEVRNDK_DIR/libraries/jni/armeabi-v7a/libgvr_audio.so
+
+lib.path = $$LIBQVR_DIR/lib
 lib.files = $$OUT_PWD/libqvr.a
-headers.path = /var/tmp/libqvr-android/include/qvr
+headers.path = $$LIBQVR_DIR/include/qvr
 headers.files = app.hpp manager.hpp config.hpp device.hpp observer.hpp window.hpp process.hpp rendercontext.hpp outputplugin.hpp frustum.hpp
 INSTALLS += lib headers

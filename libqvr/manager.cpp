@@ -362,6 +362,7 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
     bool needToInitializeOculus = false;
     bool needToInitializeOpenVR = false;
     bool needToInitializeOSVR = false;
+    bool needToInitializeGoogleVR = false;
     for (int d = 0; d < _config->deviceConfigs().size(); d++) {
         if (_config->deviceConfigs()[d].processIndex() == _processIndex) {
             if (_config->deviceConfigs()[d].trackingType() == QVR_Device_Tracking_Oculus
@@ -379,6 +380,9 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
                     || _config->deviceConfigs()[d].analogsType() == QVR_Device_Analogs_OSVR) {
                 needToInitializeOSVR = true;
             }
+            if (_config->deviceConfigs()[d].trackingType() == QVR_Device_Tracking_GoogleVR) {
+                needToInitializeGoogleVR = true;
+            }
         }
     }
     for (int w = 0; w < processConfig().windowConfigs().size(); w++) {
@@ -390,6 +394,9 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
         }
         if (windowConfig(_processIndex, w).outputMode() == QVR_Output_OSVR) {
             needToInitializeOSVR = true;
+        }
+        if (windowConfig(_processIndex, w).outputMode() == QVR_Output_Stereo_GoogleVR) {
+            needToInitializeGoogleVR = true;
         }
     }
     if (needToInitializeOculus) {
@@ -431,6 +438,20 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
         }
 #else
         QVR_FATAL("configuration requires OSVR, but OSVR is not available");
+        return false;
+#endif
+    }
+    if (needToInitializeGoogleVR) {
+#ifdef ANDROID
+        if (!QVRGoogleVR) {
+            QVRAttemptGoogleVRInitialization();
+            if (!QVRGoogleVR) {
+                QVR_FATAL("cannot initialize Google VR");
+                return false;
+            }
+        }
+#else
+        QVR_FATAL("configuration requires Google VR, but Google VR is not available");
         return false;
 #endif
     }
@@ -683,31 +704,6 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
     return true;
 }
 
-#ifdef HAVE_OCULUS
-static void QVRUpdateOculus()
-{
-# if (OVR_PRODUCT_VERSION >= 1)
-    QVROculusFrameIndex++;
-    double dt = ovr_GetPredictedDisplayTime(QVROculus, QVROculusFrameIndex);
-    QVROculusTrackingState = ovr_GetTrackingState(QVROculus, dt, ovrTrue);
-    ovr_CalcEyePoses(QVROculusTrackingState.HeadPose.ThePose, QVROculusHmdToEyeViewOffset, QVROculusRenderPoses);
-    if (QVROculusControllers == 1)
-        ovr_GetInputState(QVROculus, ovrControllerType_XBox, &QVROculusInputState);
-    else if (QVROculusControllers == 2 || QVROculusControllers == 3 || QVROculusControllers == 4)
-        ovr_GetInputState(QVROculus, ovrControllerType_Touch, &QVROculusInputState);
-    QVROculusLayer.SensorSampleTime = ovr_GetTimeInSeconds();
-# else
-    ovrHmd_BeginFrame(QVROculus, 0);
-    ovrVector3f hmdToEyeViewOffset[2] = {
-        QVROculusEyeRenderDesc[0].HmdToEyeViewOffset,
-        QVROculusEyeRenderDesc[1].HmdToEyeViewOffset
-    };
-    ovrHmd_GetEyePoses(QVROculus, 0, hmdToEyeViewOffset,
-            QVROculusRenderPoses, &QVROculusTrackingState);
-# endif
-}
-#endif
-
 void QVRManager::masterLoop()
 {
     Q_ASSERT(_processIndex == 0);
@@ -920,6 +916,11 @@ void QVRManager::slaveLoop()
                 osvrClientUpdate(QVROsvrClientContext);
             }
 #endif
+#ifdef ANDROID
+            if (QVRGoogleVR) {
+                QVRUpdateGoogleVR();
+            }
+#endif
             int n = 0;
             _serializationBuffer.resize(0);
             QDataStream serializationDataStream(&_serializationBuffer, QIODevice::WriteOnly);
@@ -1018,6 +1019,11 @@ void QVRManager::updateDevices()
 #ifdef HAVE_OSVR
     if (QVROsvrClientContext) {
         osvrClientUpdate(QVROsvrClientContext);
+    }
+#endif
+#ifdef ANDROID
+    if (QVRGoogleVR) {
+        QVRUpdateGoogleVR();
     }
 #endif
     bool haveRemoteDevices = false;
