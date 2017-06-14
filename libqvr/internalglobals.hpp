@@ -85,7 +85,7 @@ extern ovrPosef QVROculusRenderPoses[2];
 extern ovrEyeRenderDesc QVROculusEyeRenderDesc[2];
 extern int QVROculusControllers; // 0 = none, 1 = xbox, 2 = left touch, 3 = right touch, 4 = both touch
 void QVRAttemptOculusInitialization();
-void QVRUpdateOculus()
+void QVRUpdateOculus();
 #endif
 
 /* Global variables and functions for OpenVR (HTC Vive) support */
