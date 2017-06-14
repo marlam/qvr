@@ -850,6 +850,8 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
 #endif
     for (int i = 0; i < _renderContext.viewPasses(); i++) {
         if (_textures[i] == 0) {
+            _textureWidths[i] = -1;
+            _textureHeights[i] = -1;
             glGenTextures(1, &(_textures[i]));
             glBindTexture(GL_TEXTURE_2D, _textures[i]);
             bool wantBilinearInterpolation = true;
@@ -934,6 +936,7 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
                 // results. So fall back to linear textures.
                 wantSRGB = false;
             }
+            glBindTexture(GL_TEXTURE_2D, _textures[i]);
             glTexImage2D(GL_TEXTURE_2D, 0,
                     wantSRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8,
                     w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
