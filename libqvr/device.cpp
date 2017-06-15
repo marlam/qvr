@@ -916,9 +916,9 @@ void QVRDevice::update()
             _buttons[_buttonsMap[QVR_Button_Menu]] = _internals->buttonsGamepad->buttonGuide();
         }
         if (_internals->analogsGamepad) {
-            _analogs[_analogsMap[QVR_Analog_Right_Axis_Y]] = _internals->analogsGamepad->axisRightY();
+            _analogs[_analogsMap[QVR_Analog_Right_Axis_Y]] = -_internals->analogsGamepad->axisRightY();
             _analogs[_analogsMap[QVR_Analog_Right_Axis_X]] = _internals->analogsGamepad->axisRightX();
-            _analogs[_analogsMap[QVR_Analog_Left_Axis_Y]] = _internals->analogsGamepad->axisLeftY();
+            _analogs[_analogsMap[QVR_Analog_Left_Axis_Y]] = -_internals->analogsGamepad->axisLeftY();
             _analogs[_analogsMap[QVR_Analog_Left_Axis_X]] = _internals->analogsGamepad->axisLeftX();
         }
 #endif
