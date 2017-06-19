@@ -25,7 +25,8 @@ TEMPLATE = app
 CONFIG += mobility c++11
 
 DEFINES += QT_DEPRECATED_WARNINGS \
-	GL_RGBA8=0x8058
+	GL_RGBA8=0x8058 \
+	GL_DEPTH_COMPONENT24=0x81A6
 
 SOURCES += geometries.cpp qvr-example-opengl.cpp
 

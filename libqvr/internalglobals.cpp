@@ -550,7 +550,6 @@ QMatrix4x4 QVRGoogleVRMatrices[3]; // 0 = left eye, 1 = right eye, 2 = head
 void QVRAttemptGoogleVRInitialization()
 {
     QVR_INFO("GoogleVR: version: %s", gvr_get_version_string());
-
     QAndroidJniObject activity = QtAndroid::androidActivity();
     jlong nativeGvrContext = activity.callMethod<jlong>("getNativeGvrContext");
     QVRGoogleVR = reinterpret_cast<gvr_context*>(nativeGvrContext);

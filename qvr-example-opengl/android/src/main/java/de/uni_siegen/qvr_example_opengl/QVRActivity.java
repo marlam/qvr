@@ -20,12 +20,8 @@ public class QVRActivity extends QtActivity
         super.onCreate(savedInstanceState);
         gvrLayout = new GvrLayout(this);
         nativeGvrContext = gvrLayout.getGvrApi().getNativeGvrContext();
-        gvrLayout.setPresentationView(new View(this));
-        setContentView(gvrLayout);
         if (gvrLayout.setAsyncReprojectionEnabled(true)) {
             AndroidCompat.setSustainedPerformanceMode(this, true);
-        } else {
-            System.out.println("Async reprojection does not work!?");
         }
         AndroidCompat.setVrModeEnabled(this, true);
     }
@@ -72,5 +68,11 @@ public class QVRActivity extends QtActivity
     long getNativeGvrContext()
     {
         return nativeGvrContext;
+    }
+
+    void setViewEtc()
+    {
+        gvrLayout.setPresentationView(getCurrentFocus());
+        setContentView(gvrLayout);
     }
 }

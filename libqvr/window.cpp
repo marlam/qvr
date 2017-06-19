@@ -49,6 +49,7 @@
 #endif
 
 #ifdef ANDROID
+# include <QtAndroid>
 static gvr_buffer_viewport_list* QVRGoogleVRViewportList;
 static gvr_swap_chain* QVRGoogleVRSwapChain = NULL;
 static QSize QVRGoogleVRRecommendedTexSize;
@@ -85,6 +86,69 @@ QVRWindowThread::QVRWindowThread(QVRWindow* window) :
 
 void QVRWindowThread::run()
 {
+#ifdef ANDROID
+    bool androidInitialized = false;
+    if (!androidInitialized) {
+        _window->winContext()->makeCurrent(_window);
+        gvr_initialize_gl(QVRGoogleVR);
+        QVR_DEBUG("    Google VR: initialized GL");
+        QVRGoogleVRViewportList = gvr_buffer_viewport_list_create(QVRGoogleVR);
+        gvr_get_recommended_buffer_viewports(QVRGoogleVR, QVRGoogleVRViewportList);
+        gvr_buffer_viewport* leftEyeVP = gvr_buffer_viewport_create(QVRGoogleVR);
+        gvr_buffer_viewport* rightEyeVP = gvr_buffer_viewport_create(QVRGoogleVR);
+        gvr_buffer_viewport_list_get_item(QVRGoogleVRViewportList, 0, leftEyeVP);
+        gvr_buffer_viewport_list_get_item(QVRGoogleVRViewportList, 1, rightEyeVP);
+        gvr_rectf leftEyeVPUV = gvr_buffer_viewport_get_source_uv(leftEyeVP);
+        QVRGoogleVRRelativeViewports[0] = QRectF(leftEyeVPUV.left, leftEyeVPUV.bottom,
+                leftEyeVPUV.right - leftEyeVPUV.left, leftEyeVPUV.top - leftEyeVPUV.bottom);
+        QVR_DEBUG("    Google VR: left eye viewport x=%g y=%g w=%g h=%g",
+                QVRGoogleVRRelativeViewports[0].x(), QVRGoogleVRRelativeViewports[0].y(),
+                QVRGoogleVRRelativeViewports[0].width(), QVRGoogleVRRelativeViewports[0].height());
+        gvr_rectf rightEyeVPUV = gvr_buffer_viewport_get_source_uv(rightEyeVP);
+        QVRGoogleVRRelativeViewports[1] = QRectF(rightEyeVPUV.left, rightEyeVPUV.bottom,
+                rightEyeVPUV.right - rightEyeVPUV.left, rightEyeVPUV.top - rightEyeVPUV.bottom);
+        QVR_DEBUG("    Google VR: right eye viewport: x=%g y=%g w=%g h=%g",
+                QVRGoogleVRRelativeViewports[1].x(), QVRGoogleVRRelativeViewports[1].y(),
+                QVRGoogleVRRelativeViewports[1].width(), QVRGoogleVRRelativeViewports[1].height());
+        gvr_sizei renderTargetSize = gvr_get_maximum_effective_render_target_size(QVRGoogleVR);
+        QVRGoogleVRRecommendedTexSize = QSize(
+                QVRGoogleVRRelativeViewports[0].width() * renderTargetSize.width,
+                QVRGoogleVRRelativeViewports[0].height() * renderTargetSize.height);
+        QVR_DEBUG("    Google VR: recommended texture size for each eye: %dx%d",
+                QVRGoogleVRRecommendedTexSize.width(), QVRGoogleVRRecommendedTexSize.height());
+        gvr_buffer_spec* bufferSpec = gvr_buffer_spec_create(QVRGoogleVR);
+        gvr_buffer_spec_set_size(bufferSpec, renderTargetSize);
+        gvr_buffer_spec_set_samples(bufferSpec, 1);
+        gvr_buffer_spec_set_color_format(bufferSpec, GVR_COLOR_FORMAT_RGBA_8888);
+        gvr_buffer_spec_set_depth_stencil_format(bufferSpec, GVR_DEPTH_STENCIL_FORMAT_NONE);
+        QVRGoogleVRSwapChain = gvr_swap_chain_create(QVRGoogleVR, const_cast<const gvr_buffer_spec**>(&bufferSpec), 1);
+        QVR_DEBUG("    Google VR: created swap chain for %dx%d buffers",
+                renderTargetSize.width, renderTargetSize.height);
+        // Compute frustum l,r,b,t for each eye here since these values will not change
+        for (int i = 0; i < 2; i++) {
+            QMatrix4x4 M = QMatrix4x4(reinterpret_cast<const float*>(
+                        gvr_buffer_viewport_get_transform(i == 0 ? leftEyeVP : rightEyeVP).m));
+            // extract near value from the original matrix
+            float oldN = 2.0f * M(2, 3) / (2.0f * M(2, 2) - 2.0f);
+            // extract l, r, b, t by applying the inverse matrix
+            QMatrix4x4 invM = M.inverted();
+            QVector4D tl = invM * QVector4D(-1, 1, 1, 1);
+            float l = -tl.x() / tl.w();
+            float t = -tl.y() / tl.w();
+            QVector4D br = invM * QVector4D(1, -1, 1, 1);
+            float r = -br.x() / br.w();
+            float b = -br.y() / br.w();
+            QVRGoogleVRlrbt[i][0] = l / oldN;
+            QVRGoogleVRlrbt[i][1] = r / oldN;
+            QVRGoogleVRlrbt[i][2] = b / oldN;
+            QVRGoogleVRlrbt[i][3] = t / oldN;
+            QVR_DEBUG("    Google VR: %s eye frustum for near=1: l=%g r=%g b=%g t=%g",
+                    i == 0 ? "left" : "right",
+                    QVRGoogleVRlrbt[i][0], QVRGoogleVRlrbt[i][1], QVRGoogleVRlrbt[i][2], QVRGoogleVRlrbt[i][3]);
+        }
+        androidInitialized = true;
+    }
+#endif
     for (;;) {
         _window->winContext()->makeCurrent(_window);
         // Start rendering
@@ -320,66 +384,9 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int w
         raise();
 #ifdef ANDROID
         if (config().outputMode() == QVR_Output_Stereo_GoogleVR) {
-            QVR_DEBUG("      Google VR: initializing GL...");
-            gvr_initialize_gl(QVRGoogleVR);
-            QVR_DEBUG("      Google VR: done.");
-            QVR_DEBUG("      Google VR: creating viewports...");
-            QVRGoogleVRViewportList = gvr_buffer_viewport_list_create(QVRGoogleVR);
-            gvr_get_recommended_buffer_viewports(QVRGoogleVR, QVRGoogleVRViewportList);
-            gvr_buffer_viewport* leftEyeVP = gvr_buffer_viewport_create(QVRGoogleVR);
-            gvr_buffer_viewport* rightEyeVP = gvr_buffer_viewport_create(QVRGoogleVR);
-            gvr_buffer_viewport_list_get_item(QVRGoogleVRViewportList, 0, leftEyeVP);
-            gvr_buffer_viewport_list_get_item(QVRGoogleVRViewportList, 1, rightEyeVP);
-            gvr_rectf leftEyeVPUV = gvr_buffer_viewport_get_source_uv(leftEyeVP);
-            QVRGoogleVRRelativeViewports[0] = QRectF(leftEyeVPUV.left, leftEyeVPUV.bottom,
-                    leftEyeVPUV.right - leftEyeVPUV.left, leftEyeVPUV.top - leftEyeVPUV.bottom);
-            QVR_DEBUG("        left eye viewport: x=%g y=%g w=%g h=%g",
-                    QVRGoogleVRRelativeViewports[0].x(), QVRGoogleVRRelativeViewports[0].y(),
-                    QVRGoogleVRRelativeViewports[0].width(), QVRGoogleVRRelativeViewports[0].height());
-            gvr_rectf rightEyeVPUV = gvr_buffer_viewport_get_source_uv(rightEyeVP);
-            QVRGoogleVRRelativeViewports[1] = QRectF(rightEyeVPUV.left, rightEyeVPUV.bottom,
-                    rightEyeVPUV.right - rightEyeVPUV.left, rightEyeVPUV.top - rightEyeVPUV.bottom);
-            QVR_DEBUG("        right eye viewport: x=%g y=%g w=%g h=%g",
-                    QVRGoogleVRRelativeViewports[1].x(), QVRGoogleVRRelativeViewports[1].y(),
-                    QVRGoogleVRRelativeViewports[1].width(), QVRGoogleVRRelativeViewports[1].height());
-            QVR_DEBUG("      Google VR: done.");
-            gvr_sizei renderTargetSize = gvr_get_maximum_effective_render_target_size(QVRGoogleVR);
-            QVRGoogleVRRecommendedTexSize = QSize(
-                    QVRGoogleVRRelativeViewports[0].width() * renderTargetSize.width,
-                    QVRGoogleVRRelativeViewports[0].height() * renderTargetSize.height);
-            QVR_DEBUG("      Google VR: recommended texture size for each eye: %dx%d",
-                    QVRGoogleVRRecommendedTexSize.width(), QVRGoogleVRRecommendedTexSize.height());
-            QVR_DEBUG("      Google VR: creating swap chain for %dx%d buffers...",
-                    renderTargetSize.width, renderTargetSize.height);
-            gvr_buffer_spec* bufferSpec = gvr_buffer_spec_create(QVRGoogleVR);
-            gvr_buffer_spec_set_size(bufferSpec, renderTargetSize);
-            gvr_buffer_spec_set_samples(bufferSpec, 1);
-            gvr_buffer_spec_set_color_format(bufferSpec, GVR_COLOR_FORMAT_RGBA_8888);
-            gvr_buffer_spec_set_depth_stencil_format(bufferSpec, GVR_DEPTH_STENCIL_FORMAT_NONE);
-            QVRGoogleVRSwapChain = gvr_swap_chain_create(QVRGoogleVR, const_cast<const gvr_buffer_spec**>(&bufferSpec), 1);
-            QVR_DEBUG("      Google VR: done.");
-            // Compute frustum l,r,b,t for each eye here since these values will not change
-            for (int i = 0; i < 2; i++) {
-                QMatrix4x4 M = QMatrix4x4(reinterpret_cast<const float*>(
-                            gvr_buffer_viewport_get_transform(i == 0 ? leftEyeVP : rightEyeVP).m));
-                // extract near value from the original matrix
-                float oldN = 2.0f * M(2, 3) / (2.0f * M(2, 2) - 2.0f);
-                // extract l, r, b, t by applying the inverse matrix
-                QMatrix4x4 invM = M.inverted();
-                QVector4D tl = invM * QVector4D(-1, 1, 1, 1);
-                float l = -tl.x() / tl.w();
-                float t = -tl.y() / tl.w();
-                QVector4D br = invM * QVector4D(1, -1, 1, 1);
-                float r = -br.x() / br.w();
-                float b = -br.y() / br.w();
-                QVRGoogleVRlrbt[i][0] = l / oldN;
-                QVRGoogleVRlrbt[i][1] = r / oldN;
-                QVRGoogleVRlrbt[i][2] = b / oldN;
-                QVRGoogleVRlrbt[i][3] = t / oldN;
-                QVR_DEBUG("      Google VR: %s eye frustum for n=1: l=%g r=%g b=%g t=%g",
-                        i == 0 ? "left" : "right",
-                        QVRGoogleVRlrbt[i][0], QVRGoogleVRlrbt[i][1], QVRGoogleVRlrbt[i][2], QVRGoogleVRlrbt[i][3]);
-            }
+            QVR_DEBUG("      Google VR: setting view...");
+            QAndroidJniObject activity = QtAndroid::androidActivity();
+            activity.callMethod<void>("setViewEtc");
         }
 #endif
 
@@ -1025,7 +1032,7 @@ void QVRWindow::renderOutput()
         }
         osvrRenderManagerFinishPresentRenderBuffers(QVROsvrRenderManager, s, osvrDefaultRenderParams, false);
 #endif
-    } else if (config().outputMode() == QVR_Output_Stereo_GoogleVR) { // TODO: this does not work yet
+    } else if (config().outputMode() == QVR_Output_Stereo_GoogleVR) {
 #ifdef ANDROID
         gvr_frame* frame = gvr_swap_chain_acquire_frame(QVRGoogleVRSwapChain);
         gvr_sizei frameSize = gvr_frame_get_buffer_size(frame, 0);
