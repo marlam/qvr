@@ -31,6 +31,10 @@
 
 #ifdef HAVE_QGAMEPAD
 # include <QGamepadManager>
+# if defined(Q_OS_WIN) && (QT_VERSION <= QT_VERSION_CHECK(5, 9, 0))
+#  include <QWindow>
+#  include <QGuiApplication>
+# endif
 #endif
 
 #ifdef HAVE_OSVR
@@ -63,7 +67,15 @@ QList<QImage> QVRDeviceModelTextures;
 QList<int> QVRGamepads;
 void QVRDetectGamepads()
 {
-    QVRGamepads = QGamepadManager::instance()->connectedGamepads();
+    QGamepadManager* mgr = QGamepadManager::instance();
+# if defined(Q_OS_WIN) && (QT_VERSION <= QT_VERSION_CHECK(5, 9, 0))
+    /* See https://bugreports.qt.io/browse/QTBUG-61553 */
+    QWindow* dummy = new QWindow();
+    dummy->show();
+    delete dummy;
+    QGuiApplication::processEvents();
+#endif
+    QVRGamepads = mgr->connectedGamepads();
 }
 #endif
 
