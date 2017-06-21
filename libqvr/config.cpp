@@ -201,9 +201,10 @@ void QVRConfig::createDefault(bool preferCustomNavigation)
     if (wantGamepads) {
 #ifdef HAVE_QGAMEPAD
         QVRDetectGamepads();
+        QVR_DEBUG("autodetected gamepads: %d", QVRGamepads.size());
         for (int i = 0; i < QVRGamepads.size(); i++) {
             int id = QVRGamepads[i];
-            QVR_DEBUG("autodetected gamepad %d with device id %d", i, id);
+            QVR_DEBUG("autodetected gamepad %d has device id %d", i, id);
             QVRDeviceConfig gamepadConfig;
             gamepadConfig._id = "gamepad-" + QString::number(i);
             gamepadConfig._processIndex = 0;
