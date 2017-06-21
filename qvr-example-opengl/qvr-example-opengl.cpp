@@ -287,7 +287,7 @@ void QVRExampleOpenGL::render(QVRWindow* /* w */,
     GLint width = context.textureSize(viewPass).width();
     GLint height = context.textureSize(viewPass).height();
     glBindTexture(GL_TEXTURE_2D, _fboDepthTex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, width, height,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height,
             0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
     glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
