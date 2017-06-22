@@ -19,7 +19,7 @@ GOOGLEVRNDK_DIR = /var/tmp/googlevr-ndk
 LIBQVR_DIR = /var/tmp/libqvr-android
 
 
-QT += widgets network gamepad androidextras
+QT += gui network gamepad androidextras
 
 TARGET = qvr
 
