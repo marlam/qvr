@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-#include <QApplication>
+#include <QGuiApplication>
 #include <QKeyEvent>
 
 #include <qvr/manager.hpp>
@@ -109,7 +109,7 @@ void QVRExampleOSG::keyPressEvent(const QVRRenderContext& /* context */, QKeyEve
 
 int main(int argc, char* argv[])
 {
-    QApplication app(argc, argv);
+    QGuiApplication app(argc, argv);
     QVRManager manager(argc, argv);
 
     /* Load the model file */

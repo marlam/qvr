@@ -1,4 +1,4 @@
-# Copyright (C) 2016
+# Copyright (C) 2016, 2017
 # Computer Graphics Group, University of Siegen
 # Written by Martin Lambers <martin.lambers@uni-siegen.de>
 #
@@ -17,7 +17,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -Wall -Wextra")
 endif()
 
-find_package(Qt5 5.6.0 COMPONENTS Widgets)
+find_package(Qt5 5.6.0 COMPONENTS Gui)
 find_package(QVR REQUIRED)
 find_package(ASSIMP REQUIRED)
 
@@ -29,5 +29,5 @@ add_executable(qvr-sceneviewer
     sceneviewer.cpp sceneviewer.hpp
     ${RESOURCES})
 set_target_properties(qvr-sceneviewer PROPERTIES WIN32_EXECUTABLE TRUE)
-target_link_libraries(qvr-sceneviewer ${ASSIMP_LIBRARIES} ${QVR_LIBRARIES} Qt5::Widgets)
+target_link_libraries(qvr-sceneviewer ${ASSIMP_LIBRARIES} ${QVR_LIBRARIES} Qt5::Gui)
 install(TARGETS qvr-sceneviewer RUNTIME DESTINATION bin)

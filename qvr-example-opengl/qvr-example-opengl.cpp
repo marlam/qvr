@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-#include <QApplication>
+#include <QGuiApplication>
 #include <QKeyEvent>
 #include <QImage>
 
@@ -365,7 +365,7 @@ void QVRExampleOpenGL::keyPressEvent(const QVRRenderContext& /* context */, QKey
 
 int main(int argc, char* argv[])
 {
-    QApplication app(argc, argv);
+    QGuiApplication app(argc, argv);
     QVRManager manager(argc, argv);
 
     /* First set the default surface format that all windows will use */

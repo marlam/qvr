@@ -25,8 +25,7 @@
 
 #include <QDir>
 #include <QQueue>
-#include <QDesktopWidget>
-#include <QApplication>
+#include <QGuiApplication>
 #include <QTimer>
 #include <QElapsedTimer>
 
@@ -354,7 +353,7 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
         relaunchedMaster.waitForFinished(-1);
         QVR_INFO("... relaunched master process finished.");
         // make the application exit as soon as it enters the main loop:
-        QTimer::singleShot(0, QApplication::instance(), SLOT(quit()));
+        QTimer::singleShot(0, QGuiApplication::instance(), SLOT(quit()));
         return true;
     }
 
@@ -620,17 +619,19 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
         QVR_INFO("... done");
     }
 
-    // Find out about our desktop and available screens
-    QDesktopWidget* desktop = QApplication::desktop();
-    QVR_INFO("process %s (index %d) uses %s which has %d screens",
+    // Find out about our available screens
+    QVRGetScreenInfo();
+    QVR_INFO("process %s (index %d) uses %s which has %d screens, default screen is %d",
             qPrintable(processConfig().id()), _processIndex,
             processConfig().display().isEmpty()
             ? "default display"
             : qPrintable(QString("display %1").arg(processConfig().display())),
-            desktop->screenCount());
-    for (int i = 0; i < desktop->screenCount(); i++) {
-        QRect r = desktop->screenGeometry(i);
-        QVR_INFO("  screen %d geometry: %d %d %dx%d", i, r.x(), r.y(), r.width(), r.height());
+            QVRScreenCount, QVRPrimaryScreen);
+    for (int i = 0; i < QVRScreenCount; i++) {
+        QVR_INFO("  screen %d: size %gx%g meters, geometry x=%d y=%d w=%d h=%d", i,
+                QVRScreenSizes[i].width(), QVRScreenSizes[i].height(),
+                QVRScreenGeometries[i].x(), QVRScreenGeometries[i].y(),
+                QVRScreenGeometries[i].width(), QVRScreenGeometries[i].height());
     }
 
     // Create windows
@@ -643,7 +644,7 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
     if (processConfig().windowConfigs().size() > 0) {
         for (int w = 0; w < processConfig().windowConfigs().size(); w++) {
             int ds = windowConfig(_processIndex, w).initialDisplayScreen();
-            if (ds < -1 || ds >= desktop->screenCount()) {
+            if (ds < -1 || ds >= QVRScreenCount) {
                 QVR_FATAL("display has no screen %d", ds);
                 return false;
             }
@@ -699,7 +700,7 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
     // Start the global timer
     QVRTimer.start();
 
-    QApplication::processEvents();
+    QGuiApplication::processEvents();
 
     return true;
 }
@@ -714,8 +715,8 @@ void QVRManager::masterLoop()
         // XXX: without this ugly hack, some windows are still not exposed
         // when rendering and swapping buffers (at least in multi-process
         // configurations), even though we called
-        // QApplication::processEvents() at the end of init().
-        QApplication::processEvents();
+        // QGuiApplication::processEvents() at the end of init().
+        QGuiApplication::processEvents();
         _masterLoopFirstRun = false;
     }
 
@@ -865,7 +866,7 @@ void QVRManager::masterLoop()
 
     // process events and run application updates while the windows wait for the buffer swap
     QVR_FIREHOSE("  ... event processing");
-    QApplication::processEvents();
+    QGuiApplication::processEvents();
     processEventQueue();
     QVR_FIREHOSE("  ... app update");
     _app->update(_observers);
@@ -952,7 +953,7 @@ void QVRManager::slaveLoop()
             QVR_FIREHOSE("  ... got command 'render' from master");
             _client->receiveCmdRenderArgs(&_near, &_far, _app);
             render();
-            QApplication::processEvents();
+            QGuiApplication::processEvents();
             int n = 0;
             _serializationBuffer.resize(0);
             QDataStream serializationDataStream(&_serializationBuffer, QIODevice::WriteOnly);

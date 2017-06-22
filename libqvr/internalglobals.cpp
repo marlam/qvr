@@ -42,6 +42,26 @@
 #endif
 
 
+/* Global screen info */
+int QVRScreenCount = 0;
+int QVRPrimaryScreen = -1;
+QVector<QRect> QVRScreenGeometries;
+QVector<QSizeF> QVRScreenSizes;
+void QVRGetScreenInfo()
+{
+    QList<QScreen*> screenList = QGuiApplication::screens();
+    QScreen* primaryScreen = QGuiApplication::primaryScreen();
+    QVRScreenCount = screenList.length();
+    QVRScreenGeometries.resize(QVRScreenCount);
+    QVRScreenSizes.resize(QVRScreenCount);
+    for (int i = 0; i < QVRScreenCount; i++) {
+        if (primaryScreen == screenList[i])
+            QVRPrimaryScreen = i;
+        QVRScreenGeometries[i] = screenList[i]->geometry();
+        QVRScreenSizes[i] = (screenList[i]->physicalSize()) / 1000.0f; // convert to meters
+    }
+}
+
 /* Global helper functions */
 void QVRMatrixToPose(const QMatrix4x4& matrix, QQuaternion* orientation, QVector3D* position)
 {

@@ -17,7 +17,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -Wall -Wextra")
 endif()
 
-find_package(Qt5 5.6.0 COMPONENTS Widgets)
+find_package(Qt5 5.6.0 COMPONENTS Gui)
 find_package(QVR REQUIRED)
 
 include_directories(${QVR_INCLUDE_DIRS})
@@ -27,5 +27,5 @@ add_executable(qvr-example-opengl-minimal
     qvr-example-opengl-minimal.cpp qvr-example-opengl-minimal.hpp
     ${RESOURCES})
 set_target_properties(qvr-example-opengl-minimal PROPERTIES WIN32_EXECUTABLE TRUE)
-target_link_libraries(qvr-example-opengl-minimal ${QVR_LIBRARIES} Qt5::Widgets)
+target_link_libraries(qvr-example-opengl-minimal ${QVR_LIBRARIES} Qt5::Gui)
 install(TARGETS qvr-example-opengl-minimal RUNTIME DESTINATION bin)

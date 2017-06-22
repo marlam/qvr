@@ -24,7 +24,7 @@
 #include <cmath>
 #include <cstring>
 
-#include <QApplication>
+#include <QGuiApplication>
 #include <QKeyEvent>
 #include <QtMath>
 
@@ -388,7 +388,7 @@ void QVRVNCViewer::keyPressEvent(const QVRRenderContext& /* context */, QKeyEven
 
 int main(int argc, char* argv[])
 {
-    QApplication app(argc, argv);
+    QGuiApplication app(argc, argv);
     QVRManager manager(argc, argv);
 
     /* First set the default surface format that all windows will use */

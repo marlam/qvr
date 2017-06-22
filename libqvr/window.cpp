@@ -29,9 +29,7 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLContext>
 #include <QQuaternion>
-#include <QCoreApplication>
-#include <QApplication>
-#include <QDesktopWidget>
+#include <QGuiApplication>
 #include <QScreen>
 #include <QKeyEvent>
 #include <QLibrary>
@@ -209,6 +207,7 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int w
     QWindow(),
     QOpenGLExtraFunctions(),
     _isValid(true),
+    _screen(-1),
     _thread(NULL),
     _observer(observer),
     _windowIndex(windowIndex),
@@ -290,15 +289,16 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int w
             setTitle(config().id());
         }
         setMinimumSize(QSize(64, 64));
+        _screen = config().initialDisplayScreen();
+        if (_screen < 0)
+            _screen = QVRPrimaryScreen;
+        QVR_DEBUG("      screen: %d", _screen);
         if (config().outputMode() == QVR_Output_OSVR) {
 #ifdef HAVE_OSVR
-            if (config().initialDisplayScreen() >= 0) {
-                QVR_DEBUG("      screen: %d", config().initialDisplayScreen());
-                setScreen(QApplication::screens().at(config().initialDisplayScreen()));
-            }
+            setScreen(QGuiApplication::screens().at(_screen));
             OSVR_DisplayDimension w, h;
             osvrClientGetDisplayDimensions(QVROsvrDisplayConfig, 0, &w, &h);
-            QRect geom = QApplication::desktop()->screenGeometry(config().initialDisplayScreen());
+            QRect geom = QVRScreenGeometries[_screen];
             geom.setWidth(w);
             geom.setHeight(h);
             QVR_DEBUG("      geometry: %d %d %dx%d", geom.x(), geom.y(), geom.width(), geom.height());
@@ -335,17 +335,18 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int w
             ovrHmd_DismissHSWDisplay(QVROculus);
             _winContext->doneCurrent();
             int oculusScreen = -1;
-            for (int i = QApplication::desktop()->screenCount() - 1; i >= 0; i--) {
-                if (QApplication::desktop()->screenGeometry(i).width() == QVROculus->Resolution.w
-                        && QApplication::desktop()->screenGeometry(i).height() == QVROculus->Resolution.h) {
+            for (int i = QVRScreenCount - 1; i >= 0; i--) {
+                if (QVRScreenGeometries[i].width() == QVROculus->Resolution.w
+                        && QVRScreenGeometries[i].height() == QVROculus->Resolution.h) {
                     oculusScreen = i;
                     break;
                 }
             }
+            if (oculusScreen < 0)
+                oculusScreen = QVRPrimaryScreen;
             QVR_DEBUG("      screen: %d", oculusScreen);
-            if (oculusScreen >= 0)
-                setScreen(QApplication::screens().at(oculusScreen));
-            QRect geom = QApplication::desktop()->screenGeometry(oculusScreen);
+            setScreen(QGuiApplication::screens().at(oculusScreen));
+            QRect geom = QVRScreenGeometries[oculusScreen];
             QVR_DEBUG("      geometry: %d %d %dx%d", geom.x(), geom.y(), geom.width(), geom.height());
             setGeometry(geom);
             setCursor(Qt::BlankCursor);
@@ -353,12 +354,9 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int w
             showFullScreen();
 #endif
         } else {
-            if (config().initialDisplayScreen() >= 0) {
-                QVR_DEBUG("      screen: %d", config().initialDisplayScreen());
-                setScreen(QApplication::screens().at(config().initialDisplayScreen()));
-            }
+            setScreen(QGuiApplication::screens().at(_screen));
+            QRect screenGeom = QVRScreenGeometries[_screen];
             if (config().initialFullscreen()) {
-                QRect screenGeom = QApplication::desktop()->screenGeometry(config().initialDisplayScreen());
                 QVR_DEBUG("      fullscreen geometry: %d %d %dx%d", screenGeom.x(), screenGeom.y(), screenGeom.width(), screenGeom.height());
                 setGeometry(screenGeom);
                 setCursor(Qt::BlankCursor);
@@ -369,7 +367,6 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int w
                     QVR_DEBUG("      position %d,%d size %dx%d",
                             config().initialPosition().x(), config().initialPosition().y(),
                             config().initialSize().width(), config().initialSize().height());
-                    QRect screenGeom = QApplication::desktop()->screenGeometry(config().initialDisplayScreen());
                     setGeometry(
                             config().initialPosition().x() + screenGeom.x(),
                             config().initialPosition().y() + screenGeom.y(),
@@ -628,29 +625,29 @@ void QVRWindow::screenWall(QVector3D& cornerBottomLeft, QVector3D& cornerBottomR
     Q_ASSERT(QOpenGLContext::currentContext() != _winContext);
     Q_ASSERT(config().outputMode() != QVR_Output_Stereo_Oculus);
     Q_ASSERT(config().outputMode() != QVR_Output_OSVR);
+    Q_ASSERT(_screen >= 0);
 
     if (config().screenIsGivenByCenter()) {
         // Get geometry (in meter) of the screen
-        QDesktopWidget* desktop = QApplication::desktop();
-        QRect monitorGeom = desktop->screenGeometry(config().initialDisplayScreen());
-        float monitorWidth = monitorGeom.width() / desktop->logicalDpiX() * 0.0254f;
-        float monitorHeight = monitorGeom.height() / desktop->logicalDpiY() * 0.0254f;
-        cornerBottomLeft.setX(-monitorWidth / 2.0f);
-        cornerBottomLeft.setY(-monitorHeight / 2.0f);
+        QRect displayGeom = QVRScreenGeometries[_screen];
+        float displayWidth = QVRScreenSizes[_screen].width();
+        float displayHeight = QVRScreenSizes[_screen].height();
+        cornerBottomLeft.setX(-displayWidth / 2.0f);
+        cornerBottomLeft.setY(-displayHeight / 2.0f);
         cornerBottomLeft.setZ(0.0f);
-        cornerBottomRight.setX(+monitorWidth / 2.0f);
-        cornerBottomRight.setY(-monitorHeight / 2.0f);
+        cornerBottomRight.setX(+displayWidth / 2.0f);
+        cornerBottomRight.setY(-displayHeight / 2.0f);
         cornerBottomRight.setZ(0.0f);
-        cornerTopLeft.setX(-monitorWidth / 2.0f);
-        cornerTopLeft.setY(+monitorHeight / 2.0f);
+        cornerTopLeft.setX(-displayWidth / 2.0f);
+        cornerTopLeft.setY(+displayHeight / 2.0f);
         cornerTopLeft.setZ(0.0f);
         QVector3D cornerTopRight = cornerBottomRight + (cornerTopLeft - cornerBottomLeft);
         // Apply the window geometry (subset of screen)
         QRect windowGeom = geometry();
-        float windowX = static_cast<float>(windowGeom.x() - monitorGeom.x()) / monitorGeom.width();
-        float windowY = 1.0f - static_cast<float>(windowGeom.y() + windowGeom.height() - monitorGeom.y()) / monitorGeom.height();
-        float windowW = static_cast<float>(windowGeom.width()) / monitorGeom.width();
-        float windowH = static_cast<float>(windowGeom.height()) / monitorGeom.height();
+        float windowX = static_cast<float>(windowGeom.x() - displayGeom.x()) / displayGeom.width();
+        float windowY = 1.0f - static_cast<float>(windowGeom.y() + windowGeom.height() - displayGeom.y()) / displayGeom.height();
+        float windowW = static_cast<float>(windowGeom.width()) / displayGeom.width();
+        float windowH = static_cast<float>(windowGeom.height()) / displayGeom.height();
         QVector3D l0 = (1.0f - windowX) * cornerBottomLeft + windowX * cornerBottomRight;
         QVector3D l1 = (1.0f - windowX) * cornerTopLeft  + windowX * cornerTopRight;
         QVector3D bl = (1.0f - windowY) * l0 + windowY * l1;

@@ -26,7 +26,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include <QApplication>
+#include <QGuiApplication>
 #include <QKeyEvent>
 #include <QFileInfo>
 #include <QDir>
@@ -223,7 +223,7 @@ static QMatrix4x4 getMatrix(int& argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-    QApplication app(argc, argv);
+    QGuiApplication app(argc, argv);
     QVRManager manager(argc, argv);
 
     /* Get the transformation matrix from the command line */

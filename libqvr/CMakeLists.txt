@@ -26,7 +26,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 # Required libraries
-find_package(Qt5 5.6.0 COMPONENTS Widgets Network OPTIONAL_COMPONENTS Gamepad)
+find_package(Qt5 5.6.0 COMPONENTS Gui Network OPTIONAL_COMPONENTS Gamepad)
 
 # Optional libraries
 find_package(VRPN)
@@ -55,7 +55,7 @@ set_target_properties(libqvr PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 set_target_properties(libqvr PROPERTIES OUTPUT_NAME qvr)
 set_target_properties(libqvr PROPERTIES VERSION ${QVR_LIBVERSION})
 set_target_properties(libqvr PROPERTIES SOVERSION ${QVR_SOVERSION})
-target_link_libraries(libqvr Qt5::Widgets Qt5::Network)
+target_link_libraries(libqvr Qt5::Gui Qt5::Network)
 if(Qt5Gamepad_FOUND)
     add_definitions(-DHAVE_QGAMEPAD)
     target_link_libraries(libqvr Qt5::Gamepad)

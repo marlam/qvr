@@ -66,6 +66,7 @@ class QVRWindow : public QWindow, protected QOpenGLExtraFunctions
 {
 private:
     bool _isValid;
+    int _screen;
     QVRWindowThread* _thread;
     QVRObserver* _observer;
     int _windowIndex;

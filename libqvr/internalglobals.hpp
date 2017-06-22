@@ -32,9 +32,18 @@
 #include <QList>
 #include <QVector>
 #include <QImage>
+#include <QRect>
+#include <QSizeF>
 
 #include "event.hpp"
 
+
+/* Global screen info */
+extern int QVRScreenCount;
+extern int QVRPrimaryScreen;
+extern QVector<QRect> QVRScreenGeometries;
+extern QVector<QSizeF> QVRScreenSizes;
+void QVRGetScreenInfo();
 
 /* Global helper functions */
 void QVRMatrixToPose(const QMatrix4x4& matrix, QQuaternion* orientation, QVector3D* position);
