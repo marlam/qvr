@@ -51,7 +51,7 @@ bool QVRExampleOutputPlugin::init(const QStringList& args)
     _edge_effect = args.contains("edge");
 
     if (!QOpenGLFunctions_3_3_Core::initializeOpenGLFunctions()) {
-        qCritical() << "Cannot initialize qvr-outputplugin-example: OpenGL functions not available";
+        qCritical() << "Cannot initialize qvr-example-outputplugin: OpenGL functions not available";
         return false;
     }
 
@@ -86,22 +86,22 @@ bool QVRExampleOutputPlugin::init(const QStringList& args)
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(GLuint), quadIndices, GL_STATIC_DRAW);
     glBindVertexArray(0);
     if (glGetError() != GL_NO_ERROR) {
-        qCritical() << "Cannot initialize qvr-outputplugin-example: OpenGL error";
+        qCritical() << "Cannot initialize qvr-example-outputplugin: OpenGL error";
         return false;
     }
     _prg = new QOpenGLShaderProgram();
     if (!_prg->addShaderFromSourceFile(QOpenGLShader::Vertex,
-                ":/qvr-outputplugin-example/vertex-shader.glsl")) {
-        qCritical() << "Cannot initialize qvr-outputplugin-example: vertex shader error";
+                ":/qvr-example-outputplugin/vertex-shader.glsl")) {
+        qCritical() << "Cannot initialize qvr-example-outputplugin: vertex shader error";
         return false;
     }
     if (!_prg->addShaderFromSourceFile(QOpenGLShader::Fragment,
-                ":/qvr-outputplugin-example/fragment-shader.glsl")) {
-        qCritical() << "Cannot initialize qvr-outputplugin-example: fragment shader error";
+                ":/qvr-example-outputplugin/fragment-shader.glsl")) {
+        qCritical() << "Cannot initialize qvr-example-outputplugin: fragment shader error";
         return false;
     }
     if (!_prg->link()) {
-        qCritical() << "Cannot initialize qvr-outputplugin-example: linking error";
+        qCritical() << "Cannot initialize qvr-example-outputplugin: linking error";
         return false;
     }
     return true;
@@ -114,14 +114,14 @@ void QVRExampleOutputPlugin::exit()
 }
 
 void QVRExampleOutputPlugin::output(const QVRRenderContext& /* context */,
-        unsigned int tex0, unsigned int /* tex1 */)
+        const unsigned int* textures)
 {
-    // This toy example plugin only uses the texture of the first view pass
-    // regardless of output mode information in the render context.
+    // This toy example plugin only uses the first view regardless of output
+    // mode information in the render context.
     glViewport(0, 0, _window->width(), _window->height());
     glUseProgram(_prg->programId());
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, tex0);
+    glBindTexture(GL_TEXTURE_2D, textures[0]);
     glUniform1i(glGetUniformLocation(_prg->programId(), "tex"), 0);
     glUniform1i(glGetUniformLocation(_prg->programId(), "ripple_effect"), _ripple_effect);
     glUniform1f(glGetUniformLocation(_prg->programId(), "ripple_offset"), _timer->elapsed() / 100.0f);
@@ -133,11 +133,11 @@ void QVRExampleOutputPlugin::output(const QVRRenderContext& /* context */,
 /* The plugin interface manages one instance of our plugin per window. */
 
 QMap<QString, QVRExampleOutputPlugin*> instanceMap;
-extern int qInitResources_qvr_outputplugin_example();
+extern int qInitResources_qvr_example_outputplugin();
 
 extern "C" bool QVROutputPluginInit(QVRWindow* window, const QStringList& args)
 {
-    Q_INIT_RESOURCE(qvr_outputplugin_example);
+    Q_INIT_RESOURCE(qvr_example_outputplugin);
     instanceMap.insert(window->id(), new QVRExampleOutputPlugin(window));
     return instanceMap[window->id()]->init(args);
 }
@@ -149,8 +149,7 @@ extern "C" void QVROutputPluginExit(QVRWindow* window)
 }
 
 extern "C" void QVROutputPlugin(QVRWindow* window,
-        const QVRRenderContext& context,
-        unsigned int tex0, unsigned int tex1)
+        const QVRRenderContext& context, const unsigned int* textures)
 {
-    instanceMap[window->id()]->output(context, tex0, tex1);
+    instanceMap[window->id()]->output(context, textures);
 }

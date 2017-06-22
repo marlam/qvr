@@ -1074,16 +1074,15 @@ void QVRManager::render()
             QVR_FIREHOSE("  ... render(%d)", w);
             unsigned int textures[2];
             const QVRRenderContext& renderContext = _windows[w]->computeRenderContext(_near, _far, textures);
-            for (int i = 0; i < renderContext.viewPasses(); i++) {
-                QVR_FIREHOSE("  ... pass %d", i);
-                QVR_FIREHOSE("  ...   frustum: l=%g r=%g b=%g t=%g n=%g f=%g",
+            for (int i = 0; i < renderContext.viewCount(); i++) {
+                QVR_FIREHOSE("  ... view %d frustum: l=%g r=%g b=%g t=%g n=%g f=%g", i,
                         renderContext.frustum(i).leftPlane(),
                         renderContext.frustum(i).rightPlane(),
                         renderContext.frustum(i).bottomPlane(),
                         renderContext.frustum(i).topPlane(),
                         renderContext.frustum(i).nearPlane(),
                         renderContext.frustum(i).farPlane());
-                QVR_FIREHOSE("  ...   viewmatrix: [%g %g %g %g] [%g %g %g %g] [%g %g %g %g] [%g %g %g %g]",
+                QVR_FIREHOSE("  ... view %d viewmatrix: [%g %g %g %g] [%g %g %g %g] [%g %g %g %g] [%g %g %g %g]", i,
                         renderContext.viewMatrix(i)(0, 0), renderContext.viewMatrix(i)(0, 1),
                         renderContext.viewMatrix(i)(0, 2), renderContext.viewMatrix(i)(0, 3),
                         renderContext.viewMatrix(i)(1, 0), renderContext.viewMatrix(i)(1, 1),
@@ -1092,8 +1091,8 @@ void QVRManager::render()
                         renderContext.viewMatrix(i)(2, 2), renderContext.viewMatrix(i)(2, 3),
                         renderContext.viewMatrix(i)(3, 0), renderContext.viewMatrix(i)(3, 1),
                         renderContext.viewMatrix(i)(3, 2), renderContext.viewMatrix(i)(3, 3));
-                _app->render(_windows[w], renderContext, i, textures[i]);
             }
+            _app->render(_windows[w], renderContext, textures);
             QVR_FIREHOSE("  ... postRenderWindow(%d)", w);
             _app->postRenderWindow(_windows[w]);
         }

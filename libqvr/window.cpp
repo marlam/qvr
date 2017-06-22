@@ -574,8 +574,7 @@ bool QVRWindow::initGL()
                 (plugin.resolve("QVROutputPluginInit"));
             _outputPluginExitFunc = reinterpret_cast<void (*)(QVRWindow*)>
                 (plugin.resolve("QVROutputPluginExit"));
-            _outputPluginFunc = reinterpret_cast<void (*)(QVRWindow*, const QVRRenderContext&,
-                    unsigned int, unsigned int)>
+            _outputPluginFunc = reinterpret_cast<void (*)(QVRWindow*, const QVRRenderContext&, const unsigned int*)>
                 (plugin.resolve("QVROutputPlugin"));
             if (!_outputPluginInitFunc || !_outputPluginExitFunc || !_outputPluginFunc) {
                 QVR_FATAL("Cannot resolve output plugin functions from plugin %s", qPrintable(pluginPath));
@@ -696,7 +695,7 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
     if (config().outputMode() != QVR_Output_Stereo_Oculus && config().outputMode() != QVR_Output_OSVR)
         screenWall(wallBl, wallBr, wallTl);
     _renderContext.setScreenWall(wallBl, wallBr, wallTl);
-    for (int i = 0; i < _renderContext.viewPasses(); i++) {
+    for (int i = 0; i < _renderContext.viewCount(); i++) {
         QVREye eye = _renderContext.eye(i);
         _renderContext.setTracking(i, _observer->trackingPosition(eye), _observer->trackingOrientation(eye));
         QVector3D viewPos;
@@ -849,10 +848,10 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
         osvrRenderManagerGetRenderInfoCollection(QVROsvrRenderManager, osvrRenderParams, &osvrRenderInfoCollection);
         OSVR_RenderInfoCount osvrRenderInfoCount;
         osvrRenderManagerGetNumRenderInfoInCollection(osvrRenderInfoCollection, &osvrRenderInfoCount);
-        Q_ASSERT(osvrRenderInfoCount == static_cast<unsigned int>(_renderContext.viewPasses()));
+        Q_ASSERT(osvrRenderInfoCount == static_cast<unsigned int>(_renderContext.viewCount()));
     }
 #endif
-    for (int i = 0; i < _renderContext.viewPasses(); i++) {
+    for (int i = 0; i < _renderContext.viewCount(); i++) {
         if (_textures[i] == 0) {
             _textureWidths[i] = -1;
             _textureHeights[i] = -1;
@@ -952,7 +951,7 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
         }
         _renderContext.setTextureSize(i, QSize(_textureWidths[i], _textureHeights[i]));
     }
-    if (_renderContext.viewPasses() == 1 && _textures[1] != 0) {
+    if (_renderContext.viewCount() == 1 && _textures[1] != 0) {
         glDeleteTextures(1, &(_textures[1]));
         _textures[1] = 0;
         _textureWidths[1] = -1;
@@ -967,7 +966,7 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
             osvrRenderManagerStartRegisterRenderBuffers(&s);
             QVROsvrRenderBufferOpenGL[1].colorBufferName = 0;
             QVROsvrRenderBufferOpenGL[1].depthStencilBufferName = 0;
-            for (int i = 0; i < _renderContext.viewPasses(); i++) {
+            for (int i = 0; i < _renderContext.viewCount(); i++) {
                 QVROsvrRenderBufferOpenGL[i].colorBufferName = _textures[i];
                 QVROsvrRenderBufferOpenGL[i].depthStencilBufferName = 0;
                 osvrRenderManagerRegisterRenderBufferOpenGL(s, QVROsvrRenderBufferOpenGL[i]);
@@ -1005,7 +1004,8 @@ void QVRWindow::renderOutput()
     }
 #endif
     if (!config().outputPlugin().isEmpty()) {
-        _outputPluginFunc(this, _renderContext, tex0, tex1);
+        unsigned int texs[2] = { tex0, tex1 };
+        _outputPluginFunc(this, _renderContext, texs);
     } else if (config().outputMode() == QVR_Output_OSVR) {
 #ifdef HAVE_OSVR
         OSVR_ViewportDescription osvrDefaultViewport;

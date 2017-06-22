@@ -83,8 +83,7 @@ public:
 
     void preRenderProcess(QVRProcess* p) override;
 
-    void render(QVRWindow* w, const QVRRenderContext& context,
-            int viewPass, unsigned int texture) override;
+    void render(QVRWindow* w, const QVRRenderContext& context, const unsigned int* textures) override;
 
     void keyPressEvent(const QVRRenderContext& context, QKeyEvent* event) override;
 };

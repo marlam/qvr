@@ -35,20 +35,21 @@
 class QDataStream;
 
 /*!
- * \brief Context for rendering a view.
+ * \brief Context for rendering a frame.
  *
- * A render context provides information about a view into the virtual world.
+ * A render context provides information about the views into the virtual world
+ * that are required for one output frame in a given window.
  *
- * This information depends on the \a QVRWindow that the view is produced for
+ * This information depends on the \a QVRWindow that the frame is produced for
  * and on the \a QVRObserver that observes this window.
  *
  * The render context is used in various places:
  * - In \a QVRApp::render(), it provides the information necessary for the
- *   application to render the view.
+ *   application to render a frame.
  * - In the event handling functions of \a QVRApp, it provides information about
- *   the view displayed in the window that generated the event.
+ *   the frame displayed in the window that generated the event.
  * - In the output plugin function \a QVROutputPlugin(), the context provides
- *   information useful for a plugin to decide how to process the view before
+ *   information useful for a plugin to decide how to process the frame before
  *   displaying it.
  */
 class QVRRenderContext
@@ -62,7 +63,7 @@ private:
     QQuaternion _navigationOrientation;
     QVector3D _screenWall[3];
     QVROutputMode _outputMode;
-    int _viewPasses;
+    int _viewCount;
     QVREye _eye[2];
     QSize _textureSize[2];
     QVector3D _trackingPosition[2];
@@ -116,24 +117,24 @@ public:
     QVector3D screenWallTopLeft() const { return _screenWall[2]; }
     /*! \brief Returns the output mode of the window displaying the view. */
     QVROutputMode outputMode() const { return _outputMode; }
-    /*! \brief Returns the number of rendering passes necessary to produce the view. */
-    int viewPasses() const { return _viewPasses; }
-    /*! \brief Returns the eye for rendering pass \a viewPass. */
-    QVREye eye(int viewPass) const { return _eye[viewPass]; }
-    /*! \brief Returns the texture size for rendering pass \a viewPass. */
-    QSize textureSize(int viewPass) const { return _textureSize[viewPass]; }
-    /*! \brief Returns the observer tracking position for rendering pass \a viewPass. */
-    const QVector3D& trackingPosition(int viewPass) const { return _trackingPosition[viewPass]; }
-    /*! \brief Returns the observer tracking orientation for rendering pass \a viewPass. */
-    const QQuaternion& trackingOrientation(int viewPass) const { return _trackingOrientation[viewPass]; }
-    /*! \brief Returns the observer tracking matrix for rendering pass \a viewPass. */
-    QMatrix4x4 trackingMatrix(int viewPass) const { QMatrix4x4 m; m.translate(trackingPosition(viewPass)); m.rotate(trackingOrientation(viewPass)); return m; }
-    /*! \brief Returns the frustum for rendering pass \a viewPass. */
-    const QVRFrustum& frustum(int viewPass) const { return _frustum[viewPass]; }
-    /*! \brief Returns the view matrix for rendering pass \a viewPass. */
-    const QMatrix4x4& viewMatrix(int viewPass) const { return _viewMatrix[viewPass]; }
-    /*! \brief Returns the pure view matrix (i.e. in tracking space, without navigation) for rendering pass \a viewPass. */
-    const QMatrix4x4& viewMatrixPure(int viewPass) const { return _viewMatrixPure[viewPass]; }
+    /*! \brief Returns the number of views necessary to produce the frame. */
+    int viewCount() const { return _viewCount; }
+    /*! \brief Returns the eye for rendering \a view. */
+    QVREye eye(int view) const { return _eye[view]; }
+    /*! \brief Returns the texture size for rendering \a view. */
+    QSize textureSize(int view) const { return _textureSize[view]; }
+    /*! \brief Returns the observer tracking position for rendering \a view. */
+    const QVector3D& trackingPosition(int view) const { return _trackingPosition[view]; }
+    /*! \brief Returns the observer tracking orientation for rendering \a view. */
+    const QQuaternion& trackingOrientation(int view) const { return _trackingOrientation[view]; }
+    /*! \brief Returns the observer tracking matrix for rendering \a view. */
+    QMatrix4x4 trackingMatrix(int view) const { QMatrix4x4 m; m.translate(trackingPosition(view)); m.rotate(trackingOrientation(view)); return m; }
+    /*! \brief Returns the frustum for rendering \a view. */
+    const QVRFrustum& frustum(int view) const { return _frustum[view]; }
+    /*! \brief Returns the view matrix for rendering \a view. */
+    const QMatrix4x4& viewMatrix(int view) const { return _viewMatrix[view]; }
+    /*! \brief Returns the pure view matrix (i.e. in tracking space, without navigation) for rendering \a view. */
+    const QMatrix4x4& viewMatrixPure(int view) const { return _viewMatrixPure[view]; }
 };
 
 QDataStream &operator<<(QDataStream& ds, const QVRRenderContext& rc);

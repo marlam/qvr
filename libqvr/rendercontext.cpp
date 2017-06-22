@@ -36,7 +36,7 @@ QVRRenderContext::QVRRenderContext() :
     _navigationOrientation(0.0f, 0.0f, 0.0f, 0.0f),
     _screenWall { QVector3D(), QVector3D(), QVector3D() },
     _outputMode(QVR_Output_Center),
-    _viewPasses(0),
+    _viewCount(0),
     _eye { QVR_Eye_Center, QVR_Eye_Center },
     _textureSize { QSize(-1, -1), QSize(-1, -1) },
     _trackingPosition { QVector3D(0.0f, 0.0f, 0.0f), QVector3D(0.0f, 0.0f, 0.0f) },
@@ -54,19 +54,19 @@ void QVRRenderContext::setOutputConf(QVROutputMode om)
     _outputMode = om;
     switch (om) {
     case QVR_Output_Center:
-        _viewPasses = 1;
+        _viewCount = 1;
         _eye[0] = QVR_Eye_Center;
         break;
     case QVR_Output_Left:
-        _viewPasses = 1;
+        _viewCount = 1;
         _eye[0] = QVR_Eye_Left;
         break;
     case QVR_Output_Right:
-        _viewPasses = 1;
+        _viewCount = 1;
         _eye[0] = QVR_Eye_Right;
         break;
     case QVR_Output_OSVR:
-        _viewPasses = 2;
+        _viewCount = 2;
         _eye[0] = QVR_Eye_Left;
         _eye[1] = QVR_Eye_Right;
 #ifdef HAVE_OSVR
@@ -75,7 +75,7 @@ void QVRRenderContext::setOutputConf(QVROutputMode om)
             OSVR_EyeCount eyes;
             osvrClientGetNumEyesForViewer(QVROsvrDisplayConfig, 0, &eyes);
             if (eyes == 1) {
-                _viewPasses = 1;
+                _viewCount = 1;
                 _eye[0] = QVR_Eye_Center;
             }
         }
@@ -89,7 +89,7 @@ void QVRRenderContext::setOutputConf(QVROutputMode om)
     case QVR_Output_Stereo_OpenVR:
     case QVR_Output_Stereo_GoogleVR:
     case QVR_Output_Stereo_Custom:
-        _viewPasses = 2;
+        _viewCount = 2;
         _eye[0] = QVR_Eye_Left;
         _eye[1] = QVR_Eye_Right;
         break;
@@ -103,7 +103,7 @@ QDataStream &operator<<(QDataStream& ds, const QVRRenderContext& rc)
         << rc._navigationPosition << rc._navigationOrientation
         << rc._screenWall[0] << rc._screenWall[1] << rc._screenWall[2]
         << static_cast<int>(rc._outputMode)
-        << rc._viewPasses
+        << rc._viewCount
         << static_cast<int>(rc._eye[0]) << static_cast<int>(rc._eye[1])
         << rc._textureSize[0] << rc._textureSize[1]
         << rc._trackingPosition[0] << rc._trackingPosition[1]
@@ -122,7 +122,7 @@ QDataStream &operator>>(QDataStream& ds, QVRRenderContext& rc)
         >> rc._navigationPosition >> rc._navigationOrientation
         >> rc._screenWall[0] >> rc._screenWall[1] >> rc._screenWall[2]
         >> om
-        >> rc._viewPasses
+        >> rc._viewCount
         >> e0 >> e1
         >> rc._textureSize[0] >> rc._textureSize[1]
         >> rc._trackingPosition[0] >> rc._trackingPosition[1]

@@ -73,27 +73,30 @@ public:
     /*!
      * \brief Render the current frame.
      * \param w         The window
-     * \param context   The render context with information about the current view
-     * \param viewPass  The current viewPass for this render call
-     * \param texture   The texture to render into
+     * \param context   The render context with information on how to render
+     * \param textures  The textures to render into
      *
-     * This function is called for each window potentially multiple times, once
-     * for each view pass, to render the current frame.
+     * This function is called for each window to render the current frame into textures.
+     * Monoscopic windows require one view per frame (for a single eye), and stereoscopic
+     * windows require two views (one for each eye). The \a context provides information
+     * about the required views and how to render them.
      *
-     * The \a context holds all relevant information that the application needs
-     * to render the view. Typically this is the frustum and the view matrix:
+     * A typical implementation does the following:
      * \code{.cpp}
-     * QMatrix4x4 P = context.frustum(viewPass).toMatrix4x4();
-     * QMatrix4x4 V = context.viewMatrix(viewPass);
-     * \endcode
+     * for (int view = 0; view < context.viewCount(); view++) {
+     *     setup_framebuffer_object(textures[view], context.textureSize(view));
+     *     QMatrix4x4 projMatrix = context.frustum(view).toMatrix4x4();
+     *     QMatrix4x4 viewMatrix = context.viewMatrix(view);
+     *     set_and_clear_viewport(...);
+     *     render(...);
+     * }
+     * \code{.cpp}
      *
-     * The view must be rendered into the given \a texture, so the first thing
-     * this function typically does is to attach the texture to a framebuffer
-     * object that is then used for rendering.
+     * This example renders one or two views sequentially. As an alternative, some
+     * platform-dependent OpenGL extensions allow to render two views at once to reduce
+     * rendering costs.
      */
-    virtual void render(QVRWindow* w,
-            const QVRRenderContext& context,
-            int viewPass, unsigned int texture) = 0;
+    virtual void render(QVRWindow* w, const QVRRenderContext& context, const unsigned int* textures) = 0;
 
     /*!
      * \brief Update scene state.

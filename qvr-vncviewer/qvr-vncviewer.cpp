@@ -349,31 +349,26 @@ void QVRVNCViewer::preRenderProcess(QVRProcess* /* p */)
 }
 
 void QVRVNCViewer::render(QVRWindow* /* w */,
-        const QVRRenderContext& context, int viewPass, unsigned int texture)
+        const QVRRenderContext& context, const unsigned int* textures)
 {
-    // Set up framebuffer object to render into
-    GLint width, height;
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
-    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
-    glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
-
-    // Set up view
-    glViewport(0, 0, width, height);
-    glClear(GL_COLOR_BUFFER_BIT);
-    QMatrix4x4 P = context.frustum(viewPass).toMatrix4x4();
-    QMatrix4x4 V = context.viewMatrix(viewPass);
-
-    // Set up shader program
-    glUseProgram(_prg.programId());
-    _prg.setUniformValue("pmv_matrix", P * V);
-    _prg.setUniformValue("vnc_tex", 0);
-
-    // Render
-    glBindVertexArray(_screenVao);
-    glBindTexture(GL_TEXTURE_2D, _vncTex);
-    glDrawElements(GL_TRIANGLES, _screenIndices, GL_UNSIGNED_INT, 0);
+    for (int view = 0; view < context.viewCount(); view++) {
+        // Set up framebuffer object to render into
+        glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[view], 0);
+        // Set up view
+        glViewport(0, 0, context.textureSize(view).width(), context.textureSize(view).height());
+        glClear(GL_COLOR_BUFFER_BIT);
+        QMatrix4x4 P = context.frustum(view).toMatrix4x4();
+        QMatrix4x4 V = context.viewMatrix(view);
+        // Set up shader program
+        glUseProgram(_prg.programId());
+        _prg.setUniformValue("pmv_matrix", P * V);
+        _prg.setUniformValue("vnc_tex", 0);
+        // Render
+        glBindVertexArray(_screenVao);
+        glBindTexture(GL_TEXTURE_2D, _vncTex);
+        glDrawElements(GL_TRIANGLES, _screenIndices, GL_UNSIGNED_INT, 0);
+    }
 }
 
 void QVRVNCViewer::keyPressEvent(const QVRRenderContext& /* context */, QKeyEvent* event)

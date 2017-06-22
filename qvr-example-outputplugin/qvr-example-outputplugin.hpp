@@ -48,7 +48,7 @@ public:
 
     bool init(const QStringList& args);
     void exit();
-    void output(const QVRRenderContext& context, unsigned int tex0, unsigned int tex1);
+    void output(const QVRRenderContext& context, const unsigned int* textures);
 };
 
 #endif

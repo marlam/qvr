@@ -81,25 +81,24 @@ void QVRSceneViewer::getNearFar(float& nearPlane, float& farPlane)
 }
 
 void QVRSceneViewer::render(QVRWindow* /* window */,
-        const QVRRenderContext& context,
-        int viewPass, unsigned int texture)
+        const QVRRenderContext& context, const unsigned int* textures)
 {
-    // Set up framebuffer object to render into
-    GLint width, height;
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
-    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
-    glBindTexture(GL_TEXTURE_2D, _fboDepthTex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height,
-            0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
-
-    // Render
-    glViewport(0, 0, width, height);
-    glEnable(GL_DEPTH_TEST);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    _sceneViewer.render(context.frustum(viewPass).toMatrix4x4(), context.viewMatrix(viewPass));
+    for (int view = 0; view < context.viewCount(); view++) {
+        // Get view dimensions
+        int width = context.textureSize(view).width();
+        int height = context.textureSize(view).height();
+        // Set up framebuffer object to render into
+        glBindTexture(GL_TEXTURE_2D, _fboDepthTex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height,
+                0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+        glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[view], 0);
+        // Render
+        glViewport(0, 0, width, height);
+        glEnable(GL_DEPTH_TEST);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        _sceneViewer.render(context.frustum(view).toMatrix4x4(), context.viewMatrix(view));
+    }
 }
 
 void QVRSceneViewer::keyPressEvent(const QVRRenderContext&, QKeyEvent* event)

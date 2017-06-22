@@ -1,4 +1,4 @@
-# qvr-outputplugin-example - Example output plugin for QVR
+# qvr-example-outputplugin - Example output plugin for QVR
 
 QVR supports per-window output plugins. An output plugin takes textures
 containing one or two views of the scene as input and displays them on the

@@ -52,8 +52,7 @@ public:
 
     bool initProcess(QVRProcess* p) override;
 
-    void render(QVRWindow* w, const QVRRenderContext& c,
-            int viewPass, unsigned int texture) override;
+    void render(QVRWindow* w, const QVRRenderContext& c, const unsigned int* textures) override;
 
     void update(const QList<QVRObserver*>& observers) override;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -46,24 +46,20 @@ extern "C" bool QVROutputPluginInit(QVRWindow* window, const QStringList& args);
 extern "C" void QVROutputPluginExit(QVRWindow* window);
 
 /*!
- * \brief Output the rendered content.
- * @param window        The window that provides the output
- * @param context       The render context of the output
- * @param tex0          The output of view pass 0
- * @param tex1          The output of view pass 1 (if any)
+ * \brief Output the rendered frame.
+ * @param window        The window that provides the frame
+ * @param context       The render context of the frame
+ * @param textures      The textures containing the views
  *
- * This is the main function of an output plugin. It takes the rendered output
- * from the textures \a tex0 and \a tex1 and displays it to the output device,
- * applying arbitrary postprocessing.
- *
- * The \a context provides all information available about the output. Note that
- * \a tex1 is only valid if the output mode of \a window has two view passes.
- * This can be checked with \a QVRRenderContex::viewPasses().
+ * This is the main function of an output plugin. It takes the rendered views
+ * from the \a textures and displays them on the output device, applying
+ * arbitrary postprocessing. The \a context provides all information available
+ * about the views.
  *
  * See also \a QVROutputPluginInit() and \a QVROutputPluginExit().
  */
 extern "C" void QVROutputPlugin(QVRWindow* window,
         const QVRRenderContext& context,
-        unsigned int tex0, unsigned int tex1);
+        const unsigned int* textures);
 
 #endif

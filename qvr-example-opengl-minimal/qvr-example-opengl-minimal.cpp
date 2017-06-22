@@ -104,40 +104,37 @@ bool QVRExampleOpenGLMinimal::initProcess(QVRProcess* /* p */)
 }
 
 void QVRExampleOpenGLMinimal::render(QVRWindow* /* w */,
-        const QVRRenderContext& context, int viewPass,
-        unsigned int texture)
+        const QVRRenderContext& context, const unsigned int* textures)
 {
-    // Set up framebuffer object to render into
-    GLint width, height;
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
-    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
-    glBindTexture(GL_TEXTURE_2D, _fboDepthTex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height,
-            0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
-
-    // Set up view
-    glViewport(0, 0, width, height);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    QMatrix4x4 projectionMatrix = context.frustum(viewPass).toMatrix4x4();
-    QMatrix4x4 viewMatrix = context.viewMatrix(viewPass);
-
-    // Set up shader program
-    glUseProgram(_prg.programId());
-    _prg.setUniformValue("projection_matrix", projectionMatrix);
-    glEnable(GL_DEPTH_TEST);
-
-    // Render
-    QMatrix4x4 modelMatrix;
-    modelMatrix.translate(0.0f, 0.0f, -15.0f);
-    modelMatrix.rotate(_rotationAngle, 1.0f, 0.5f, 0.0f);
-    QMatrix4x4 modelViewMatrix = viewMatrix * modelMatrix;
-    _prg.setUniformValue("modelview_matrix", modelViewMatrix);
-    _prg.setUniformValue("normal_matrix", modelViewMatrix.normalMatrix());
-    glBindVertexArray(_vao);
-    glDrawElements(GL_TRIANGLES, _vaoIndices, GL_UNSIGNED_INT, 0);
+    for (int view = 0; view < context.viewCount(); view++) {
+        // Get view dimensions
+        int width = context.textureSize(view).width();
+        int height = context.textureSize(view).height();
+        // Set up framebuffer object to render into
+        glBindTexture(GL_TEXTURE_2D, _fboDepthTex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height,
+                0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+        glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[view], 0);
+        // Set up view
+        glViewport(0, 0, width, height);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        QMatrix4x4 projectionMatrix = context.frustum(view).toMatrix4x4();
+        QMatrix4x4 viewMatrix = context.viewMatrix(view);
+        // Set up shader program
+        glUseProgram(_prg.programId());
+        _prg.setUniformValue("projection_matrix", projectionMatrix);
+        glEnable(GL_DEPTH_TEST);
+        // Render
+        QMatrix4x4 modelMatrix;
+        modelMatrix.translate(0.0f, 0.0f, -15.0f);
+        modelMatrix.rotate(_rotationAngle, 1.0f, 0.5f, 0.0f);
+        QMatrix4x4 modelViewMatrix = viewMatrix * modelMatrix;
+        _prg.setUniformValue("modelview_matrix", modelViewMatrix);
+        _prg.setUniformValue("normal_matrix", modelViewMatrix.normalMatrix());
+        glBindVertexArray(_vao);
+        glDrawElements(GL_TRIANGLES, _vaoIndices, GL_UNSIGNED_INT, 0);
+    }
 }
 
 void QVRExampleOpenGLMinimal::update(const QList<QVRObserver*>&)

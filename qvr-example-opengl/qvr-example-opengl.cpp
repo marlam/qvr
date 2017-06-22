@@ -280,75 +280,72 @@ bool QVRExampleOpenGL::initProcess(QVRProcess* /* p */)
 }
 
 void QVRExampleOpenGL::render(QVRWindow* /* w */,
-        const QVRRenderContext& context, int viewPass,
-        unsigned int texture)
+        const QVRRenderContext& context, const unsigned int* textures)
 {
-    // Set up framebuffer object to render into
-    GLint width = context.textureSize(viewPass).width();
-    GLint height = context.textureSize(viewPass).height();
-    glBindTexture(GL_TEXTURE_2D, _fboDepthTex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height,
-            0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
-    glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
-
-    // Set up view
-    glViewport(0, 0, width, height);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    QMatrix4x4 projectionMatrix = context.frustum(viewPass).toMatrix4x4();
-    QMatrix4x4 viewMatrix = context.viewMatrix(viewPass);
-
-    // Set up shader program
-    glUseProgram(_prg.programId());
-    _prg.setUniformValue("projection_matrix", projectionMatrix);
-    //glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
-
-    // Render scene
-    setMaterial(_floorMaterial);
-    QMatrix4x4 groundMatrix;
-    groundMatrix.scale(5.0f);
-    groundMatrix.rotate(-90.0f, 1.0f, 0.0f, 0.0f);
-    renderVao(viewMatrix, groundMatrix, _floorVao, _floorIndices);
-    for (int i = 0; i < 5; i++) {
-        setMaterial(_pillarMaterial);
-        QMatrix4x4 pillarMatrix, pillarDiskMatrix, objectMatrix;
-        pillarMatrix.rotate(18.0f + (i + 1) * 72.0f, 0.0f, 1.0f, 0.0f);
-        pillarMatrix.translate(2.0f, 0.0f, 0.0f);
-        pillarDiskMatrix = pillarMatrix;
-        objectMatrix = pillarMatrix;
-        pillarMatrix.translate(0.0f, 0.8f, 0.0f);
-        pillarMatrix.scale(0.2f, 0.8f, 0.2f);
-        renderVao(viewMatrix, pillarMatrix, _pillarVaos[0], _pillarIndices[0]);
-        pillarDiskMatrix.translate(0.0f, 1.6f, 0.0f);
-        pillarDiskMatrix.rotate(-90.0f, 1.0f, 0.0f, 0.0f);
-        pillarDiskMatrix.scale(0.2f);
-        renderVao(viewMatrix, pillarDiskMatrix, _pillarVaos[1], _pillarIndices[1]);
-        setMaterial(_objectMaterials[i]);
-        objectMatrix.translate(0.0f, 1.75f, 0.0f);
-        objectMatrix.scale(0.2f);
-        objectMatrix.rotate(_objectRotationAngle, 0.0f, 1.0f, 0.0f);
-        objectMatrix *= _objectMatrices[i];
-        renderVao(viewMatrix, objectMatrix, _objectVaos[i], _objectIndices[i]);
-    }
-
-    // Render device models (optional)
-    for (int i = 0; i < QVRManager::deviceCount(); i++) {
-        const QVRDevice& device = QVRManager::device(i);
-        for (int j = 0; j < device.modelNodeCount(); j++) {
-            QMatrix4x4 nodeMatrix = device.matrix();
-            nodeMatrix.translate(device.modelNodePosition(j));
-            nodeMatrix.rotate(device.modelNodeOrientation(j));
-            int vertexDataIndex = device.modelNodeVertexDataIndex(j);
-            int textureIndex = device.modelNodeTextureIndex(j);
-            Material material(1.0f, 1.0f, 1.0f,
-                    1.0f, 0.0f, 0.0f,
-                    _devModelTextures[textureIndex], 0, 0,
-                    1.0f);
-            setMaterial(material);
-            renderVao(context.viewMatrixPure(viewPass), nodeMatrix,
-                    _devModelVaos[vertexDataIndex],
-                    _devModelVaoIndices[vertexDataIndex]);
+    for (int view = 0; view < context.viewCount(); view++) {
+        // Get view dimensions
+        int width = context.textureSize(view).width();
+        int height = context.textureSize(view).height();
+        // Set up framebuffer object to render into
+        glBindTexture(GL_TEXTURE_2D, _fboDepthTex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height,
+                0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
+        glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[view], 0);
+        // Set up view
+        glViewport(0, 0, width, height);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        QMatrix4x4 projectionMatrix = context.frustum(view).toMatrix4x4();
+        QMatrix4x4 viewMatrix = context.viewMatrix(view);
+        // Set up shader program
+        glUseProgram(_prg.programId());
+        _prg.setUniformValue("projection_matrix", projectionMatrix);
+        glEnable(GL_DEPTH_TEST);
+        // Render scene
+        setMaterial(_floorMaterial);
+        QMatrix4x4 groundMatrix;
+        groundMatrix.scale(5.0f);
+        groundMatrix.rotate(-90.0f, 1.0f, 0.0f, 0.0f);
+        renderVao(viewMatrix, groundMatrix, _floorVao, _floorIndices);
+        for (int i = 0; i < 5; i++) {
+            setMaterial(_pillarMaterial);
+            QMatrix4x4 pillarMatrix, pillarDiskMatrix, objectMatrix;
+            pillarMatrix.rotate(18.0f + (i + 1) * 72.0f, 0.0f, 1.0f, 0.0f);
+            pillarMatrix.translate(2.0f, 0.0f, 0.0f);
+            pillarDiskMatrix = pillarMatrix;
+            objectMatrix = pillarMatrix;
+            pillarMatrix.translate(0.0f, 0.8f, 0.0f);
+            pillarMatrix.scale(0.2f, 0.8f, 0.2f);
+            renderVao(viewMatrix, pillarMatrix, _pillarVaos[0], _pillarIndices[0]);
+            pillarDiskMatrix.translate(0.0f, 1.6f, 0.0f);
+            pillarDiskMatrix.rotate(-90.0f, 1.0f, 0.0f, 0.0f);
+            pillarDiskMatrix.scale(0.2f);
+            renderVao(viewMatrix, pillarDiskMatrix, _pillarVaos[1], _pillarIndices[1]);
+            setMaterial(_objectMaterials[i]);
+            objectMatrix.translate(0.0f, 1.75f, 0.0f);
+            objectMatrix.scale(0.2f);
+            objectMatrix.rotate(_objectRotationAngle, 0.0f, 1.0f, 0.0f);
+            objectMatrix *= _objectMatrices[i];
+            renderVao(viewMatrix, objectMatrix, _objectVaos[i], _objectIndices[i]);
+        }
+        // Render device models (optional)
+        for (int i = 0; i < QVRManager::deviceCount(); i++) {
+            const QVRDevice& device = QVRManager::device(i);
+            for (int j = 0; j < device.modelNodeCount(); j++) {
+                QMatrix4x4 nodeMatrix = device.matrix();
+                nodeMatrix.translate(device.modelNodePosition(j));
+                nodeMatrix.rotate(device.modelNodeOrientation(j));
+                int vertexDataIndex = device.modelNodeVertexDataIndex(j);
+                int textureIndex = device.modelNodeTextureIndex(j);
+                Material material(1.0f, 1.0f, 1.0f,
+                        1.0f, 0.0f, 0.0f,
+                        _devModelTextures[textureIndex], 0, 0,
+                        1.0f);
+                setMaterial(material);
+                renderVao(context.viewMatrixPure(view), nodeMatrix,
+                        _devModelVaos[vertexDataIndex],
+                        _devModelVaoIndices[vertexDataIndex]);
+            }
         }
     }
 }

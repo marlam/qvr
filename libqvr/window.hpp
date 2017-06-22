@@ -76,7 +76,7 @@ private:
     QOpenGLShaderProgram* _outputPrg;
     bool (*_outputPluginInitFunc)(QVRWindow*, const QStringList&);
     void (*_outputPluginExitFunc)(QVRWindow*);
-    void (*_outputPluginFunc)(QVRWindow*, const QVRRenderContext&, unsigned int, unsigned int);
+    void (*_outputPluginFunc)(QVRWindow*, const QVRRenderContext&, const unsigned int*);
     QOpenGLContext* _winContext;
     QVRRenderContext _renderContext;
 
