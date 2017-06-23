@@ -59,5 +59,6 @@ DISTFILES += \
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 
 ANDROID_EXTRA_LIBS += \
-	$$GOOGLEVRNDK_DIR/libraries/jni/armeabi-v7a/libgvr.so \
-	$$GOOGLEVRNDK_DIR/libraries/jni/armeabi-v7a/libgvr_audio.so
+    $$LIBQVR_DIR/lib/libqvr.so \
+    $$GOOGLEVRNDK_DIR/libraries/jni/armeabi-v7a/libgvr.so \
+    $$GOOGLEVRNDK_DIR/libraries/jni/armeabi-v7a/libgvr_audio.so

@@ -552,6 +552,12 @@ QVRDevice::QVRDevice(int deviceIndex) :
         }
 #endif
         break;
+    case QVR_Device_Buttons_GoogleVR_Touch:
+#ifdef ANDROID
+        _buttons.resize(1);
+        _buttonsMap[QVR_Button_Trigger] = 0;
+#endif
+        break;
     }
 
     switch (config().analogsType()) {
@@ -1106,6 +1112,11 @@ void QVRDevice::update()
 #ifdef ANDROID
         if (_internals->googleVrTrackedEntity >= 0) {
             QVRMatrixToPose(QVRGoogleVRMatrices[_internals->googleVrTrackedEntity], &_orientation, &_position);
+        }
+        if (config().buttonsType() == QVR_Device_Buttons_GoogleVR_Touch) {
+            // Consume a touch event generated on the Android thread.
+            // We set the button status to "pressed" until the next call of this function (typically 1 frame).
+            _buttons[0] = QVRGoogleVRTouchEvent.testAndSetRelaxed(1, 0);
         }
 #endif
         if (wantVelocityCalculation && _internals->lastTimestamp >= 0) {

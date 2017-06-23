@@ -4,6 +4,8 @@ device googlevr-eye-left
     tracking googlevr eye-left
 device googlevr-eye-right
     tracking googlevr eye-right
+device googlevr-touch
+    buttons googlevr-touch
 
 observer googlevr-observer
     navigation wasdqe

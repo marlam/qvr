@@ -3,7 +3,7 @@
     <application android:hardwareAccelerated="true" android:name="org.qtproject.qt5.android.bindings.QtApplication" android:label="-- %%INSERT_APP_NAME%% --" android:icon="@drawable/icon">
         <activity 
 		android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation"
-		android:name="de.uni_siegen.qvr_example_opengl.QVRActivity"
+		android:name="de.uni_siegen.libqvr.QVRActivity"
 		android:label="-- %%INSERT_APP_NAME%% --"
 		android:screenOrientation="landscape"
 		android:launchMode="singleTop">

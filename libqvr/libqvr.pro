@@ -8,10 +8,9 @@
 #   $ export ANDROID_NDK_ROOT=/path/to/ndk-bundle
 #   $ /path/to/qmake
 #   $ make install_lib install_headers
-# You now have a static libqvr for Android installed in LIBQVR_DIR.
+# You now have libqvr for Android installed in LIBQVR_DIR.
 # Now set up your app to build and link against this library.
 # See qvr-example-opengl for an example.
-
 
 # Directory that contains the Google VR NDK
 GOOGLEVRNDK_DIR = /var/tmp/googlevr-ndk
@@ -25,7 +24,7 @@ TARGET = qvr
 
 TEMPLATE = lib
 
-CONFIG += staticlib c++11
+CONFIG += dll c++11
 
 DEFINES += QT_DEPRECATED_WARNINGS \
 	HAVE_QGAMEPAD \
@@ -64,12 +63,12 @@ RESOURCES += qvr.qrc
 
 INCLUDEPATH += $$GOOGLEVRNDK_DIR/libraries/headers
 
-ANDROID_EXTRA_LIBS += \
+LIBS += \
 	$$GOOGLEVRNDK_DIR/libraries/jni/armeabi-v7a/libgvr.so \
 	$$GOOGLEVRNDK_DIR/libraries/jni/armeabi-v7a/libgvr_audio.so
 
 lib.path = $$LIBQVR_DIR/lib
-lib.files = $$OUT_PWD/libqvr.a
+lib.files = $$OUT_PWD/libqvr.so
 headers.path = $$LIBQVR_DIR/include/qvr
 headers.files = app.hpp manager.hpp config.hpp device.hpp observer.hpp window.hpp process.hpp rendercontext.hpp outputplugin.hpp frustum.hpp
 INSTALLS += lib headers

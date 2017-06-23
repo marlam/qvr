@@ -69,7 +69,9 @@ typedef enum {
     /*! \brief A device with digital buttons queried via OpenVR (HTC Vive). */
     QVR_Device_Buttons_OpenVR,
     /*! \brief A device with digital buttons queried via <a href="http://www.osvr.org/">OSVR</a>. */
-    QVR_Device_Buttons_OSVR
+    QVR_Device_Buttons_OSVR,
+    /*! \brief A device with a single digital trigger button that corresponds to a GoogleVR touch event. */
+    QVR_Device_Buttons_GoogleVR_Touch
 } QVRDeviceButtonsType;
 
 /*!

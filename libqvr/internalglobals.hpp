@@ -130,12 +130,22 @@ void QVRAttemptOSVRInitialization();
 
 /* Global variables and functions for Google VR support */
 #ifdef ANDROID
+# include <QAtomicInt>
 # include <vr/gvr/capi/include/gvr.h>
 extern gvr_context* QVRGoogleVR;
+extern gvr_buffer_viewport_list* QVRGoogleVRViewportList;
+extern gvr_swap_chain* QVRGoogleVRSwapChain;
+extern QSize QVRGoogleVRRecommendedTexSize;
+extern QRectF QVRGoogleVRRelativeViewports[2]; // viewports inside buffer for each eye
+extern float QVRGoogleVRlrbt[2][4]; // frustum l, r, b, t for each eye, at n=1
 extern gvr_mat4f QVRGoogleVRHeadMatrix; // same as QVRGoogleVRMatrices[2], but as a gvr_mat4f
 extern QMatrix4x4 QVRGoogleVRMatrices[3]; // 0 = left eye, 1 = right eye, 2 = head
+extern QAtomicInt QVRGoogleVRTouchEvent;
+extern QAtomicInt QVRGoogleVRSync; // 0 = new frame, 1 = render to GVR, 2 = submit to GVR and swap
+extern unsigned int QVRGoogleVRTextures[2];
 void QVRAttemptGoogleVRInitialization();
 void QVRUpdateGoogleVR();
+void QVRGoogleVRSubmitAndSwap();
 #endif
 
 #endif

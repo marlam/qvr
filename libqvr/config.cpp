@@ -321,7 +321,8 @@ bool QVRConfig::readFromFile(const QString& filename)
             } else if (cmd == "buttons" && arglist.length() >= 1
                     && (arglist[0] == "none" || arglist[0] == "static"
                         || arglist[0] == "gamepad" || arglist[0] == "vrpn"
-                        || arglist[0] == "oculus" || arglist[0] == "openvr" || arglist[0] == "osvr")) {
+                        || arglist[0] == "oculus" || arglist[0] == "openvr" || arglist[0] == "osvr"
+                        || arglist[0] == "googlevr-touch")) {
                 deviceConfig._buttonsType = (
                         arglist[0] == "none" ? QVR_Device_Buttons_None
                         : arglist[0] == "static" ? QVR_Device_Buttons_Static
@@ -329,7 +330,8 @@ bool QVRConfig::readFromFile(const QString& filename)
                         : arglist[0] == "vrpn" ? QVR_Device_Buttons_VRPN
                         : arglist[0] == "oculus" ? QVR_Device_Buttons_Oculus
                         : arglist[0] == "openvr" ? QVR_Device_Buttons_OpenVR
-                        : QVR_Device_Buttons_OSVR);
+                        : arglist[0] == "osvr" ? QVR_Device_Buttons_OSVR
+                        : QVR_Device_Buttons_GoogleVR_Touch);
                 deviceConfig._buttonsParameters = QStringList(arglist.mid(1)).join(' ');
                 continue;
             } else if (cmd == "analogs" && arglist.length() >= 1
