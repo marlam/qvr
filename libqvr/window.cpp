@@ -315,7 +315,11 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int w
         raise();
         if (config().outputMode() == QVR_Output_Stereo_GoogleVR) {
 #ifdef ANDROID
-            QAndroidJniObject activity;
+            QAndroidJniObject activity = QtAndroid::androidActivity();
+            masterContext->makeCurrent(this);
+            activity.callMethod<void>("setMasterContext");
+            masterContext->doneCurrent();
+            QVR_DEBUG("    Google VR: set master context");
             QtAndroid::runOnAndroidThreadSync([&activity](){
                     activity = QtAndroid::androidActivity();
                     activity.callMethod<void>("initializeVR");});

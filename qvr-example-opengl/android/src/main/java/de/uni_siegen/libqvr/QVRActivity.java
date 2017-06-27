@@ -11,6 +11,9 @@ import android.opengl.GLSurfaceView;
 import com.google.vr.ndk.base.AndroidCompat;
 import com.google.vr.ndk.base.GvrLayout;
 import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.egl.EGLDisplay;
+import javax.microedition.khronos.egl.EGLContext;
+import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.opengles.GL10;
 import org.qtproject.qt5.android.bindings.QtActivity;
 
@@ -21,6 +24,7 @@ public class QVRActivity extends QtActivity
         System.loadLibrary("qvr");
     }
 
+    private EGLContext qvrMasterContext;
     private GvrLayout gvrLayout;
     private GLSurfaceView surfaceView;
     private long nativeGvrContext;
@@ -77,12 +81,30 @@ public class QVRActivity extends QtActivity
         return nativeGvrContext;
     }
 
+    // call this function from QVR before initializeVR(), and make sure the master context is current
+    // in the currently active thread
+    void setMasterContext()
+    {
+        EGL10 egl = (EGL10)EGLContext.getEGL();
+        qvrMasterContext = egl.eglGetCurrentContext();
+    }
+
+    // when calling this function from QVR, make sure that it runs on the Android thread
     void initializeVR()
     {
         surfaceView = new GLSurfaceView(this);
         surfaceView.setPreserveEGLContextOnPause(true);
-        surfaceView.setEGLContextClientVersion(3);
         surfaceView.setEGLConfigChooser(8, 8, 8, 0, 0, 0);
+        surfaceView.setEGLContextClientVersion(3);
+        surfaceView.setEGLContextFactory(new GLSurfaceView.EGLContextFactory() {
+            public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig config) {
+                int[] attrib_list = { 0x3098 /* EGL_CONTEXT_CLIENT_VERSION */, 3, EGL10.EGL_NONE };
+                return egl.eglCreateContext(display, config, qvrMasterContext, attrib_list);
+            }
+            public void destroyContext(EGL10 egl, EGLDisplay display, EGLContext context) {
+                egl.eglDestroyContext(display, context);
+            }
+        });
         surfaceView.setRenderer(new GLSurfaceView.Renderer() {
             @Override public void onSurfaceCreated(GL10 gl, EGLConfig config) { nativeOnSurfaceCreated(); }
             @Override public void onSurfaceChanged(GL10 gl, int width, int height) {}

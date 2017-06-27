@@ -706,8 +706,7 @@ extern "C" JNIEXPORT void JNICALL Java_de_uni_1siegen_libqvr_QVRActivity_nativeO
         "layout(location = 0) out vec4 fcolor;\n"
         "void main(void)\n"
         "{\n"
-//        "    fcolor = vec4(texture(tex, vtexcoord).rgb, 1.0);\n"
-"fcolor = vec4(vtexcoord, 0.0, 1.0);\n"
+        "    fcolor = vec4(texture(tex, vtexcoord).rgb, 1.0);\n"
         "}\n";
     static const float quadPositions[] = {
         -1.0f, -1.0f, 0.0f,  +1.0f, -1.0f, 0.0f,
