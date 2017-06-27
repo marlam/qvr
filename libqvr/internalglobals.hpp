@@ -145,7 +145,6 @@ extern QAtomicInt QVRGoogleVRSync; // 0 = new frame, 1 = render to GVR, 2 = subm
 extern unsigned int QVRGoogleVRTextures[2];
 void QVRAttemptGoogleVRInitialization();
 void QVRUpdateGoogleVR();
-void QVRGoogleVRSubmitAndSwap();
 #endif
 
 #endif
