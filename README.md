@@ -33,6 +33,8 @@ Supported VR hardware includes:
 
 - Oculus Rift with [Oculus SDK](https://www.oculus.com/)
 
+- Google Cardboard and Daydream with [Google VR NDK](https://developers.google.com/vr/android/ndk/gvr-ndk-overview)
+
 - HDK and lots of other head-mounted displays with [OSVR](http://osvr.org/)
 
 - Almost all tracking and interaction hardware with [VRPN](http://vrpn.org/)
