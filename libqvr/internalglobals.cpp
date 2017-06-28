@@ -600,6 +600,9 @@ QMatrix4x4 QVRGoogleVRMatrices[3]; // 0 = left eye, 1 = right eye, 2 = head
 QAtomicInt QVRGoogleVRTouchEvent;
 QAtomicInt QVRGoogleVRSync; // 0 = new frame, 1 = render to GVR, 2 = submit to GVR and swap
 unsigned int QVRGoogleVRTextures[2] = { 0, 0 };
+static float QVRGoogleVRDisplayFPS;
+static unsigned int QVRGoogleVRVao;
+static unsigned int QVRGoogleVRPrg;
 void QVRAttemptGoogleVRInitialization()
 {
     QVR_INFO("GoogleVR: version: %s", gvr_get_version_string());
@@ -615,6 +618,8 @@ void QVRAttemptGoogleVRInitialization()
               viewerType == GVR_VIEWER_TYPE_CARDBOARD ? "cardboard"
             : viewerType == GVR_VIEWER_TYPE_DAYDREAM ? "daydream"
             : "unknown");
+    QVRGoogleVRDisplayFPS = QGuiApplication::primaryScreen()->refreshRate();
+    QVR_INFO("GoogleVR: display refresh rate is %g Hz", QVRGoogleVRDisplayFPS);
 }
 void QVRUpdateGoogleVR()
 {
@@ -622,8 +627,7 @@ void QVRUpdateGoogleVR()
     // TODO: calculate time of next vsync
     // There should really be a simple function in the Google VR NDK for this.
     // For now we just guess based on screen refresh rate.
-    float displayFps = QGuiApplication::primaryScreen()->refreshRate();
-    t.monotonic_system_time_nanos += 1e9f / displayFps;
+    t.monotonic_system_time_nanos += 1e9f / QVRGoogleVRDisplayFPS;
     QVRGoogleVRHeadMatrix = gvr_get_head_space_from_start_space_rotation(QVRGoogleVR, t);
     QVRGoogleVRMatrices[2] = QMatrix4x4(reinterpret_cast<const float*>(QVRGoogleVRHeadMatrix.m));
     for (int i = 0; i < 2; i++) {
@@ -719,9 +723,8 @@ extern "C" JNIEXPORT void JNICALL Java_de_uni_1siegen_libqvr_QVRActivity_nativeO
     static unsigned int quadIndices[] = {
         0, 1, 3, 1, 2, 3
     };
-    unsigned int quadVao;
-    glGenVertexArrays(1, &quadVao);
-    glBindVertexArray(quadVao);
+    glGenVertexArrays(1, &QVRGoogleVRVao);
+    glBindVertexArray(QVRGoogleVRVao);
     GLuint positionBuffer;
     glGenBuffers(1, &positionBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);
@@ -738,33 +741,39 @@ extern "C" JNIEXPORT void JNICALL Java_de_uni_1siegen_libqvr_QVRActivity_nativeO
     glGenBuffers(1, &indexBuffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(GLuint), quadIndices, GL_STATIC_DRAW);
+    glBindVertexArray(0);
     QVR_DEBUG("Google VR: created output quad vao");
-    unsigned int prg = glCreateProgram();
+    QVRGoogleVRPrg = glCreateProgram();
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
     glCompileShader(vertexShader);
-    glAttachShader(prg, vertexShader);
+    glAttachShader(QVRGoogleVRPrg, vertexShader);
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
     glCompileShader(fragmentShader);
-    glAttachShader(prg, fragmentShader);
+    glAttachShader(QVRGoogleVRPrg, fragmentShader);
     QVR_DEBUG("Google VR: created output program");
-    glLinkProgram(prg);
+    glLinkProgram(QVRGoogleVRPrg);
     QVR_DEBUG("Google VR: linked output program");
-    glUseProgram(prg);
-    glUniform1i(glGetUniformLocation(prg, "tex"), 0);
-    glActiveTexture(GL_TEXTURE0);
-    glDisable(GL_DEPTH_TEST);
-    QVR_DEBUG("Google VR: initialized output parameters");
 }
 extern "C" JNIEXPORT void JNICALL Java_de_uni_1siegen_libqvr_QVRActivity_nativeOnDrawFrame()
 {
     // This is called from the Android thread.
     while (QVRGoogleVRSync.load() != 1)
         QThread::yieldCurrentThread();
+
     gvr_frame* frame = gvr_swap_chain_acquire_frame(QVRGoogleVRSwapChain);
     gvr_sizei frameSize = gvr_frame_get_buffer_size(frame, 0);
     gvr_frame_bind_buffer(frame, 0);
+
+    glBindVertexArray(QVRGoogleVRVao);
+    glUseProgram(QVRGoogleVRPrg);
+    glUniform1i(glGetUniformLocation(QVRGoogleVRPrg, "tex"), 0);
+    glActiveTexture(GL_TEXTURE0);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_SCISSOR_TEST);
+    glDisable(GL_BLEND);
+
     glBindTexture(GL_TEXTURE_2D, QVRGoogleVRTextures[0]);
     glViewport(
             QVRGoogleVRRelativeViewports[0].x() * frameSize.width,
@@ -779,8 +788,11 @@ extern "C" JNIEXPORT void JNICALL Java_de_uni_1siegen_libqvr_QVRActivity_nativeO
             QVRGoogleVRRelativeViewports[1].width() * frameSize.width,
             QVRGoogleVRRelativeViewports[1].height() * frameSize.height);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
+
     gvr_frame_unbind(frame);
     gvr_frame_submit(&frame, QVRGoogleVRViewportList, QVRGoogleVRHeadMatrix);
+
     QVRGoogleVRSync.store(2);
 }
 extern "C" JNIEXPORT void JNICALL Java_de_uni_1siegen_libqvr_QVRActivity_nativeOnTriggerEvent()
