@@ -1112,6 +1112,8 @@ void QVRDevice::update()
 #ifdef ANDROID
         if (_internals->googleVrTrackedEntity >= 0) {
             QVRMatrixToPose(QVRGoogleVRMatrices[_internals->googleVrTrackedEntity], &_orientation, &_position);
+            // This Y offset moves the user's eyes from 0 to a default standing height in the virtual world:
+            _position.setY(_position.y() + QVRObserverConfig::defaultEyeHeight);
         }
         if (config().buttonsType() == QVR_Device_Buttons_GoogleVR_Touch) {
             // Consume a touch event generated on the Android thread.
