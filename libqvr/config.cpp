@@ -110,7 +110,7 @@ void QVRConfig::createDefault(bool preferCustomNavigation)
             if (QVROculusControllers == 1) {
                 // Add XBOX controller device
                 QVRDeviceConfig deviceConfig;
-                deviceConfig._id = "oculus-controler";
+                deviceConfig._id = "oculus-controller";
                 deviceConfig._processIndex = 0;
                 deviceConfig._trackingType = QVR_Device_Tracking_None;
                 deviceConfig._buttonsType = QVR_Device_Buttons_Oculus;
@@ -125,7 +125,7 @@ void QVRConfig::createDefault(bool preferCustomNavigation)
                 for (int i = 0; i < (QVROculusControllers == 4 ? 2 : 1); i++) {
                     QString side = (QVROculusControllers == 3 || i == 1) ? "right" : "left";
                     QVRDeviceConfig deviceConfig;
-                    deviceConfig._id = "oculus-controler-" + side;
+                    deviceConfig._id = "oculus-controller-" + side;
                     deviceConfig._processIndex = 0;
                     deviceConfig._trackingType = QVR_Device_Tracking_Oculus;
                     deviceConfig._trackingParameters = "controller-" + side;
