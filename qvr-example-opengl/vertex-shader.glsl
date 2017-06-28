@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-uniform mat4 projection_matrix;
+uniform mat4 projection_model_view_matrix;
 uniform mat4 model_view_matrix;
 uniform mat3 normal_matrix;
 
@@ -40,5 +40,5 @@ void main(void)
     vview = -(model_view_matrix * pos).xyz;
     vlight = -(model_view_matrix * pos).xyz; // light is always at camera pos
     vtexcoord = texcoord;
-    gl_Position = projection_matrix * model_view_matrix * pos;
+    gl_Position = projection_model_view_matrix * pos;
 }

@@ -34,6 +34,8 @@
 #include "geometries.hpp"
 
 
+static bool isGLES = false; // is this OpenGL ES or plain OpenGL?
+
 QVRExampleOpenGL::QVRExampleOpenGL() :
     _wantExit(false),
     _objectRotationAngle(0.0f)
@@ -45,6 +47,8 @@ unsigned int QVRExampleOpenGL::setupTex(const QString& filename)
 {
     QImage img;
     img.load(filename);
+    if (isGLES)
+        img = img.scaledToWidth(img.width() / 4, Qt::SmoothTransformation);
     img = img.mirrored(false, true);
     img = img.convertToFormat(QImage::Format_RGBA8888);
     return setupTex(img);
@@ -118,12 +122,13 @@ void QVRExampleOpenGL::setMaterial(const Material& m)
     glBindTexture(GL_TEXTURE_2D, m.specTex);
 }
 
-void QVRExampleOpenGL::renderVao(
+void QVRExampleOpenGL::renderVao(const QMatrix4x4& projectionMatrix,
         const QMatrix4x4& viewMatrix, const QMatrix4x4& modelMatrix,
         unsigned int vao, unsigned int indices)
 {
     QMatrix4x4 modelViewMatrix = viewMatrix * modelMatrix;
     _prg.setUniformValue("model_view_matrix", modelViewMatrix);
+    _prg.setUniformValue("projection_model_view_matrix", projectionMatrix * modelViewMatrix);
     _prg.setUniformValue("normal_matrix", modelViewMatrix.normalMatrix());
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_SHORT, 0);
@@ -196,19 +201,19 @@ bool QVRExampleOpenGL::initProcess(QVRProcess* /* p */)
             indices.size(), indices.data());
     _floorIndices = indices.size();
     _floorMaterial = Material(0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f,
-            setupTex(":floor-diff.jpg"), setupTex(":floor-norm.jpg"), 0, 10.0f);
+            setupTex(":floor-diff.jpg"), isGLES ? 0 : setupTex(":floor-norm.jpg"), 0, 10.0f);
 
     // Pillar
-    geom_cylinder(positions, normals, texcoords, indices);
+    geom_cylinder(positions, normals, texcoords, indices, isGLES ? 20 : 40);
     _pillarVaos[0] = setupVao(positions.size() / 3, positions.data(), normals.data(), texcoords.data(),
             indices.size(), indices.data());
     _pillarIndices[0] = indices.size();
-    geom_disk(positions, normals, texcoords, indices, 0.0f);
+    geom_disk(positions, normals, texcoords, indices, 0.0f, isGLES ? 20 : 40);
     _pillarVaos[1] = setupVao(positions.size() / 3, positions.data(), normals.data(), texcoords.data(),
             indices.size(), indices.data());
     _pillarIndices[1] = indices.size();
     _pillarMaterial = Material(0.5f, 0.5f, 0.3f, 0.5f, 0.5f, 100.0f,
-            setupTex(":pillar-diff.jpg"), setupTex(":pillar-norm.jpg"), setupTex(":pillar-spec.jpg"));
+            setupTex(":pillar-diff.jpg"), isGLES ? 0 : setupTex(":pillar-norm.jpg"), isGLES ? 0 : setupTex(":pillar-spec.jpg"));
 
     // Object
     geom_cube(positions, normals, texcoords, indices);
@@ -218,14 +223,14 @@ bool QVRExampleOpenGL::initProcess(QVRProcess* /* p */)
     _objectMaterials[0] = Material(0.8f, 0.3f, 0.3f, 0.8f, 0.2f, 20.0f);
     _objectMatrices[0].rotate(15.0f, 1.0f, 1.0f, 0.0f);
     _objectMatrices[0].scale(0.5f);
-    geom_cone(positions, normals, texcoords, indices);
+    geom_cone(positions, normals, texcoords, indices, isGLES ? 20 : 40, isGLES ? 10 : 20);
     _objectVaos[1] = setupVao(positions.size() / 3, positions.data(), normals.data(), texcoords.data(),
             indices.size(), indices.data());
     _objectIndices[1] = indices.size();
     _objectMaterials[1] = Material(0.8f, 0.6f, 0.3f, 0.8f, 0.2f, 20.0f);
     _objectMatrices[1].rotate(15.0f, 1.0f, 1.0f, 0.0f);
     _objectMatrices[1].scale(0.5f);
-    geom_torus(positions, normals, texcoords, indices);
+    geom_torus(positions, normals, texcoords, indices, 0.4f, isGLES ? 10 : 40, isGLES ? 10 : 40);
     _objectVaos[2] = setupVao(positions.size() / 3, positions.data(), normals.data(), texcoords.data(),
             indices.size(), indices.data());
     _objectIndices[2] = indices.size();
@@ -238,7 +243,7 @@ bool QVRExampleOpenGL::initProcess(QVRProcess* /* p */)
     _objectIndices[3] = indices.size();
     _objectMaterials[3] = Material(0.3f, 0.3f, 0.8f, 0.8f, 0.2f, 20.0f);
     _objectMatrices[3].rotate(15.0f, 1.0f, 1.0f, 0.0f);
-    geom_cylinder(positions, normals, texcoords, indices);
+    geom_cylinder(positions, normals, texcoords, indices, isGLES ? 20 : 40);
     _objectVaos[4] = setupVao(positions.size() / 3, positions.data(), normals.data(), texcoords.data(),
             indices.size(), indices.data());
     _objectIndices[4] = indices.size();
@@ -250,12 +255,16 @@ bool QVRExampleOpenGL::initProcess(QVRProcess* /* p */)
     // Shader program
     QString vertexShaderSource = readFile(":vertex-shader.glsl");
     QString fragmentShaderSource  = readFile(":fragment-shader.glsl");
-    if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES) {
+    if (isGLES) {
         vertexShaderSource.prepend("#version 300 es\n");
         fragmentShaderSource.prepend("#version 300 es\n");
+        fragmentShaderSource.replace("$WITH_NORMAL_MAPS", "0");
+        fragmentShaderSource.replace("$WITH_SPEC_MAPS", "0");
     } else {
         vertexShaderSource.prepend("#version 330\n");
         fragmentShaderSource.prepend("#version 330\n");
+        fragmentShaderSource.replace("$WITH_NORMAL_MAPS", "1");
+        fragmentShaderSource.replace("$WITH_SPEC_MAPS", "1");
     }
     _prg.addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource);
     _prg.addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource);
@@ -299,14 +308,13 @@ void QVRExampleOpenGL::render(QVRWindow* /* w */,
         QMatrix4x4 viewMatrix = context.viewMatrix(view);
         // Set up shader program
         glUseProgram(_prg.programId());
-        _prg.setUniformValue("projection_matrix", projectionMatrix);
         glEnable(GL_DEPTH_TEST);
         // Render scene
         setMaterial(_floorMaterial);
         QMatrix4x4 groundMatrix;
         groundMatrix.scale(5.0f);
         groundMatrix.rotate(-90.0f, 1.0f, 0.0f, 0.0f);
-        renderVao(viewMatrix, groundMatrix, _floorVao, _floorIndices);
+        renderVao(projectionMatrix, viewMatrix, groundMatrix, _floorVao, _floorIndices);
         for (int i = 0; i < 5; i++) {
             setMaterial(_pillarMaterial);
             QMatrix4x4 pillarMatrix, pillarDiskMatrix, objectMatrix;
@@ -316,17 +324,17 @@ void QVRExampleOpenGL::render(QVRWindow* /* w */,
             objectMatrix = pillarMatrix;
             pillarMatrix.translate(0.0f, 0.8f, 0.0f);
             pillarMatrix.scale(0.2f, 0.8f, 0.2f);
-            renderVao(viewMatrix, pillarMatrix, _pillarVaos[0], _pillarIndices[0]);
+            renderVao(projectionMatrix, viewMatrix, pillarMatrix, _pillarVaos[0], _pillarIndices[0]);
             pillarDiskMatrix.translate(0.0f, 1.6f, 0.0f);
             pillarDiskMatrix.rotate(-90.0f, 1.0f, 0.0f, 0.0f);
             pillarDiskMatrix.scale(0.2f);
-            renderVao(viewMatrix, pillarDiskMatrix, _pillarVaos[1], _pillarIndices[1]);
+            renderVao(projectionMatrix, viewMatrix, pillarDiskMatrix, _pillarVaos[1], _pillarIndices[1]);
             setMaterial(_objectMaterials[i]);
             objectMatrix.translate(0.0f, 1.75f, 0.0f);
             objectMatrix.scale(0.2f);
             objectMatrix.rotate(_objectRotationAngle, 0.0f, 1.0f, 0.0f);
             objectMatrix *= _objectMatrices[i];
-            renderVao(viewMatrix, objectMatrix, _objectVaos[i], _objectIndices[i]);
+            renderVao(projectionMatrix, viewMatrix, objectMatrix, _objectVaos[i], _objectIndices[i]);
         }
         // Render device models (optional)
         for (int i = 0; i < QVRManager::deviceCount(); i++) {
@@ -342,11 +350,14 @@ void QVRExampleOpenGL::render(QVRWindow* /* w */,
                         _devModelTextures[textureIndex], 0, 0,
                         1.0f);
                 setMaterial(material);
-                renderVao(context.viewMatrixPure(view), nodeMatrix,
+                renderVao(projectionMatrix, context.viewMatrixPure(view), nodeMatrix,
                         _devModelVaos[vertexDataIndex],
                         _devModelVaoIndices[vertexDataIndex]);
             }
         }
+        // Invalidate depth attachment (to help OpenGL ES performance)
+        const GLenum fboInvalidations[] = { GL_DEPTH_ATTACHMENT };
+        glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, fboInvalidations);
     }
 }
 
@@ -364,10 +375,11 @@ int main(int argc, char* argv[])
 {
     QGuiApplication app(argc, argv);
     QVRManager manager(argc, argv);
+    isGLES = (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES);
 
     /* First set the default surface format that all windows will use */
     QSurfaceFormat format;
-    if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES) {
+    if (isGLES) {
         format.setVersion(3, 0);
     } else {
         format.setProfile(QSurfaceFormat::CoreProfile);

@@ -94,7 +94,7 @@ private:
     /* Helper function to set materials */
     void setMaterial(const Material& m);
     /* Helper function for GL VAO rendering */
-    void renderVao(
+    void renderVao(const QMatrix4x4& projectionMatrix,
             const QMatrix4x4& viewMatrix, const QMatrix4x4& modelMatrix,
             unsigned int vao, unsigned int indices);
 

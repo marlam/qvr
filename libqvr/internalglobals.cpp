@@ -777,6 +777,8 @@ extern "C" JNIEXPORT void JNICALL Java_de_uni_1siegen_libqvr_QVRActivity_nativeO
     glDisable(GL_SCISSOR_TEST);
     glDisable(GL_BLEND);
 
+    glViewport(0, 0, frameSize.width, frameSize.height);
+    glClear(GL_COLOR_BUFFER_BIT);
     glBindTexture(GL_TEXTURE_2D, QVRGoogleVRTextures[0]);
     glViewport(
             QVRGoogleVRRelativeViewports[0].x() * frameSize.width,

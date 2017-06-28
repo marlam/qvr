@@ -16,3 +16,4 @@ process googlevr-process
         observer googlevr-observer
         fullscreen true
         output stereo googlevr
+        render_resolution_factor 0.5

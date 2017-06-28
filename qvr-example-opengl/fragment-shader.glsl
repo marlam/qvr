@@ -21,73 +21,86 @@
  * SOFTWARE.
  */
 
-uniform vec3 material_color;
-uniform float material_kd;
-uniform float material_ks;
-uniform float material_shininess;
+#define WITH_NORMAL_MAPS $WITH_NORMAL_MAPS
+#define WITH_SPEC_MAPS   $WITH_SPEC_MAPS
+
+uniform lowp vec3 material_color;
+uniform lowp float material_kd;
+uniform lowp float material_ks;
+uniform lowp float material_shininess;
 uniform bool material_has_diff_tex;
 uniform sampler2D material_diff_tex;
+#if WITH_NORMAL_MAPS
 uniform bool material_has_norm_tex;
 uniform sampler2D material_norm_tex;
+#endif
+#if WITH_SPEC_MAPS
 uniform bool material_has_spec_tex;
 uniform sampler2D material_spec_tex;
-uniform float material_tex_coord_factor;
+#endif
+uniform mediump float material_tex_coord_factor;
 
-smooth in vec3 vnormal;
-smooth in vec3 vlight;
-smooth in vec3 vview;
-smooth in vec2 vtexcoord;
+smooth in mediump vec3 vnormal;
+smooth in mediump vec3 vlight;
+smooth in mediump vec3 vview;
+smooth in mediump vec2 vtexcoord;
 
 layout(location = 0) out vec4 fcolor;
 
+#if WITH_NORMAL_MAPS
 // This computation of a cotangent frame per fragment is taken from
 // http://www.thetenthplanet.de/archives/1180
-mat3 cotangent_frame(vec3 N, vec3 p, vec2 uv)
+mediump mat3 cotangent_frame(mediump vec3 N, mediump vec3 p, mediump vec2 uv)
 {
     // get edge vectors of the pixel triangle
-    vec3 dp1 = dFdx(p);
-    vec3 dp2 = dFdy(p);
-    vec2 duv1 = dFdx(uv);
-    vec2 duv2 = dFdy(uv);
+    mediump vec3 dp1 = dFdx(p);
+    mediump vec3 dp2 = dFdy(p);
+    mediump vec2 duv1 = dFdx(uv);
+    mediump vec2 duv2 = dFdy(uv);
     // solve the linear system
-    vec3 dp2perp = cross(dp2, N);
-    vec3 dp1perp = cross(N, dp1);
-    vec3 T = dp2perp * duv1.x + dp1perp * duv2.x;
-    vec3 B = dp2perp * duv1.y + dp1perp * duv2.y;
+    mediump vec3 dp2perp = cross(dp2, N);
+    mediump vec3 dp1perp = cross(N, dp1);
+    mediump vec3 T = dp2perp * duv1.x + dp1perp * duv2.x;
+    mediump vec3 B = dp2perp * duv1.y + dp1perp * duv2.y;
     // construct a scale-invariant frame
-    float invmax = inversesqrt(max(dot(T,T), dot(B,B)));
-    return mat3(T * invmax, B * invmax, N);
+    mediump float invmax = inversesqrt(max(dot(T,T), dot(B,B)));
+    return mediump mat3(T * invmax, B * invmax, N);
 }
+#endif
 
 void main(void)
 {
-    vec2 tc = material_tex_coord_factor * vtexcoord;
+    mediump vec2 tc = material_tex_coord_factor * vtexcoord;
 
-    vec3 color = material_color;
+    lowp vec3 color = material_color;
     if (material_has_diff_tex)
         color = texture(material_diff_tex, tc).rgb;
 
-    float kd = material_kd;
-    float ks = material_ks;
+    lowp float kd = material_kd;
+    lowp float ks = material_ks;
+#if WITH_SPEC_MAPS
     if (material_has_spec_tex)
         ks = texture(material_spec_tex, tc).r;
+#endif
 
-    vec3 normal = normalize(vnormal);
+    mediump vec3 normal = normalize(vnormal);
+#if WITH_NORMAL_MAPS
     if (material_has_norm_tex) {
-        mat3 TBN = cotangent_frame(normal, -vview, tc);
+        mediump mat3 TBN = cotangent_frame(normal, -vview, tc);
         normal = texture(material_norm_tex, tc).rgb;
         normal.y = 1.0 - normal.y;
         normal = normalize(2.0 * normal - 1.0);
         normal = TBN * normal;
     }
+#endif
 
-    const vec3 light_color = vec3(1.2);
-    vec3 light = normalize(vlight);
-    vec3 view = normalize(vview);
-    vec3 halfv = normalize(light + view);
-    vec3 ambient = vec3(0.2);
-    vec3 diffuse = kd * light_color * max(dot(light, normal), 0.0);
-    vec3 specular = ks * light_color * pow(max(dot(halfv, normal), 0.0), material_shininess);
+    const lowp vec3 light_color = vec3(1.2);
+    mediump vec3 light = normalize(vlight);
+    mediump vec3 view = normalize(vview);
+    mediump vec3 halfv = normalize(light + view);
+    lowp vec3 ambient = vec3(0.2);
+    lowp vec3 diffuse = kd * light_color * max(dot(light, normal), 0.0);
+    lowp vec3 specular = ks * light_color * pow(max(dot(halfv, normal), 0.0), material_shininess);
     color *= ambient + diffuse + specular;
 
     fcolor = vec4(color, 1.0);
