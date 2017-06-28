@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
 <manifest package="de.uni_siegen.qvr_example_opengl" xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="1.0" android:versionCode="1" android:installLocation="auto">
-    <application android:hardwareAccelerated="true" android:name="org.qtproject.qt5.android.bindings.QtApplication" android:label="-- %%INSERT_APP_NAME%% --" android:icon="@drawable/icon">
+    <application android:hardwareAccelerated="true"
+                 android:name="org.qtproject.qt5.android.bindings.QtApplication"
+                 android:label="-- %%INSERT_APP_NAME%% --"
+                 android:icon="@drawable/icon"
+                 android:theme="@style/VrActivityTheme">
         <activity 
 		android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation"
 		android:name="de.uni_siegen.libqvr.QVRActivity"
@@ -11,6 +15,10 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
 		<category android:name="com.google.intent.category.DAYDREAM"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
 		<category android:name="com.google.intent.category.CARDBOARD"/>
             </intent-filter>
 
@@ -62,7 +70,7 @@
                 * minimal - useful for Quick Controls 2 apps, it is much faster than "full"
                 * none - useful for apps that don't use any of the above Qt modules
                 -->
-            <meta-data android:name="android.app.extract_android_style" android:value="full"/>
+            <meta-data android:name="android.app.extract_android_style" android:value="none"/>
             <!-- extract android style -->
     </activity>
 
