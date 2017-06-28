@@ -230,7 +230,7 @@ bool QVRExampleOpenGL::initProcess(QVRProcess* /* p */)
     _objectMaterials[1] = Material(0.8f, 0.6f, 0.3f, 0.8f, 0.2f, 20.0f);
     _objectMatrices[1].rotate(15.0f, 1.0f, 1.0f, 0.0f);
     _objectMatrices[1].scale(0.5f);
-    geom_torus(positions, normals, texcoords, indices, 0.4f, isGLES ? 10 : 40, isGLES ? 10 : 40);
+    geom_torus(positions, normals, texcoords, indices, 0.4f, isGLES ? 20 : 40, isGLES ? 20 : 40);
     _objectVaos[2] = setupVao(positions.size() / 3, positions.data(), normals.data(), texcoords.data(),
             indices.size(), indices.data());
     _objectIndices[2] = indices.size();
