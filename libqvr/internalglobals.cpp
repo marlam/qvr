@@ -626,8 +626,11 @@ void QVRUpdateGoogleVR()
     gvr_clock_time_point t = gvr_get_time_point_now();
     // TODO: calculate time of next vsync
     // There should really be a simple function in the Google VR NDK for this.
-    // For now we just guess based on screen refresh rate.
-    t.monotonic_system_time_nanos += 1e9f / QVRGoogleVRDisplayFPS;
+    // My first attempt was to just guess based on screen refresh rate:
+    //     t.monotonic_system_time_nanos += 1e9f / QVRGoogleVRDisplayFPS;
+    // But this caused jumpy head tracking. So now I just do what all the
+    // Google sample programs do: simply add 50ms. This works, for no obvious reason.
+    t.monotonic_system_time_nanos += 50000000;
     QVRGoogleVRHeadMatrix = gvr_get_head_space_from_start_space_rotation(QVRGoogleVR, t);
     QVRGoogleVRMatrices[2] = QMatrix4x4(reinterpret_cast<const float*>(QVRGoogleVRHeadMatrix.m));
     for (int i = 0; i < 2; i++) {
