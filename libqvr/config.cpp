@@ -491,30 +491,36 @@ bool QVRConfig::readFromFile(const QString& filename)
                     }
                     continue;
                 }
-                if (cmd == "output" && arglist.length() >= 1
-                        && (arglist[0] == "center"
-                            || arglist[0] == "left"
-                            || arglist[0] == "right"
-                            || arglist[0] == "osvr"
-                            || (arglist[0] == "stereo" && arglist.length() >= 2))) {
+                if (cmd == "output"
+                        && ((arglist.length() == 1 && arglist[0] == "center")
+                            || (arglist.length() == 1 && arglist[0] == "left")
+                            || (arglist.length() == 1 && arglist[0] == "right")
+                            || (arglist.length() == 1 && arglist[0] == "stereo")
+                            || (arglist.length() == 1 && arglist[0] == "red_cyan")
+                            || (arglist.length() == 1 && arglist[0] == "green_magenta")
+                            || (arglist.length() == 1 && arglist[0] == "amber_blue")
+                            || (arglist.length() == 1 && arglist[0] == "oculus")
+                            || (arglist.length() == 1 && arglist[0] == "osvr")
+                            || (arglist.length() == 1 && arglist[0] == "openvr")
+                            || (arglist.length() == 1 && arglist[0] == "googlevr")
+                            || (arglist.length() >= 2 && arglist[0] == "custom"))) {
                     windowConfig._outputMode = (
                             arglist[0] == "center" ? QVR_Output_Center
                             : arglist[0] == "left" ? QVR_Output_Left
                             : arglist[0] == "right" ? QVR_Output_Right
+                            : arglist[0] == "stereo" ? QVR_Output_Stereo
+                            : arglist[0] == "red_cyan" ? QVR_Output_Red_Cyan
+                            : arglist[0] == "green_magenta" ? QVR_Output_Green_Magenta
+                            : arglist[0] == "amber_blue" ? QVR_Output_Amber_Blue
+                            : arglist[0] == "oculus" ? QVR_Output_Oculus
                             : arglist[0] == "osvr" ? QVR_Output_OSVR
-                            : arglist[1] == "gl" ? QVR_Output_Stereo_GL
-                            : arglist[1] == "red_cyan" ? QVR_Output_Stereo_Red_Cyan
-                            : arglist[1] == "green_magenta" ? QVR_Output_Stereo_Green_Magenta
-                            : arglist[1] == "amber_blue" ? QVR_Output_Stereo_Amber_Blue
-                            : arglist[1] == "oculus" ? QVR_Output_Stereo_Oculus
-                            : arglist[1] == "openvr" ? QVR_Output_Stereo_OpenVR
-                            : arglist[1] == "googlevr" ? QVR_Output_Stereo_GoogleVR
-                            : QVR_Output_Stereo_Custom);
-                    windowConfig._outputPlugin = QString();
-                    if (arglist.length() > 1
-                            && (arglist[0] != "stereo" || windowConfig._outputMode == QVR_Output_Stereo_Custom)) {
+                            : arglist[0] == "openvr" ? QVR_Output_OpenVR
+                            : arglist[0] == "googlevr" ? QVR_Output_GoogleVR
+                            : QVR_Output_Custom);
+                    if (windowConfig._outputMode == QVR_Output_Custom)
                         windowConfig._outputPlugin = arglist.mid(1).join(' ');
-                    }
+                    else
+                        windowConfig._outputPlugin = QString();
                     continue;
                 }
                 if (cmd == "display_screen" && arglist.length() == 1) {

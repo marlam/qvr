@@ -5,7 +5,7 @@ observer o0
 process master
     window 0
         observer o0
-        output stereo red_cyan
+        output red_cyan
         display_screen -1
         fullscreen true
         screen_is_fixed_to_observer true

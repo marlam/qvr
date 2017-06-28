@@ -13,7 +13,7 @@ observer o0
 process master
     window 0
         observer o0
-        output stereo red_cyan
+        output red_cyan
         display_screen -1
         position 800 100
         size 400 400

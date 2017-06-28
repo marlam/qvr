@@ -5,7 +5,7 @@ observer o0
 process master
     window 0
         observer o0
-        output stereo gl
+        output stereo
         display_screen -1
         position 100 100
         size 400 400

@@ -24,4 +24,4 @@ observer openvr-observer
 process openvr-process
     window openvr-window
         observer openvr-observer
-        output stereo openvr
+        output openvr

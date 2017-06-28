@@ -29,10 +29,10 @@ uniform int output_mode;
 #define QVR_Output_Center 0
 #define QVR_Output_Left 1
 #define QVR_Output_Right 2
-#define QVR_Output_Stereo_GL 3
-#define QVR_Output_Stereo_Red_Cyan 4
-#define QVR_Output_Stereo_Green_Magenta 5
-#define QVR_Output_Stereo_Amber_Blue 6
+#define QVR_Output_Stereo 3
+#define QVR_Output_Red_Cyan 4
+#define QVR_Output_Green_Magenta 5
+#define QVR_Output_Amber_Blue 6
 
 smooth in vec2 vtexcoord;
 
@@ -71,14 +71,14 @@ void main(void)
     lowp vec3 l, r;
     lowp vec3 color = vec3(0.8, 0.4, 0.2);
     switch (output_mode) {
-    case QVR_Output_Stereo_Red_Cyan:
-    case QVR_Output_Stereo_Green_Magenta:
-    case QVR_Output_Stereo_Amber_Blue:
+    case QVR_Output_Red_Cyan:
+    case QVR_Output_Green_Magenta:
+    case QVR_Output_Amber_Blue:
         l = texture(tex_l, vtexcoord).rgb;
         r = texture(tex_r, vtexcoord).rgb;
-        if (output_mode == QVR_Output_Stereo_Red_Cyan)
+        if (output_mode == QVR_Output_Red_Cyan)
             color = dubois_red_cyan_m0 * l + dubois_red_cyan_m1 * r;
-        else if (output_mode == QVR_Output_Stereo_Green_Magenta)
+        else if (output_mode == QVR_Output_Green_Magenta)
             color = dubois_green_magenta_m0 * l + dubois_green_magenta_m1 * r;
         else
             color = dubois_amber_blue_m0 * l + dubois_amber_blue_m1 * r;

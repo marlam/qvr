@@ -81,14 +81,14 @@ void QVRRenderContext::setOutputConf(QVROutputMode om)
         }
 #endif
         break;
-    case QVR_Output_Stereo_GL:
-    case QVR_Output_Stereo_Red_Cyan:
-    case QVR_Output_Stereo_Green_Magenta:
-    case QVR_Output_Stereo_Amber_Blue:
-    case QVR_Output_Stereo_Oculus:
-    case QVR_Output_Stereo_OpenVR:
-    case QVR_Output_Stereo_GoogleVR:
-    case QVR_Output_Stereo_Custom:
+    case QVR_Output_Stereo:
+    case QVR_Output_Red_Cyan:
+    case QVR_Output_Green_Magenta:
+    case QVR_Output_Amber_Blue:
+    case QVR_Output_Oculus:
+    case QVR_Output_OpenVR:
+    case QVR_Output_GoogleVR:
+    case QVR_Output_Custom:
         _viewCount = 2;
         _eye[0] = QVR_Eye_Left;
         _eye[1] = QVR_Eye_Right;

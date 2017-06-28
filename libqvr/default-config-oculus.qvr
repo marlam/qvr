@@ -15,4 +15,4 @@ observer oculus-observer
 process oculus-process
     window oculus-window
         observer oculus-observer
-        output stereo oculus
+        output oculus

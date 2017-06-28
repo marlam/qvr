@@ -137,11 +137,8 @@
  *   Start a new window definition with the given unique id, within the current process definition.
  * - `observer <id>`<br>
  *   Set the observer that this window provides a view for.
- * - `output <center|left|right|stereo> <gl|red_cyan|green_magenta|amber_blue|oculus|plugin>`<br>
- *   Set the output mode. Center, left, and right are monoscopic views, stereo is
- *   a stereoscopic view with one of the builtin types gl, red_cyan, green_magenta,
- *   amber_blue, oculus. Both monoscopic and stereoscopic views can also be handled
- *   by an output plugin. See \a QVROutputPlugin().
+ * - `output <center|left|right|stereo|red_cyan|green_magenta|amber_blue|oculus|openvr|osvr|googlevr|custom>`<br>
+ *   Set the output mode.
  * - `display_screen <screen>`<br>
  *   Select the Qt screen index on the Qt display that this process is connected to.<br>
  * - `fullscreen <true|false>`

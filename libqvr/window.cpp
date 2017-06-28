@@ -95,7 +95,7 @@ void QVRWindowThread::run()
         // Swap buffers
         swapbuffersMutex.lock();
         if (!exitWanted) {
-            if (_window->config().outputMode() == QVR_Output_Stereo_Oculus) {
+            if (_window->config().outputMode() == QVR_Output_Oculus) {
 #ifdef HAVE_OCULUS
 # if (OVR_PRODUCT_VERSION >= 1)
                 ovr_CommitTextureSwapChain(QVROculus, QVROculusTextureSwapChainL);
@@ -109,11 +109,11 @@ void QVRWindowThread::run()
                         reinterpret_cast<ovrTexture*>(oculusEyeTextures));
 # endif
 #endif
-            } else if (_window->config().outputMode() == QVR_Output_Stereo_OpenVR) {
+            } else if (_window->config().outputMode() == QVR_Output_OpenVR) {
 #ifdef HAVE_OPENVR
                 QVRUpdateOpenVR();
 #endif
-            } else if (_window->config().outputMode() == QVR_Output_Stereo_GoogleVR) {
+            } else if (_window->config().outputMode() == QVR_Output_GoogleVR) {
                 // no buffer swap wanted (?)
             } else {
                 _window->winContext()->swapBuffers(_window);
@@ -164,12 +164,12 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int w
     // Note that OpenGL ES does not seem to support single buffering.
     if (QOpenGLContext::openGLModuleType() != QOpenGLContext::LibGLES
             && (isMaster()
-                || config().outputMode() == QVR_Output_Stereo_Oculus
-                || config().outputMode() == QVR_Output_Stereo_OpenVR)) {
+                || config().outputMode() == QVR_Output_Oculus
+                || config().outputMode() == QVR_Output_OpenVR)) {
         wantDoubleBuffer = false;
     }
     format.setSwapBehavior(wantDoubleBuffer ? QSurfaceFormat::DoubleBuffer : QSurfaceFormat::SingleBuffer);
-    bool wantStereo = (!isMaster() && config().outputMode() == QVR_Output_Stereo_GL);
+    bool wantStereo = (!isMaster() && config().outputMode() == QVR_Output_Stereo);
     format.setStereo(wantStereo);
     setFormat(format);
     if (isMaster()) {
@@ -247,7 +247,7 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int w
             show();
 #endif
 #if defined(HAVE_OCULUS) && (OVR_PRODUCT_VERSION < 1)
-        } else if (config().outputMode() == QVR_Output_Stereo_Oculus) {
+        } else if (config().outputMode() == QVR_Output_Oculus) {
             unsigned int distortionCaps =
                 ovrDistortionCap_TimeWarp
                 | ovrDistortionCap_Vignette
@@ -313,7 +313,7 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int w
             }
         }
         raise();
-        if (config().outputMode() == QVR_Output_Stereo_GoogleVR) {
+        if (config().outputMode() == QVR_Output_GoogleVR) {
 #ifdef ANDROID
             QAndroidJniObject activity = QtAndroid::androidActivity();
             masterContext->makeCurrent(this);
@@ -353,9 +353,9 @@ void QVRWindow::renderToScreen()
     Q_ASSERT(!isMaster());
     Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
     Q_ASSERT(QOpenGLContext::currentContext() != _winContext);
-    Q_ASSERT(config().outputMode() == QVR_Output_Stereo_GoogleVR || _thread);
+    Q_ASSERT(config().outputMode() == QVR_Output_GoogleVR || _thread);
 
-    if (config().outputMode() == QVR_Output_Stereo_GoogleVR) {
+    if (config().outputMode() == QVR_Output_GoogleVR) {
 #ifdef ANDROID
         QVRGoogleVRTextures[0] = _textures[0];
         QVRGoogleVRTextures[1] = _textures[1];
@@ -376,9 +376,9 @@ void QVRWindow::asyncSwapBuffers()
     Q_ASSERT(!isMaster());
     Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
     Q_ASSERT(QOpenGLContext::currentContext() != _winContext);
-    Q_ASSERT(config().outputMode() == QVR_Output_Stereo_GoogleVR || _thread);
+    Q_ASSERT(config().outputMode() == QVR_Output_GoogleVR || _thread);
 
-    if (config().outputMode() == QVR_Output_Stereo_GoogleVR) {
+    if (config().outputMode() == QVR_Output_GoogleVR) {
         // do nothing
     } else {
         _thread->swapbuffersFinished = false;
@@ -391,9 +391,9 @@ void QVRWindow::waitForSwapBuffers()
     Q_ASSERT(!isMaster());
     Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
     Q_ASSERT(QOpenGLContext::currentContext() != _winContext);
-    Q_ASSERT(config().outputMode() == QVR_Output_Stereo_GoogleVR || _thread);
+    Q_ASSERT(config().outputMode() == QVR_Output_GoogleVR || _thread);
 
-    if (config().outputMode() == QVR_Output_Stereo_GoogleVR) {
+    if (config().outputMode() == QVR_Output_GoogleVR) {
 #ifdef ANDROID
         while (!QVRGoogleVRSync.testAndSetRelaxed(2, 0))
             QThread::usleep(1);
@@ -585,7 +585,7 @@ void QVRWindow::screenWall(QVector3D& cornerBottomLeft, QVector3D& cornerBottomR
     Q_ASSERT(!isMaster());
     Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
     Q_ASSERT(QOpenGLContext::currentContext() != _winContext);
-    Q_ASSERT(config().outputMode() != QVR_Output_Stereo_Oculus);
+    Q_ASSERT(config().outputMode() != QVR_Output_Oculus);
     Q_ASSERT(config().outputMode() != QVR_Output_OSVR);
     Q_ASSERT(_screen >= 0);
 
@@ -655,7 +655,7 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
     _renderContext.setNavigation(_observer->navigationPosition(), _observer->navigationOrientation());
     _renderContext.setOutputConf(config().outputMode());
     QVector3D wallBl, wallBr, wallTl;
-    if (config().outputMode() != QVR_Output_Stereo_Oculus && config().outputMode() != QVR_Output_OSVR)
+    if (config().outputMode() != QVR_Output_Oculus && config().outputMode() != QVR_Output_OSVR)
         screenWall(wallBl, wallBr, wallTl);
     _renderContext.setScreenWall(wallBl, wallBr, wallTl);
     for (int i = 0; i < _renderContext.viewCount(); i++) {
@@ -663,7 +663,7 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
         _renderContext.setTracking(i, _observer->trackingPosition(eye), _observer->trackingOrientation(eye));
         QVector3D viewPos;
         QQuaternion viewRot;
-        if (config().outputMode() == QVR_Output_Stereo_Oculus) {
+        if (config().outputMode() == QVR_Output_Oculus) {
 #ifdef HAVE_OCULUS
             const ovrFovPort& fov = QVROculusEyeRenderDesc[i].Fov;
             _renderContext.setFrustum(i, QVRFrustum(
@@ -675,7 +675,7 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
 #endif
             viewPos = _renderContext.trackingPosition(i);
             viewRot = _renderContext.trackingOrientation(i);
-        } else if (config().outputMode() == QVR_Output_Stereo_OpenVR) {
+        } else if (config().outputMode() == QVR_Output_OpenVR) {
             float l = 0.0f, r = 0.0f, b = 0.0f, t = 0.0f;
 #ifdef HAVE_OPENVR
             QVROpenVRSystem->GetProjectionRaw(
@@ -698,7 +698,7 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
             _renderContext.setFrustum(i, frustum);
             viewPos = _renderContext.trackingPosition(i);
             viewRot = _renderContext.trackingOrientation(i);
-        } else if (config().outputMode() == QVR_Output_Stereo_GoogleVR) {
+        } else if (config().outputMode() == QVR_Output_GoogleVR) {
 #ifdef ANDROID
             QVRFrustum frustum(QVRGoogleVRlrbt[i][0], QVRGoogleVRlrbt[i][1],
                     QVRGoogleVRlrbt[i][2], QVRGoogleVRlrbt[i][3], 1.0f, f);
@@ -759,7 +759,7 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &textureBinding2dBak);
 
 #if defined(HAVE_OCULUS) && (OVR_PRODUCT_VERSION >= 1)
-    if (config().outputMode() == QVR_Output_Stereo_Oculus && _textures[0] == 0) {
+    if (config().outputMode() == QVR_Output_Oculus && _textures[0] == 0) {
         ovrHmdDesc hmdDesc = ovr_GetHmdDesc(QVROculus);
         ovrTextureSwapChainDesc tscDesc = {};
         tscDesc.Type = ovrTexture_2D;
@@ -825,10 +825,10 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
                     && (config().outputMode() == QVR_Output_Center
                         || config().outputMode() == QVR_Output_Left
                         || config().outputMode() == QVR_Output_Right
-                        || config().outputMode() == QVR_Output_Stereo_GL
-                        || config().outputMode() == QVR_Output_Stereo_Red_Cyan
-                        || config().outputMode() == QVR_Output_Stereo_Green_Magenta
-                        || config().outputMode() == QVR_Output_Stereo_Amber_Blue)) {
+                        || config().outputMode() == QVR_Output_Stereo
+                        || config().outputMode() == QVR_Output_Red_Cyan
+                        || config().outputMode() == QVR_Output_Green_Magenta
+                        || config().outputMode() == QVR_Output_Amber_Blue)) {
                 wantBilinearInterpolation = false;
             }
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, wantBilinearInterpolation ? GL_LINEAR : GL_NEAREST);
@@ -840,7 +840,7 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
 #endif
         }
         int w = 0, h = 0;
-        if (config().outputMode() == QVR_Output_Stereo_Oculus) {
+        if (config().outputMode() == QVR_Output_Oculus) {
 #ifdef HAVE_OCULUS
 # if (OVR_PRODUCT_VERSION >= 1)
             // we already created the textures before this loop, make sure that we don't do
@@ -863,7 +863,7 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
             _thread->oculusEyeTextures[i].OGL.TexId = _textures[i];
 # endif
 #endif
-        } else if (config().outputMode() == QVR_Output_Stereo_OpenVR) {
+        } else if (config().outputMode() == QVR_Output_OpenVR) {
 #ifdef HAVE_OPENVR
             uint32_t openVrW, openVrH;
             QVROpenVRSystem->GetRecommendedRenderTargetSize(&openVrW, &openVrH);
@@ -885,7 +885,7 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
             // However, currently the viewport fields in osvrRenderInfoOpenGL
             // seem to contain random garbage (2016-10-14).
 #endif
-        } else if (config().outputMode() == QVR_Output_Stereo_GoogleVR) {
+        } else if (config().outputMode() == QVR_Output_GoogleVR) {
 #ifdef ANDROID
             w = QVRGoogleVRRecommendedTexSize.width() * config().renderResolutionFactor();
             h = QVRGoogleVRRecommendedTexSize.height() * config().renderResolutionFactor();
@@ -896,7 +896,7 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
         }
         if (_textureWidths[i] != w || _textureHeights[i] != h) {
             bool wantSRGB = true;
-            if (config().outputMode() == QVR_Output_Stereo_OpenVR) {
+            if (config().outputMode() == QVR_Output_OpenVR) {
                 // 2016-11-03: OpenVR cannot seem to handle SRGB textures; neither
                 // ColorSpace_Linear nor ColorSpace_Gamma give correct rendering
                 // results. So fall back to linear textures.
@@ -941,7 +941,7 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
     textures[0] = _textures[0];
     textures[1] = _textures[1];
 #if defined(HAVE_OCULUS) && (OVR_PRODUCT_VERSION >= 1)
-    if (config().outputMode() == QVR_Output_Stereo_Oculus) {
+    if (config().outputMode() == QVR_Output_Oculus) {
         ovr_GetTextureSwapChainBufferGL(QVROculus, QVROculusTextureSwapChainL, -1, &(textures[0]));
         ovr_GetTextureSwapChainBufferGL(QVROculus, QVROculusTextureSwapChainR, -1, &(textures[1]));
     }
@@ -955,14 +955,14 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
 void QVRWindow::renderOutput()
 {
     Q_ASSERT(!isMaster());
-    Q_ASSERT(config().outputMode() != QVR_Output_Stereo_GoogleVR);
+    Q_ASSERT(config().outputMode() != QVR_Output_GoogleVR);
     Q_ASSERT(QThread::currentThread() == _thread);
     Q_ASSERT(QOpenGLContext::currentContext() == _winContext);
 
     unsigned int tex0 = _textures[0];
     unsigned int tex1 = _textures[1];
 #if defined(HAVE_OCULUS) && (OVR_PRODUCT_VERSION >= 1)
-    if (config().outputMode() == QVR_Output_Stereo_Oculus) {
+    if (config().outputMode() == QVR_Output_Oculus) {
         ovr_GetTextureSwapChainBufferGL(QVROculus, QVROculusTextureSwapChainL, -1, &tex0);
         ovr_GetTextureSwapChainBufferGL(QVROculus, QVROculusTextureSwapChainR, -1, &tex1);
     }
@@ -1008,14 +1008,14 @@ void QVRWindow::renderOutput()
             glUniform1i(glGetUniformLocation(_outputPrg->programId(), "tex_r"), 1);
         }
         glViewport(0, 0, width(), height());
-        if (config().outputMode() == QVR_Output_Stereo_GL) {
+        if (config().outputMode() == QVR_Output_Stereo) {
 #ifdef GL_BACK_LEFT
             GLenum buf = GL_BACK_LEFT;
             glDrawBuffers(1, &buf);
 #endif
         }
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        if (config().outputMode() == QVR_Output_Stereo_GL) {
+        if (config().outputMode() == QVR_Output_Stereo) {
 #ifdef GL_BACK_RIGHT
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, tex1);
@@ -1023,7 +1023,7 @@ void QVRWindow::renderOutput()
             glDrawBuffers(1, &buf);
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 #endif
-        } else if (config().outputMode() == QVR_Output_Stereo_OpenVR) {
+        } else if (config().outputMode() == QVR_Output_OpenVR) {
 #ifdef HAVE_OPENVR
             vr::Texture_t l = { reinterpret_cast<void*>(tex0), vr::TextureType_OpenGL, vr::ColorSpace_Linear };
             vr::VRCompositor()->Submit(vr::Eye_Left, &l, NULL, vr::Submit_Default);

@@ -230,24 +230,24 @@ typedef enum {
     QVR_Output_Left = 1,
     /*! \brief Output a monoscopic view for \a QVR_Eye_Right. */
     QVR_Output_Right = 2,
+    /*! \brief Output a stereoscopic view via OpenGL-supported quad-buffer stereo. */
+    QVR_Output_Stereo = 3,
+    /*! \brief Output a stereoscopic view for red-cyan anaglyph glasses. */
+    QVR_Output_Red_Cyan = 4,
+    /*! \brief Output a stereoscopic view for green-magenta anaglyph glasses. */
+    QVR_Output_Green_Magenta = 5,
+    /*! \brief Output a stereoscopic view for amber-blue anaglyph glasses. */
+    QVR_Output_Amber_Blue = 6,
+    /*! \brief Output a stereoscopic view for the Oculus Rift head-mounted display. */
+    QVR_Output_Oculus = 7,
     /*! \brief Output a view for OSVR (monoscopic or stereoscopic). */
     QVR_Output_OSVR = 9,
-    /*! \brief Output a stereoscopic view via OpenGL-supported quad-buffer stereo. */
-    QVR_Output_Stereo_GL = 3,
-    /*! \brief Output a stereoscopic view for red-cyan anaglyph glasses. */
-    QVR_Output_Stereo_Red_Cyan = 4,
-    /*! \brief Output a stereoscopic view for green-magenta anaglyph glasses. */
-    QVR_Output_Stereo_Green_Magenta = 5,
-    /*! \brief Output a stereoscopic view for amber-blue anaglyph glasses. */
-    QVR_Output_Stereo_Amber_Blue = 6,
-    /*! \brief Output a stereoscopic view for the Oculus Rift head-mounted display. */
-    QVR_Output_Stereo_Oculus = 7,
     /*! \brief Output a stereoscopic view for the HTC Vive head-mounted display. */
-    QVR_Output_Stereo_OpenVR = 10,
+    QVR_Output_OpenVR = 10,
     /*! \brief Output a stereoscopic view for Google VR devices (Cardboard, Daydream). */
-    QVR_Output_Stereo_GoogleVR = 11,
+    QVR_Output_GoogleVR = 11,
     /*! \brief Output a stereoscopic view via an output plugin; see \a QVROutputPlugin(). */
-    QVR_Output_Stereo_Custom = 8
+    QVR_Output_Custom = 8
 } QVROutputMode;
 
 /*!

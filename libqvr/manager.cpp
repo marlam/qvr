@@ -385,16 +385,16 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
         }
     }
     for (int w = 0; w < processConfig().windowConfigs().size(); w++) {
-        if (windowConfig(_processIndex, w).outputMode() == QVR_Output_Stereo_Oculus) {
+        if (windowConfig(_processIndex, w).outputMode() == QVR_Output_Oculus) {
             needToInitializeOculus = true;
         }
-        if (windowConfig(_processIndex, w).outputMode() == QVR_Output_Stereo_OpenVR) {
+        if (windowConfig(_processIndex, w).outputMode() == QVR_Output_OpenVR) {
             needToInitializeOpenVR = true;
         }
         if (windowConfig(_processIndex, w).outputMode() == QVR_Output_OSVR) {
             needToInitializeOSVR = true;
         }
-        if (windowConfig(_processIndex, w).outputMode() == QVR_Output_Stereo_GoogleVR) {
+        if (windowConfig(_processIndex, w).outputMode() == QVR_Output_GoogleVR) {
             needToInitializeGoogleVR = true;
         }
     }
@@ -1224,7 +1224,7 @@ void QVRManager::processEventQueue()
                     // mouse-based up/down views should be disabled since they lead to
                     // sickness fast ;)
                     if (windowConfig(e.context.processIndex(), e.context.windowIndex()).outputMode()
-                            != QVR_Output_Stereo_Oculus) {
+                            != QVR_Output_Oculus) {
                         float y = e.mouseEvent.pos().y();
                         float h = e.context.windowGeometry().height();
                         float yf = y / h * 2.0f - 1.0f;
