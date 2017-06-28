@@ -402,7 +402,8 @@ public:
      * For \a QVR_Device_Analogs_Gamepad, the parameter string is the identifier
      * of the gamepad. The default is 0 which identifies the first gamepad found
      * by Qt; higher numbers identify additional controllers.
-     * There will be 4 gamepad analogs: right-axis-y, right-axis-x, left-axis-y, left-axis-x.
+     * There will be 6 gamepad analogs: right-axis-y, right-axis-x, left-axis-y, left-axis-x,
+     * right-trigger, left-trigger.
      *
      * For \a QVR_Device_Analogs_VRPN, the parameter string is of the form
      * `<tracker> [<name0> [<name1> [...]]]` where `<tracker>` is the VRPN tracker name,

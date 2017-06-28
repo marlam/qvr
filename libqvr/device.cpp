@@ -595,11 +595,13 @@ QVRDevice::QVRDevice(int deviceIndex) :
                     QVR_DEBUG("device %s uses gamepad %d for analogs", qPrintable(id()), padId);
                 }
             }
-            _analogs.resize(4);
+            _analogs.resize(6);
             _analogsMap[QVR_Analog_Right_Axis_Y] = 0;
             _analogsMap[QVR_Analog_Right_Axis_X] = 1;
             _analogsMap[QVR_Analog_Left_Axis_Y] = 2;
             _analogsMap[QVR_Analog_Left_Axis_X] = 3;
+            _analogsMap[QVR_Analog_Right_Trigger] = 4;
+            _analogsMap[QVR_Analog_Left_Trigger] = 5;
         }
 #endif
         break;
@@ -903,10 +905,10 @@ void QVRDevice::update()
 #ifdef HAVE_QGAMEPAD
         if (_internals->buttonsGamepad) {
             _buttons[_buttonsMap[QVR_Button_L1]] = _internals->buttonsGamepad->buttonL1();
-            _buttons[_buttonsMap[QVR_Button_L2]] = _internals->buttonsGamepad->buttonL2();
+            _buttons[_buttonsMap[QVR_Button_L2]] = (_internals->buttonsGamepad->buttonL2() >= 1);
             _buttons[_buttonsMap[QVR_Button_L3]] = _internals->buttonsGamepad->buttonL3();
             _buttons[_buttonsMap[QVR_Button_R1]] = _internals->buttonsGamepad->buttonR1();
-            _buttons[_buttonsMap[QVR_Button_R2]] = _internals->buttonsGamepad->buttonR2();
+            _buttons[_buttonsMap[QVR_Button_R2]] = (_internals->buttonsGamepad->buttonR2() >= 1);
             _buttons[_buttonsMap[QVR_Button_R3]] = _internals->buttonsGamepad->buttonR3();
             _buttons[_buttonsMap[QVR_Button_A]] = _internals->buttonsGamepad->buttonA();
             _buttons[_buttonsMap[QVR_Button_B]] = _internals->buttonsGamepad->buttonB();
@@ -926,6 +928,8 @@ void QVRDevice::update()
             _analogs[_analogsMap[QVR_Analog_Right_Axis_X]] = _internals->analogsGamepad->axisRightX();
             _analogs[_analogsMap[QVR_Analog_Left_Axis_Y]] = -_internals->analogsGamepad->axisLeftY();
             _analogs[_analogsMap[QVR_Analog_Left_Axis_X]] = _internals->analogsGamepad->axisLeftX();
+            _analogs[_analogsMap[QVR_Analog_Right_Trigger]] = _internals->analogsGamepad->buttonR2();
+            _analogs[_analogsMap[QVR_Analog_Left_Trigger]] = _internals->analogsGamepad->buttonL2();
         }
 #endif
 #ifdef HAVE_VRPN
