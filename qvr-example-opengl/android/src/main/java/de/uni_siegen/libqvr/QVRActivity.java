@@ -39,6 +39,8 @@ public class QVRActivity extends QtActivity
 
     @Override
     protected void onPause() {
+        if (surfaceView != null)
+            surfaceView.onPause();
         gvrLayout.onPause();
         super.onPause();
     }
@@ -47,6 +49,8 @@ public class QVRActivity extends QtActivity
     protected void onResume() {
         super.onResume();
         gvrLayout.onResume();
+        if (surfaceView != null)
+            surfaceView.onResume();
     }
 
     @Override
