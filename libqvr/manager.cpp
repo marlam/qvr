@@ -774,7 +774,20 @@ void QVRManager::masterLoop()
                     QQuaternion::fromEulerAngles(_wasdqeVertAngle, _wasdqeHorzAngle, 0.0f)
                     * obs->config().initialNavigationOrientation());
         }
-        if (obs->config().navigationType() == QVR_Navigation_Device) {
+        if (obs->config().navigationType() == QVR_Navigation_Device
+                && _devices.at(_observerNavigationDevices[o])->buttonCount() == 1) {
+            // primitive navigation for Google Cardboard
+            const QVRDevice* dev = _devices.at(_observerNavigationDevices[o]);
+            if (dev->button(0)) {
+                QQuaternion viewerRot = obs->trackingOrientation() * obs->navigationOrientation();
+                QVector3D dir = viewerRot * QVector3D(0.0f, 0.0f, -1.0f);
+                dir.setY(0.0f);
+                dir.normalize();
+                obs->setNavigation(
+                        obs->navigationPosition() + dir + obs->config().initialNavigationPosition(),
+                        obs->config().initialNavigationOrientation());
+            }
+        } else if (obs->config().navigationType() == QVR_Navigation_Device) {
             const QVRDevice* dev = _devices.at(_observerNavigationDevices[o]);
             const float speed = 1.5f; // in meters per second; TODO: make this configurable?
             float seconds = 0.0f;

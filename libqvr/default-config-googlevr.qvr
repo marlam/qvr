@@ -8,7 +8,7 @@ device googlevr-touch
     buttons googlevr-touch
 
 observer googlevr-observer
-    navigation wasdqe
+    navigation device googlevr-touch
     tracking device googlevr-eye-left googlevr-eye-right
 
 process googlevr-process

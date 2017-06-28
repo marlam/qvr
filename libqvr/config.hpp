@@ -181,6 +181,10 @@ typedef enum {
      * The wand must be a tracked device (position and orientation), and it must have two analog joystick elements for
      * movements in the x/z plane, and four digital buttons for movements based on the y axis (up, down, rotate left,
      * rotate right).
+     *
+     * (As a special exception for Google Cardboard, if the given device has
+     * exactly one digital button, then the observer will jump one meter in
+     * view direction whenever that button is pressed.)
      */
     QVR_Navigation_Device,
     /*! \brief An observer with keyboard and mouse navigation (WASD+QE and lookaround).
