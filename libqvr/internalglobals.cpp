@@ -634,6 +634,9 @@ void QVRUpdateGoogleVR()
         gvr_mat4f eyeMatrix = gvr_get_eye_from_head_matrix(QVRGoogleVR, i);
         QVRGoogleVRMatrices[i] = QMatrix4x4(reinterpret_cast<const float*>(eyeMatrix.m)) * QVRGoogleVRMatrices[2];
     }
+    for (int i = 0; i < 3; i++) {
+        QVRGoogleVRMatrices[i] = QVRGoogleVRMatrices[i].inverted();
+    }
 }
 extern "C" JNIEXPORT void JNICALL Java_de_uni_1siegen_libqvr_QVRActivity_nativeOnSurfaceCreated()
 {
