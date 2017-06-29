@@ -69,6 +69,7 @@ LIBS += \
 
 lib.path = $$LIBQVR_DIR/lib
 lib.files = $$OUT_PWD/libqvr.so
+INSTALLS += lib
 headers.path = $$LIBQVR_DIR/include/qvr
 headers.files = app.hpp manager.hpp config.hpp device.hpp observer.hpp window.hpp process.hpp rendercontext.hpp outputplugin.hpp frustum.hpp
-INSTALLS += lib headers
+INSTALLS += headers

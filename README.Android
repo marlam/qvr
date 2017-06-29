@@ -1,0 +1,31 @@
+QVR can be used to build Android apps with Google VR support for Cardboard and
+Daydream devices.
+
+The qvr-example-opengl sample program demonstrates this.
+
+The following steps are necessary:
+
+- First, make sure your application works with OpenGL ES. You probably want
+  to use the QOpenGLExtraFunctions abstractions to work with both Desktop GL
+  and GL ES. Even then, a few places in your code will need to differentiate
+  between the two. You can use the following test for that purpose:
+  if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES) { ... }
+
+- Get the Google Android SDK and NDK, plus the Google VR SDK and NDK.
+
+- Next, build libqvr for Android. This does not work with CMake, you have to use
+  qmake. The libqvr.pro file exists solely for this purpose. Edit it to adjust
+  GOOGLEVRNDK_DIR and LIBQVR_DIR, then use qmake followed by 'make install_lib
+  install_headers'. See the comments in libqvr.pro for more details.
+
+- Next, prepare your application for building as an Android app. Copy the
+  android directory from qvr-example-opengl into your project. Edit
+  AndroidManifest.xml and change the app name in the package="..." tag. Replace
+  the icons in the res/drawable-* directories. The rest of the files in the
+  android directory should remain unchanged. Next, copy the
+  qvr-example-opengl.pro file into your project under a suitable name and edit
+  it to adjust GOOGLEVRNDK_DIR and LIBQVR_DIR. Edit the TARGET name and rules to
+  fit your project.
+
+- Build your project using Qt Creator, and choose the right Android target. You
+  should now be able to run your app on your device.

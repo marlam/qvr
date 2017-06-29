@@ -3,7 +3,7 @@
 # This file is only intended to be used for Android apps.
 #
 # Use it as follows:
-# - Build a static version of libqvr for Android. See libqvr.pro.
+# - Build libqvr for Android. See libqvr.pro.
 # - Adjust GOOGLEVRNDK_DIR and LIBQVR_DIR below to match the values
 #   you used in libqvr.pro.
 # - Use Qt Creator to open this app project file.
@@ -42,18 +42,10 @@ MOBILITY =
 
 DISTFILES += \
     android/AndroidManifest.xml \
-    android/gradle/wrapper/gradle-wrapper.jar \
-    android/gradlew \
-    android/res/values/libs.xml \
     android/build.gradle \
-    android/gradle/wrapper/gradle-wrapper.properties \
-    android/gradlew.bat \
-    android/AndroidManifest.xml \
     android/gradle/wrapper/gradle-wrapper.jar \
-    android/gradlew \
-    android/res/values/libs.xml \
-    android/build.gradle \
     android/gradle/wrapper/gradle-wrapper.properties \
+    android/gradlew \
     android/gradlew.bat
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
