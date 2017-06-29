@@ -315,6 +315,7 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int w
         raise();
         if (config().outputMode() == QVR_Output_GoogleVR) {
 #ifdef ANDROID
+            QVRGoogleVRResolutionFactor = config().renderResolutionFactor();
             QAndroidJniObject activity = QtAndroid::androidActivity();
             masterContext->makeCurrent(this);
             activity.callMethod<void>("setMasterContext");
@@ -828,7 +829,8 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
                         || config().outputMode() == QVR_Output_Stereo
                         || config().outputMode() == QVR_Output_Red_Cyan
                         || config().outputMode() == QVR_Output_Green_Magenta
-                        || config().outputMode() == QVR_Output_Amber_Blue)) {
+                        || config().outputMode() == QVR_Output_Amber_Blue
+                        || config().outputMode() == QVR_Output_GoogleVR)) {
                 wantBilinearInterpolation = false;
             }
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, wantBilinearInterpolation ? GL_LINEAR : GL_NEAREST);
@@ -887,8 +889,8 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
 #endif
         } else if (config().outputMode() == QVR_Output_GoogleVR) {
 #ifdef ANDROID
-            w = QVRGoogleVRRecommendedTexSize.width() * config().renderResolutionFactor();
-            h = QVRGoogleVRRecommendedTexSize.height() * config().renderResolutionFactor();
+            w = QVRGoogleVRTexSize.width();
+            h = QVRGoogleVRTexSize.height();
 #endif
         } else {
             w = width() * config().renderResolutionFactor();

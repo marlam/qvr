@@ -16,4 +16,4 @@ process googlevr-process
         observer googlevr-observer
         fullscreen true
         output googlevr
-        render_resolution_factor 0.5
+        render_resolution_factor 0.7

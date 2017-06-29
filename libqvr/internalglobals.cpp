@@ -42,6 +42,7 @@
 #endif
 
 #ifdef ANDROID
+# include <QtMath>
 # include <QThread>
 /* We should include <GLES3/gl3.h>, but Qt always uses Android API level 16
  * which does not have that, and there is no way to choose a different API level
@@ -592,15 +593,19 @@ void QVRAttemptOSVRInitialization()
 gvr_context* QVRGoogleVR = NULL;
 gvr_buffer_viewport_list* QVRGoogleVRViewportList = NULL;
 gvr_swap_chain* QVRGoogleVRSwapChain = NULL;
-QSize QVRGoogleVRRecommendedTexSize;
+float QVRGoogleVRResolutionFactor = 0.0f; // must be set by the window
+QSize QVRGoogleVRTexSize;
 QRectF QVRGoogleVRRelativeViewports[2]; // viewports inside buffer for each eye
 float QVRGoogleVRlrbt[2][4]; // frustum l, r, b, t for each eye, at n=1
-gvr_mat4f QVRGoogleVRHeadMatrix; // same as QVRGoogleVRMatrices[2], but as a gvr_mat4f
-QMatrix4x4 QVRGoogleVRMatrices[3]; // 0 = left eye, 1 = right eye, 2 = head
+gvr_mat4f QVRGoogleVRHeadMatrix;
+QVector3D QVRGoogleVRPositions[3];      // 0 = left eye, 1 = right eye, 2 = head
+QQuaternion QVRGoogleVROrientations[3]; // 0 = left eye, 1 = right eye, 2 = head
 QAtomicInt QVRGoogleVRTouchEvent;
 QAtomicInt QVRGoogleVRSync; // 0 = new frame, 1 = render to GVR, 2 = submit to GVR and swap
 unsigned int QVRGoogleVRTextures[2] = { 0, 0 };
 static float QVRGoogleVRDisplayFPS;
+static QVector3D QVRGoogleVREyeFromHeadPositions[2];
+static QQuaternion QVRGoogleVREyeFromHeadOrientations[2];
 static unsigned int QVRGoogleVRVao;
 static unsigned int QVRGoogleVRPrg;
 void QVRAttemptGoogleVRInitialization()
@@ -632,13 +637,15 @@ void QVRUpdateGoogleVR()
     // Google sample programs do: simply add 50ms. This works, for no obvious reason.
     t.monotonic_system_time_nanos += 50000000;
     QVRGoogleVRHeadMatrix = gvr_get_head_space_from_start_space_rotation(QVRGoogleVR, t);
-    QVRGoogleVRMatrices[2] = QMatrix4x4(reinterpret_cast<const float*>(QVRGoogleVRHeadMatrix.m));
+    QVRMatrixToPose(QMatrix4x4(reinterpret_cast<const float*>(QVRGoogleVRHeadMatrix.m)),
+            &(QVRGoogleVROrientations[2]), &(QVRGoogleVRPositions[2]));
+    QVRGoogleVROrientations[2] = QVRGoogleVROrientations[2].inverted();
+    QVRGoogleVRPositions[2] = -QVRGoogleVRPositions[2];
+    // This Y offset moves the user's head and eyes from 0 to a default standing height in the virtual world:
+    QVRGoogleVRPositions[2].setY(QVRGoogleVRPositions[2].y() + QVRObserverConfig::defaultEyeHeight);
     for (int i = 0; i < 2; i++) {
-        gvr_mat4f eyeMatrix = gvr_get_eye_from_head_matrix(QVRGoogleVR, i);
-        QVRGoogleVRMatrices[i] = QMatrix4x4(reinterpret_cast<const float*>(eyeMatrix.m)) * QVRGoogleVRMatrices[2];
-    }
-    for (int i = 0; i < 3; i++) {
-        QVRGoogleVRMatrices[i] = QVRGoogleVRMatrices[i].inverted();
+        QVRGoogleVRPositions[i] = QVRGoogleVRPositions[2] + QVRGoogleVROrientations[2] * QVRGoogleVREyeFromHeadPositions[i];
+        QVRGoogleVROrientations[i] = QVRGoogleVROrientations[2] * QVRGoogleVREyeFromHeadOrientations[i];
     }
 }
 extern "C" JNIEXPORT void JNICALL Java_de_uni_1siegen_libqvr_QVRActivity_nativeOnSurfaceCreated()
@@ -665,11 +672,16 @@ extern "C" JNIEXPORT void JNICALL Java_de_uni_1siegen_libqvr_QVRActivity_nativeO
             QVRGoogleVRRelativeViewports[1].x(), QVRGoogleVRRelativeViewports[1].y(),
             QVRGoogleVRRelativeViewports[1].width(), QVRGoogleVRRelativeViewports[1].height());
     gvr_sizei renderTargetSize = gvr_get_maximum_effective_render_target_size(QVRGoogleVR);
-    QVRGoogleVRRecommendedTexSize = QSize(
+    QVRGoogleVRTexSize = QSize(
             QVRGoogleVRRelativeViewports[0].width() * renderTargetSize.width,
             QVRGoogleVRRelativeViewports[0].height() * renderTargetSize.height);
     QVR_DEBUG("Google VR: recommended texture size for each eye: %dx%d",
-            QVRGoogleVRRecommendedTexSize.width(), QVRGoogleVRRecommendedTexSize.height());
+            QVRGoogleVRTexSize.width(), QVRGoogleVRTexSize.height());
+    QVRGoogleVRTexSize = QVRGoogleVRTexSize * QVRGoogleVRResolutionFactor;
+    QVR_DEBUG("Google VR: actual texture size for each eye: %dx%d",
+            QVRGoogleVRTexSize.width(), QVRGoogleVRTexSize.height());
+    // Note that the swap chain is created for the recommended texture size, even if the actual
+    // texture size is smaller due to QVRGoogleVRResolutionFactor. This avoids ugly artefacts.
     gvr_buffer_spec* bufferSpec = gvr_buffer_spec_create(QVRGoogleVR);
     gvr_buffer_spec_set_size(bufferSpec, renderTargetSize);
     gvr_buffer_spec_set_samples(bufferSpec, 1);
@@ -680,25 +692,29 @@ extern "C" JNIEXPORT void JNICALL Java_de_uni_1siegen_libqvr_QVRActivity_nativeO
             renderTargetSize.width, renderTargetSize.height);
     // Compute frustum l,r,b,t for each eye here since these values will not change
     for (int i = 0; i < 2; i++) {
-        QMatrix4x4 M = QMatrix4x4(reinterpret_cast<const float*>(
-                    gvr_buffer_viewport_get_transform(i == 0 ? leftEyeVP : rightEyeVP).m));
-        // extract near value from the original matrix
-        float oldN = 2.0f * M(2, 3) / (2.0f * M(2, 2) - 2.0f);
-        // extract l, r, b, t by applying the inverse matrix
-        QMatrix4x4 invM = M.inverted();
-        QVector4D tl = invM * QVector4D(-1, 1, 1, 1);
-        float l = -tl.x() / tl.w();
-        float t = -tl.y() / tl.w();
-        QVector4D br = invM * QVector4D(1, -1, 1, 1);
-        float r = -br.x() / br.w();
-        float b = -br.y() / br.w();
-        QVRGoogleVRlrbt[i][0] = l / oldN;
-        QVRGoogleVRlrbt[i][1] = r / oldN;
-        QVRGoogleVRlrbt[i][2] = b / oldN;
-        QVRGoogleVRlrbt[i][3] = t / oldN;
+        gvr_rectf fov = gvr_buffer_viewport_get_source_fov(i == 0 ? leftEyeVP : rightEyeVP);
+        QVRGoogleVRlrbt[i][0] = -std::tan(qDegreesToRadians(fov.left));
+        QVRGoogleVRlrbt[i][1] =  std::tan(qDegreesToRadians(fov.right));
+        QVRGoogleVRlrbt[i][2] = -std::tan(qDegreesToRadians(fov.bottom));
+        QVRGoogleVRlrbt[i][3] =  std::tan(qDegreesToRadians(fov.top));
         QVR_DEBUG("Google VR: %s eye frustum for near=1: l=%g r=%g b=%g t=%g",
                 i == 0 ? "left" : "right",
                 QVRGoogleVRlrbt[i][0], QVRGoogleVRlrbt[i][1], QVRGoogleVRlrbt[i][2], QVRGoogleVRlrbt[i][3]);
+    }
+    // Get transformation between eye and head since these values will not change
+    for (int i = 0; i < 2; i++) {
+        gvr_mat4f eyeMatrix = gvr_get_eye_from_head_matrix(QVRGoogleVR, i);
+        QVRMatrixToPose(QMatrix4x4(reinterpret_cast<const float*>(eyeMatrix.m)),
+                &(QVRGoogleVREyeFromHeadOrientations[i]), &(QVRGoogleVREyeFromHeadPositions[i]));
+        QVRGoogleVREyeFromHeadOrientations[i] = QVRGoogleVREyeFromHeadOrientations[i].inverted();
+        QVRGoogleVREyeFromHeadPositions[i] = -QVRGoogleVREyeFromHeadPositions[i];
+        QVector3D axis;
+        float angle;
+        QVRGoogleVREyeFromHeadOrientations[i].getAxisAndAngle(&axis, &angle);
+        QVR_DEBUG("Google VR: %s eye relative to head: position %g %g %g, orientation %g degrees around %g %g %g",
+                i == 0 ? "left" : "right",
+                QVRGoogleVREyeFromHeadPositions[i].x(), QVRGoogleVREyeFromHeadPositions[i].y(), QVRGoogleVREyeFromHeadPositions[i].z(),
+                angle, axis.x(), axis.y(), axis.z());
     }
     // Initialize our own output code
     static const char* vertexShaderSource = "#version 300 es\n"
