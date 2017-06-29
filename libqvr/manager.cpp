@@ -781,8 +781,6 @@ void QVRManager::masterLoop()
             if (dev->button(0)) {
                 QQuaternion viewerRot = obs->trackingOrientation() * obs->navigationOrientation();
                 QVector3D dir = viewerRot * QVector3D(0.0f, 0.0f, -1.0f);
-                dir.setY(0.0f);
-                dir.normalize();
                 obs->setNavigation(
                         obs->navigationPosition() + dir + obs->config().initialNavigationPosition(),
                         obs->config().initialNavigationOrientation());
