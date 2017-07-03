@@ -695,7 +695,6 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
     if (_processIndex == 0) {
         // Set up timer to trigger master loop
         QObject::connect(_triggerTimer, SIGNAL(timeout()), this, SLOT(masterLoop()));
-        _masterLoopFirstRun = true;
         _triggerTimer->start();
     } else {
         // Set up timer to trigger slave loop
@@ -716,15 +715,6 @@ void QVRManager::masterLoop()
     Q_ASSERT(_processIndex == 0);
 
     QVR_FIREHOSE("masterLoop() ...");
-
-    if (_masterLoopFirstRun) {
-        // XXX: without this ugly hack, some windows are still not exposed
-        // when rendering and swapping buffers (at least in multi-process
-        // configurations), even though we called
-        // QGuiApplication::processEvents() at the end of init().
-        QGuiApplication::processEvents();
-        _masterLoopFirstRun = false;
-    }
 
     if (_masterWindow)
         _masterWindow->winContext()->makeCurrent(_masterWindow);

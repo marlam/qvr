@@ -302,7 +302,6 @@ private:
     QVector3D _wasdqePos;         // WASDQE observers: position
     float _wasdqeHorzAngle;       // WASDQE observers: angle around the y axis
     float _wasdqeVertAngle;       // WASDQE observers: angle around the x axis
-    bool _masterLoopFirstRun;
 
     void buildProcessCommandLine(int processIndex, QString* prg, QStringList* args);
 
