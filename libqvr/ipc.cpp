@@ -720,7 +720,7 @@ bool QVRServer::waitForClients()
                 return false;
             }
             QVR_DEBUG("client with process index %d connected", clientProcessIndex);
-            _tcpSockets[clientProcessIndex] = socket;
+            _tcpSockets[clientProcessIndex - 1] = socket;
         }
     } else if (_localServer) {
         _localSockets.resize(clientCount);
@@ -742,7 +742,7 @@ bool QVRServer::waitForClients()
                 return false;
             }
             QVR_DEBUG("client with process index %d connected", clientProcessIndex);
-            _localSockets[clientProcessIndex] = socket;
+            _localSockets[clientProcessIndex - 1] = socket;
         }
     } else {
         for (int d = 0; d < _sharedMemServerDevices.length(); d++) {
