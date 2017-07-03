@@ -26,6 +26,7 @@
 
 #include <QByteArray>
 #include <QList>
+#include <QVector>
 #include <QIODevice>
 
 class QTcpSocket;
@@ -89,8 +90,8 @@ public:
 
     /* Start a client by connecting to the server. The server name is of
      * the form local,name for a local server, tcp,host,port for a TCP server,
-     * and shmem,processes,key for a shared memory server. */
-    bool start(const QString& serverName, int processIndex);
+     * and shmem,key for a shared memory server. */
+    bool start(const QString& serverName);
 
     /* Commands that this client sends to the server */
     void sendReplyUpdateDevices(int n, const QByteArray& serializedDevices);
@@ -117,14 +118,17 @@ class QVRServer
 private:
     QByteArray _data;
     QTcpServer* _tcpServer;
-    QList<QTcpSocket*> _tcpSockets;
+    QVector<QTcpSocket*> _tcpSockets;
     QLocalServer* _localServer;
-    QList<QLocalSocket*> _localSockets;
+    QVector<QLocalSocket*> _localSockets;
     QSharedMemory* _sharedMem;
-    QVRSharedMemoryDevice* _sharedMemServerDevice;
-    QList<QVRSharedMemoryDevice*> _sharedMemClientDevices;
+    QVector<QVRSharedMemoryDevice*> _sharedMemServerDevices;
+    bool _sharedMemHaveCoupledClients;
+    QVector<int> _sharedMemServerForClientMap;
+    QVector<QVRSharedMemoryDevice*> _sharedMemClientDevices;
+    QVector<bool> _clientIsSynced;
 
-    int inputDevices();
+    int inputDevices() const;
     QIODevice* inputDevice(int i);
 
     void sendCmd(const char cmd,
@@ -140,12 +144,12 @@ public:
      * In case of a tcp server, you can optionally specify an IP address to listen on. */
     bool startTcp(const QString& address = QString());
     bool startLocal();
-    bool startSharedMemory(int processes);
+    bool startSharedMemory();
     /* Return the name of the server. This is either local,name for local servers
      * or tcp,host,port for tcp servers. Pass this name to QVRClient::start(). */
     QString name();
     /* Wait until the given number of clients have connected to this server. */
-    bool waitForClients(int clients);
+    bool waitForClients();
 
     /* Commands that this server sends to all clients. */
     void sendCmdInit(const QByteArray& serializedStatData);
@@ -163,7 +167,7 @@ public:
     /* Commands that this server receives from all clients.
      * This is always a list of zero or more event commands followed by a sync command.
      * The events (if any) will be appended to the given list. */
-    bool receiveCmdSync(QList<QVREvent>* eventList);
+    void receiveCmdSync(QList<QVREvent>* eventList);
 };
 
 #endif

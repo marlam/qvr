@@ -46,7 +46,7 @@ int QVRTimeoutMsecs = -1; // the default is to never timeout
 
 /* QVRSharedMemoryDevice
  *
- * This implements a sequential device with one writer and n>1 readers as a ringbuffer
+ * This implements a sequential device with one writer and n>=1 readers as a ringbuffer
  * in a fixed memory area.
  *
  * This allows to use QSharedMemory as a QIODevice, which unfortunately is not possible
@@ -81,6 +81,7 @@ protected:
 public:
     QVRSharedMemoryDevice(int readers, char* buffer, int size);
     virtual ~QVRSharedMemoryDevice();
+    int readers() { return _readers; }
     virtual bool open(OpenMode /* mode */) { return false; } // you need to use openWriter() or openReader()
     bool openWriter();
     bool openReader(int readerIndex);
@@ -265,22 +266,31 @@ qint64 QVRSharedMemoryDevice::writeData(const char* data, qint64 maxSize)
 static const int QVRSharedMemoryServerDeviceSize = 1024 * 1024; // Shared memory size for server->client device
 static const int QVRSharedMemoryClientDeviceSize = 2048; // Shared memory size for client->server device
 
-static void QVRGetSharedMemServerDeviceArea(QSharedMemory* sharedMem, char** deviceArea, int* deviceAreaSize)
+static void QVRGetSharedMemServerConfigs(int* serverDeviceCount, int* coupledClientCount,
+        int* serverIndexForThisProcess, int* coupledClientIndexForThisProcess)
 {
-    *deviceArea = static_cast<char*>(sharedMem->data());
-    *deviceAreaSize = QVRSharedMemoryServerDeviceSize;
-}
-
-static void QVRGetSharedMemClientDeviceArea(QSharedMemory* sharedMem, int clientIndex, char** deviceArea, int* deviceAreaSize)
-{
-    int offset = QVRSharedMemoryServerDeviceSize + clientIndex * QVRSharedMemoryClientDeviceSize;
-    *deviceArea = static_cast<char*>(sharedMem->data()) + offset;
-    *deviceAreaSize = QVRSharedMemoryClientDeviceSize;
-}
-
-static int QVRGetSharedMemSize(int clients)
-{
-    return QVRSharedMemoryServerDeviceSize + clients * QVRSharedMemoryClientDeviceSize;
+    *serverDeviceCount = 0;
+    *coupledClientCount = 0;
+    *serverIndexForThisProcess = 0;
+    *coupledClientIndexForThisProcess = 0;
+    for (int p = 1; p < QVRManager::processCount(); p++) {
+        if (QVRManager::processConfig(p).decoupledRendering()) {
+            (*serverDeviceCount)++;
+        } else {
+            if (*coupledClientCount == 0)
+                (*serverDeviceCount)++;
+            if (p == QVRManager::processIndex())
+                (*coupledClientIndexForThisProcess) = (*coupledClientCount);
+            (*coupledClientCount)++;
+        }
+    }
+    if (QVRManager::processConfig(QVRManager::processIndex()).decoupledRendering()) {
+        if (*coupledClientCount > 0)
+            *serverIndexForThisProcess = 1;
+        for (int p = 1; p < QVRManager::processIndex(); p++)
+            if (QVRManager::processConfig(p).decoupledRendering())
+                (*serverIndexForThisProcess)++;
+    }
 }
 
 /* Internal helper functions to read and write a given number of bytes from/to
@@ -382,7 +392,7 @@ QIODevice* QVRClient::outputDevice()
     return dev;
 }
 
-bool QVRClient::start(const QString& serverName, int processIndex)
+bool QVRClient::start(const QString& serverName)
 {
     Q_ASSERT(!_tcpSocket);
     Q_ASSERT(!_localSocket);
@@ -401,6 +411,9 @@ bool QVRClient::start(const QString& serverName, int processIndex)
         socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
         QVR_INFO("connected to tcp server %s port %d", qPrintable(socket->peerName()), socket->peerPort());
         _tcpSocket = socket;
+        int pI = QVRManager::processIndex();
+        QVRWriteData(outputDevice(), reinterpret_cast<char*>(&pI), sizeof(pI));
+        flush();
     } else if (args.length() == 2 && args[0] == "local") {
         QLocalSocket* socket = new QLocalSocket;
         socket->connectToServer(args[1]);
@@ -411,9 +424,11 @@ bool QVRClient::start(const QString& serverName, int processIndex)
         }
         QVR_INFO("connected to local server %s", qPrintable(socket->fullServerName()));
         _localSocket = socket;
-    } else if (args.length() == 3 && args[0] == "shmem") {
-        int processes = args[1].toInt();
-        QSharedMemory* sharedMem = new QSharedMemory(args[2]);
+        int pI = QVRManager::processIndex();
+        QVRWriteData(outputDevice(), reinterpret_cast<char*>(&pI), sizeof(pI));
+        flush();
+    } else if (args.length() == 2 && args[0] == "shmem") {
+        QSharedMemory* sharedMem = new QSharedMemory(args[1]);
         if (!sharedMem->attach(QSharedMemory::ReadWrite)) {
             QVR_FATAL("cannot attach to shared memory %s", qPrintable(args[1]));
             delete sharedMem;
@@ -421,14 +436,25 @@ bool QVRClient::start(const QString& serverName, int processIndex)
         }
         QVR_INFO("connected to shared memory %s", qPrintable(args[1]));
         _sharedMem = sharedMem;
-        char* deviceArea;
-        int deviceAreaSize;
-        QVRGetSharedMemServerDeviceArea(_sharedMem, &deviceArea, &deviceAreaSize);
-        _sharedMemServerDevice = new QVRSharedMemoryDevice(processes - 1, deviceArea, deviceAreaSize);
-        _sharedMemServerDevice->openReader(processIndex - 1);
-        QVRGetSharedMemClientDeviceArea(_sharedMem, processIndex - 1, &deviceArea, &deviceAreaSize);
-        _sharedMemClientDevice = new QVRSharedMemoryDevice(
-                1, deviceArea, deviceAreaSize);
+        int serverDeviceCount;
+        int coupledClientCount;
+        int serverIndexForThisProcess;
+        int coupledClientIndexForThisProcess;
+        QVRGetSharedMemServerConfigs(
+                &serverDeviceCount,
+                &coupledClientCount,
+                &serverIndexForThisProcess,
+                &coupledClientIndexForThisProcess);
+        _sharedMemServerDevice = new QVRSharedMemoryDevice(
+                QVRManager::processConfig().decoupledRendering() ? 1 : coupledClientCount,
+                static_cast<char*>(sharedMem->data()) + serverIndexForThisProcess * QVRSharedMemoryServerDeviceSize,
+                QVRSharedMemoryServerDeviceSize);
+        _sharedMemServerDevice->openReader(QVRManager::processConfig().decoupledRendering() ? 0
+                : coupledClientIndexForThisProcess);
+        _sharedMemClientDevice = new QVRSharedMemoryDevice(1,
+                static_cast<char*>(sharedMem->data()) + serverDeviceCount * QVRSharedMemoryServerDeviceSize
+                + (QVRManager::processIndex() - 1) * QVRSharedMemoryClientDeviceSize,
+                QVRSharedMemoryClientDeviceSize);
         _sharedMemClientDevice->openWriter();
     } else {
         QVR_FATAL("invalid server specification %s", qPrintable(serverName));
@@ -522,8 +548,7 @@ void QVRClient::receiveCmdRenderArgs(float* n, float* f, QVRApp* app)
 QVRServer::QVRServer() :
     _tcpServer(NULL),
     _localServer(NULL),
-    _sharedMem(NULL),
-    _sharedMemServerDevice(NULL)
+    _sharedMem(NULL)
 {
     _data.reserve(QVRSharedMemoryClientDeviceSize);
 }
@@ -532,17 +557,16 @@ QVRServer::~QVRServer()
 {
     delete _tcpServer;   // also deletes all tcp sockets
     delete _localServer; // also deletes all local sockets
-    delete _sharedMemServerDevice;
+    for (int i = 0; i < _sharedMemServerDevices.size(); i++)
+        delete _sharedMemServerDevices[i];
     for (int i = 0; i < _sharedMemClientDevices.size(); i++)
         delete _sharedMemClientDevices[i];
     delete _sharedMem;
 }
 
-int QVRServer::inputDevices()
+int QVRServer::inputDevices() const
 {
-    return (_tcpServer ? _tcpSockets.size()
-            : _localServer ? _localSockets.size()
-            : _sharedMemClientDevices.size());
+    return _clientIsSynced.length();
 }
 
 QIODevice* QVRServer::inputDevice(int i)
@@ -594,11 +618,23 @@ bool QVRServer::startLocal()
     return true;
 }
 
-bool QVRServer::startSharedMemory(int processes)
+bool QVRServer::startSharedMemory()
 {
+    int clientCount = QVRManager::processCount() - 1;
+    int serverDeviceCount;
+    int coupledClientCount;
+    int serverIndexForThisProcess;
+    int coupledClientIndexForThisProcess;
+    QVRGetSharedMemServerConfigs(
+            &serverDeviceCount,
+            &coupledClientCount,
+            &serverIndexForThisProcess,
+            &coupledClientIndexForThisProcess);
+
     QString name = QUuid::createUuid().toString().mid(1, 36);
     QSharedMemory* sharedMemory = new QSharedMemory(name);
-    bool r = sharedMemory->create(QVRGetSharedMemSize(processes - 1));
+    bool r = sharedMemory->create(serverDeviceCount * QVRSharedMemoryServerDeviceSize
+            + clientCount * QVRSharedMemoryClientDeviceSize);
     if (!r) {
         QVR_FATAL("cannot initialize shared memory: %s", qPrintable(sharedMemory->errorString()));
         delete sharedMemory;
@@ -606,17 +642,35 @@ bool QVRServer::startSharedMemory(int processes)
     }
     _sharedMem = sharedMemory;
 
-    char* deviceArea;
-    int deviceAreaSize;
-    QVRGetSharedMemServerDeviceArea(_sharedMem, &deviceArea, &deviceAreaSize);
-    _sharedMemServerDevice = new QVRSharedMemoryDevice(processes - 1, deviceArea, deviceAreaSize);
-    _sharedMemServerDevice->openWriter();
-    for (int i = 0; i < processes - 1; i++) {
-        QVRGetSharedMemClientDeviceArea(_sharedMem, i, &deviceArea, &deviceAreaSize);
-        QVRSharedMemoryDevice* clientDevice = new QVRSharedMemoryDevice(1, deviceArea, deviceAreaSize);
-        clientDevice->openReader(0);
-        _sharedMemClientDevices.append(clientDevice);
+    // create server devices: one for all coupled clients (if any), and one for each decoupled client
+    _sharedMemHaveCoupledClients = (coupledClientCount > 0);
+    if (coupledClientCount > 0) {
+        _sharedMemServerDevices.append(new QVRSharedMemoryDevice(coupledClientCount,
+                    static_cast<char*>(_sharedMem->data()), QVRSharedMemoryServerDeviceSize));
+        _sharedMemServerDevices.last()->openWriter();
     }
+    _sharedMemServerForClientMap.resize(clientCount);
+    int decoupledProcessServerIndex = (_sharedMemHaveCoupledClients ? 1 : 0);
+    for (int p = 1; p < QVRManager::processCount(); p++) {
+        if (QVRManager::processConfig(p).decoupledRendering()) {
+            _sharedMemServerDevices.append(new QVRSharedMemoryDevice(1, static_cast<char*>(_sharedMem->data())
+                        + _sharedMemServerDevices.length() * QVRSharedMemoryServerDeviceSize,
+                        QVRSharedMemoryServerDeviceSize));
+            _sharedMemServerDevices.last()->openWriter();
+            _sharedMemServerForClientMap[p - 1] = decoupledProcessServerIndex++;
+        } else {
+            _sharedMemServerForClientMap[p - 1] = 0;
+        }
+    }
+    // create client devices
+    for (int p = 1; p < QVRManager::processCount(); p++) {
+        _sharedMemClientDevices.append(new QVRSharedMemoryDevice(1, static_cast<char*>(_sharedMem->data())
+                    + serverDeviceCount * QVRSharedMemoryServerDeviceSize
+                    + (p - 1) * QVRSharedMemoryClientDeviceSize,
+                    QVRSharedMemoryClientDeviceSize));
+        _sharedMemClientDevices.last()->openReader(0);
+    }
+
     return true;
 }
 
@@ -637,69 +691,104 @@ QString QVRServer::name()
         s += _localServer->serverName();
     } else {
         s = "shmem,";
-        s += QString::number(_sharedMemClientDevices.size() + 1);
-        s += ',';
         s += _sharedMem->key();
     }
     return s;
 }
 
-bool QVRServer::waitForClients(int clients)
+bool QVRServer::waitForClients()
 {
+    int clientCount = QVRManager::processCount() - 1;
     if (_tcpServer) {
-        for (int i = 0; i < clients; i++) {
+        _tcpSockets.resize(clientCount);
+        for (int i = 0; i < clientCount; i++) {
             QTcpSocket* socket = _tcpServer->nextPendingConnection();
             if (!socket) {
                 if (!_tcpServer->waitForNewConnection(QVRTimeoutMsecs)) {
-                    QVR_FATAL("client %d out of %d did not connect", i + 1, clients);
+                    QVR_FATAL("client did not connect");
                     return false;
                 }
                 socket = _tcpServer->nextPendingConnection();
                 Q_ASSERT(socket);
             }
             socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
-            _tcpSockets.append(socket);
+            int clientProcessIndex;
+            QVRReadData(socket, reinterpret_cast<char*>(&clientProcessIndex), sizeof(int));
+            if (clientProcessIndex < 1 || clientProcessIndex >= QVRManager::processCount()) {
+                QVR_FATAL("client sent invalid process index");
+                delete socket;
+                return false;
+            }
+            QVR_DEBUG("client with process index %d connected", clientProcessIndex);
+            _tcpSockets[clientProcessIndex] = socket;
         }
     } else if (_localServer) {
-        for (int i = 0; i < clients; i++) {
+        _localSockets.resize(clientCount);
+        for (int i = 0; i < clientCount; i++) {
             QLocalSocket* socket = _localServer->nextPendingConnection();
             if (!socket) {
                 if (!_localServer->waitForNewConnection(QVRTimeoutMsecs)) {
-                    QVR_FATAL("client %d out of %d did not connect", i + 1, clients);
+                    QVR_FATAL("client did not connect");
                     return false;
                 }
                 socket = _localServer->nextPendingConnection();
                 Q_ASSERT(socket);
             }
-            _localSockets.append(socket);
+            int clientProcessIndex;
+            QVRReadData(socket, reinterpret_cast<char*>(&clientProcessIndex), sizeof(int));
+            if (clientProcessIndex < 1 || clientProcessIndex >= QVRManager::processCount()) {
+                QVR_FATAL("client sent invalid process index");
+                delete socket;
+                return false;
+            }
+            QVR_DEBUG("client with process index %d connected", clientProcessIndex);
+            _localSockets[clientProcessIndex] = socket;
         }
     } else {
-        for (int i = 0; i < clients; i++) {
-            if (!_sharedMemServerDevice->waitForReaderConnection(i)) {
-                QVR_FATAL("client %d out of %d did not connect", i + 1, clients);
-                return false;
+        for (int d = 0; d < _sharedMemServerDevices.length(); d++) {
+            for (int i = 0; i < _sharedMemServerDevices[d]->readers(); i++) {
+                if (!_sharedMemServerDevices[d]->waitForReaderConnection(i)) {
+                    QVR_FATAL("client did not connect");
+                    return false;
+                }
             }
         }
     }
+    _clientIsSynced.resize(clientCount);
+    for (int i = 0; i < clientCount; i++)
+        _clientIsSynced[i] = true;
     return true;
 }
 
 void QVRServer::sendCmd(const char cmd, const QByteArray& data0, const QByteArray& data1)
 {
-    int n = (_tcpServer ? _tcpSockets.size() : _localServer ? _localSockets.size() : 1);
-    for (int i = 0; i < n; i++) {
-        QIODevice* dev;
-        if (_tcpServer)
-            dev = _tcpSockets[i];
-        else if (_localServer)
-            dev = _localSockets[i];
-        else
-            dev = _sharedMemServerDevice;
-        QVRWriteData(dev, &cmd, sizeof(char));
-        if (!data0.isNull())
-            QVRWriteData(dev, data0);
-        if (!data1.isNull())
-            QVRWriteData(dev, data1);
+    bool wroteToCoupledServerDevice = false;
+    for (int i = 0; i < inputDevices(); i++) {
+        if (_clientIsSynced[i]) {
+            bool doWrite = true;
+            QIODevice* dev;
+            if (_tcpServer) {
+                dev = _tcpSockets[i];
+            } else if (_localServer) {
+                dev = _localSockets[i];
+            } else {
+                dev = _sharedMemServerDevices[_sharedMemServerForClientMap[i]];
+                if (_sharedMemServerForClientMap[i] == 0 && _sharedMemHaveCoupledClients) {
+                    if (wroteToCoupledServerDevice) {
+                        doWrite = false;
+                    } else {
+                        wroteToCoupledServerDevice = true;
+                    }
+                }
+            }
+            if (doWrite) {
+                QVRWriteData(dev, &cmd, sizeof(char));
+                if (!data0.isNull())
+                    QVRWriteData(dev, data0);
+                if (!data1.isNull())
+                    QVRWriteData(dev, data1);
+            }
+        }
     }
 }
 
@@ -732,10 +821,17 @@ void QVRServer::sendCmdRender(float n, float f, const QByteArray& serializedDynD
 {
     float data[2] = { n, f };
     sendCmd('r', QByteArray::fromRawData(reinterpret_cast<char*>(data), sizeof(data)), serializedDynData);
+    for (int i = 0; i < _clientIsSynced.length(); i++) {
+        if (QVRManager::processConfig(i + 1).decoupledRendering()) {
+            _clientIsSynced[i] = false;
+        }
+    }
 }
 
 void QVRServer::sendCmdQuit()
 {
+    for (int i = 0; i < _clientIsSynced.length(); i++)
+        _clientIsSynced[i] = true;
     sendCmd('q');
 }
 
@@ -753,21 +849,28 @@ void QVRServer::flush()
 void QVRServer::receiveReplyUpdateDevices(QList<QVRDevice*> deviceList)
 {
     for (int i = 0; i < inputDevices(); i++) {
-        int n;
-        QVRReadData(inputDevice(i), reinterpret_cast<char*>(&n), sizeof(int));
-        QVRReadData(inputDevice(i), _data);
-        QDataStream ds(_data);
-        QVRDevice dev;
-        for (int j = 0; j < n; j++) {
-            ds >> dev;
-            *(deviceList.at(dev.index())) = dev;
+        if (_clientIsSynced[i]) {
+            int n;
+            QVRReadData(inputDevice(i), reinterpret_cast<char*>(&n), sizeof(int));
+            QVRReadData(inputDevice(i), _data);
+            QDataStream ds(_data);
+            QVRDevice dev;
+            for (int j = 0; j < n; j++) {
+                ds >> dev;
+                *(deviceList.at(dev.index())) = dev;
+            }
         }
     }
 }
 
-bool QVRServer::receiveCmdSync(QList<QVREvent>* eventList)
+void QVRServer::receiveCmdSync(QList<QVREvent>* eventList)
 {
     for (int i = 0; i < inputDevices(); i++) {
+        if (!_clientIsSynced[i]
+                && QVRManager::processConfig(i + 1).decoupledRendering()
+                && inputDevice(i)->bytesAvailable() == 0) {
+            continue;
+        }
         int n;
         QVRReadData(inputDevice(i), reinterpret_cast<char*>(&n), sizeof(int));
         QVRReadData(inputDevice(i), _data);
@@ -777,6 +880,6 @@ bool QVRServer::receiveCmdSync(QList<QVREvent>* eventList)
             ds >> e;
             eventList->append(e);
         }
+        _clientIsSynced[i] = true;
     }
-    return true;
 }

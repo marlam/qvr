@@ -85,6 +85,8 @@ QVRProcessConfig::QVRProcessConfig() :
     _address(),
     _launcher(),
     _display(),
+    _syncToVBlank(true),
+    _decoupledRendering(false),
     _windowConfigs()
 {
 }
@@ -476,6 +478,16 @@ bool QVRConfig::readFromFile(const QString& filename)
                 }
                 if (cmd == "display" && arglist.length() == 1) {
                     processConfig._display = arg;
+                    continue;
+                }
+                if (cmd == "sync_to_vblank" && arglist.length() == 1
+                        && (arg == "true" || arg == "false")) {
+                    processConfig._syncToVBlank = (arg == "true");
+                    continue;
+                }
+                if (cmd == "decoupled_rendering" && arglist.length() == 1
+                        && (arg == "true" || arg == "false")) {
+                    processConfig._decoupledRendering = (arg == "true");
                     continue;
                 }
             } else {

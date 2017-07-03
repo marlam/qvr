@@ -1,0 +1,39 @@
+observer o
+    navigation wasdqe
+    tracking custom
+
+# The master process has no windows and renders nothing. Its frame rate is
+# therefore "unlimited": it will run the application's QVRApp::update() method
+# for each new frame as frequently as the CPU allows (e.g. 40000 fps).
+process master
+
+# The first slave process is decoupled from the frame rate of the master
+# process. It synchronizes frame updates with the vertical refresh rate
+# of its display, and its frame rate therefore limited to the display
+# refresh rate (e.g. 60 fps).
+process slave1
+    decoupled_rendering true
+    sync_to_vblank true
+    window 0
+        observer o
+        output red_cyan
+        display_screen -1
+        position 100 100
+        size 400 400
+        screen_is_fixed_to_observer true
+        screen_is_given_by_center true
+
+# The second slave prcoess is decoupled from the frame rate of the master
+# process. It is not synchronized to the vertical refresh rate of the display,
+# and will render new frames as frequently as the GPU allows (e.g. 1500 fps).
+process slave2
+    decoupled_rendering true
+    sync_to_vblank false
+    window 1
+        observer o
+        output red_cyan
+        display_screen -1
+        position 510 100
+        size 400 400
+        screen_is_fixed_to_observer true
+        screen_is_given_by_center true

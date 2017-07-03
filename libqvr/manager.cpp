@@ -88,7 +88,8 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
 #endif
     _workingDir(),
     _processIndex(0),
-    _syncToVblank(true),
+    _syncToVBlankWasSet(false),
+    _syncToVBlank(true),
     _fpsMsecs(0),
     _fpsCounter(0),
     _configFilename(),
@@ -178,30 +179,30 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
     // set sync-to-vblank
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--qvr-sync-to-vblank") == 0 && i < argc - 1) {
-            _syncToVblank = ::atoi(argv[i + 1]);
+            _syncToVBlankWasSet = true;
+            _syncToVBlank = ::atoi(argv[i + 1]);
             removeTwoArgs(argc, argv, i);
             break;
         } else if (strncmp(argv[i], "--qvr-sync-to-vblank=", 21) == 0) {
-            _syncToVblank = ::atoi(argv[i] + 21);
+            _syncToVBlankWasSet = true;
+            _syncToVBlank = ::atoi(argv[i] + 21);
             removeArg(argc, argv, i);
             break;
         }
     }
 
-    // set FPS printing (only on master)
-    if (_processIndex == 0) {
-        if (::getenv("QVR_FPS"))
-            _fpsMsecs = ::atoi(::getenv("QVR_FPS"));
-        for (int i = 1; i < argc; i++) {
-            if (strcmp(argv[i], "--qvr-fps") == 0 && i < argc - 1) {
-                _fpsMsecs = ::atoi(argv[i + 1]);
-                removeTwoArgs(argc, argv, i);
-                break;
-            } else if (strncmp(argv[i], "--qvr-fps=", 10) == 0) {
-                _fpsMsecs = ::atoi(argv[i] + 10);
-                removeArg(argc, argv, i);
-                break;
-            }
+    // set FPS printing
+    if (::getenv("QVR_FPS"))
+        _fpsMsecs = ::atoi(::getenv("QVR_FPS"));
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--qvr-fps") == 0 && i < argc - 1) {
+            _fpsMsecs = ::atoi(argv[i + 1]);
+            removeTwoArgs(argc, argv, i);
+            break;
+        } else if (strncmp(argv[i], "--qvr-fps=", 10) == 0) {
+            _fpsMsecs = ::atoi(argv[i] + 10);
+            removeArg(argc, argv, i);
+            break;
         }
     }
 
@@ -290,6 +291,7 @@ void QVRManager::buildProcessCommandLine(int processIndex, QString* prg, QString
         *args << QString("--qvr-server=%1").arg(_server->name());
     *args << QString("--qvr-process=%1").arg(processIndex);
     *args << QString("--qvr-timeout=%1").arg(QVRTimeoutMsecs);
+    *args << QString("--qvr-fps=%1").arg(_fpsMsecs);
     *args << QString("--qvr-log-level=%1").arg(
             QVRManager::logLevel() == QVR_Log_Level_Fatal ? "fatal"
             : QVRManager::logLevel() == QVR_Log_Level_Warning ? "warning"
@@ -299,7 +301,8 @@ void QVRManager::buildProcessCommandLine(int processIndex, QString* prg, QString
     if (QVRGetLogFile())
         *args << QString("--qvr-log-file=%1").arg(QVRGetLogFile());
     *args << QString("--qvr-wd=%1").arg(QDir::currentPath());
-    *args << QString("--qvr-sync-to-vblank=%1").arg(_syncToVblank ? 1 : 0);
+    if (_syncToVBlankWasSet)
+        *args << QString("--qvr-sync-to-vblank=%1").arg(_syncToVBlank ? 1 : 0);
     *args << QString("--qvr-config=%1").arg(_configFilename);
     *args << _appArgs;
     if (!processConfig.launcher().isEmpty() && processConfig.launcher() != "manual") {
@@ -572,7 +575,7 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
             else if (ipc == QVR_IPC_LocalSocket)
                 r = _server->startLocal();
             else
-                r = _server->startSharedMemory(_config->processConfigs().size());
+                r = _server->startSharedMemory();
             if (!r) {
                 QVR_FATAL("cannot start IPC server");
                 return false;
@@ -591,7 +594,7 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
                     return false;
             }
             QVR_INFO("waiting for slave processes to connect to master ...");
-            if (!_server->waitForClients(_config->processConfigs().size() - 1))
+            if (!_server->waitForClients())
                 return false;
             QVR_INFO("... all clients connected");
             QVR_INFO("initializing slave processes with %d bytes of static application data", _serializationBuffer.size());
@@ -602,7 +605,7 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
         _serializationBuffer.reserve(1024);
         _client = new QVRClient;
         QVR_INFO("slave process %s (index %d) connecting to master ...", qPrintable(_thisProcess->id()), _processIndex);
-        if (!_client->start(_masterName, _processIndex)) {
+        if (!_client->start(_masterName)) {
             QVR_FATAL("cannot connect to master");
             return false;
         }
@@ -636,7 +639,10 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
 
     // Create windows
     QSurfaceFormat format = QSurfaceFormat::defaultFormat();
-    format.setSwapInterval(_syncToVblank ? 1 : 0);
+    bool syncToVBlank = processConfig().syncToVBlank();
+    if (_syncToVBlankWasSet)
+        syncToVBlank = _syncToVBlank;
+    format.setSwapInterval(syncToVBlank ? 1 : 0);
     QSurfaceFormat::setDefaultFormat(format);
     QVR_INFO("process %s (index %d) creating %d windows",
             qPrintable(processConfig().id()), _processIndex,
@@ -665,15 +671,15 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
     }
 
     // Initialize application process and windows
-    if (_masterWindow)
+    if (_masterWindow) {
         _masterWindow->winContext()->makeCurrent(_masterWindow);
-    if (!_app->initProcess(_thisProcess))
-        return false;
-    for (int w = 0; w < _windows.size(); w++)
-        if (!_app->initWindow(_windows[w]))
+        if (!_app->initProcess(_thisProcess))
             return false;
-    if (_masterWindow)
+        for (int w = 0; w < _windows.size(); w++)
+            if (!_app->initWindow(_windows[w]))
+                return false;
         _masterWindow->winContext()->doneCurrent();
+    }
     if (_processIndex == 0) {
         updateDevices();
         _app->update(_observers);
@@ -888,11 +894,7 @@ void QVRManager::masterLoop()
     if (_slaveProcesses.size() > 0) {
         QVR_FIREHOSE("  ... waiting for slaves to sync");
         QList<QVREvent> slaveEvents;
-        if (!_server->receiveCmdSync(&slaveEvents)) {
-            _wantExit = true;
-        } else {
-            QVR_FIREHOSE("  ... all slaves synced");
-        }
+        _server->receiveCmdSync(&slaveEvents);
         for (int e = 0; e < slaveEvents.size(); e++) {
             QVR_FIREHOSE("  ... got an event from process %d window %d",
                     slaveEvents[e].context.processIndex(), slaveEvents[e].context.windowIndex());
@@ -976,6 +978,7 @@ void QVRManager::slaveLoop()
             QVR_FIREHOSE("  ... sending command 'sync' with %d events in %d bytes to master", n, _serializationBuffer.size());
             _client->sendCmdSync(n, _serializationBuffer);
             _client->flush();
+            _fpsCounter++;
         } else if (cmd == QVRClientCmdQuit) {
             QVR_FIREHOSE("  ... got command 'quit' from master");
             _triggerTimer->stop();
@@ -993,18 +996,20 @@ void QVRManager::slaveLoop()
 void QVRManager::quit()
 {
     QVR_DEBUG("quitting process %d...", _thisProcess->index());
-    if (_masterWindow)
+    _fpsTimer->stop();
+    if (_masterWindow) {
         _masterWindow->winContext()->makeCurrent(_masterWindow);
-
-    for (int w = _windows.size() - 1; w >= 0; w--) {
-        QVR_DEBUG("... exiting window %d", w);
-        _app->exitWindow(_windows[w]);
-        _windows[w]->exitGL();
-        _windows[w]->close();
+        for (int w = _windows.size() - 1; w >= 0; w--) {
+            QVR_DEBUG("... exiting window %d", w);
+            _app->exitWindow(_windows[w]);
+            _windows[w]->exitGL();
+            _windows[w]->close();
+        }
+        QVR_DEBUG("... exiting process");
+        _app->exitProcess(_thisProcess);
+        _masterWindow->close();
     }
-    QVR_DEBUG("... exiting process");
-    _app->exitProcess(_thisProcess);
-
+    QTimer::singleShot(0, QGuiApplication::instance(), SLOT(quit()));
     QVR_DEBUG("... quitting process %d done", _thisProcess->index());
 }
 
@@ -1107,7 +1112,6 @@ void QVRManager::render()
             QVR_FIREHOSE("  ... postRenderWindow(%d)", w);
             _app->postRenderWindow(_windows[w]);
         }
-        _wasdqeMouseInitialized = true;
         QVR_FIREHOSE("  ... postRenderProcess()");
         _app->postRenderProcess(_thisProcess);
         /* At this point, we must make sure that all textures actually contain
@@ -1124,6 +1128,7 @@ void QVRManager::render()
             _windows[w]->asyncSwapBuffers();
         }
     }
+    _wasdqeMouseInitialized = true;
 }
 
 void QVRManager::waitForBufferSwaps()

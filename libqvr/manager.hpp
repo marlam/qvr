@@ -131,6 +131,10 @@
  *   Launcher commando used to start this process.
  * - `display <name>`<br>
  *   Display that this process is connected to.
+ * - `sync_to_vblank <true|false>`<br>
+ *   Whether windows of this process are synchronized with the vertical refresh of the display.
+ * - `decoupled_rendering <true|false>`<br>
+ *   Whether the rendering of this slave process is decoupled from the master process.
  *
  * Window definition (see \a QVRWindow and \a QVRWindowConfig):
  * - `window <id>`<br>
@@ -259,7 +263,8 @@ private:
     QVRLogLevel _logLevel;
     QString _workingDir;
     int _processIndex;
-    bool _syncToVblank;
+    bool _syncToVBlankWasSet;
+    bool _syncToVBlank;
     unsigned int _fpsMsecs;
     unsigned int _fpsCounter;
     QString _configFilename;
@@ -334,7 +339,7 @@ public:
      * - \-\-qvr-log-file=\<filename\><br>
      *   Write all log messages to the given file instead of the standard error stream.
      * - \-\-qvr-sync-to-vblank=<0|1><br>
-     *   Disable (0) or enable (1) sync-to-vblank. Default is enable.
+     *   Disable (0) or enable (1) sync-to-vblank. This overrides the per-process setting in the configuration file.
      * - \-\-qvr-fps=\<n\><br>
      *   Make QVR report frames per second measurements every n milliseconds.
      */

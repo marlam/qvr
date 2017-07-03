@@ -653,6 +653,10 @@ private:
     QString _launcher;
     // The display that this process works on. Only relevant for X11 at this time.
     QString _display;
+    // Whether windows on this process sync to vblank
+    bool _syncToVBlank;
+    // Whether the rendering of this slave process is decoupled from the master process
+    bool _decoupledRendering;
     // The windows driven by this process.
     QList<QVRWindowConfig> _windowConfigs;
 
@@ -697,6 +701,10 @@ public:
     const QString& launcher() const { return _launcher; }
     /*! \brief Returns the display that this process works with. */
     const QString& display() const { return _display; }
+    /*! \brief Returns whether windows of this process are synchronized with the vertical refresh of the display. */
+    bool syncToVBlank() const { return _syncToVBlank; }
+    /*! \brief Returns whether the rendering of this slave process is decoupled from the master process. */
+    bool decoupledRendering() const { return _decoupledRendering; }
     /*! \brief Returns the configurations of the windows on this process. */
     const QList<QVRWindowConfig>& windowConfigs() const { return _windowConfigs; }
 };
