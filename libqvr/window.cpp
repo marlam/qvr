@@ -116,7 +116,12 @@ void QVRWindowThread::run()
             } else if (_window->config().outputMode() == QVR_Output_GoogleVR) {
                 // no buffer swap wanted (?)
             } else {
-                _window->winContext()->swapBuffers(_window);
+                // We check if the window is exposed here because swapBuffers()
+                // behaviour on an unexposed window is undefined. There seems to
+                // be no way to know for sure when a window is exposed after
+                // being shown...
+                if (_window->isExposed())
+                    _window->winContext()->swapBuffers(_window);
             }
         }
         swapbuffersMutex.unlock();
