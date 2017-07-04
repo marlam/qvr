@@ -48,7 +48,7 @@ unsigned int QVRExampleOpenGL::setupTex(const QString& filename)
     QImage img;
     img.load(filename);
     if (isGLES)
-        img = img.scaledToWidth(img.width() / 4, Qt::SmoothTransformation);
+        img = img.scaledToWidth(img.width() / 2, Qt::SmoothTransformation);
     img = img.mirrored(false, true);
     img = img.convertToFormat(QImage::Format_RGBA8888);
     return setupTex(img);
@@ -67,7 +67,8 @@ unsigned int QVRExampleOpenGL::setupTex(const QImage& img)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4.0f);
+    if (!isGLES)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4.0f);
     return tex;
 }
 
