@@ -74,7 +74,7 @@ QVRWindowConfig::QVRWindowConfig() :
     _screenCornerBottomRight(QVector3D(0.0f, 0.0f, 0.0f)),
     _screenCornerTopLeft(QVector3D(0.0f, 0.0f, 0.0f)),
     _screenIsGivenByCenter(true),
-    _screenCenter(QVector3D(0.0f, 0.0f, -1.0f)),
+    _screenCenter(QVector3D(0.0f, 0.0f, -0.5f)),
     _renderResolutionFactor(1.0f)
 {
 }
