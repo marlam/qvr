@@ -100,6 +100,7 @@ void QVRConfig::createDefault(bool preferCustomNavigation)
     QVR_INFO("creating default configuration");
 
     bool haveOculus = false;
+    bool haveOculusControllers = false;
     bool haveOpenVR = false;
     bool haveOSVR = false;
     bool haveGoogleVR = false;
@@ -154,6 +155,7 @@ void QVRConfig::createDefault(bool preferCustomNavigation)
                 }
             }
             haveOculus = true;
+            haveOculusControllers = (QVROculusControllers != 0);
         }
 #endif
     }
@@ -198,7 +200,7 @@ void QVRConfig::createDefault(bool preferCustomNavigation)
         Q_ASSERT(ok);
     }
     bool wantGamepads = true;
-    if (haveOculus || haveOpenVR)
+    if ((haveOculus && haveOculusControllers) || haveOpenVR)
         wantGamepads = false;
     if (wantGamepads) {
 #ifdef HAVE_QGAMEPAD
