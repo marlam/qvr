@@ -120,21 +120,21 @@ public:
     /*! \brief Returns the number of views necessary to produce the frame. */
     int viewCount() const { return _viewCount; }
     /*! \brief Returns the eye for rendering \a view. */
-    QVREye eye(int view) const { return _eye[view]; }
+    QVREye eye(int view) const { Q_ASSERT(view >= 0 && view < viewCount()); return _eye[view]; }
     /*! \brief Returns the texture size for rendering \a view. */
-    QSize textureSize(int view) const { return _textureSize[view]; }
+    QSize textureSize(int view) const { Q_ASSERT(view >= 0 && view < viewCount()); return _textureSize[view]; }
     /*! \brief Returns the observer tracking position for rendering \a view. */
-    const QVector3D& trackingPosition(int view) const { return _trackingPosition[view]; }
+    const QVector3D& trackingPosition(int view) const { Q_ASSERT(view >= 0 && view < viewCount()); return _trackingPosition[view]; }
     /*! \brief Returns the observer tracking orientation for rendering \a view. */
-    const QQuaternion& trackingOrientation(int view) const { return _trackingOrientation[view]; }
+    const QQuaternion& trackingOrientation(int view) const { Q_ASSERT(view >= 0 && view < viewCount()); return _trackingOrientation[view]; }
     /*! \brief Returns the observer tracking matrix for rendering \a view. */
-    QMatrix4x4 trackingMatrix(int view) const { QMatrix4x4 m; m.translate(trackingPosition(view)); m.rotate(trackingOrientation(view)); return m; }
+    QMatrix4x4 trackingMatrix(int view) const { Q_ASSERT(view >= 0 && view < viewCount()); QMatrix4x4 m; m.translate(trackingPosition(view)); m.rotate(trackingOrientation(view)); return m; }
     /*! \brief Returns the frustum for rendering \a view. */
-    const QVRFrustum& frustum(int view) const { return _frustum[view]; }
+    const QVRFrustum& frustum(int view) const { Q_ASSERT(view >= 0 && view < viewCount()); return _frustum[view]; }
     /*! \brief Returns the view matrix for rendering \a view. */
-    const QMatrix4x4& viewMatrix(int view) const { return _viewMatrix[view]; }
+    const QMatrix4x4& viewMatrix(int view) const { Q_ASSERT(view >= 0 && view < viewCount()); return _viewMatrix[view]; }
     /*! \brief Returns the pure view matrix (i.e. in tracking space, without navigation) for rendering \a view. */
-    const QMatrix4x4& viewMatrixPure(int view) const { return _viewMatrixPure[view]; }
+    const QMatrix4x4& viewMatrixPure(int view) const { Q_ASSERT(view >= 0 && view < viewCount()); return _viewMatrixPure[view]; }
 };
 
 QDataStream &operator<<(QDataStream& ds, const QVRRenderContext& rc);
