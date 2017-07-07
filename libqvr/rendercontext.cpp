@@ -103,35 +103,39 @@ QDataStream &operator<<(QDataStream& ds, const QVRRenderContext& rc)
         << rc._navigationPosition << rc._navigationOrientation
         << rc._screenWall[0] << rc._screenWall[1] << rc._screenWall[2]
         << static_cast<int>(rc._outputMode)
-        << rc._viewCount
-        << static_cast<int>(rc._eye[0]) << static_cast<int>(rc._eye[1])
-        << rc._textureSize[0] << rc._textureSize[1]
-        << rc._trackingPosition[0] << rc._trackingPosition[1]
-        << rc._trackingOrientation[0] << rc._trackingOrientation[1]
-        << rc._frustum[0] << rc._frustum[1]
-        << rc._viewMatrix[0] << rc._viewMatrix[1]
-        << rc._viewMatrixPure[0] << rc._viewMatrixPure[1];
+        << rc._viewCount;
+    for (int i = 0; i < rc._viewCount; i++) {
+        ds << static_cast<int>(rc._eye[i])
+            << rc._textureSize[i]
+            << rc._trackingPosition[i]
+            << rc._trackingOrientation[i]
+            << rc._frustum[i]
+            << rc._viewMatrix[i]
+            << rc._viewMatrixPure[i];
+    }
     return ds;
 }
 
 QDataStream &operator>>(QDataStream& ds, QVRRenderContext& rc)
 {
-    int om, e0, e1;
+    int om;
     ds >> rc._processIndex >> rc._windowIndex
         >> rc._windowGeometry >> rc._screenGeometry
         >> rc._navigationPosition >> rc._navigationOrientation
         >> rc._screenWall[0] >> rc._screenWall[1] >> rc._screenWall[2]
         >> om
-        >> rc._viewCount
-        >> e0 >> e1
-        >> rc._textureSize[0] >> rc._textureSize[1]
-        >> rc._trackingPosition[0] >> rc._trackingPosition[1]
-        >> rc._trackingOrientation[0] >> rc._trackingOrientation[1]
-        >> rc._frustum[0] >> rc._frustum[1]
-        >> rc._viewMatrix[0] >> rc._viewMatrix[1]
-        >> rc._viewMatrixPure[0] >> rc._viewMatrixPure[1];
+        >> rc._viewCount;
     rc._outputMode = static_cast<QVROutputMode>(om);
-    rc._eye[0] = static_cast<QVREye>(e0);
-    rc._eye[1] = static_cast<QVREye>(e1);
+    for (int i = 0; i < rc._viewCount; i++) {
+        int e;
+        ds >> e
+            >> rc._textureSize[i]
+            >> rc._trackingPosition[i]
+            >> rc._trackingOrientation[i]
+            >> rc._frustum[i]
+            >> rc._viewMatrix[i]
+            >> rc._viewMatrixPure[i];
+        rc._eye[i] = static_cast<QVREye>(e);
+    }
     return ds;
 }
