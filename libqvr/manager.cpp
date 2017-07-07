@@ -99,7 +99,6 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
     _app(NULL),
     _config(NULL),
     _devices(),
-    _constDevices(),
     _observers(),
     _masterWindow(NULL),
     _masterGLContext(NULL),
@@ -463,7 +462,6 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
     bool haveVrpnDevices = false;
     for (int d = 0; d < _config->deviceConfigs().size(); d++) {
         _devices.append(new QVRDevice(d));
-        _constDevices.append(_devices.last());
         if (_config->deviceConfigs()[d].buttonsType() == QVR_Device_Buttons_Gamepad
                 || _config->deviceConfigs()[d].analogsType() == QVR_Device_Analogs_Gamepad) {
             haveGamepadDevices = true;
