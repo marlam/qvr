@@ -99,6 +99,7 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
     _app(NULL),
     _config(NULL),
     _devices(),
+    _deviceLastStates(),
     _observers(),
     _masterWindow(NULL),
     _masterGLContext(NULL),
@@ -462,6 +463,8 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
     bool haveVrpnDevices = false;
     for (int d = 0; d < _config->deviceConfigs().size(); d++) {
         _devices.append(new QVRDevice(d));
+        if (_processIndex == 0)
+            _deviceLastStates.append(*(_devices.last()));
         if (_config->deviceConfigs()[d].buttonsType() == QVR_Device_Buttons_Gamepad
                 || _config->deviceConfigs()[d].analogsType() == QVR_Device_Analogs_Gamepad) {
             haveGamepadDevices = true;
@@ -1032,7 +1035,7 @@ void QVRManager::updateDevices()
     }
 #endif
     bool haveRemoteDevices = false;
-    for (int d = 0; d < _config->deviceConfigs().size(); d++) {
+    for (int d = 0; d < _devices.size(); d++) {
         if (_devices[d]->config().processIndex() == 0)
             _devices[d]->update();
         else
@@ -1044,6 +1047,26 @@ void QVRManager::updateDevices()
         _server->flush();
         QVR_FIREHOSE("getting updated device info from slave processes");
         _server->receiveReplyUpdateDevices(_devices);
+    }
+
+    /* Generate device events */
+    for (int d = 0; d < _devices.size(); d++) {
+        for (int b = 0; b < _devices[d]->buttonCount(); b++) {
+            if (_deviceLastStates[d].button(b) != _devices[d]->button(b)) {
+                QVRDeviceEvent e(*(_devices[d]), b, -1);
+                if (_devices[d]->button(b))
+                    QVREventQueue->enqueue(QVREvent(QVR_Event_DeviceButtonPress, e));
+                else
+                    QVREventQueue->enqueue(QVREvent(QVR_Event_DeviceButtonRelease, e));
+            }
+        }
+        for (int a = 0; a < _devices[d]->analogCount(); a++) {
+            if (_deviceLastStates[d].analog(a) != _devices[d]->analog(a)) {
+                QVREventQueue->enqueue(QVREvent(QVR_Event_DeviceAnalogChange,
+                            QVRDeviceEvent(*(_devices[d]), -1, a)));
+            }
+        }
+        _deviceLastStates[d] = *(_devices[d]);
     }
 }
 
@@ -1262,6 +1285,15 @@ void QVRManager::processEventQueue()
             break;
         case QVR_Event_Wheel:
             _app->wheelEvent(e.context, &e.wheelEvent);
+            break;
+        case QVR_Event_DeviceButtonPress:
+            _app->deviceButtonPressEvent(&e.deviceEvent);
+            break;
+        case QVR_Event_DeviceButtonRelease:
+            _app->deviceButtonReleaseEvent(&e.deviceEvent);
+            break;
+        case QVR_Event_DeviceAnalogChange:
+            _app->deviceAnalogChangeEvent(&e.deviceEvent);
             break;
         }
     }

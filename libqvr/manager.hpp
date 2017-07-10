@@ -278,6 +278,7 @@ private:
     QVRApp* _app;
     QVRConfig* _config;
     QList<QVRDevice*> _devices;
+    QList<QVRDevice> _deviceLastStates;
     QList<QVRObserver*> _observers;
     QList<int> _observerNavigationDevices;
     QList<int> _observerTrackingDevices0;

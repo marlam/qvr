@@ -33,6 +33,7 @@ class QMatrix4x4;
 template <typename T> class QList;
 
 class QVRDevice;
+class QVRDeviceEvent;
 class QVRObserver;
 class QVRWindow;
 class QVRProcess;
@@ -287,8 +288,8 @@ public:
      *
      * All events from all windows on all processes are gathered by the \a QVRManager.
      *
-     * This function is called once before each frame on the master process, before
-     * update().
+     * This function is called once for each event before each frame on the
+     * master process, before update().
      */
     virtual void keyReleaseEvent(const QVRRenderContext& context, QKeyEvent* event) { Q_UNUSED(context); Q_UNUSED(event); }
 
@@ -299,8 +300,8 @@ public:
      *
      * All events from all windows on all processes are gathered by the \a QVRManager.
      *
-     * This function is called once before each frame on the master process, before
-     * update().
+     * This function is called once for each event before each frame on the
+     * master process, before update().
      */
     virtual void mouseMoveEvent(const QVRRenderContext& context, QMouseEvent* event) { Q_UNUSED(context); Q_UNUSED(event); }
 
@@ -311,8 +312,8 @@ public:
      *
      * All events from all windows on all processes are gathered by the \a QVRManager.
      *
-     * This function is called once before each frame on the master process, before
-     * update().
+     * This function is called once for each event before each frame on the
+     * master process, before update().
      */
     virtual void mousePressEvent(const QVRRenderContext& context, QMouseEvent* event) { Q_UNUSED(context); Q_UNUSED(event); }
 
@@ -323,8 +324,8 @@ public:
      *
      * All events from all windows on all processes are gathered by the \a QVRManager.
      *
-     * This function is called once before each frame on the master process, before
-     * update().
+     * This function is called once for each event before each frame on the
+     * master process, before update().
      */
     virtual void mouseReleaseEvent(const QVRRenderContext& context, QMouseEvent* event) { Q_UNUSED(context); Q_UNUSED(event); }
 
@@ -335,8 +336,8 @@ public:
      *
      * All events from all windows on all processes are gathered by the \a QVRManager.
      *
-     * This function is called once before each frame on the master process, before
-     * update().
+     * This function is called once for each event before each frame on the
+     * master process, before update().
      */
     virtual void mouseDoubleClickEvent(const QVRRenderContext& context, QMouseEvent* event) { Q_UNUSED(context); Q_UNUSED(event); }
 
@@ -347,10 +348,43 @@ public:
      *
      * All events from all windows on all processes are gathered by the \a QVRManager.
      *
-     * This function is called once before each frame on the master process, before
-     * update().
+     * This function is called once for each event before each frame on the
+     * master process, before update().
      */
     virtual void wheelEvent(const QVRRenderContext& context, QWheelEvent* event) { Q_UNUSED(context); Q_UNUSED(event); }
+
+    /*!
+     * \brief Handle a device button press event.
+     * \param event     The event
+     *
+     * All events from all devices are gathered by the \a QVRManager.
+     *
+     * This function is called once for each event before each frame on the
+     * master process, before update().
+     */
+    virtual void deviceButtonPressEvent(QVRDeviceEvent* event) { Q_UNUSED(event); }
+
+    /*!
+     * \brief Handle a device button release event.
+     * \param event     The event
+     *
+     * All events from all devices are gathered by the \a QVRManager.
+     *
+     * This function is called once for each event before each frame on the
+     * master process, before update().
+     */
+    virtual void deviceButtonReleaseEvent(QVRDeviceEvent* event) { Q_UNUSED(event); }
+
+    /*!
+     * \brief Handle a device analog element change event.
+     * \param event     The event
+     *
+     * All events from all devices are gathered by the \a QVRManager.
+     *
+     * This function is called once for each event before each frame on the
+     * master process, before update().
+     */
+    virtual void deviceAnalogChangeEvent(QVRDeviceEvent* event) { Q_UNUSED(event); }
 };
 
 #endif

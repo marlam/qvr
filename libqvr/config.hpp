@@ -138,6 +138,8 @@ typedef enum {
     QVR_Button_Back,
     /*! \brief Trigger button. */
     QVR_Button_Trigger,
+    /*! \brief Unknown or unidentified button. */
+    QVR_Button_Unknown // must be the last entry!
 } QVRButton;
 
 /*!
@@ -167,7 +169,9 @@ typedef enum {
     /*! \brief Right hand horizontal axis with values in [-1,1]. */
     QVR_Analog_Right_Axis_X,
     /*! \brief Right hand vertical axis with values in [-1,1]. */
-    QVR_Analog_Right_Axis_Y
+    QVR_Analog_Right_Axis_Y,
+    /*! \brief Unknown or unidentified analog element. */
+    QVR_Analog_Unknown // must be the last entry!
 } QVRAnalog;
 
 /*!

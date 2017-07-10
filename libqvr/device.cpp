@@ -215,10 +215,12 @@ static bool QVRAnalogFromName(const QString& name, QVRAnalog* anlg)
 
 QVRDevice::QVRDevice() :
     _index(-1),
-    _buttonsMap { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 },
-    _analogsMap { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 },
     _internals(NULL)
 {
+    for (int i = 0; i < QVR_Button_Unknown; i++)
+        _buttonsMap[i] = -1;
+    for (int i = 0; i < QVR_Analog_Unknown; i++)
+        _analogsMap[i] = -1;
 }
 
 QVRDevice::QVRDevice(int deviceIndex) :

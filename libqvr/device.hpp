@@ -57,9 +57,9 @@ private:
     QQuaternion _orientation;
     QVector3D _velocity;
     QVector3D _angularVelocity;
-    signed char _buttonsMap[32]; // the size fixes the maximum number of QVRButton values that can be represented
+    signed char _buttonsMap[QVR_Button_Unknown];
     QVector<bool> _buttons;
-    signed char _analogsMap[16]; // the size fixes the maximum number of QVRAnalog values that can be represented
+    signed char _analogsMap[QVR_Analog_Unknown];
     QVector<float> _analogs;
 
     QVRDeviceInternals* _internals;
@@ -155,10 +155,25 @@ public:
         return _buttons.length();
     }
 
+    /*! \brief Returns the type of the button with \a index. */
+    QVRButton button(int index) const
+    {
+        QVRButton btn = QVR_Button_Unknown;
+        if (index >= 0) {
+            for (int i = 0; i < QVR_Button_Unknown; i++) {
+                if (_buttonsMap[i] == index) {
+                    btn = static_cast<QVRButton>(i);
+                    break;
+                }
+            }
+        }
+        return btn;
+    }
+
     /*! \brief Returns the index of the button \a btn, or -1 if this device does not have that button. */
     int buttonIndex(QVRButton btn) const
     {
-        return _buttonsMap[btn];
+        return (btn == QVR_Button_Unknown ? -1 : _buttonsMap[btn]);
     }
 
     /*! \brief Returns whether this device has button \a btn. */
@@ -168,15 +183,15 @@ public:
     }
 
     /*! \brief Returns whether the button with the given index is pressed. */
-    bool button(int index) const
+    bool isButtonPressed(int index) const
     {
         return (index >= 0 && index < buttonCount()) ? _buttons[index] : false;
     }
 
     /*! \brief Returns whether the button \a btn is pressed. Returns false if this device does not have that button. */
-    bool button(QVRButton btn) const
+    bool isButtonPressed(QVRButton btn) const
     {
-        return button(buttonIndex(btn));
+        return isButtonPressed(buttonIndex(btn));
     }
 
     /*! \brief Returns the number of analog joystick elements on this device.
@@ -187,10 +202,25 @@ public:
         return _analogs.length();
     }
 
+    /*! \brief Returns the type of the analog element with \a index. */
+    QVRAnalog analog(int index) const
+    {
+        QVRAnalog anlg = QVR_Analog_Unknown;
+        if (index >= 0) {
+            for (int i = 0; i < QVR_Analog_Unknown; i++) {
+                if (_analogsMap[i] == index) {
+                    anlg = static_cast<QVRAnalog>(i);
+                    break;
+                }
+            }
+        }
+        return anlg;
+    }
+
     /*! \brief Returns the index of the analog element \a anlg, or -1 if this device does not have that element. */
     int analogIndex(QVRAnalog anlg) const
     {
-        return _analogsMap[anlg];
+        return (anlg == QVR_Analog_Unknown ? -1 : _analogsMap[anlg]);
     }
 
     /*! \brief Returns whether this device has analog element \a anlg. */
@@ -199,16 +229,17 @@ public:
         return analogIndex(anlg) >= 0;
     }
 
-    /*! \brief Returns the value of the analog joystick element with the given index. */
-    float analog(int index) const
+    /*! \brief Returns the value of the analog joystick element with the given index.
+     * This is either in [-1,1] (for axis-type analog elements) or in [0,1] (for trigger-type analog elements). */
+    float analogValue(int index) const
     {
         return (index >= 0 && index < analogCount()) ? _analogs[index] : 0.0f;
     }
 
     /*! \brief Returns the value of the analog element \a anlg. Returns 0 if this device does not have that element. */
-    float analog(QVRAnalog anlg) const
+    float analogValue(QVRAnalog anlg) const
     {
-        return analog(analogIndex(anlg));
+        return analogValue(analogIndex(anlg));
     }
 
     /*@}*/
@@ -296,5 +327,79 @@ QDataStream &operator<<(QDataStream& ds, const QVRDevice& d);
  * \brief Reads the device \a d from the stream \a ds.
  */
 QDataStream &operator>>(QDataStream& ds, QVRDevice& d);
+
+/*!
+ * \brief Device event
+ *
+ * Two approaches are common to react on device usage:
+ * - Query the current state of devices in QVRApp::update()
+ * - Receive device events in QVRApp::deviceButtonPressEvent(),
+ *   QVRApp::deviceButtonReleaseEvent(),
+ *   and QVRApp::deviceAnalogChangeEvent()
+ *
+ * This device event class is for the second use case.
+ *
+ * The difference between the two is this: If a user presses a digital button on
+ * a device, than it will be pressed for a certain amount of time, and therefore
+ * the device will report that button as pressed for multiple consecutive frames
+ * when queried from QVRApp::update(). This is useful if the application
+ * implements something like "move forward as long as button X is pressed".
+ * On the other hand, if the application implements something like "when button
+ * X is pressed, trigger action Y", then it wants the action to be triggered only
+ * once. In other words, it wants to react on the event "button X was pressed".
+ */
+class QVRDeviceEvent
+{
+private:
+    QVRDevice _device;
+    int _buttonIndex;
+    int _analogIndex;
+
+public:
+    /* Construct a device event. Only used internally. */
+    QVRDeviceEvent(const QVRDevice& device, int buttonIndex, int analogIndex) :
+        _device(device), _buttonIndex(buttonIndex), _analogIndex(analogIndex)
+    {
+    }
+
+    /*! \brief Returns the device state at the time this event was generated.
+     * You can use this to identify the device that caused the event, and to
+     * inspect other button and analog element states besides the one that
+     * generated the event. */
+    const QVRDevice& device() const
+    {
+        return _device;
+    }
+
+    /*! \brief Returns the button that triggered the event.
+     * Only calid for button press and button release events.
+     * This is a convenience function, you can get the same information from \a device().*/
+    QVRButton button() const
+    {
+        return _device.button(buttonIndex());
+    }
+
+    /*! \brief Returns the index of the button that triggered the event.
+     * Only valid for button press and button release events. */
+    int buttonIndex() const
+    {
+        return _buttonIndex;
+    }
+
+    /*! \brief Returns the analog element that triggered the event.
+     * Only valid for analog change events.
+     * This is a convenience function, you can get the same information from \a device().*/
+    QVRAnalog analog() const
+    {
+        return _device.analog(analogIndex());
+    }
+
+    /*! \brief Returns the index of the analog element that triggered the event.
+     * Only valid for analog change events. */
+    int analogIndex() const
+    {
+        return _analogIndex;
+    }
+};
 
 #endif
