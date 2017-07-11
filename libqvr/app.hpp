@@ -89,9 +89,9 @@ public:
      *     QMatrix4x4 projMatrix = context.frustum(view).toMatrix4x4();
      *     QMatrix4x4 viewMatrix = context.viewMatrix(view);
      *     set_and_clear_viewport(...);
-     *     render(...);
+     *     render_my_scene(...);
      * }
-     * \code{.cpp}
+     * \endcode
      *
      * This example renders one or two views sequentially. As an alternative, some
      * platform-dependent OpenGL extensions allow to render two views at once to reduce
