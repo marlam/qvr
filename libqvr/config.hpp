@@ -30,6 +30,7 @@
 #include <QSize>
 #include <QRect>
 #include <QList>
+#include <QFlags>
 
 
 /*!
@@ -737,9 +738,29 @@ public:
     /*! \brief Constructor. */
     QVRConfig();
 
+    /*! \brief Flags to enable autodetection of certain types of VR hardware.
+     * Note that these flags may be ignored, e.g. if QVR was built without support
+     * for a specific kind of hardware. */
+    enum AutodetectFlag {
+        /*! \brief Autodetect Oculus Rift HMD and controllers */
+        AutodetectOculus   = (1 << 0),
+        /*! \brief Autodetect OpenVR-supported HMD and controllers (e.g. HTC Vive). */
+        AutodetectOpenVR   = (1 << 1),
+        /*! \brief Autodetect OSVR-supported HMDs and other VR hardware. */
+        AutodetectOSVR     = (1 << 2),
+        /*! \brief Autodetect GoogleVR-supported HMDs and controllers (Cardboard, Daydream). */
+        AutodetectGoogleVR = (1 << 3),
+        /*! \brief Autodetect Gamepads via the QtGamepad module. */
+        AutodetectGamepads = (1 << 4),
+        /*! \brief Autodetect all hardware. */
+        AutodetectAll = 0xffffff
+    };
+    Q_DECLARE_FLAGS(Autodetect, AutodetectFlag)
+
     /*!
      * \brief Create a default configuration.
      * \param preferCustomNavigation   Use custom navigation for the default observer if feasible.
+     * \param autodetect        Specify which types of VR hardware to detect automatically.
      *
      * This function will detect a head-mounted display and create a suitable
      * configuration for it.
@@ -748,8 +769,11 @@ public:
      *
      * The observer created will a suitable default navigation type. If \a preferCustomNavigation
      * is set, then the navigation type \a QVR_Navigation_Custom will be used if it makes sense.
+     *
+     * Using the \a autodetect parameter only makes sense for developing / debugging; its default
+     * value should be fine.
      */
-    void createDefault(bool preferCustomNavigation);
+    void createDefault(bool preferCustomNavigation, Autodetect autodetect = AutodetectAll);
 
     /*!
      * \brief Read a configuration file.

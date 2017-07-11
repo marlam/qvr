@@ -95,7 +95,7 @@ QVRConfig::QVRConfig()
 {
 }
 
-void QVRConfig::createDefault(bool preferCustomNavigation)
+void QVRConfig::createDefault(bool preferCustomNavigation, Autodetect autodetect)
 {
     QVR_INFO("creating default configuration");
 
@@ -104,7 +104,8 @@ void QVRConfig::createDefault(bool preferCustomNavigation)
     bool haveOpenVR = false;
     bool haveOSVR = false;
     bool haveGoogleVR = false;
-    if (!haveOculus && !haveOpenVR && !haveOSVR && !haveGoogleVR) {
+    if (autodetect.testFlag(AutodetectOculus)
+            && !haveOculus && !haveOpenVR && !haveOSVR && !haveGoogleVR) {
 #ifdef HAVE_OCULUS
         QVRAttemptOculusInitialization();
         if (QVROculus) {
@@ -159,7 +160,8 @@ void QVRConfig::createDefault(bool preferCustomNavigation)
         }
 #endif
     }
-    if (!haveOculus && !haveOpenVR && !haveOSVR && !haveGoogleVR) {
+    if (autodetect.testFlag(AutodetectOpenVR)
+            && !haveOculus && !haveOpenVR && !haveOSVR && !haveGoogleVR) {
 #ifdef HAVE_OPENVR
         QVRAttemptOpenVRInitialization();
         if (QVROpenVRSystem) {
@@ -169,7 +171,8 @@ void QVRConfig::createDefault(bool preferCustomNavigation)
         }
 #endif
     }
-    if (!haveOculus && !haveOpenVR && !haveOSVR && !haveGoogleVR) {
+    if (autodetect.testFlag(AutodetectOSVR)
+            && !haveOculus && !haveOpenVR && !haveOSVR && !haveGoogleVR) {
 #ifdef HAVE_OSVR
         QVRAttemptOSVRInitialization();
         if (QVROsvrClientContext) {
@@ -185,7 +188,8 @@ void QVRConfig::createDefault(bool preferCustomNavigation)
         }
 #endif
     }
-    if (!haveOculus && !haveOpenVR && !haveOSVR && !haveGoogleVR) {
+    if (autodetect.testFlag(AutodetectGoogleVR)
+            && !haveOculus && !haveOpenVR && !haveOSVR && !haveGoogleVR) {
 #ifdef ANDROID
         QVRAttemptGoogleVRInitialization();
         if (QVRGoogleVR) {
@@ -202,7 +206,7 @@ void QVRConfig::createDefault(bool preferCustomNavigation)
     bool wantGamepads = true;
     if ((haveOculus && haveOculusControllers) || haveOpenVR)
         wantGamepads = false;
-    if (wantGamepads) {
+    if (autodetect.testFlag(AutodetectGamepads) && wantGamepads) {
 #ifdef HAVE_QGAMEPAD
         QVRDetectGamepads();
         QVR_DEBUG("autodetected gamepads: %d", QVRGamepads.size());

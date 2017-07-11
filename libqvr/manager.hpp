@@ -269,6 +269,7 @@ private:
     unsigned int _fpsCounter;
     QString _configFilename;
     QString _masterName;
+    QVRConfig::Autodetect _autodetect;
     QStringList _appArgs;
     bool _isRelaunchedMaster;
     // Data initialized by init():
@@ -302,6 +303,7 @@ private:
     QVector3D _wasdqePos;         // WASDQE observers: position
     float _wasdqeHorzAngle;       // WASDQE observers: angle around the y axis
     float _wasdqeVertAngle;       // WASDQE observers: angle around the x axis
+    bool _initialized;
 
     void buildProcessCommandLine(int processIndex, QString* prg, QStringList* args);
 
@@ -341,6 +343,13 @@ public:
      *   Disable (0) or enable (1) sync-to-vblank. This overrides the per-process setting in the configuration file.
      * - \-\-qvr-fps=\<n\><br>
      *   Make QVR report frames per second measurements every n milliseconds.
+     * - \-\-qvr-autodetect=\<list\><br>
+     *   Comma-separated list of VR hardware that QVR should attempt to detect automatically.
+     *   Currently supported keywords are 'all' for all hardware, 'oculus' for Oculus Rift,
+     *   'openvr' for OpenVR hardware, 'osvr' for OSVR hardware, 'googlevr' for Google VR hardware,
+     *   'gamepads' for gamepads. Each entry can be preceded with '~' to negate it. For example,
+     *   use '\-\-qvr-autodetect=all,~oculus' to try autodetection for all hardware except Oculus Rift.
+     *   This option only takes effect if no \-\-qvr-config option was given.
      */
     QVRManager(int& argc, char* argv[]);
 
@@ -369,10 +378,17 @@ public:
      */
     bool init(QVRApp* app, bool preferCustomNavigation = false);
 
+    /*!
+     * \brief Returns whether the manager was successfully initialized.
+     */
+    static bool isInitialized();
+
     /*@}*/
 
     /**
-     * \name Configuration access
+     * \name Configuration access.
+     *
+     * This is only guaranteed to work after a successfull call to \a init(). See \a isInitialized().
      */
     /*@{*/
 

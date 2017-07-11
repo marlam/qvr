@@ -93,6 +93,7 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
     _fpsMsecs(0),
     _fpsCounter(0),
     _configFilename(),
+    _autodetect(0),
     _isRelaunchedMaster(false),
     _server(NULL),
     _client(NULL),
@@ -108,7 +109,8 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
     _slaveProcesses(),
     _wantExit(false),
     _wandNavigationTimer(NULL),
-    _wasdqeTimer(NULL)
+    _wasdqeTimer(NULL),
+    _initialized(false)
 {
     Q_ASSERT(!manager);  // there can be only one
     manager = this;
@@ -228,6 +230,49 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
         }
     }
 
+    // get autodetection options
+    QString autodetectString = "all";
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--qvr-autodetect") == 0 && i < argc - 1) {
+            autodetectString = argv[i + 1];
+            removeTwoArgs(argc, argv, i);
+            break;
+        } else if (strncmp(argv[i], "--qvr-autodetect=", 17) == 0) {
+            autodetectString = QString(argv[i] + 17);
+            removeArg(argc, argv, i);
+            break;
+        }
+    }
+    QStringList autodetectList = autodetectString.split(',', QString::SkipEmptyParts);
+    for (int i = 0; i < autodetectList.length(); i++) {
+        if (autodetectList[i] == "all")
+            _autodetect |= QVRConfig::AutodetectAll;
+        else if (autodetectList[i] == "~all")
+            _autodetect &= ~QVRConfig::AutodetectAll;
+        else if (autodetectList[i] == "oculus")
+            _autodetect |= QVRConfig::AutodetectOculus;
+        else if (autodetectList[i] == "~oculus")
+            _autodetect &= ~QVRConfig::AutodetectOculus;
+        else if (autodetectList[i] == "openvr")
+            _autodetect |= QVRConfig::AutodetectOpenVR;
+        else if (autodetectList[i] == "~openvr")
+            _autodetect &= ~QVRConfig::AutodetectOpenVR;
+        else if (autodetectList[i] == "osvr")
+            _autodetect |= QVRConfig::AutodetectOSVR;
+        else if (autodetectList[i] == "~osvr")
+            _autodetect &= ~QVRConfig::AutodetectOSVR;
+        else if (autodetectList[i] == "googlevr")
+            _autodetect |= QVRConfig::AutodetectGoogleVR;
+        else if (autodetectList[i] == "~googlevr")
+            _autodetect &= ~QVRConfig::AutodetectGoogleVR;
+        else if (autodetectList[i] == "gamepads")
+            _autodetect |= QVRConfig::AutodetectGamepads;
+        else if (autodetectList[i] == "~gamepads")
+            _autodetect &= ~QVRConfig::AutodetectGamepads;
+        else
+            QVR_WARNING("ignoring unknown entry '%s' in --qvr-autodetect list", qPrintable(autodetectList[i]));
+    }
+
     // preserve remaining command line content for slave processes
     for (int i = 1; i < argc; i++)
         _appArgs << argv[i];
@@ -326,7 +371,7 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
     // Get configuration
     _config = new QVRConfig;
     if (_configFilename.isEmpty()) {
-        _config->createDefault(preferCustomNavigation);
+        _config->createDefault(preferCustomNavigation, _autodetect);
     } else {
         if (!_config->readFromFile(_configFilename)) {
             return false;
@@ -708,7 +753,14 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
 
     QGuiApplication::processEvents();
 
+    _initialized = true;
     return true;
+}
+
+bool QVRManager::isInitialized()
+{
+    Q_ASSERT(manager);
+    return manager->_initialized;
 }
 
 void QVRManager::masterLoop()
