@@ -823,20 +823,12 @@ void QVRManager::masterLoop()
                     QQuaternion::fromEulerAngles(_wasdqeVertAngle, _wasdqeHorzAngle, 0.0f)
                     * obs->config().initialNavigationOrientation());
         }
-        if (obs->config().navigationType() == QVR_Navigation_Device
-                && _devices.at(_observerNavigationDevices[o])->buttonCount() == 1) {
-            // primitive navigation for Google Cardboard
+        if (obs->config().navigationType() == QVR_Navigation_Device) {
             const QVRDevice* dev = _devices.at(_observerNavigationDevices[o]);
-            if (dev->isButtonPressed(0)) {
-                QQuaternion viewerRot = obs->trackingOrientation() * obs->navigationOrientation();
-                QVector3D dir = viewerRot * QVector3D(0.0f, 0.0f, -1.0f);
-                obs->setNavigation(
-                        obs->navigationPosition() + dir + obs->config().initialNavigationPosition(),
-                        obs->config().initialNavigationOrientation());
-            }
-        } else if (obs->config().navigationType() == QVR_Navigation_Device) {
-            const QVRDevice* dev = _devices.at(_observerNavigationDevices[o]);
-            bool haveFourAxes = (dev->hasAnalog(QVR_Analog_Right_Axis_X) && dev->hasAnalog(QVR_Analog_Right_Axis_Y));
+            const bool haveTwoAxes = (dev->hasAnalog(QVR_Analog_Axis_X) && dev->hasAnalog(QVR_Analog_Axis_Y));
+            const bool haveFourAxes = (dev->hasAnalog(QVR_Analog_Right_Axis_X) && dev->hasAnalog(QVR_Analog_Right_Axis_Y));
+            const bool haveFourButtons = (dev->hasButton(QVR_Button_Up) && dev->hasButton(QVR_Button_Down)
+                    && dev->hasButton(QVR_Button_Left) && dev->hasButton(QVR_Button_Right));
             const float speed = 1.5f; // in meters per second; TODO: make this configurable?
             float seconds = 0.0f;
             if (_wandNavigationTimer->isValid()) {
@@ -845,37 +837,64 @@ void QVRManager::masterLoop()
             } else {
                 _wandNavigationTimer->start();
             }
-            float forwardVal = dev->analogValue(haveFourAxes ? QVR_Analog_Right_Axis_Y : QVR_Analog_Axis_Y);
-            float sidewaysVal = dev->analogValue(haveFourAxes ? QVR_Analog_Right_Axis_X : QVR_Analog_Axis_X);
+            float forwardVal = 0.0f;
+            float sidewaysVal = 0.0f;
+            if (haveFourAxes) {
+                forwardVal = dev->analogValue(QVR_Analog_Right_Axis_Y);
+                sidewaysVal = dev->analogValue(QVR_Analog_Right_Axis_X);
+            } else if (haveTwoAxes) {
+                forwardVal = dev->analogValue(QVR_Analog_Axis_Y);
+                sidewaysVal = dev->analogValue(QVR_Analog_Axis_X);
+            } else if (!haveFourButtons) {
+                forwardVal = (dev->isButtonPressed(0) ? 1.0f : 0.0f);
+            }
             if (std::abs(forwardVal) > 0.0f || std::abs(sidewaysVal) > 0.0f) {
                 QQuaternion rot = (dev->config().trackingType() == QVR_Device_Tracking_None
                         ? obs->trackingOrientation() : dev->orientation())
                     * QQuaternion::fromEulerAngles(0.0f, _wandNavigationRotY, 0.0f);
                 QVector3D forwardDir = rot * QVector3D(0.0f, 0.0f, -1.0f);
-                forwardDir.setY(0.0f);
-                forwardDir.normalize();
+                if (haveFourAxes || haveFourButtons) {
+                    forwardDir.setY(0.0f);
+                    forwardDir.normalize();
+                }
                 QVector3D rightDir = rot * QVector3D(1.0f, 0.0f, 0.0f);
-                rightDir.setY(0.0f);
-                rightDir.normalize();
+                if (haveFourAxes || haveFourButtons) {
+                    rightDir.setY(0.0f);
+                    rightDir.normalize();
+                }
+                if (!haveFourAxes && !haveFourButtons) {
+                    seconds = 2.0f / 3.0f;
+                }
                 _wandNavigationPos += speed * seconds * (forwardDir * forwardVal + rightDir * sidewaysVal);
             }
-            float upVal = (haveFourAxes ? dev->analogValue(QVR_Analog_Left_Axis_Y) : (dev->isButtonPressed(QVR_Button_Up) ? 1.0f : 0.0f));
-            float downVal = (haveFourAxes ? -dev->analogValue(QVR_Analog_Left_Axis_Y) : (dev->isButtonPressed(QVR_Button_Down) ? 1.0f : 0.0f));
-            float rightVal = (haveFourAxes ? -dev->analogValue(QVR_Analog_Left_Axis_X) : (dev->isButtonPressed(QVR_Button_Left) ? 1.0f : 0.0f));
-            float leftVal = (haveFourAxes ? dev->analogValue(QVR_Analog_Left_Axis_X) : (dev->isButtonPressed(QVR_Button_Right) ? 1.0f : 0.0f));
+            float upVal = 0.0f;
+            float downVal = 0.0f;
+            float rightVal = 0.0f;
+            float leftVal = 0.0f;
+            if (haveFourAxes) {
+                upVal = dev->analogValue(QVR_Analog_Left_Axis_Y);
+                downVal = -dev->analogValue(QVR_Analog_Left_Axis_Y);
+                rightVal = dev->analogValue(QVR_Analog_Left_Axis_X);
+                leftVal = -dev->analogValue(QVR_Analog_Left_Axis_X);
+            } else if (haveFourButtons) {
+                upVal = (dev->isButtonPressed(QVR_Button_Up) ? 1.0f : 0.0f);
+                downVal = (dev->isButtonPressed(QVR_Button_Down) ? 1.0f : 0.0f);
+                rightVal = (dev->isButtonPressed(QVR_Button_Right) ? 1.0f : 0.0f);
+                leftVal = (dev->isButtonPressed(QVR_Button_Left) ? 1.0f : 0.0f);
+            }
             if (upVal > 0.0f)
                 _wandNavigationPos += speed * seconds * upVal * QVector3D(0.0f, +1.0f, 0.0f);
             if (downVal > 0.0f)
                 _wandNavigationPos += speed * seconds * downVal * QVector3D(0.0f, -1.0f, 0.0f);
             if (rightVal > 0.0f) {
-                _wandNavigationRotY += rightVal;
-                if (_wandNavigationRotY >= 360.0f)
-                    _wandNavigationRotY -= 360.0f;
-            }
-            if (leftVal > 0.0f) {
-                _wandNavigationRotY -= leftVal;
+                _wandNavigationRotY -= rightVal;
                 if (_wandNavigationRotY <= 0.0f)
                     _wandNavigationRotY += 360.0f;
+            }
+            if (leftVal > 0.0f) {
+                _wandNavigationRotY += leftVal;
+                if (_wandNavigationRotY >= 360.0f)
+                    _wandNavigationRotY -= 360.0f;
             }
             obs->setNavigation(_wandNavigationPos + obs->config().initialNavigationPosition(),
                     QQuaternion::fromEulerAngles(0.0f, _wandNavigationRotY, 0.0f) * obs->config().initialNavigationOrientation());

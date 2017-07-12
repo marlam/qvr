@@ -360,6 +360,8 @@ QVRDevice::QVRDevice(int deviceIndex) :
                 _internals->googleVrTrackedEntity = 0;
             else if (arg == "eye-right")
                 _internals->googleVrTrackedEntity = 1;
+            else if (arg == "daydream")
+                _internals->googleVrTrackedEntity = 3;
             else
                 QVR_WARNING("device %s: invalid Google VR tracking parameter", qPrintable(id()));
         }
@@ -558,10 +560,22 @@ QVRDevice::QVRDevice(int deviceIndex) :
         }
 #endif
         break;
-    case QVR_Device_Buttons_GoogleVR_Touch:
+    case QVR_Device_Buttons_GoogleVR:
 #ifdef ANDROID
-        _buttons.resize(1);
-        _buttonsMap[QVR_Button_Trigger] = 0;
+        {
+            QString arg = config().buttonsParameters().trimmed();
+            if (arg == "touch") {
+                _buttons.resize(1);
+                _buttonsMap[QVR_Button_Trigger] = 0;
+            } else if (arg == "daydream") {
+                _buttons.resize(3);
+                _buttonsMap[QVR_Button_Trigger] = 0;
+                _buttonsMap[QVR_Button_Menu] = 1;
+                _buttonsMap[QVR_Button_Select] = 2;
+            } else {
+                QVR_WARNING("device %s: invalid GoogleVR buttons parameter", qPrintable(id()));
+            }
+        }
 #endif
         break;
     }
@@ -727,6 +741,20 @@ QVRDevice::QVRDevice(int deviceIndex) :
                     }
                     _internals->osvrAnalogsInterfaces.append(osvrInterface);
                 }
+            }
+        }
+#endif
+        break;
+    case QVR_Device_Analogs_GoogleVR:
+#ifdef ANDROID
+        {
+            QString arg = config().buttonsParameters().trimmed();
+            if (arg == "daydream") {
+                _analogs.resize(2);
+                _analogsMap[QVR_Analog_Axis_Y] = 0;
+                _analogsMap[QVR_Analog_Axis_X] = 1;
+            } else {
+                QVR_WARNING("device %s: invalid GoogleVR analogs parameter", qPrintable(id()));
             }
         }
 #endif
@@ -1135,10 +1163,20 @@ void QVRDevice::update()
             _orientation = QVRGoogleVROrientations[_internals->googleVrTrackedEntity];
             _position = QVRGoogleVRPositions[_internals->googleVrTrackedEntity];
         }
-        if (config().buttonsType() == QVR_Device_Buttons_GoogleVR_Touch) {
-            // Consume a touch event generated on the Android thread.
-            // We set the button status to "pressed" until the next call of this function (typically 1 frame).
-            _buttons[0] = QVRGoogleVRTouchEvent.testAndSetRelaxed(1, 0);
+        if (config().buttonsType() == QVR_Device_Buttons_GoogleVR) {
+            if (_buttons.size() == 1) {
+                // Consume a touch event generated on the Android thread.
+                // We set the button status to "pressed" until the next call of this function (typically 1 frame).
+                _buttons[0] = QVRGoogleVRTouchEvent.testAndSetRelaxed(1, 0);
+            } else {
+                _buttons[0] = QVRGoogleVRButtons[0];
+                _buttons[1] = QVRGoogleVRButtons[1];
+                _buttons[2] = QVRGoogleVRButtons[2];
+            }
+        }
+        if (config().analogsType() == QVR_Device_Analogs_GoogleVR) {
+            _analogs[0] = QVRGoogleVRAxes[0];
+            _analogs[1] = QVRGoogleVRAxes[1];
         }
 #endif
         if (wantVelocityCalculation && _internals->lastTimestamp >= 0) {

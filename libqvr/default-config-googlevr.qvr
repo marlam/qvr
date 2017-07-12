@@ -1,11 +1,17 @@
+# Head tracking
 device googlevr-head
     tracking googlevr head
 device googlevr-eye-left
     tracking googlevr eye-left
 device googlevr-eye-right
     tracking googlevr eye-right
+
+# For cardboard: primitive device that delivers touch events
 device googlevr-touch
-    buttons googlevr-touch
+    buttons googlevr touch
+
+# A daydream controller is detected and added at runtime,
+# and will override the navigation device.
 
 observer googlevr-observer
     navigation device googlevr-touch

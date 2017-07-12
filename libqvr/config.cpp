@@ -104,6 +104,7 @@ void QVRConfig::createDefault(bool preferCustomNavigation, Autodetect autodetect
     bool haveOpenVR = false;
     bool haveOSVR = false;
     bool haveGoogleVR = false;
+    bool haveGoogleVRController = false;
     if (autodetect.testFlag(AutodetectOculus)
             && !haveOculus && !haveOpenVR && !haveOSVR && !haveGoogleVR) {
 #ifdef HAVE_OCULUS
@@ -196,6 +197,21 @@ void QVRConfig::createDefault(bool preferCustomNavigation, Autodetect autodetect
             bool ok = readFromFile(":/libqvr/default-config-googlevr.qvr");
             Q_ASSERT(ok);
             haveGoogleVR = true;
+            if (QVRGoogleVRController) {
+                QVRDeviceConfig daydreamConfig;
+                daydreamConfig._id = "googlevr-daydream";
+                daydreamConfig._processIndex = 0;
+                daydreamConfig._trackingType = QVR_Device_Tracking_GoogleVR;
+                daydreamConfig._trackingParameters = "daydream";
+                daydreamConfig._buttonsType = QVR_Device_Buttons_GoogleVR;
+                daydreamConfig._buttonsParameters = "daydream";
+                daydreamConfig._analogsType = QVR_Device_Analogs_GoogleVR;
+                daydreamConfig._analogsParameters = "daydream";
+                _deviceConfigs.append(daydreamConfig);
+                _observerConfigs[0]._navigationType = QVR_Navigation_Device;
+                _observerConfigs[0]._navigationParameters = daydreamConfig.id();
+                haveGoogleVRController = true;
+            }
         }
 #endif
     }
@@ -204,7 +220,8 @@ void QVRConfig::createDefault(bool preferCustomNavigation, Autodetect autodetect
         Q_ASSERT(ok);
     }
     bool wantGamepads = true;
-    if ((haveOculus && haveOculusControllers) || haveOpenVR)
+    if ((haveOculus && haveOculusControllers) || haveOpenVR
+            || (haveGoogleVR && haveGoogleVRController))
         wantGamepads = false;
     if (autodetect.testFlag(AutodetectGamepads) && wantGamepads) {
 #ifdef HAVE_QGAMEPAD
@@ -330,7 +347,7 @@ bool QVRConfig::readFromFile(const QString& filename)
                     && (arglist[0] == "none" || arglist[0] == "static"
                         || arglist[0] == "gamepad" || arglist[0] == "vrpn"
                         || arglist[0] == "oculus" || arglist[0] == "openvr" || arglist[0] == "osvr"
-                        || arglist[0] == "googlevr-touch")) {
+                        || arglist[0] == "googlevr")) {
                 deviceConfig._buttonsType = (
                         arglist[0] == "none" ? QVR_Device_Buttons_None
                         : arglist[0] == "static" ? QVR_Device_Buttons_Static
@@ -339,13 +356,14 @@ bool QVRConfig::readFromFile(const QString& filename)
                         : arglist[0] == "oculus" ? QVR_Device_Buttons_Oculus
                         : arglist[0] == "openvr" ? QVR_Device_Buttons_OpenVR
                         : arglist[0] == "osvr" ? QVR_Device_Buttons_OSVR
-                        : QVR_Device_Buttons_GoogleVR_Touch);
+                        : QVR_Device_Buttons_GoogleVR);
                 deviceConfig._buttonsParameters = QStringList(arglist.mid(1)).join(' ');
                 continue;
             } else if (cmd == "analogs" && arglist.length() >= 1
                     && (arglist[0] == "none" || arglist[0] == "static"
                         || arglist[0] == "gamepad" || arglist[0] == "vrpn"
-                        || arglist[0] == "oculus" || arglist[0] == "openvr" || arglist[0] == "osvr")) {
+                        || arglist[0] == "oculus" || arglist[0] == "openvr" || arglist[0] == "osvr"
+                        || arglist[0] == "googlevr")) {
                 deviceConfig._analogsType = (
                         arglist[0] == "none" ? QVR_Device_Analogs_None
                         : arglist[0] == "static" ? QVR_Device_Analogs_Static
@@ -353,7 +371,8 @@ bool QVRConfig::readFromFile(const QString& filename)
                         : arglist[0] == "vrpn" ? QVR_Device_Analogs_VRPN
                         : arglist[0] == "oculus" ? QVR_Device_Analogs_Oculus
                         : arglist[0] == "openvr" ? QVR_Device_Analogs_OpenVR
-                        : QVR_Device_Analogs_OSVR);
+                        : arglist[0] == "osvr" ? QVR_Device_Analogs_OSVR
+                        : QVR_Device_Analogs_GoogleVR);
                 deviceConfig._analogsParameters = QStringList(arglist.mid(1)).join(' ');
                 continue;
             }

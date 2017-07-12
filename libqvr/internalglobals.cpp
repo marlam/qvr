@@ -591,6 +591,7 @@ void QVRAttemptOSVRInitialization()
 #include <QtAndroid>
 #include <QAndroidJniObject>
 gvr_context* QVRGoogleVR = NULL;
+gvr_controller_context* QVRGoogleVRController = NULL;
 gvr_buffer_viewport_list* QVRGoogleVRViewportList = NULL;
 gvr_swap_chain* QVRGoogleVRSwapChain = NULL;
 float QVRGoogleVRResolutionFactor = 0.0f; // must be set by the window
@@ -598,11 +599,14 @@ QSize QVRGoogleVRTexSize;
 QRectF QVRGoogleVRRelativeViewports[2]; // viewports inside buffer for each eye
 float QVRGoogleVRlrbt[2][4]; // frustum l, r, b, t for each eye, at n=1
 gvr_mat4f QVRGoogleVRHeadMatrix;
-QVector3D QVRGoogleVRPositions[3];      // 0 = left eye, 1 = right eye, 2 = head
-QQuaternion QVRGoogleVROrientations[3]; // 0 = left eye, 1 = right eye, 2 = head
+QVector3D QVRGoogleVRPositions[4];      // 0 = left eye, 1 = right eye, 2 = head, 3 = daydream controller
+QQuaternion QVRGoogleVROrientations[4]; // 0 = left eye, 1 = right eye, 2 = head, 3 = daydream controller
 QAtomicInt QVRGoogleVRTouchEvent;
+bool QVRGoogleVRButtons[3] = { false, false, false };
+float QVRGoogleVRAxes[2] = { 0.0f, 0.0f };
 QAtomicInt QVRGoogleVRSync; // 0 = new frame, 1 = render to GVR, 2 = submit to GVR and swap
 unsigned int QVRGoogleVRTextures[2] = { 0, 0 };
+static gvr_controller_state* QVRGoogleVRControllerState = NULL;
 static float QVRGoogleVRDisplayFPS;
 static QVector3D QVRGoogleVREyeFromHeadPositions[2];
 static QQuaternion QVRGoogleVREyeFromHeadOrientations[2];
@@ -623,6 +627,16 @@ void QVRAttemptGoogleVRInitialization()
               viewerType == GVR_VIEWER_TYPE_CARDBOARD ? "cardboard"
             : viewerType == GVR_VIEWER_TYPE_DAYDREAM ? "daydream"
             : "unknown");
+    if (viewerType == GVR_VIEWER_TYPE_DAYDREAM) {
+        int32_t options = gvr_controller_get_default_options();
+        options |= GVR_CONTROLLER_ENABLE_ORIENTATION | GVR_CONTROLLER_ENABLE_POSITION
+            | GVR_CONTROLLER_ENABLE_TOUCH;
+        QVRGoogleVRController = gvr_controller_create_and_init(options, QVRGoogleVR);
+        if (QVRGoogleVRController) {
+            QVRGoogleVRControllerState = gvr_controller_state_create();
+            gvr_controller_resume(QVRGoogleVRController);
+        }
+    }
     QVRGoogleVRDisplayFPS = QGuiApplication::primaryScreen()->refreshRate();
     QVR_INFO("GoogleVR: display refresh rate is %g Hz", QVRGoogleVRDisplayFPS);
 }
@@ -646,6 +660,25 @@ void QVRUpdateGoogleVR()
     for (int i = 0; i < 2; i++) {
         QVRGoogleVRPositions[i] = QVRGoogleVRPositions[2] + QVRGoogleVROrientations[2] * QVRGoogleVREyeFromHeadPositions[i];
         QVRGoogleVROrientations[i] = QVRGoogleVROrientations[2] * QVRGoogleVREyeFromHeadOrientations[i];
+    }
+    if (QVRGoogleVRController) {
+        gvr_controller_state_update(QVRGoogleVRController, 0, QVRGoogleVRControllerState);
+        if (gvr_controller_state_get_api_status(QVRGoogleVRControllerState) == GVR_CONTROLLER_API_OK) {
+            gvr_quatf rot = gvr_controller_state_get_orientation(QVRGoogleVRControllerState);
+            QVRGoogleVROrientations[3] = QQuaternion(rot.qw, rot.qx, rot.qy, rot.qz);
+            gvr_vec3f pos = gvr_controller_state_get_position(QVRGoogleVRControllerState);
+            QVRGoogleVRPositions[3] = QVector3D(pos.x, pos.y, pos.z);
+            QVRGoogleVRButtons[0] = gvr_controller_state_get_button_state(QVRGoogleVRControllerState, GVR_CONTROLLER_BUTTON_CLICK);
+            QVRGoogleVRButtons[1] = gvr_controller_state_get_button_state(QVRGoogleVRControllerState, GVR_CONTROLLER_BUTTON_HOME);
+            QVRGoogleVRButtons[2] = gvr_controller_state_get_button_state(QVRGoogleVRControllerState, GVR_CONTROLLER_BUTTON_APP);
+            QVRGoogleVRAxes[0] = 0.0f;
+            QVRGoogleVRAxes[1] = 0.0f;
+            if (gvr_controller_state_is_touching(QVRGoogleVRControllerState)) {
+                gvr_vec2f touchPos = gvr_controller_state_get_touch_pos(QVRGoogleVRControllerState);
+                QVRGoogleVRAxes[0] = -(touchPos.y * 2.0f - 1.0f);
+                QVRGoogleVRAxes[1] = touchPos.x * 2.0f - 1.0f;
+            }
+        }
     }
 }
 extern "C" JNIEXPORT void JNICALL Java_de_uni_1siegen_libqvr_QVRActivity_nativeOnSurfaceCreated()

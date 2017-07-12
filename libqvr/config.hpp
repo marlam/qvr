@@ -71,8 +71,8 @@ typedef enum {
     QVR_Device_Buttons_OpenVR,
     /*! \brief A device with digital buttons queried via <a href="http://www.osvr.org/">OSVR</a>. */
     QVR_Device_Buttons_OSVR,
-    /*! \brief A device with a single digital trigger button that corresponds to a GoogleVR touch event. */
-    QVR_Device_Buttons_GoogleVR_Touch
+    /*! \brief A device with digital buttons queried via Google VR. */
+    QVR_Device_Buttons_GoogleVR
 } QVRDeviceButtonsType;
 
 /*!
@@ -92,7 +92,9 @@ typedef enum {
     /*! \brief A device with analog joystick elements queried via OpenVR (HTC Vive). */
     QVR_Device_Analogs_OpenVR,
     /*! \brief A device with analog joystick elements queried via <a href="http://www.osvr.org/">OSVR</a>. */
-    QVR_Device_Analogs_OSVR
+    QVR_Device_Analogs_OSVR,
+    /*! \brief A device with analog joystick elements queried via Google VR. */
+    QVR_Device_Analogs_GoogleVR
 } QVRDeviceAnalogsType;
 
 /*!
@@ -184,11 +186,13 @@ typedef enum {
     /*! \brief An observer that navigates via a controller device, e.g. wand, flystick, or gamepad.
      *
      * The following controller types should work:
-     * - Two analog joystick elements (\a QVR_Analog_Axis_X, \a QVR_Analog_Axis_Y) and four digital buttons
-     *   (\a QVR_Button_Up, \a QVR_Button_Down, \a QVR_Button_Left, \a QVR_Button_Down)
      * - Four analog joystick elements (\a QVR_Analog_Left_Axis_X, \a QVR_Analog_Left_Axis_Y,
-     *   \a QVR_Analog_Right_Axis_X, \a QVR_Analog_Right_Axis_Y)
-     * - A single digital button and nothing else (special case for Google Cardboard)
+     *   \a QVR_Analog_Right_Axis_X, \a QVR_Analog_Right_Axis_Y).
+     * - Two analog joystick elements (\a QVR_Analog_Axis_X, \a QVR_Analog_Axis_Y) and four digital buttons
+     *   (\a QVR_Button_Up, \a QVR_Button_Down, \a QVR_Button_Left, \a QVR_Button_Down).
+     * - Two analog joystick elements (\a QVR_Analog_Axis_X, \a QVR_Analog_Axis_Y) and less than
+     *   four buttons.
+     * - A single digital button and nothing else (special case for Google Cardboard).
      *
      * If the device is tracked, the movement directions are based on the device orientation. Otherwise,
      * they are based on the observer orientation.
@@ -342,7 +346,7 @@ public:
      * unfortunately not available via path names in OSVR).
      *
      * For \a QVR_Device_Tracking_GoogleVR, the parameter string must be one of "head",
-     * "eye-left", "eye-right".
+     * "eye-left", "eye-right", "daydream".
      */
     const QString& trackingParameters() const { return _trackingParameters; }
 
@@ -391,6 +395,8 @@ public:
      * For \a QVR_Device_Buttons_OSVR, the parameter string is a space-separated list
      * of button name / path name pairs. The button name defines the meaning of a name,
      * and the path name defines the OSVR button interface.
+     *
+     * For \a QVR_Device_Buttons_GoogleVR, the parameter string is either "touch" or "daydream".
      */
     const QString& buttonsParameters() const { return _buttonsParameters; }
 
@@ -435,6 +441,8 @@ public:
      *
      * For \a QVR_Device_Analogs_OSVR, the parameter string is a space-separated list
      * of path names of OSVR analog interfaces (one path name for each analog managed by this device).
+     *
+     * For \a QVR_Device_Analogs_GoogleVR, the parameter string must currently be "daydream".
      */
     const QString& analogsParameters() const { return _analogsParameters; }
 };
