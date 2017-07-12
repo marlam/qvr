@@ -836,6 +836,7 @@ void QVRManager::masterLoop()
             }
         } else if (obs->config().navigationType() == QVR_Navigation_Device) {
             const QVRDevice* dev = _devices.at(_observerNavigationDevices[o]);
+            bool haveFourAxes = (dev->hasAnalog(QVR_Analog_Right_Axis_X) && dev->hasAnalog(QVR_Analog_Right_Axis_Y));
             const float speed = 1.5f; // in meters per second; TODO: make this configurable?
             float seconds = 0.0f;
             if (_wandNavigationTimer->isValid()) {
@@ -844,8 +845,9 @@ void QVRManager::masterLoop()
             } else {
                 _wandNavigationTimer->start();
             }
-            if (std::abs(dev->analogValue(QVR_Analog_Axis_Y)) > 0.0f
-                    || std::abs(dev->analogValue(QVR_Analog_Axis_X)) > 0.0f) {
+            float forwardVal = dev->analogValue(haveFourAxes ? QVR_Analog_Right_Axis_Y : QVR_Analog_Axis_Y);
+            float sidewaysVal = dev->analogValue(haveFourAxes ? QVR_Analog_Right_Axis_X : QVR_Analog_Axis_X);
+            if (std::abs(forwardVal) > 0.0f || std::abs(sidewaysVal) > 0.0f) {
                 QQuaternion wandRot = dev->orientation() * QQuaternion::fromEulerAngles(0.0f, _wandNavigationRotY, 0.0f);
                 QVector3D forwardDir = wandRot * QVector3D(0.0f, 0.0f, -1.0f);
                 forwardDir.setY(0.0f);
@@ -853,22 +855,23 @@ void QVRManager::masterLoop()
                 QVector3D rightDir = wandRot * QVector3D(1.0f, 0.0f, 0.0f);
                 rightDir.setY(0.0f);
                 rightDir.normalize();
-                _wandNavigationPos += speed * seconds * (forwardDir * dev->analogValue(QVR_Analog_Axis_Y)
-                        + rightDir * dev->analogValue(QVR_Analog_Axis_X));
+                _wandNavigationPos += speed * seconds * (forwardDir * forwardVal + rightDir * sidewaysVal);
             }
-            if (dev->isButtonPressed(QVR_Button_Up)) {
-                _wandNavigationPos += speed * seconds * QVector3D(0.0f, +1.0f, 0.0f);
-            }
-            if (dev->isButtonPressed(QVR_Button_Down)) {
-                _wandNavigationPos += speed * seconds * QVector3D(0.0f, -1.0f, 0.0f);
-            }
-            if (dev->isButtonPressed(QVR_Button_Left)) {
-                _wandNavigationRotY += 1.0f;
+            float upVal = (haveFourAxes ? dev->analogValue(QVR_Analog_Left_Axis_Y) : (dev->isButtonPressed(QVR_Button_Up) ? 1.0f : 0.0f));
+            float downVal = (haveFourAxes ? -dev->analogValue(QVR_Analog_Left_Axis_Y) : (dev->isButtonPressed(QVR_Button_Down) ? 1.0f : 0.0f));
+            float rightVal = (haveFourAxes ? -dev->analogValue(QVR_Analog_Left_Axis_X) : (dev->isButtonPressed(QVR_Button_Left) ? 1.0f : 0.0f));
+            float leftVal = (haveFourAxes ? dev->analogValue(QVR_Analog_Left_Axis_X) : (dev->isButtonPressed(QVR_Button_Right) ? 1.0f : 0.0f));
+            if (upVal > 0.0f)
+                _wandNavigationPos += speed * seconds * upVal * QVector3D(0.0f, +1.0f, 0.0f);
+            if (downVal > 0.0f)
+                _wandNavigationPos += speed * seconds * downVal * QVector3D(0.0f, -1.0f, 0.0f);
+            if (rightVal > 0.0f) {
+                _wandNavigationRotY += rightVal;
                 if (_wandNavigationRotY >= 360.0f)
                     _wandNavigationRotY -= 360.0f;
             }
-            if (dev->isButtonPressed(QVR_Button_Right)) {
-                _wandNavigationRotY -= 1.0f;
+            if (leftVal > 0.0f) {
+                _wandNavigationRotY -= leftVal;
                 if (_wandNavigationRotY <= 0.0f)
                     _wandNavigationRotY += 360.0f;
             }

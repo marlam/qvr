@@ -181,15 +181,14 @@ typedef enum {
 typedef enum {
     /*! \brief An observer that never navigates anywhere. */
     QVR_Navigation_Stationary,
-    /*! \brief An observer that navigates via a wand or flystick device.
+    /*! \brief An observer that navigates via a controller, e.g. wand, flystick, or gamepad.
      *
-     * The wand must be a tracked device (position and orientation), and it must have two analog joystick elements for
-     * movements in the x/z plane, and four digital buttons for movements based on the y axis (up, down, rotate left,
-     * rotate right).
-     *
-     * (As a special exception for Google Cardboard, if the given device has
-     * exactly one digital button, then the observer will jump one meter in
-     * view direction whenever that button is pressed.)
+     * The following controller types should work:
+     * - Two analog joystick elements (\a QVR_Analog_Axis_X, \a QVR_Analog_Axis_Y) and four digital buttons
+     *   (\a QVR_Button_Up, \a QVR_Button_Down, \a QVR_Button_Left, \a QVR_Button_Down)
+     * - Four analog joystick elements (\a QVR_Analog_Left_Axis_X, \a QVR_Analog_Left_Axis_Y,
+     *   \a QVR_Analog_Right_Axis_X, \a QVR_Analog_Right_Axis_Y)
+     * - A single digital button and nothing else (special case for Google Cardboard)
      */
     QVR_Navigation_Device,
     /*! \brief An observer with keyboard and mouse navigation (WASD+QE and lookaround).
