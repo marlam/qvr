@@ -226,6 +226,10 @@ QVRDevice::QVRDevice() :
 QVRDevice::QVRDevice(int deviceIndex) :
     _index(deviceIndex)
 {
+    for (int i = 0; i < QVR_Button_Unknown; i++)
+        _buttonsMap[i] = -1;
+    for (int i = 0; i < QVR_Analog_Unknown; i++)
+        _analogsMap[i] = -1;
     _internals = new struct QVRDeviceInternals;
     _internals->currentTimestamp = -1;
 #ifdef HAVE_QGAMEPAD
