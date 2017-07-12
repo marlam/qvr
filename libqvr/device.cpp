@@ -730,6 +730,17 @@ QVRDevice::QVRDevice(int deviceIndex) :
     }
 }
 
+QVRDevice::QVRDevice(const QVRDevice& d) : _internals(NULL)
+{
+    _index = d._index;
+    _position = d._position;
+    _orientation = d._orientation;
+    std::memcpy(_buttonsMap, d._buttonsMap, sizeof(_buttonsMap));
+    _buttons = d._buttons;
+    std::memcpy(_analogsMap, d._analogsMap, sizeof(_analogsMap));
+    _analogs = d._analogs;
+}
+
 QVRDevice::~QVRDevice()
 {
     if (_internals) {

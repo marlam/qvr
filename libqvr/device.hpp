@@ -80,6 +80,8 @@ public:
     QVRDevice();
     /*! \brief Constructor for the device with the given \a index in the QVR configuration. */
     QVRDevice(int index);
+    /*! \brief Copy constructor. */
+    QVRDevice(const QVRDevice& d);
     /*! \brief Destructor. */
     ~QVRDevice();
 
@@ -358,9 +360,8 @@ private:
 public:
     /* Construct a device event. Only used internally. */
     QVRDeviceEvent(const QVRDevice& device, int buttonIndex, int analogIndex) :
-        _device(), _buttonIndex(buttonIndex), _analogIndex(analogIndex)
+        _device(device), _buttonIndex(buttonIndex), _analogIndex(analogIndex)
     {
-        _device = device;
     }
 
     /*! \brief Returns the device state at the time this event was generated.
