@@ -848,11 +848,13 @@ void QVRManager::masterLoop()
             float forwardVal = dev->analogValue(haveFourAxes ? QVR_Analog_Right_Axis_Y : QVR_Analog_Axis_Y);
             float sidewaysVal = dev->analogValue(haveFourAxes ? QVR_Analog_Right_Axis_X : QVR_Analog_Axis_X);
             if (std::abs(forwardVal) > 0.0f || std::abs(sidewaysVal) > 0.0f) {
-                QQuaternion wandRot = dev->orientation() * QQuaternion::fromEulerAngles(0.0f, _wandNavigationRotY, 0.0f);
-                QVector3D forwardDir = wandRot * QVector3D(0.0f, 0.0f, -1.0f);
+                QQuaternion rot = (dev->config().trackingType() == QVR_Device_Tracking_None
+                        ? obs->trackingOrientation() : dev->orientation())
+                    * QQuaternion::fromEulerAngles(0.0f, _wandNavigationRotY, 0.0f);
+                QVector3D forwardDir = rot * QVector3D(0.0f, 0.0f, -1.0f);
                 forwardDir.setY(0.0f);
                 forwardDir.normalize();
-                QVector3D rightDir = wandRot * QVector3D(1.0f, 0.0f, 0.0f);
+                QVector3D rightDir = rot * QVector3D(1.0f, 0.0f, 0.0f);
                 rightDir.setY(0.0f);
                 rightDir.normalize();
                 _wandNavigationPos += speed * seconds * (forwardDir * forwardVal + rightDir * sidewaysVal);
