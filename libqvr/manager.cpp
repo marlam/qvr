@@ -829,7 +829,7 @@ void QVRManager::masterLoop()
                 && _devices.at(_observerNavigationDevices[o])->buttonCount() == 1) {
             // primitive navigation for Google Cardboard
             const QVRDevice* dev = _devices.at(_observerNavigationDevices[o]);
-            if (dev->button(0)) {
+            if (dev->isButtonPressed(0)) {
                 QQuaternion viewerRot = obs->trackingOrientation() * obs->navigationOrientation();
                 QVector3D dir = viewerRot * QVector3D(0.0f, 0.0f, -1.0f);
                 obs->setNavigation(
@@ -846,8 +846,8 @@ void QVRManager::masterLoop()
             } else {
                 _wandNavigationTimer->start();
             }
-            if (std::abs(dev->analog(QVR_Analog_Axis_Y)) > 0.0f
-                    || std::abs(dev->analog(QVR_Analog_Axis_X)) > 0.0f) {
+            if (std::abs(dev->analogValue(QVR_Analog_Axis_Y)) > 0.0f
+                    || std::abs(dev->analogValue(QVR_Analog_Axis_X)) > 0.0f) {
                 QQuaternion wandRot = dev->orientation() * QQuaternion::fromEulerAngles(0.0f, _wandNavigationRotY, 0.0f);
                 QVector3D forwardDir = wandRot * QVector3D(0.0f, 0.0f, -1.0f);
                 forwardDir.setY(0.0f);
@@ -855,21 +855,21 @@ void QVRManager::masterLoop()
                 QVector3D rightDir = wandRot * QVector3D(1.0f, 0.0f, 0.0f);
                 rightDir.setY(0.0f);
                 rightDir.normalize();
-                _wandNavigationPos += speed * seconds * (forwardDir * dev->analog(QVR_Analog_Axis_Y)
-                        + rightDir * dev->analog(QVR_Analog_Axis_X));
+                _wandNavigationPos += speed * seconds * (forwardDir * dev->analogValue(QVR_Analog_Axis_Y)
+                        + rightDir * dev->analogValue(QVR_Analog_Axis_X));
             }
-            if (dev->button(QVR_Button_Up)) {
+            if (dev->isButtonPressed(QVR_Button_Up)) {
                 _wandNavigationPos += speed * seconds * QVector3D(0.0f, +1.0f, 0.0f);
             }
-            if (dev->button(QVR_Button_Down)) {
+            if (dev->isButtonPressed(QVR_Button_Down)) {
                 _wandNavigationPos += speed * seconds * QVector3D(0.0f, -1.0f, 0.0f);
             }
-            if (dev->button(QVR_Button_Left)) {
+            if (dev->isButtonPressed(QVR_Button_Left)) {
                 _wandNavigationRotY += 1.0f;
                 if (_wandNavigationRotY >= 360.0f)
                     _wandNavigationRotY -= 360.0f;
             }
-            if (dev->button(QVR_Button_Right)) {
+            if (dev->isButtonPressed(QVR_Button_Right)) {
                 _wandNavigationRotY -= 1.0f;
                 if (_wandNavigationRotY <= 0.0f)
                     _wandNavigationRotY += 360.0f;
@@ -1106,16 +1106,16 @@ void QVRManager::updateDevices()
     /* Generate device events */
     for (int d = 0; d < _devices.size(); d++) {
         for (int b = 0; b < _devices[d]->buttonCount(); b++) {
-            if (_deviceLastStates[d].button(b) != _devices[d]->button(b)) {
+            if (_deviceLastStates[d].isButtonPressed(b) != _devices[d]->isButtonPressed(b)) {
                 QVRDeviceEvent e(*(_devices[d]), b, -1);
-                if (_devices[d]->button(b))
+                if (_devices[d]->isButtonPressed(b))
                     QVREventQueue->enqueue(QVREvent(QVR_Event_DeviceButtonPress, e));
                 else
                     QVREventQueue->enqueue(QVREvent(QVR_Event_DeviceButtonRelease, e));
             }
         }
         for (int a = 0; a < _devices[d]->analogCount(); a++) {
-            if (_deviceLastStates[d].analog(a) != _devices[d]->analog(a)) {
+            if (_deviceLastStates[d].analogValue(a) != _devices[d]->analogValue(a)) {
                 QVREventQueue->enqueue(QVREvent(QVR_Event_DeviceAnalogChange,
                             QVRDeviceEvent(*(_devices[d]), -1, a)));
             }
