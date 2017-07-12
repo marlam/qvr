@@ -358,8 +358,9 @@ private:
 public:
     /* Construct a device event. Only used internally. */
     QVRDeviceEvent(const QVRDevice& device, int buttonIndex, int analogIndex) :
-        _device(device), _buttonIndex(buttonIndex), _analogIndex(analogIndex)
+        _device(), _buttonIndex(buttonIndex), _analogIndex(analogIndex)
     {
+        _device = device;
     }
 
     /*! \brief Returns the device state at the time this event was generated.
