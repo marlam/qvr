@@ -130,10 +130,6 @@ QDataStream &operator>>(QDataStream& ds, QVREvent& e)
     switch (e.type) {
     case QVR_Event_KeyPress:
     case QVR_Event_KeyRelease:
-        ds << e.context
-            << static_cast<int>(e.keyEvent.type())
-            << e.keyEvent.key()
-            << static_cast<int>(e.keyEvent.modifiers());
         ds >> e.context
             >> ke[0]
             >> ke[1]
