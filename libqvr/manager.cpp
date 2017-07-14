@@ -693,39 +693,35 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
     QVR_INFO("process %s (index %d) creating %d windows",
             qPrintable(processConfig().id()), _processIndex,
             processConfig().windowConfigs().size());
-    if (processConfig().windowConfigs().size() > 0) {
-        for (int w = 0; w < processConfig().windowConfigs().size(); w++) {
-            int ds = windowConfig(_processIndex, w).initialDisplayScreen();
-            if (ds < -1 || ds >= QVRScreenCount) {
-                QVR_FATAL("display has no screen %d", ds);
-                return false;
-            }
-        }
-        _masterGLContext = new QOpenGLContext();
-        QVR_INFO("  master window...");
-        _masterWindow = new QVRWindow(_masterGLContext, 0, -1);
-        if (!_masterWindow->isValid())
+    for (int w = 0; w < processConfig().windowConfigs().size(); w++) {
+        int ds = windowConfig(_processIndex, w).initialDisplayScreen();
+        if (ds < -1 || ds >= QVRScreenCount) {
+            QVR_FATAL("display has no screen %d", ds);
             return false;
-        for (int w = 0; w < processConfig().windowConfigs().size(); w++) {
-            QVR_INFO("  window %d...", w);
-            QVRObserver* observer = _observers.at(windowConfig(_processIndex, w).observerIndex());
-            QVRWindow* window = new QVRWindow(_masterGLContext, observer, w);
-            if (!window->isValid())
-                return false;
-            _windows.append(window);
         }
+    }
+    _masterGLContext = new QOpenGLContext();
+    QVR_INFO("  master window...");
+    _masterWindow = new QVRWindow(_masterGLContext, 0, -1);
+    if (!_masterWindow->isValid())
+        return false;
+    for (int w = 0; w < processConfig().windowConfigs().size(); w++) {
+        QVR_INFO("  window %d...", w);
+        QVRObserver* observer = _observers.at(windowConfig(_processIndex, w).observerIndex());
+        QVRWindow* window = new QVRWindow(_masterGLContext, observer, w);
+        if (!window->isValid())
+            return false;
+        _windows.append(window);
     }
 
     // Initialize application process and windows
-    if (_masterWindow) {
-        _masterWindow->winContext()->makeCurrent(_masterWindow);
-        if (!_app->initProcess(_thisProcess))
+    _masterWindow->winContext()->makeCurrent(_masterWindow);
+    if (!_app->initProcess(_thisProcess))
+        return false;
+    for (int w = 0; w < _windows.size(); w++)
+        if (!_app->initWindow(_windows[w]))
             return false;
-        for (int w = 0; w < _windows.size(); w++)
-            if (!_app->initWindow(_windows[w]))
-                return false;
-        _masterWindow->winContext()->doneCurrent();
-    }
+    _masterWindow->winContext()->doneCurrent();
     if (_processIndex == 0) {
         updateDevices();
         _app->update(_observers);
@@ -769,8 +765,7 @@ void QVRManager::masterLoop()
 
     QVR_FIREHOSE("masterLoop() ...");
 
-    if (_masterWindow)
-        _masterWindow->winContext()->makeCurrent(_masterWindow);
+    _masterWindow->winContext()->makeCurrent(_masterWindow);
 
     if (_wantExit || _app->wantExit()) {
         QVR_FIREHOSE("  ... exit now!");
@@ -1064,18 +1059,16 @@ void QVRManager::quit()
 {
     QVR_DEBUG("quitting process %d...", _thisProcess->index());
     _fpsTimer->stop();
-    if (_masterWindow) {
-        _masterWindow->winContext()->makeCurrent(_masterWindow);
-        for (int w = _windows.size() - 1; w >= 0; w--) {
-            QVR_DEBUG("... exiting window %d", w);
-            _app->exitWindow(_windows[w]);
-            _windows[w]->exitGL();
-            _windows[w]->close();
-        }
-        QVR_DEBUG("... exiting process");
-        _app->exitProcess(_thisProcess);
-        _masterWindow->close();
+    _masterWindow->winContext()->makeCurrent(_masterWindow);
+    for (int w = _windows.size() - 1; w >= 0; w--) {
+        QVR_DEBUG("... exiting window %d", w);
+        _app->exitWindow(_windows[w]);
+        _windows[w]->exitGL();
+        _windows[w]->close();
     }
+    QVR_DEBUG("... exiting process");
+    _app->exitProcess(_thisProcess);
+    _masterWindow->close();
     QTimer::singleShot(0, QGuiApplication::instance(), SLOT(quit()));
     QVR_DEBUG("... quitting process %d done", _thisProcess->index());
 }
@@ -1150,70 +1143,66 @@ void QVRManager::render()
 {
     QVR_FIREHOSE("  render() ...");
 
-    if (_masterWindow) {
-        _masterWindow->winContext()->makeCurrent(_masterWindow);
+    _masterWindow->winContext()->makeCurrent(_masterWindow);
 #ifdef GL_FRAMEBUFFER_SRGB
-        _masterWindow->glEnable(GL_FRAMEBUFFER_SRGB);
+    _masterWindow->glEnable(GL_FRAMEBUFFER_SRGB);
 #endif
-    }
 
-    if (_windows.size() > 0) {
-        QVR_FIREHOSE("  ... preRenderProcess()");
-        _app->preRenderProcess(_thisProcess);
-        // render
-        for (int w = 0; w < _windows.size(); w++) {
-            if (!_wasdqeMouseInitialized) {
-                if (_wasdqeMouseProcessIndex == _windows[w]->processIndex()
-                        && _wasdqeMouseWindowIndex == _windows[w]->index()) {
-                    _windows[w]->setCursor(Qt::BlankCursor);
-                    QCursor::setPos(_windows[w]->mapToGlobal(
-                                QPoint(_windows[w]->width() / 2, _windows[w]->height() / 2)));
-                } else {
-                    _windows[w]->unsetCursor();
-                }
+    QVR_FIREHOSE("  ... preRenderProcess()");
+    _app->preRenderProcess(_thisProcess);
+    // render
+    for (int w = 0; w < _windows.size(); w++) {
+        if (!_wasdqeMouseInitialized) {
+            if (_wasdqeMouseProcessIndex == _windows[w]->processIndex()
+                    && _wasdqeMouseWindowIndex == _windows[w]->index()) {
+                _windows[w]->setCursor(Qt::BlankCursor);
+                QCursor::setPos(_windows[w]->mapToGlobal(
+                            QPoint(_windows[w]->width() / 2, _windows[w]->height() / 2)));
+            } else {
+                _windows[w]->unsetCursor();
             }
-            QVR_FIREHOSE("  ... preRenderWindow(%d)", w);
-            _app->preRenderWindow(_windows[w]);
-            QVR_FIREHOSE("  ... render(%d)", w);
-            unsigned int textures[2];
-            const QVRRenderContext& renderContext = _windows[w]->computeRenderContext(_near, _far, textures);
-            for (int i = 0; i < renderContext.viewCount(); i++) {
-                QVR_FIREHOSE("  ... view %d frustum: l=%g r=%g b=%g t=%g n=%g f=%g", i,
-                        renderContext.frustum(i).leftPlane(),
-                        renderContext.frustum(i).rightPlane(),
-                        renderContext.frustum(i).bottomPlane(),
-                        renderContext.frustum(i).topPlane(),
-                        renderContext.frustum(i).nearPlane(),
-                        renderContext.frustum(i).farPlane());
-                QVR_FIREHOSE("  ... view %d viewmatrix: [%g %g %g %g] [%g %g %g %g] [%g %g %g %g] [%g %g %g %g]", i,
-                        renderContext.viewMatrix(i)(0, 0), renderContext.viewMatrix(i)(0, 1),
-                        renderContext.viewMatrix(i)(0, 2), renderContext.viewMatrix(i)(0, 3),
-                        renderContext.viewMatrix(i)(1, 0), renderContext.viewMatrix(i)(1, 1),
-                        renderContext.viewMatrix(i)(1, 2), renderContext.viewMatrix(i)(1, 3),
-                        renderContext.viewMatrix(i)(2, 0), renderContext.viewMatrix(i)(2, 1),
-                        renderContext.viewMatrix(i)(2, 2), renderContext.viewMatrix(i)(2, 3),
-                        renderContext.viewMatrix(i)(3, 0), renderContext.viewMatrix(i)(3, 1),
-                        renderContext.viewMatrix(i)(3, 2), renderContext.viewMatrix(i)(3, 3));
-            }
-            _app->render(_windows[w], renderContext, textures);
-            QVR_FIREHOSE("  ... postRenderWindow(%d)", w);
-            _app->postRenderWindow(_windows[w]);
         }
-        QVR_FIREHOSE("  ... postRenderProcess()");
-        _app->postRenderProcess(_thisProcess);
-        /* At this point, we must make sure that all textures actually contain
-         * the current scene, otherwise artefacts are displayed when the window
-         * threads render them. It seems that glFlush() is not enough for all
-         * OpenGL implementations; to be safe, we use glFinish(). */
-        _masterWindow->glFinish();
-        for (int w = 0; w < _windows.size(); w++) {
-            QVR_FIREHOSE("  ... renderToScreen(%d)", w);
-            _windows[w]->renderToScreen();
+        QVR_FIREHOSE("  ... preRenderWindow(%d)", w);
+        _app->preRenderWindow(_windows[w]);
+        QVR_FIREHOSE("  ... render(%d)", w);
+        unsigned int textures[2];
+        const QVRRenderContext& renderContext = _windows[w]->computeRenderContext(_near, _far, textures);
+        for (int i = 0; i < renderContext.viewCount(); i++) {
+            QVR_FIREHOSE("  ... view %d frustum: l=%g r=%g b=%g t=%g n=%g f=%g", i,
+                    renderContext.frustum(i).leftPlane(),
+                    renderContext.frustum(i).rightPlane(),
+                    renderContext.frustum(i).bottomPlane(),
+                    renderContext.frustum(i).topPlane(),
+                    renderContext.frustum(i).nearPlane(),
+                    renderContext.frustum(i).farPlane());
+            QVR_FIREHOSE("  ... view %d viewmatrix: [%g %g %g %g] [%g %g %g %g] [%g %g %g %g] [%g %g %g %g]", i,
+                    renderContext.viewMatrix(i)(0, 0), renderContext.viewMatrix(i)(0, 1),
+                    renderContext.viewMatrix(i)(0, 2), renderContext.viewMatrix(i)(0, 3),
+                    renderContext.viewMatrix(i)(1, 0), renderContext.viewMatrix(i)(1, 1),
+                    renderContext.viewMatrix(i)(1, 2), renderContext.viewMatrix(i)(1, 3),
+                    renderContext.viewMatrix(i)(2, 0), renderContext.viewMatrix(i)(2, 1),
+                    renderContext.viewMatrix(i)(2, 2), renderContext.viewMatrix(i)(2, 3),
+                    renderContext.viewMatrix(i)(3, 0), renderContext.viewMatrix(i)(3, 1),
+                    renderContext.viewMatrix(i)(3, 2), renderContext.viewMatrix(i)(3, 3));
         }
-        for (int w = 0; w < _windows.size(); w++) {
-            QVR_FIREHOSE("  ... asyncSwapBuffers(%d)", w);
-            _windows[w]->asyncSwapBuffers();
-        }
+        _app->render(_windows[w], renderContext, textures);
+        QVR_FIREHOSE("  ... postRenderWindow(%d)", w);
+        _app->postRenderWindow(_windows[w]);
+    }
+    QVR_FIREHOSE("  ... postRenderProcess()");
+    _app->postRenderProcess(_thisProcess);
+    /* At this point, we must make sure that all textures actually contain
+     * the current scene, otherwise artefacts are displayed when the window
+     * threads render them. It seems that glFlush() is not enough for all
+     * OpenGL implementations; to be safe, we use glFinish(). */
+    _masterWindow->glFinish();
+    for (int w = 0; w < _windows.size(); w++) {
+        QVR_FIREHOSE("  ... renderToScreen(%d)", w);
+        _windows[w]->renderToScreen();
+    }
+    for (int w = 0; w < _windows.size(); w++) {
+        QVR_FIREHOSE("  ... asyncSwapBuffers(%d)", w);
+        _windows[w]->asyncSwapBuffers();
     }
     _wasdqeMouseInitialized = true;
 }
