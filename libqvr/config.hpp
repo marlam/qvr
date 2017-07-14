@@ -260,9 +260,7 @@ typedef enum {
     /*! \brief Output a stereoscopic view for the HTC Vive head-mounted display. */
     QVR_Output_OpenVR = 10,
     /*! \brief Output a stereoscopic view for Google VR devices (Cardboard, Daydream). */
-    QVR_Output_GoogleVR = 11,
-    /*! \brief Output a stereoscopic view via an output plugin; see \a QVROutputPlugin(). */
-    QVR_Output_Custom = 8
+    QVR_Output_GoogleVR = 11
 } QVROutputMode;
 
 /*!

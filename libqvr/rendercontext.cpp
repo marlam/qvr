@@ -88,7 +88,6 @@ void QVRRenderContext::setOutputConf(QVROutputMode om)
     case QVR_Output_Oculus:
     case QVR_Output_OpenVR:
     case QVR_Output_GoogleVR:
-    case QVR_Output_Custom:
         _viewCount = 2;
         _eye[0] = QVR_Eye_Left;
         _eye[1] = QVR_Eye_Right;

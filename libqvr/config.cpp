@@ -529,18 +529,17 @@ bool QVRConfig::readFromFile(const QString& filename)
                     continue;
                 }
                 if (cmd == "output"
-                        && ((arglist.length() == 1 && arglist[0] == "center")
-                            || (arglist.length() == 1 && arglist[0] == "left")
-                            || (arglist.length() == 1 && arglist[0] == "right")
-                            || (arglist.length() == 1 && arglist[0] == "stereo")
+                        && ((arglist.length() >= 1 && arglist[0] == "center")
+                            || (arglist.length() >= 1 && arglist[0] == "left")
+                            || (arglist.length() >= 1 && arglist[0] == "right")
+                            || (arglist.length() >= 1 && arglist[0] == "stereo")
                             || (arglist.length() == 1 && arglist[0] == "red_cyan")
                             || (arglist.length() == 1 && arglist[0] == "green_magenta")
                             || (arglist.length() == 1 && arglist[0] == "amber_blue")
                             || (arglist.length() == 1 && arglist[0] == "oculus")
                             || (arglist.length() == 1 && arglist[0] == "osvr")
                             || (arglist.length() == 1 && arglist[0] == "openvr")
-                            || (arglist.length() == 1 && arglist[0] == "googlevr")
-                            || (arglist.length() >= 2 && arglist[0] == "custom"))) {
+                            || (arglist.length() == 1 && arglist[0] == "googlevr"))) {
                     windowConfig._outputMode = (
                             arglist[0] == "center" ? QVR_Output_Center
                             : arglist[0] == "left" ? QVR_Output_Left
@@ -552,9 +551,8 @@ bool QVRConfig::readFromFile(const QString& filename)
                             : arglist[0] == "oculus" ? QVR_Output_Oculus
                             : arglist[0] == "osvr" ? QVR_Output_OSVR
                             : arglist[0] == "openvr" ? QVR_Output_OpenVR
-                            : arglist[0] == "googlevr" ? QVR_Output_GoogleVR
-                            : QVR_Output_Custom);
-                    if (windowConfig._outputMode == QVR_Output_Custom)
+                            : QVR_Output_GoogleVR);
+                    if (arglist.length() > 1)
                         windowConfig._outputPlugin = arglist.mid(1).join(' ');
                     else
                         windowConfig._outputPlugin = QString();

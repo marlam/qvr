@@ -141,8 +141,8 @@
  *   Start a new window definition with the given unique id, within the current process definition.
  * - `observer <id>`<br>
  *   Set the observer that this window provides a view for.
- * - `output <center|left|right|stereo|red_cyan|green_magenta|amber_blue|oculus|openvr|osvr|googlevr|custom>`<br>
- *   Set the output mode.
+ * - `output <center|left|right|stereo|red_cyan|green_magenta|amber_blue|oculus|openvr|osvr|googlevr>`<br>
+ *   Set the output mode. For center, left, right, and stereo, you can set an additional output plugin.
  * - `display_screen <screen>`<br>
  *   Select the Qt screen index on the Qt display that this process is connected to.<br>
  * - `fullscreen <true|false>`
