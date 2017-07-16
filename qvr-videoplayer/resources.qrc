@@ -1,0 +1,9 @@
+<RCC>
+  <qresource>
+    <file>colorconv-vs.glsl</file>
+    <file>colorconv-fs.glsl</file>
+    <file>vertex-shader.glsl</file>
+    <file>fragment-shader.glsl</file>
+    <file>logo.mp4</file>
+  </qresource>
+</RCC>

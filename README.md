@@ -71,5 +71,8 @@ explaining the concepts of libqvr and how to use it, and a
 - `qvr-sceneviewer`:
   a viewer for 3D models and scenes in many file formats.
 
+- `qvr-videoplayer`:
+  a video screen in the virtual world, for 2D and 3D videos
+
 - `qvr-vncviewer`: a [VNC](https://en.wikipedia.org/wiki/Virtual_Network_Computing)
   viewer. Put a remote desktop in your virtual world!
