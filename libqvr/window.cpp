@@ -977,6 +977,10 @@ void QVRWindow::renderOutput()
     if (!config().outputPlugin().isEmpty()) {
         unsigned int texs[2] = { tex0, tex1 };
         _outputPluginFunc(this, _renderContext, texs);
+#if defined(HAVE_OCULUS) && (OVR_PRODUCT_VERSION < 1)
+    } else if (config().outputMode() == QVR_Output_Oculus) {
+        // do nothing here, the output is done by ovrHmd_EndFrame()
+#endif
     } else if (config().outputMode() == QVR_Output_OSVR) {
 #ifdef HAVE_OSVR
         OSVR_ViewportDescription osvrDefaultViewport;
