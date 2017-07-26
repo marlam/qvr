@@ -930,7 +930,7 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
     }
 #ifdef HAVE_OSVR
     if (config().outputMode() == QVR_Output_OSVR) {
-        osvrRenderManagerReleaseRenderInfoCollection(osvrRenderInfoCollection);
+        //osvrRenderManagerReleaseRenderInfoCollection(osvrRenderInfoCollection);
         if (texturesNeedRegistering) {
             OSVR_RenderManagerRegisterBufferState s;
             osvrRenderManagerStartRegisterRenderBuffers(&s);
