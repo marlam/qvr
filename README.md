@@ -23,7 +23,7 @@ external rendering engines. Examples are provided.
 ## Supported platforms and hardware
 
 The library should work on every platform that has Qt (i.e. all the platforms).
-Currently tested are Linux and Windows.
+Currently tested are Linux, Windows, and Android.
 
 Supported VR hardware includes:
 
