@@ -661,8 +661,12 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
     _renderContext.setNavigation(_observer->navigationPosition(), _observer->navigationOrientation());
     _renderContext.setOutputConf(config().outputMode());
     QVector3D wallBl, wallBr, wallTl;
-    if (config().outputMode() != QVR_Output_Oculus && config().outputMode() != QVR_Output_OSVR)
+    if (config().outputMode() != QVR_Output_Oculus
+            && config().outputMode() != QVR_Output_OSVR
+            && config().outputMode() != QVR_Output_OpenVR
+            && config().outputMode() != QVR_Output_GoogleVR) {
         screenWall(wallBl, wallBr, wallTl);
+    }
     _renderContext.setScreenWall(wallBl, wallBr, wallTl);
     for (int i = 0; i < _renderContext.viewCount(); i++) {
         QVREye eye = _renderContext.eye(i);
