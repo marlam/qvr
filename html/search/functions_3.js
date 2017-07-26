@@ -1,8 +1,12 @@
 var searchData=
 [
+  ['decoupledrendering',['decoupledRendering',['../class_q_v_r_process_config.html#ab93defbc7731b25c07a2d07bd4079240',1,'QVRProcessConfig']]],
   ['deserializedynamicdata',['deserializeDynamicData',['../class_q_v_r_app.html#a68082a153e243a70882d8ce636282bf2',1,'QVRApp']]],
   ['deserializestaticdata',['deserializeStaticData',['../class_q_v_r_app.html#aa00ca00b1adb2c93fcbbcae1f216aa9a',1,'QVRApp']]],
-  ['device',['device',['../class_q_v_r_manager.html#aaff6025fa8f5b46c5728f6806b214adf',1,'QVRManager']]],
+  ['device',['device',['../class_q_v_r_manager.html#aaff6025fa8f5b46c5728f6806b214adf',1,'QVRManager::device()'],['../class_q_v_r_device_event.html#a69a824dcb26ec887bf382fb92a48146c',1,'QVRDeviceEvent::device()']]],
+  ['deviceanalogchangeevent',['deviceAnalogChangeEvent',['../class_q_v_r_app.html#a557c467362be85e479b04901da12d9b7',1,'QVRApp']]],
+  ['devicebuttonpressevent',['deviceButtonPressEvent',['../class_q_v_r_app.html#a4a667b88fb8762afa27496baaa99990a',1,'QVRApp']]],
+  ['devicebuttonreleaseevent',['deviceButtonReleaseEvent',['../class_q_v_r_app.html#aae5d65b3af42e66a280e9eb04b56d5f1',1,'QVRApp']]],
   ['deviceconfig',['deviceConfig',['../class_q_v_r_manager.html#afed75c8d4e4c58c191e5d30faceac9ad',1,'QVRManager']]],
   ['deviceconfigs',['deviceConfigs',['../class_q_v_r_config.html#a0cd94261ec6468b0125614939fd927fa',1,'QVRConfig']]],
   ['devicecount',['deviceCount',['../class_q_v_r_manager.html#ad28b88b3112562babaf491fa750b526b',1,'QVRManager']]],

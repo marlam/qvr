@@ -62,6 +62,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="class_q_v_r_config-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -72,14 +73,29 @@ $(function() {
 <p>QVR configuration of a Virtual Reality display setup.  
  <a href="class_q_v_r_config.html#details">More...</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a96150560c35afabee64c3743e63650f2"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_config.html#a96150560c35afabee64c3743e63650f2">AutodetectFlag</a> { <br />
+&#160;&#160;<a class="el" href="class_q_v_r_config.html#a96150560c35afabee64c3743e63650f2ab03aecca0f8ad0b408e235802160e320">AutodetectOculus</a> = (1 &lt;&lt; 0), 
+<a class="el" href="class_q_v_r_config.html#a96150560c35afabee64c3743e63650f2aec52bf55a5d3c8d3f49c93093609b9e5">AutodetectOpenVR</a> = (1 &lt;&lt; 1), 
+<a class="el" href="class_q_v_r_config.html#a96150560c35afabee64c3743e63650f2a836d238b4a32aad85150667c0aa84be4">AutodetectOSVR</a> = (1 &lt;&lt; 2), 
+<a class="el" href="class_q_v_r_config.html#a96150560c35afabee64c3743e63650f2a2f73c4e89950ea2867276ee162fe8723">AutodetectGoogleVR</a> = (1 &lt;&lt; 3), 
+<br />
+&#160;&#160;<a class="el" href="class_q_v_r_config.html#a96150560c35afabee64c3743e63650f2a2159464a574c59ef240900e5879a6d87">AutodetectGamepads</a> = (1 &lt;&lt; 4), 
+<a class="el" href="class_q_v_r_config.html#a96150560c35afabee64c3743e63650f2a4ff441be55969c373e880125c1b5b2b7">AutodetectAll</a> = 0xffffff
+<br />
+ }<tr class="memdesc:a96150560c35afabee64c3743e63650f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flags to enable autodetection of certain types of VR hardware. Note that these flags may be ignored, e.g. if QVR was built without support for a specific kind of hardware.  <a href="class_q_v_r_config.html#a96150560c35afabee64c3743e63650f2">More...</a><br /></td></tr>
+</td></tr>
+<tr class="separator:a96150560c35afabee64c3743e63650f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a57d4153a3b3686b7e921626804a40fe9"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_config.html#a57d4153a3b3686b7e921626804a40fe9">QVRConfig</a> ()</td></tr>
 <tr class="memdesc:a57d4153a3b3686b7e921626804a40fe9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor.  <a href="#a57d4153a3b3686b7e921626804a40fe9">More...</a><br /></td></tr>
 <tr class="separator:a57d4153a3b3686b7e921626804a40fe9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a969b867db860e17f9f9e61610020c619"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_config.html#a969b867db860e17f9f9e61610020c619">createDefault</a> (bool preferCustomNavigation)</td></tr>
-<tr class="memdesc:a969b867db860e17f9f9e61610020c619"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a default configuration.  <a href="#a969b867db860e17f9f9e61610020c619">More...</a><br /></td></tr>
-<tr class="separator:a969b867db860e17f9f9e61610020c619"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad0e89828d53572ab1ac0fa031808cd8e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_config.html#ad0e89828d53572ab1ac0fa031808cd8e">createDefault</a> (bool preferCustomNavigation, Autodetect autodetect=<a class="el" href="class_q_v_r_config.html#a96150560c35afabee64c3743e63650f2a4ff441be55969c373e880125c1b5b2b7">AutodetectAll</a>)</td></tr>
+<tr class="memdesc:ad0e89828d53572ab1ac0fa031808cd8e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a default configuration.  <a href="#ad0e89828d53572ab1ac0fa031808cd8e">More...</a><br /></td></tr>
+<tr class="separator:ad0e89828d53572ab1ac0fa031808cd8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afc225c02ccf1f9bf7dfe929a437d313c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_config.html#afc225c02ccf1f9bf7dfe929a437d313c">readFromFile</a> (const QString &amp;filename)</td></tr>
 <tr class="memdesc:afc225c02ccf1f9bf7dfe929a437d313c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a configuration file.  <a href="#afc225c02ccf1f9bf7dfe929a437d313c">More...</a><br /></td></tr>
 <tr class="separator:afc225c02ccf1f9bf7dfe929a437d313c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -96,7 +112,38 @@ Public Member Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>QVR configuration of a Virtual Reality display setup. </p>
 <p>The configuration consists of a list of observer configurations and a list of process configurations. The process configurations define the windows that each process drives. Each window provides a view for exactly one observer. </p>
-</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+</div><h2 class="groupheader">Member Enumeration Documentation</h2>
+<a id="a96150560c35afabee64c3743e63650f2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a96150560c35afabee64c3743e63650f2">&#9670;&nbsp;</a></span>AutodetectFlag</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="class_q_v_r_config.html#a96150560c35afabee64c3743e63650f2">QVRConfig::AutodetectFlag</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Flags to enable autodetection of certain types of VR hardware. Note that these flags may be ignored, e.g. if QVR was built without support for a specific kind of hardware. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a96150560c35afabee64c3743e63650f2ab03aecca0f8ad0b408e235802160e320"></a>AutodetectOculus&#160;</td><td class="fielddoc"><p>Autodetect Oculus Rift HMD and controllers. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a96150560c35afabee64c3743e63650f2aec52bf55a5d3c8d3f49c93093609b9e5"></a>AutodetectOpenVR&#160;</td><td class="fielddoc"><p>Autodetect OpenVR-supported HMD and controllers (e.g. HTC Vive). </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a96150560c35afabee64c3743e63650f2a836d238b4a32aad85150667c0aa84be4"></a>AutodetectOSVR&#160;</td><td class="fielddoc"><p>Autodetect OSVR-supported HMDs and other VR hardware. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a96150560c35afabee64c3743e63650f2a2f73c4e89950ea2867276ee162fe8723"></a>AutodetectGoogleVR&#160;</td><td class="fielddoc"><p>Autodetect GoogleVR-supported HMDs and controllers (Cardboard, Daydream). </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a96150560c35afabee64c3743e63650f2a2159464a574c59ef240900e5879a6d87"></a>AutodetectGamepads&#160;</td><td class="fielddoc"><p>Autodetect Gamepads via the QtGamepad module. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a96150560c35afabee64c3743e63650f2a4ff441be55969c373e880125c1b5b2b7"></a>AutodetectAll&#160;</td><td class="fielddoc"><p>Autodetect all hardware. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a57d4153a3b3686b7e921626804a40fe9"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a57d4153a3b3686b7e921626804a40fe9">&#9670;&nbsp;</a></span>QVRConfig()</h2>
 
@@ -117,8 +164,8 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a969b867db860e17f9f9e61610020c619"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a969b867db860e17f9f9e61610020c619">&#9670;&nbsp;</a></span>createDefault()</h2>
+<a id="ad0e89828d53572ab1ac0fa031808cd8e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad0e89828d53572ab1ac0fa031808cd8e">&#9670;&nbsp;</a></span>createDefault()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -127,8 +174,18 @@ Public Member Functions</h2></td></tr>
           <td class="memname">void QVRConfig::createDefault </td>
           <td>(</td>
           <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>preferCustomNavigation</em></td><td>)</td>
+          <td class="paramname"><em>preferCustomNavigation</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">Autodetect&#160;</td>
+          <td class="paramname"><em>autodetect</em> = <code><a class="el" href="class_q_v_r_config.html#a96150560c35afabee64c3743e63650f2a4ff441be55969c373e880125c1b5b2b7">AutodetectAll</a></code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -136,12 +193,14 @@ Public Member Functions</h2></td></tr>
 <p>Create a default configuration. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">preferCustomNavigation</td><td>Use custom navigation for the default observer if feasible.</td></tr>
+    <tr><td class="paramname">preferCustomNavigation</td><td>Use custom navigation for the default observer if feasible. </td></tr>
+    <tr><td class="paramname">autodetect</td><td>Specify which types of VR hardware to detect automatically.</td></tr>
   </table>
   </dd>
 </dl>
 <p>This function will detect a head-mounted display and create a suitable configuration for it. If no special equipment is detected, the function will generate a single observer viewing a single window on the master process.</p>
-<p>The observer created will a suitable default navigation type. If <em>preferCustomNavigation</em> is set, then the navigation type <em>QVR_Navigation_Custom</em> will be used if it makes sense. </p>
+<p>The observer created will a suitable default navigation type. If <em>preferCustomNavigation</em> is set, then the navigation type <em>QVR_Navigation_Custom</em> will be used if it makes sense.</p>
+<p>Using the <em>autodetect</em> parameter only makes sense for developing / debugging; its default value should be fine. </p>
 
 </div>
 </div>

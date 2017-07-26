@@ -5,8 +5,8 @@ var indexSectionsWithContent =
   2: "acdfmoprw",
   3: "abcdefghiklmnopqrstuvw~",
   4: "d",
-  5: "q",
-  6: "q",
+  5: "aq",
+  6: "aq",
   7: "oq",
   8: "q"
 };

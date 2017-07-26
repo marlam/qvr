@@ -76,13 +76,13 @@ Functions</h2></td></tr>
 <tr class="memitem:ac1ec831abd63740e2bf77faba5d98469"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="outputplugin_8hpp.html#ac1ec831abd63740e2bf77faba5d98469">QVROutputPluginExit</a> (<a class="el" href="class_q_v_r_window.html">QVRWindow</a> *window)</td></tr>
 <tr class="memdesc:ac1ec831abd63740e2bf77faba5d98469"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cleanup an output plugin.  <a href="#ac1ec831abd63740e2bf77faba5d98469">More...</a><br /></td></tr>
 <tr class="separator:ac1ec831abd63740e2bf77faba5d98469"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a014e82f9b613115213b617206a30c0d6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="outputplugin_8hpp.html#a014e82f9b613115213b617206a30c0d6">QVROutputPlugin</a> (<a class="el" href="class_q_v_r_window.html">QVRWindow</a> *window, const <a class="el" href="class_q_v_r_render_context.html">QVRRenderContext</a> &amp;context, unsigned int tex0, unsigned int tex1)</td></tr>
-<tr class="memdesc:a014e82f9b613115213b617206a30c0d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Output the rendered content.  <a href="#a014e82f9b613115213b617206a30c0d6">More...</a><br /></td></tr>
-<tr class="separator:a014e82f9b613115213b617206a30c0d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a790b649099f046b0f84416049af1bd13"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="outputplugin_8hpp.html#a790b649099f046b0f84416049af1bd13">QVROutputPlugin</a> (<a class="el" href="class_q_v_r_window.html">QVRWindow</a> *window, const <a class="el" href="class_q_v_r_render_context.html">QVRRenderContext</a> &amp;context, const unsigned int *textures)</td></tr>
+<tr class="memdesc:a790b649099f046b0f84416049af1bd13"><td class="mdescLeft">&#160;</td><td class="mdescRight">Output the rendered frame.  <a href="#a790b649099f046b0f84416049af1bd13">More...</a><br /></td></tr>
+<tr class="separator:a790b649099f046b0f84416049af1bd13"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a014e82f9b613115213b617206a30c0d6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a014e82f9b613115213b617206a30c0d6">&#9670;&nbsp;</a></span>QVROutputPlugin()</h2>
+<a id="a790b649099f046b0f84416049af1bd13"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a790b649099f046b0f84416049af1bd13">&#9670;&nbsp;</a></span>QVROutputPlugin()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -102,14 +102,8 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">unsigned int&#160;</td>
-          <td class="paramname"><em>tex0</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">unsigned int&#160;</td>
-          <td class="paramname"><em>tex1</em>&#160;</td>
+          <td class="paramtype">const unsigned int *&#160;</td>
+          <td class="paramname"><em>textures</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -119,18 +113,16 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Output the rendered content. </p>
+<p>Output the rendered frame. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">window</td><td>The window that provides the output </td></tr>
-    <tr><td class="paramname">context</td><td>The render context of the output </td></tr>
-    <tr><td class="paramname">tex0</td><td>The output of view pass 0 </td></tr>
-    <tr><td class="paramname">tex1</td><td>The output of view pass 1 (if any)</td></tr>
+    <tr><td class="paramname">window</td><td>The window that provides the frame </td></tr>
+    <tr><td class="paramname">context</td><td>The render context of the frame </td></tr>
+    <tr><td class="paramname">textures</td><td>The textures containing the views</td></tr>
   </table>
   </dd>
 </dl>
-<p>This is the main function of an output plugin. It takes the rendered output from the textures <em>tex0</em> and <em>tex1</em> and displays it to the output device, applying arbitrary postprocessing.</p>
-<p>The <em>context</em> provides all information available about the output. Note that <em>tex1</em> is only valid if the output mode of <em>window</em> has two view passes. This can be checked with <em>QVRRenderContex::viewPasses()</em>.</p>
+<p>This is the main function of an output plugin. It takes the rendered views from the <em>textures</em> and displays them on the output device, applying arbitrary postprocessing. The <em>context</em> provides all information available about the views.</p>
 <p>See also <em><a class="el" href="outputplugin_8hpp.html#af273ac44f5e9af911390f97b1ed91cdf" title="Initialize an output plugin. ">QVROutputPluginInit()</a></em> and <em><a class="el" href="outputplugin_8hpp.html#ac1ec831abd63740e2bf77faba5d98469" title="Cleanup an output plugin. ">QVROutputPluginExit()</a></em>. </p>
 
 </div>
@@ -158,7 +150,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<p>See also <em><a class="el" href="outputplugin_8hpp.html#af273ac44f5e9af911390f97b1ed91cdf" title="Initialize an output plugin. ">QVROutputPluginInit()</a></em> and <em><a class="el" href="outputplugin_8hpp.html#a014e82f9b613115213b617206a30c0d6" title="Output the rendered content. ">QVROutputPlugin()</a></em>. </p>
+<p>See also <em><a class="el" href="outputplugin_8hpp.html#af273ac44f5e9af911390f97b1ed91cdf" title="Initialize an output plugin. ">QVROutputPluginInit()</a></em> and <em><a class="el" href="outputplugin_8hpp.html#a790b649099f046b0f84416049af1bd13" title="Output the rendered frame. ">QVROutputPlugin()</a></em>. </p>
 
 </div>
 </div>
@@ -196,7 +188,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<p>See also <em><a class="el" href="outputplugin_8hpp.html#ac1ec831abd63740e2bf77faba5d98469" title="Cleanup an output plugin. ">QVROutputPluginExit()</a></em> and <em><a class="el" href="outputplugin_8hpp.html#a014e82f9b613115213b617206a30c0d6" title="Output the rendered content. ">QVROutputPlugin()</a></em>. </p>
+<p>See also <em><a class="el" href="outputplugin_8hpp.html#ac1ec831abd63740e2bf77faba5d98469" title="Cleanup an output plugin. ">QVROutputPluginExit()</a></em> and <em><a class="el" href="outputplugin_8hpp.html#a790b649099f046b0f84416049af1bd13" title="Output the rendered frame. ">QVROutputPlugin()</a></em>. </p>
 
 </div>
 </div>

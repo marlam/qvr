@@ -20,5 +20,7 @@ var searchData=
   ['initprocess',['initProcess',['../class_q_v_r_app.html#a2f01acee4df19c7a6825fbf1ce8f2bce',1,'QVRApp']]],
   ['initwindow',['initWindow',['../class_q_v_r_app.html#ab7acda3b040a34b1bac616b94d704336',1,'QVRApp']]],
   ['instance',['instance',['../class_q_v_r_manager.html#a6edaea65e7b2dd1765225f3cff137486',1,'QVRManager']]],
-  ['ipc',['ipc',['../class_q_v_r_process_config.html#a2c2ccabcdf269e8e9608c36714a74d03',1,'QVRProcessConfig']]]
+  ['ipc',['ipc',['../class_q_v_r_process_config.html#a2c2ccabcdf269e8e9608c36714a74d03',1,'QVRProcessConfig']]],
+  ['isbuttonpressed',['isButtonPressed',['../class_q_v_r_device.html#abe6c706ba99f06e079db575f8490e7d9',1,'QVRDevice::isButtonPressed(int index) const'],['../class_q_v_r_device.html#aa132c942aeb1e5e0009512172c69a93a',1,'QVRDevice::isButtonPressed(QVRButton btn) const']]],
+  ['isinitialized',['isInitialized',['../class_q_v_r_manager.html#afc9f2178aaec8050d3568cb510f18bd5',1,'QVRManager']]]
 ];

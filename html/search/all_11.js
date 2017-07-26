@@ -21,5 +21,6 @@ var searchData=
   ['setrightplane',['setRightPlane',['../class_q_v_r_frustum.html#a5e0856a8da3155d6df48c0106d6467af',1,'QVRFrustum']]],
   ['settopplane',['setTopPlane',['../class_q_v_r_frustum.html#a7cf3b1c9bb2ea9a7c5d2341694ce2aad',1,'QVRFrustum']]],
   ['settracking',['setTracking',['../class_q_v_r_observer.html#affa690f070aa7f972b3c3fa232b78e32',1,'QVRObserver::setTracking(const QVector3D &amp;pos, const QQuaternion &amp;rot)'],['../class_q_v_r_observer.html#ac35565fd37bc853ff8027a6be6c982b8',1,'QVRObserver::setTracking(const QVector3D &amp;posLeft, const QQuaternion &amp;rotLeft, const QVector3D &amp;posRight, const QQuaternion &amp;rotRight)']]],
-  ['supportshapticpulse',['supportsHapticPulse',['../class_q_v_r_device.html#a67daef2d72c4229309c66b41ad5eef47',1,'QVRDevice']]]
+  ['supportshapticpulse',['supportsHapticPulse',['../class_q_v_r_device.html#a67daef2d72c4229309c66b41ad5eef47',1,'QVRDevice']]],
+  ['synctovblank',['syncToVBlank',['../class_q_v_r_process_config.html#a43806be88542eb778549957cac0dc2a2',1,'QVRProcessConfig']]]
 ];

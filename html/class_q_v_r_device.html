@@ -81,6 +81,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a52c81593715e557536f2739e6cf8f6a3"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_device.html#a52c81593715e557536f2739e6cf8f6a3">QVRDevice</a> (int <a class="el" href="class_q_v_r_device.html#ab5c1172cf9180bd6e14a41edea9b1fbb">index</a>)</td></tr>
 <tr class="memdesc:a52c81593715e557536f2739e6cf8f6a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for the device with the given <em>index</em> in the QVR configuration.  <a href="#a52c81593715e557536f2739e6cf8f6a3">More...</a><br /></td></tr>
 <tr class="separator:a52c81593715e557536f2739e6cf8f6a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a93e5c44257df16317e7199d6b71ba28f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_device.html#a93e5c44257df16317e7199d6b71ba28f">QVRDevice</a> (const <a class="el" href="class_q_v_r_device.html">QVRDevice</a> &amp;d)</td></tr>
+<tr class="memdesc:a93e5c44257df16317e7199d6b71ba28f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy constructor.  <a href="#a93e5c44257df16317e7199d6b71ba28f">More...</a><br /></td></tr>
+<tr class="separator:a93e5c44257df16317e7199d6b71ba28f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1cdad94f0fd594e0f4be0989dbf950f0"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_device.html#a1cdad94f0fd594e0f4be0989dbf950f0">~QVRDevice</a> ()</td></tr>
 <tr class="memdesc:a1cdad94f0fd594e0f4be0989dbf950f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor.  <a href="#a1cdad94f0fd594e0f4be0989dbf950f0">More...</a><br /></td></tr>
 <tr class="separator:a1cdad94f0fd594e0f4be0989dbf950f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -117,33 +120,39 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a6399111a8cdfdee5246eb5c024380ef1"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_device.html#a6399111a8cdfdee5246eb5c024380ef1">buttonCount</a> () const</td></tr>
 <tr class="memdesc:a6399111a8cdfdee5246eb5c024380ef1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of buttons on this device.  <a href="#a6399111a8cdfdee5246eb5c024380ef1">More...</a><br /></td></tr>
 <tr class="separator:a6399111a8cdfdee5246eb5c024380ef1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c1ce1ab01504e0af4856cd18306359e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="config_8hpp.html#aa36fbe658df75d8e823bb8f4cf114665">QVRButton</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_device.html#a3c1ce1ab01504e0af4856cd18306359e">button</a> (int <a class="el" href="class_q_v_r_device.html#ab5c1172cf9180bd6e14a41edea9b1fbb">index</a>) const</td></tr>
+<tr class="memdesc:a3c1ce1ab01504e0af4856cd18306359e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the type of the button with <em>index</em>.  <a href="#a3c1ce1ab01504e0af4856cd18306359e">More...</a><br /></td></tr>
+<tr class="separator:a3c1ce1ab01504e0af4856cd18306359e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a252a4da8df85a06cc9ed0d1fed53f00c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_device.html#a252a4da8df85a06cc9ed0d1fed53f00c">buttonIndex</a> (<a class="el" href="config_8hpp.html#aa36fbe658df75d8e823bb8f4cf114665">QVRButton</a> btn) const</td></tr>
 <tr class="memdesc:a252a4da8df85a06cc9ed0d1fed53f00c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the index of the button <em>btn</em>, or -1 if this device does not have that button.  <a href="#a252a4da8df85a06cc9ed0d1fed53f00c">More...</a><br /></td></tr>
 <tr class="separator:a252a4da8df85a06cc9ed0d1fed53f00c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac73ec15792382cce61ce6a3242a879e4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_device.html#ac73ec15792382cce61ce6a3242a879e4">hasButton</a> (<a class="el" href="config_8hpp.html#aa36fbe658df75d8e823bb8f4cf114665">QVRButton</a> btn) const</td></tr>
 <tr class="memdesc:ac73ec15792382cce61ce6a3242a879e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns whether this device has button <em>btn</em>.  <a href="#ac73ec15792382cce61ce6a3242a879e4">More...</a><br /></td></tr>
 <tr class="separator:ac73ec15792382cce61ce6a3242a879e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aecfb8be831a264e3530d573e2d48f65f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_device.html#aecfb8be831a264e3530d573e2d48f65f">button</a> (int <a class="el" href="class_q_v_r_device.html#ab5c1172cf9180bd6e14a41edea9b1fbb">index</a>) const</td></tr>
-<tr class="memdesc:aecfb8be831a264e3530d573e2d48f65f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns whether the button with the given index is pressed.  <a href="#aecfb8be831a264e3530d573e2d48f65f">More...</a><br /></td></tr>
-<tr class="separator:aecfb8be831a264e3530d573e2d48f65f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afde9d5f768a1d6ba1b64d30f6bfa54f6"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_device.html#afde9d5f768a1d6ba1b64d30f6bfa54f6">button</a> (<a class="el" href="config_8hpp.html#aa36fbe658df75d8e823bb8f4cf114665">QVRButton</a> btn) const</td></tr>
-<tr class="memdesc:afde9d5f768a1d6ba1b64d30f6bfa54f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns whether the button <em>btn</em> is pressed. Returns false if this device does not have that button.  <a href="#afde9d5f768a1d6ba1b64d30f6bfa54f6">More...</a><br /></td></tr>
-<tr class="separator:afde9d5f768a1d6ba1b64d30f6bfa54f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe6c706ba99f06e079db575f8490e7d9"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_device.html#abe6c706ba99f06e079db575f8490e7d9">isButtonPressed</a> (int <a class="el" href="class_q_v_r_device.html#ab5c1172cf9180bd6e14a41edea9b1fbb">index</a>) const</td></tr>
+<tr class="memdesc:abe6c706ba99f06e079db575f8490e7d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns whether the button with the given index is pressed.  <a href="#abe6c706ba99f06e079db575f8490e7d9">More...</a><br /></td></tr>
+<tr class="separator:abe6c706ba99f06e079db575f8490e7d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa132c942aeb1e5e0009512172c69a93a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_device.html#aa132c942aeb1e5e0009512172c69a93a">isButtonPressed</a> (<a class="el" href="config_8hpp.html#aa36fbe658df75d8e823bb8f4cf114665">QVRButton</a> btn) const</td></tr>
+<tr class="memdesc:aa132c942aeb1e5e0009512172c69a93a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns whether the button <em>btn</em> is pressed. Returns false if this device does not have that button.  <a href="#aa132c942aeb1e5e0009512172c69a93a">More...</a><br /></td></tr>
+<tr class="separator:aa132c942aeb1e5e0009512172c69a93a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9f5ce3c070a44c6407525c40c8f55086"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_device.html#a9f5ce3c070a44c6407525c40c8f55086">analogCount</a> () const</td></tr>
 <tr class="memdesc:a9f5ce3c070a44c6407525c40c8f55086"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of analog joystick elements on this device. Usually index 0 will be the x axis and index 1 the y axis for two-dimensional joysticks.  <a href="#a9f5ce3c070a44c6407525c40c8f55086">More...</a><br /></td></tr>
 <tr class="separator:a9f5ce3c070a44c6407525c40c8f55086"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab856ab8376d16390fb4109f2e63d12b7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="config_8hpp.html#accb87bf8b26b06993072963a1d8f60d6">QVRAnalog</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_device.html#ab856ab8376d16390fb4109f2e63d12b7">analog</a> (int <a class="el" href="class_q_v_r_device.html#ab5c1172cf9180bd6e14a41edea9b1fbb">index</a>) const</td></tr>
+<tr class="memdesc:ab856ab8376d16390fb4109f2e63d12b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the type of the analog element with <em>index</em>.  <a href="#ab856ab8376d16390fb4109f2e63d12b7">More...</a><br /></td></tr>
+<tr class="separator:ab856ab8376d16390fb4109f2e63d12b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa4962182f3a2dd962b6a01c3f15704aa"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_device.html#aa4962182f3a2dd962b6a01c3f15704aa">analogIndex</a> (<a class="el" href="config_8hpp.html#accb87bf8b26b06993072963a1d8f60d6">QVRAnalog</a> anlg) const</td></tr>
 <tr class="memdesc:aa4962182f3a2dd962b6a01c3f15704aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the index of the analog element <em>anlg</em>, or -1 if this device does not have that element.  <a href="#aa4962182f3a2dd962b6a01c3f15704aa">More...</a><br /></td></tr>
 <tr class="separator:aa4962182f3a2dd962b6a01c3f15704aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a658884b9837b28e12ff56fdf7267062d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_device.html#a658884b9837b28e12ff56fdf7267062d">hasAnalog</a> (<a class="el" href="config_8hpp.html#accb87bf8b26b06993072963a1d8f60d6">QVRAnalog</a> anlg) const</td></tr>
 <tr class="memdesc:a658884b9837b28e12ff56fdf7267062d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns whether this device has analog element <em>anlg</em>.  <a href="#a658884b9837b28e12ff56fdf7267062d">More...</a><br /></td></tr>
 <tr class="separator:a658884b9837b28e12ff56fdf7267062d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a54eb83727751c95d7f4921b4837b5535"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_device.html#a54eb83727751c95d7f4921b4837b5535">analog</a> (int <a class="el" href="class_q_v_r_device.html#ab5c1172cf9180bd6e14a41edea9b1fbb">index</a>) const</td></tr>
-<tr class="memdesc:a54eb83727751c95d7f4921b4837b5535"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the value of the analog joystick element with the given index.  <a href="#a54eb83727751c95d7f4921b4837b5535">More...</a><br /></td></tr>
-<tr class="separator:a54eb83727751c95d7f4921b4837b5535"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2dd89cf044a66b50bf4533134cb8b798"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_device.html#a2dd89cf044a66b50bf4533134cb8b798">analog</a> (<a class="el" href="config_8hpp.html#accb87bf8b26b06993072963a1d8f60d6">QVRAnalog</a> anlg) const</td></tr>
-<tr class="memdesc:a2dd89cf044a66b50bf4533134cb8b798"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the value of the analog element <em>anlg</em>. Returns 0 if this device does not have that element.  <a href="#a2dd89cf044a66b50bf4533134cb8b798">More...</a><br /></td></tr>
-<tr class="separator:a2dd89cf044a66b50bf4533134cb8b798"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af73fd2c773dec717865239fc59ee633d"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_device.html#af73fd2c773dec717865239fc59ee633d">analogValue</a> (int <a class="el" href="class_q_v_r_device.html#ab5c1172cf9180bd6e14a41edea9b1fbb">index</a>) const</td></tr>
+<tr class="memdesc:af73fd2c773dec717865239fc59ee633d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the value of the analog joystick element with the given index. This is either in [-1,1] (for axis-type analog elements) or in [0,1] (for trigger-type analog elements).  <a href="#af73fd2c773dec717865239fc59ee633d">More...</a><br /></td></tr>
+<tr class="separator:af73fd2c773dec717865239fc59ee633d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0b96aef2e01456c2b9cb50e7c4488f5f"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_device.html#a0b96aef2e01456c2b9cb50e7c4488f5f">analogValue</a> (<a class="el" href="config_8hpp.html#accb87bf8b26b06993072963a1d8f60d6">QVRAnalog</a> anlg) const</td></tr>
+<tr class="memdesc:a0b96aef2e01456c2b9cb50e7c4488f5f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the value of the analog element <em>anlg</em>. Returns 0 if this device does not have that element.  <a href="#a0b96aef2e01456c2b9cb50e7c4488f5f">More...</a><br /></td></tr>
+<tr class="separator:a0b96aef2e01456c2b9cb50e7c4488f5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Rendering a device representation</div></td></tr>
 <tr><td colspan="2"><div class="groupText"><p>A renderable representation of a device consists of one or more nodes. Each node has its own transformation (position and orientation) and contains vertex data (positions, normals, texture coordinates) and optionally a texture.</p>
 <p>You can query the number of nodes with <em><a class="el" href="class_q_v_r_device.html#a492e9a1af3ebca686cdd5bdc2cc88e30" title="Returns the number of nodes that are currently in the renderable device model, or 0 if there is no su...">modelNodeCount()</a></em> and then render all nodes sequentially to get the full device representation.</p>
@@ -195,7 +204,7 @@ Friends</h2></td></tr>
 <p>A device is configured via <em><a class="el" href="class_q_v_r_device_config.html" title="Configuration of a QVRDevice. ">QVRDeviceConfig</a></em>. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a6bd2b495016917b34a2aeb24436d007a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6bd2b495016917b34a2aeb24436d007a">&#9670;&nbsp;</a></span>QVRDevice() <span class="overload">[1/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a6bd2b495016917b34a2aeb24436d007a">&#9670;&nbsp;</a></span>QVRDevice() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -214,7 +223,7 @@ Friends</h2></td></tr>
 </div>
 </div>
 <a id="a52c81593715e557536f2739e6cf8f6a3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a52c81593715e557536f2739e6cf8f6a3">&#9670;&nbsp;</a></span>QVRDevice() <span class="overload">[2/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a52c81593715e557536f2739e6cf8f6a3">&#9670;&nbsp;</a></span>QVRDevice() <span class="overload">[2/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -230,6 +239,26 @@ Friends</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Constructor for the device with the given <em>index</em> in the QVR configuration. </p>
+
+</div>
+</div>
+<a id="a93e5c44257df16317e7199d6b71ba28f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a93e5c44257df16317e7199d6b71ba28f">&#9670;&nbsp;</a></span>QVRDevice() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">QVRDevice::QVRDevice </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="class_q_v_r_device.html">QVRDevice</a> &amp;&#160;</td>
+          <td class="paramname"><em>d</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Copy constructor. </p>
 
 </div>
 </div>
@@ -253,8 +282,8 @@ Friends</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a54eb83727751c95d7f4921b4837b5535"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a54eb83727751c95d7f4921b4837b5535">&#9670;&nbsp;</a></span>analog() <span class="overload">[1/2]</span></h2>
+<a id="ab856ab8376d16390fb4109f2e63d12b7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab856ab8376d16390fb4109f2e63d12b7">&#9670;&nbsp;</a></span>analog()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -263,7 +292,7 @@ Friends</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">float QVRDevice::analog </td>
+          <td class="memname"><a class="el" href="config_8hpp.html#accb87bf8b26b06993072963a1d8f60d6">QVRAnalog</a> QVRDevice::analog </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>index</em></td><td>)</td>
@@ -277,35 +306,7 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Returns the value of the analog joystick element with the given index. </p>
-
-</div>
-</div>
-<a id="a2dd89cf044a66b50bf4533134cb8b798"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2dd89cf044a66b50bf4533134cb8b798">&#9670;&nbsp;</a></span>analog() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">float QVRDevice::analog </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="config_8hpp.html#accb87bf8b26b06993072963a1d8f60d6">QVRAnalog</a>&#160;</td>
-          <td class="paramname"><em>anlg</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Returns the value of the analog element <em>anlg</em>. Returns 0 if this device does not have that element. </p>
+<p>Returns the type of the analog element with <em>index</em>. </p>
 
 </div>
 </div>
@@ -364,6 +365,62 @@ Friends</h2></td></tr>
 
 </div>
 </div>
+<a id="af73fd2c773dec717865239fc59ee633d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af73fd2c773dec717865239fc59ee633d">&#9670;&nbsp;</a></span>analogValue() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">float QVRDevice::analogValue </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>index</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the value of the analog joystick element with the given index. This is either in [-1,1] (for axis-type analog elements) or in [0,1] (for trigger-type analog elements). </p>
+
+</div>
+</div>
+<a id="a0b96aef2e01456c2b9cb50e7c4488f5f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0b96aef2e01456c2b9cb50e7c4488f5f">&#9670;&nbsp;</a></span>analogValue() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">float QVRDevice::analogValue </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="config_8hpp.html#accb87bf8b26b06993072963a1d8f60d6">QVRAnalog</a>&#160;</td>
+          <td class="paramname"><em>anlg</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the value of the analog element <em>anlg</em>. Returns 0 if this device does not have that element. </p>
+
+</div>
+</div>
 <a id="a7425e4dde81c5af3af1c19334f7aedb6"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a7425e4dde81c5af3af1c19334f7aedb6">&#9670;&nbsp;</a></span>angularVelocity()</h2>
 
@@ -391,8 +448,8 @@ Friends</h2></td></tr>
 
 </div>
 </div>
-<a id="aecfb8be831a264e3530d573e2d48f65f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aecfb8be831a264e3530d573e2d48f65f">&#9670;&nbsp;</a></span>button() <span class="overload">[1/2]</span></h2>
+<a id="a3c1ce1ab01504e0af4856cd18306359e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3c1ce1ab01504e0af4856cd18306359e">&#9670;&nbsp;</a></span>button()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -401,7 +458,7 @@ Friends</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool QVRDevice::button </td>
+          <td class="memname"><a class="el" href="config_8hpp.html#aa36fbe658df75d8e823bb8f4cf114665">QVRButton</a> QVRDevice::button </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>index</em></td><td>)</td>
@@ -415,35 +472,7 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Returns whether the button with the given index is pressed. </p>
-
-</div>
-</div>
-<a id="afde9d5f768a1d6ba1b64d30f6bfa54f6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afde9d5f768a1d6ba1b64d30f6bfa54f6">&#9670;&nbsp;</a></span>button() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool QVRDevice::button </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="config_8hpp.html#aa36fbe658df75d8e823bb8f4cf114665">QVRButton</a>&#160;</td>
-          <td class="paramname"><em>btn</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Returns whether the button <em>btn</em> is pressed. Returns false if this device does not have that button. </p>
+<p>Returns the type of the button with <em>index</em>. </p>
 
 </div>
 </div>
@@ -612,6 +641,62 @@ Friends</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Returns the index of the device in the QVR configuration. </p>
+
+</div>
+</div>
+<a id="abe6c706ba99f06e079db575f8490e7d9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abe6c706ba99f06e079db575f8490e7d9">&#9670;&nbsp;</a></span>isButtonPressed() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool QVRDevice::isButtonPressed </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>index</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns whether the button with the given index is pressed. </p>
+
+</div>
+</div>
+<a id="aa132c942aeb1e5e0009512172c69a93a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa132c942aeb1e5e0009512172c69a93a">&#9670;&nbsp;</a></span>isButtonPressed() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool QVRDevice::isButtonPressed </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="config_8hpp.html#aa36fbe658df75d8e823bb8f4cf114665">QVRButton</a>&#160;</td>
+          <td class="paramname"><em>btn</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns whether the button <em>btn</em> is pressed. Returns false if this device does not have that button. </p>
 
 </div>
 </div>

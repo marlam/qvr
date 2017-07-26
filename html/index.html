@@ -127,14 +127,18 @@ Configuration files</h1>
  Launcher commando used to start this process.</li>
 <li><code>display &lt;name&gt;</code><br />
  Display that this process is connected to.</li>
+<li><code>sync_to_vblank &lt;true|false&gt;</code><br />
+ Whether windows of this process are synchronized with the vertical refresh of the display.</li>
+<li><code>decoupled_rendering &lt;true|false&gt;</code><br />
+ Whether the rendering of this slave process is decoupled from the master process.</li>
 </ul>
 <p>Window definition (see <em><a class="el" href="class_q_v_r_window.html" title="A Qt window on a screen and a window into the virtual world. ">QVRWindow</a></em> and <em><a class="el" href="class_q_v_r_window_config.html" title="Configuration of a QVRWindow. ">QVRWindowConfig</a></em>):</p><ul>
 <li><code>window &lt;id&gt;</code><br />
  Start a new window definition with the given unique id, within the current process definition.</li>
 <li><code>observer &lt;id&gt;</code><br />
  Set the observer that this window provides a view for.</li>
-<li><code>output &lt;center|left|right|stereo&gt; &lt;gl|red_cyan|green_magenta|amber_blue|oculus|plugin&gt;</code><br />
- Set the output mode. Center, left, and right are monoscopic views, stereo is a stereoscopic view with one of the builtin types gl, red_cyan, green_magenta, amber_blue, oculus. Both monoscopic and stereoscopic views can also be handled by an output plugin. See <em><a class="el" href="outputplugin_8hpp.html#a014e82f9b613115213b617206a30c0d6" title="Output the rendered content. ">QVROutputPlugin()</a></em>.</li>
+<li><code>output &lt;center|left|right|stereo|red_cyan|green_magenta|amber_blue|oculus|openvr|osvr|googlevr&gt;</code><br />
+ Set the output mode. For center, left, right, and stereo, you can set an additional output plugin.</li>
 <li><code>display_screen &lt;screen&gt;</code><br />
  Select the Qt screen index on the Qt display that this process is connected to.<br />
 </li>
@@ -159,12 +163,7 @@ Configuration files</h1>
 Implementation</h1>
 <p>The <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> creates an invisible main OpenGL context for each process. This context is used for all calls to <em><a class="el" href="class_q_v_r_app.html" title="QVR application interface. ">QVRApp</a></em> application functions: the application only has to deal with this one context. The rendering results are directed into a set of textures that cover all the windows of the process.</p>
 <p>When all window textures have been rendered, they are put on screen by the actual visible windows who all have access to the textures from the main window. The windows themselves render in separate rendering threads. On buffer swap, only these rendering threads block. The main thread fills the waiting time with CPU work such as processing events and calling the <em><a class="el" href="class_q_v_r_app.html#acb39fe1bd07ad620257d00cb01069999" title="Update scene state. ">QVRApp::update()</a></em> function of the application.</p>
-<p>The process initially started by the user is the master process. <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> launch slave processes as required by the configuration file, and it will handle all necessary synchronization and data exchange with these slave processes.</p>
-<h1><a class="anchor" id="Notes"></a>
-Notes</h1>
-<ul>
-<li>Oculus Rift: Currently the DK2 was tested on Linux with SDK 0.5. It should be configured as a separate X11 screen, and the orientation of that screen should be fixed with <code>xrandr -display :0.1 -o left</code>. </li>
-</ul>
+<p>The process initially started by the user is the master process. <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em> launch slave processes as required by the configuration file, and it will handle all necessary synchronization and data exchange with these slave processes. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

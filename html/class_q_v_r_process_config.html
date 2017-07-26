@@ -93,6 +93,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:afa2f3be164a4f3438891a84f92aca259"><td class="memItemLeft" align="right" valign="top">const QString &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_process_config.html#afa2f3be164a4f3438891a84f92aca259">display</a> () const</td></tr>
 <tr class="memdesc:afa2f3be164a4f3438891a84f92aca259"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the display that this process works with.  <a href="#afa2f3be164a4f3438891a84f92aca259">More...</a><br /></td></tr>
 <tr class="separator:afa2f3be164a4f3438891a84f92aca259"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a43806be88542eb778549957cac0dc2a2"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_process_config.html#a43806be88542eb778549957cac0dc2a2">syncToVBlank</a> () const</td></tr>
+<tr class="memdesc:a43806be88542eb778549957cac0dc2a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns whether windows of this process are synchronized with the vertical refresh of the display.  <a href="#a43806be88542eb778549957cac0dc2a2">More...</a><br /></td></tr>
+<tr class="separator:a43806be88542eb778549957cac0dc2a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab93defbc7731b25c07a2d07bd4079240"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_process_config.html#ab93defbc7731b25c07a2d07bd4079240">decoupledRendering</a> () const</td></tr>
+<tr class="memdesc:ab93defbc7731b25c07a2d07bd4079240"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns whether the rendering of this slave process is decoupled from the master process.  <a href="#ab93defbc7731b25c07a2d07bd4079240">More...</a><br /></td></tr>
+<tr class="separator:ab93defbc7731b25c07a2d07bd4079240"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a469dbba8c1d62ee273dd9e9a323e6420"><td class="memItemLeft" align="right" valign="top">const QList&lt; <a class="el" href="class_q_v_r_window_config.html">QVRWindowConfig</a> &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_process_config.html#a469dbba8c1d62ee273dd9e9a323e6420">windowConfigs</a> () const</td></tr>
 <tr class="memdesc:a469dbba8c1d62ee273dd9e9a323e6420"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the configurations of the windows on this process.  <a href="#a469dbba8c1d62ee273dd9e9a323e6420">More...</a><br /></td></tr>
 <tr class="separator:a469dbba8c1d62ee273dd9e9a323e6420"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -153,6 +159,33 @@ Friends</h2></td></tr>
 <p>Returns the IP address that the QVR server will listen on. </p>
 <p>A QVR server is only started on the master process (which is the application process that is started first), and only if multiple processes are configured. A TCP QVR server that listens on a network address is only used if configured manually or if at least one of the processes is run on a remote host (which is assumed to be the case when a launcher is configured; see <a class="el" href="class_q_v_r_process_config.html#a32db04d6746d4643f65aafe9bc5ef3d0" title="Returns the launcher command used to launch this process. ">launcher()</a>).</p>
 <p>By default, a TCP QVR server listens on all IP addresses of the host. </p>
+
+</div>
+</div>
+<a id="ab93defbc7731b25c07a2d07bd4079240"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab93defbc7731b25c07a2d07bd4079240">&#9670;&nbsp;</a></span>decoupledRendering()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool QVRProcessConfig::decoupledRendering </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns whether the rendering of this slave process is decoupled from the master process. </p>
 
 </div>
 </div>
@@ -265,6 +298,33 @@ Friends</h2></td></tr>
 <p>Example for ssh (passwordless login to remotehost must be set up): <code>launcher ssh remotehost</code></p>
 <p>Example for ssh if you use libraries in non-standard locations: <code>launcher ssh remotehost env LD_LIBRARY_PATH=/path/to/libs</code></p>
 <p>When the special string <code>manual</code> is used as launcher command, QVR will not start the process itself, and instead expects the user to start it manually. A list of options that the process needs to be started with will be printed to the terminal. </p>
+
+</div>
+</div>
+<a id="a43806be88542eb778549957cac0dc2a2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a43806be88542eb778549957cac0dc2a2">&#9670;&nbsp;</a></span>syncToVBlank()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool QVRProcessConfig::syncToVBlank </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns whether windows of this process are synchronized with the vertical refresh of the display. </p>
 
 </div>
 </div>

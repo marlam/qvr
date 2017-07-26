@@ -75,7 +75,9 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr><td colspan="2"><div class="groupHeader">Configuration access</div></td></tr>
+<tr><td colspan="2"><div class="groupHeader">Configuration access.</div></td></tr>
+<tr><td colspan="2"><div class="groupText"><p>This is only guaranteed to work after a successfull call to <em><a class="el" href="class_q_v_r_manager.html#a7a04686c9ab0c26385aeb6fcd371dc80" title="Initialize the QVR application. ">init()</a></em>. See <em><a class="el" href="class_q_v_r_manager.html#afc9f2178aaec8050d3568cb510f18bd5" title="Returns whether the manager was successfully initialized. ">isInitialized()</a></em>. </p>
+</div></td></tr>
 <tr class="memitem:a735027dc2364649e75275e0483c80356"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="manager_8hpp.html#ab9ae1737164d307244b79f924f588f72">QVRLogLevel</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_manager.html#a735027dc2364649e75275e0483c80356">logLevel</a> ()</td></tr>
 <tr class="memdesc:a735027dc2364649e75275e0483c80356"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the log level.  <a href="#a735027dc2364649e75275e0483c80356">More...</a><br /></td></tr>
 <tr class="separator:a735027dc2364649e75275e0483c80356"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -100,12 +102,12 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:af8b2e4785d8e7cc4988ce197e7fc2608"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_manager.html#af8b2e4785d8e7cc4988ce197e7fc2608">processIndex</a> ()</td></tr>
 <tr class="memdesc:af8b2e4785d8e7cc4988ce197e7fc2608"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the index of the running process. The process with index 0 is the master process.  <a href="#af8b2e4785d8e7cc4988ce197e7fc2608">More...</a><br /></td></tr>
 <tr class="separator:af8b2e4785d8e7cc4988ce197e7fc2608"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a51340eb842c78c135e5461b3d7eb08e9"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="class_q_v_r_process_config.html">QVRProcessConfig</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_manager.html#a51340eb842c78c135e5461b3d7eb08e9">processConfig</a> (int <a class="el" href="class_q_v_r_manager.html#af8b2e4785d8e7cc4988ce197e7fc2608">processIndex</a>=<a class="el" href="class_q_v_r_manager.html#af8b2e4785d8e7cc4988ce197e7fc2608">processIndex</a>())</td></tr>
-<tr class="memdesc:a51340eb842c78c135e5461b3d7eb08e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the configuration of the process with the index <em>processIndex</em>.  <a href="#a51340eb842c78c135e5461b3d7eb08e9">More...</a><br /></td></tr>
-<tr class="separator:a51340eb842c78c135e5461b3d7eb08e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4d1615fe81e57883b840ab3f02121223"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_manager.html#a4d1615fe81e57883b840ab3f02121223">windowCount</a> (int <a class="el" href="class_q_v_r_manager.html#af8b2e4785d8e7cc4988ce197e7fc2608">processIndex</a>=<a class="el" href="class_q_v_r_manager.html#af8b2e4785d8e7cc4988ce197e7fc2608">processIndex</a>())</td></tr>
-<tr class="memdesc:a4d1615fe81e57883b840ab3f02121223"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the number of windows in the configuration of the process with index <em>processIndex</em>.  <a href="#a4d1615fe81e57883b840ab3f02121223">More...</a><br /></td></tr>
-<tr class="separator:a4d1615fe81e57883b840ab3f02121223"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac8fdc6971cf5dff47f95395b611db47"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="class_q_v_r_process_config.html">QVRProcessConfig</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_manager.html#aac8fdc6971cf5dff47f95395b611db47">processConfig</a> (int pi=<a class="el" href="class_q_v_r_manager.html#af8b2e4785d8e7cc4988ce197e7fc2608">processIndex</a>())</td></tr>
+<tr class="memdesc:aac8fdc6971cf5dff47f95395b611db47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the configuration of the process with the index <em>pi</em>.  <a href="#aac8fdc6971cf5dff47f95395b611db47">More...</a><br /></td></tr>
+<tr class="separator:aac8fdc6971cf5dff47f95395b611db47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab2c28513fd2509e16aae1db8bf35354a"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_manager.html#ab2c28513fd2509e16aae1db8bf35354a">windowCount</a> (int pi=<a class="el" href="class_q_v_r_manager.html#af8b2e4785d8e7cc4988ce197e7fc2608">processIndex</a>())</td></tr>
+<tr class="memdesc:ab2c28513fd2509e16aae1db8bf35354a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the number of windows in the configuration of the process with index <em>pi</em>.  <a href="#ab2c28513fd2509e16aae1db8bf35354a">More...</a><br /></td></tr>
+<tr class="separator:ab2c28513fd2509e16aae1db8bf35354a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a751434c1d1a7e232a73424dbbf9d0ed0"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="class_q_v_r_window_config.html">QVRWindowConfig</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_manager.html#a751434c1d1a7e232a73424dbbf9d0ed0">windowConfig</a> (int <a class="el" href="class_q_v_r_manager.html#af8b2e4785d8e7cc4988ce197e7fc2608">processIndex</a>, int windowIndex)</td></tr>
 <tr class="memdesc:a751434c1d1a7e232a73424dbbf9d0ed0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the configuration of the window with the index <em>windowIndex</em> on the process with index <em>processIndex</em>.  <a href="#a751434c1d1a7e232a73424dbbf9d0ed0">More...</a><br /></td></tr>
 <tr class="separator:a751434c1d1a7e232a73424dbbf9d0ed0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -168,6 +170,9 @@ Constructor, Destructor, Initialization</h2></td></tr>
 <tr class="memitem:a6edaea65e7b2dd1765225f3cff137486"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="class_q_v_r_manager.html">QVRManager</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_manager.html#a6edaea65e7b2dd1765225f3cff137486">instance</a> ()</td></tr>
 <tr class="memdesc:a6edaea65e7b2dd1765225f3cff137486"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the QVR manager instance.  <a href="#a6edaea65e7b2dd1765225f3cff137486">More...</a><br /></td></tr>
 <tr class="separator:a6edaea65e7b2dd1765225f3cff137486"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc9f2178aaec8050d3568cb510f18bd5"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_manager.html#afc9f2178aaec8050d3568cb510f18bd5">isInitialized</a> ()</td></tr>
+<tr class="memdesc:afc9f2178aaec8050d3568cb510f18bd5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns whether the manager was successfully initialized.  <a href="#afc9f2178aaec8050d3568cb510f18bd5">More...</a><br /></td></tr>
+<tr class="separator:afc9f2178aaec8050d3568cb510f18bd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Manager of the QVR application's control flow and its processes and windows. </p>
@@ -209,9 +214,11 @@ Constructor, Destructor, Initialization</h2></td></tr>
 <li>--qvr-log-file=&lt;filename&gt;<br />
  Write all log messages to the given file instead of the standard error stream.</li>
 <li>--qvr-sync-to-vblank=&lt;0|1&gt;<br />
- Disable (0) or enable (1) sync-to-vblank. Default is enable.</li>
+ Disable (0) or enable (1) sync-to-vblank. This overrides the per-process setting in the configuration file.</li>
 <li>--qvr-fps=&lt;n&gt;<br />
- Make QVR report frames per second measurements every n milliseconds. </li>
+ Make QVR report frames per second measurements every n milliseconds.</li>
+<li>--qvr-autodetect=&lt;list&gt;<br />
+ Comma-separated list of VR hardware that QVR should attempt to detect automatically. Currently supported keywords are 'all' for all hardware, 'oculus' for Oculus Rift, 'openvr' for OpenVR hardware, 'osvr' for OSVR hardware, 'googlevr' for Google VR hardware, 'gamepads' for gamepads. Each entry can be preceded with '~' to negate it. For example, use '--qvr-autodetect=all,~oculus' to try autodetection for all hardware except Oculus Rift. This option only takes effect if no --qvr-config option was given. </li>
 </ul>
 
 </div>
@@ -666,6 +673,33 @@ Constructor, Destructor, Initialization</h2></td></tr>
 
 </div>
 </div>
+<a id="afc9f2178aaec8050d3568cb510f18bd5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afc9f2178aaec8050d3568cb510f18bd5">&#9670;&nbsp;</a></span>isInitialized()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static bool QVRManager::isInitialized </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns whether the manager was successfully initialized. </p>
+
+</div>
+</div>
 <a id="a735027dc2364649e75275e0483c80356"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a735027dc2364649e75275e0483c80356">&#9670;&nbsp;</a></span>logLevel()</h2>
 
@@ -805,8 +839,8 @@ Constructor, Destructor, Initialization</h2></td></tr>
 
 </div>
 </div>
-<a id="a51340eb842c78c135e5461b3d7eb08e9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a51340eb842c78c135e5461b3d7eb08e9">&#9670;&nbsp;</a></span>processConfig()</h2>
+<a id="aac8fdc6971cf5dff47f95395b611db47"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aac8fdc6971cf5dff47f95395b611db47">&#9670;&nbsp;</a></span>processConfig()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -818,7 +852,7 @@ Constructor, Destructor, Initialization</h2></td></tr>
           <td class="memname">static const <a class="el" href="class_q_v_r_process_config.html">QVRProcessConfig</a>&amp; QVRManager::processConfig </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>processIndex</em> = <code><a class="el" href="class_q_v_r_manager.html#af8b2e4785d8e7cc4988ce197e7fc2608">processIndex</a>()</code></td><td>)</td>
+          <td class="paramname"><em>pi</em> = <code><a class="el" href="class_q_v_r_manager.html#af8b2e4785d8e7cc4988ce197e7fc2608">processIndex</a>()</code></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -829,7 +863,7 @@ Constructor, Destructor, Initialization</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return the configuration of the process with the index <em>processIndex</em>. </p>
+<p>Return the configuration of the process with the index <em>pi</em>. </p>
 <p>This is a convenience function, you can also get this information from <em><a class="el" href="class_q_v_r_manager.html#a6e0739e65d2c36165d7eb192583cb858" title="Return the active configuration. ">config()</a></em>. </p>
 
 </div>
@@ -956,8 +990,8 @@ Constructor, Destructor, Initialization</h2></td></tr>
 
 </div>
 </div>
-<a id="a4d1615fe81e57883b840ab3f02121223"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4d1615fe81e57883b840ab3f02121223">&#9670;&nbsp;</a></span>windowCount()</h2>
+<a id="ab2c28513fd2509e16aae1db8bf35354a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab2c28513fd2509e16aae1db8bf35354a">&#9670;&nbsp;</a></span>windowCount()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -969,7 +1003,7 @@ Constructor, Destructor, Initialization</h2></td></tr>
           <td class="memname">static int QVRManager::windowCount </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>processIndex</em> = <code><a class="el" href="class_q_v_r_manager.html#af8b2e4785d8e7cc4988ce197e7fc2608">processIndex</a>()</code></td><td>)</td>
+          <td class="paramname"><em>pi</em> = <code><a class="el" href="class_q_v_r_manager.html#af8b2e4785d8e7cc4988ce197e7fc2608">processIndex</a>()</code></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -980,7 +1014,7 @@ Constructor, Destructor, Initialization</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return the number of windows in the configuration of the process with index <em>processIndex</em>. </p>
+<p>Return the number of windows in the configuration of the process with index <em>pi</em>. </p>
 <p>This is a convenience function, you can also get this information from <em><a class="el" href="class_q_v_r_manager.html#a6e0739e65d2c36165d7eb192583cb858" title="Return the active configuration. ">config()</a></em>. </p>
 
 </div>

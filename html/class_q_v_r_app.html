@@ -74,9 +74,9 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ac497d29bb127c848af1a048f9a74cb60"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_app.html#ac497d29bb127c848af1a048f9a74cb60">render</a> (<a class="el" href="class_q_v_r_window.html">QVRWindow</a> *w, const <a class="el" href="class_q_v_r_render_context.html">QVRRenderContext</a> &amp;context, int viewPass, unsigned int texture)=0</td></tr>
-<tr class="memdesc:ac497d29bb127c848af1a048f9a74cb60"><td class="mdescLeft">&#160;</td><td class="mdescRight">Render the current frame.  <a href="#ac497d29bb127c848af1a048f9a74cb60">More...</a><br /></td></tr>
-<tr class="separator:ac497d29bb127c848af1a048f9a74cb60"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0f6516c33e1c2aaa300e86e4ec240419"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_app.html#a0f6516c33e1c2aaa300e86e4ec240419">render</a> (<a class="el" href="class_q_v_r_window.html">QVRWindow</a> *w, const <a class="el" href="class_q_v_r_render_context.html">QVRRenderContext</a> &amp;context, const unsigned int *textures)=0</td></tr>
+<tr class="memdesc:a0f6516c33e1c2aaa300e86e4ec240419"><td class="mdescLeft">&#160;</td><td class="mdescRight">Render the current frame.  <a href="#a0f6516c33e1c2aaa300e86e4ec240419">More...</a><br /></td></tr>
+<tr class="separator:a0f6516c33e1c2aaa300e86e4ec240419"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acb39fe1bd07ad620257d00cb01069999"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_app.html#acb39fe1bd07ad620257d00cb01069999">update</a> (const QList&lt; <a class="el" href="class_q_v_r_observer.html">QVRObserver</a> *&gt; &amp;observers)</td></tr>
 <tr class="memdesc:acb39fe1bd07ad620257d00cb01069999"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update scene state.  <a href="#acb39fe1bd07ad620257d00cb01069999">More...</a><br /></td></tr>
 <tr class="separator:acb39fe1bd07ad620257d00cb01069999"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -143,12 +143,21 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:abf50d5cad7857a5855a12625492cf754"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_app.html#abf50d5cad7857a5855a12625492cf754">wheelEvent</a> (const <a class="el" href="class_q_v_r_render_context.html">QVRRenderContext</a> &amp;context, QWheelEvent *event)</td></tr>
 <tr class="memdesc:abf50d5cad7857a5855a12625492cf754"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handle a wheel event.  <a href="#abf50d5cad7857a5855a12625492cf754">More...</a><br /></td></tr>
 <tr class="separator:abf50d5cad7857a5855a12625492cf754"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a667b88fb8762afa27496baaa99990a"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_app.html#a4a667b88fb8762afa27496baaa99990a">deviceButtonPressEvent</a> (<a class="el" href="class_q_v_r_device_event.html">QVRDeviceEvent</a> *event)</td></tr>
+<tr class="memdesc:a4a667b88fb8762afa27496baaa99990a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handle a device button press event.  <a href="#a4a667b88fb8762afa27496baaa99990a">More...</a><br /></td></tr>
+<tr class="separator:a4a667b88fb8762afa27496baaa99990a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aae5d65b3af42e66a280e9eb04b56d5f1"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_app.html#aae5d65b3af42e66a280e9eb04b56d5f1">deviceButtonReleaseEvent</a> (<a class="el" href="class_q_v_r_device_event.html">QVRDeviceEvent</a> *event)</td></tr>
+<tr class="memdesc:aae5d65b3af42e66a280e9eb04b56d5f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handle a device button release event.  <a href="#aae5d65b3af42e66a280e9eb04b56d5f1">More...</a><br /></td></tr>
+<tr class="separator:aae5d65b3af42e66a280e9eb04b56d5f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a557c467362be85e479b04901da12d9b7"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_app.html#a557c467362be85e479b04901da12d9b7">deviceAnalogChangeEvent</a> (<a class="el" href="class_q_v_r_device_event.html">QVRDeviceEvent</a> *event)</td></tr>
+<tr class="memdesc:a557c467362be85e479b04901da12d9b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handle a device analog element change event.  <a href="#a557c467362be85e479b04901da12d9b7">More...</a><br /></td></tr>
+<tr class="separator:a557c467362be85e479b04901da12d9b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>QVR application interface. </p>
-<p>This is the central interface that VR applications must implement. Most functions provide a default implementation. The only function that <em>must</em> be implemented is <a class="el" href="class_q_v_r_app.html#ac497d29bb127c848af1a048f9a74cb60" title="Render the current frame. ">render()</a>.</p>
+<p>This is the central interface that VR applications must implement. Most functions provide a default implementation. The only function that <em>must</em> be implemented is <a class="el" href="class_q_v_r_app.html#a0f6516c33e1c2aaa300e86e4ec240419" title="Render the current frame. ">render()</a>.</p>
 <p>Overview:</p><ul>
-<li>For rendering, implement <a class="el" href="class_q_v_r_app.html#ac497d29bb127c848af1a048f9a74cb60" title="Render the current frame. ">render()</a>.</li>
+<li>For rendering, implement <a class="el" href="class_q_v_r_app.html#a0f6516c33e1c2aaa300e86e4ec240419" title="Render the current frame. ">render()</a>.</li>
 <li>To animate your scene, implement <a class="el" href="class_q_v_r_app.html#acb39fe1bd07ad620257d00cb01069999" title="Update scene state. ">update()</a>.</li>
 <li>To override the default near and far plane, implement <a class="el" href="class_q_v_r_app.html#a6c9a78c15bbabaed8bad21baf3146991" title="Set the near and far clipping plane. ">getNearFar()</a>.</li>
 <li>To signal when your application wants to quit, implement <a class="el" href="class_q_v_r_app.html#abd64fa10d6ba3a9e4d3614e48013f521" title="Indicate if the application wants to exit. ">wantExit()</a>.</li>
@@ -191,7 +200,7 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<p>Implement this if you want to support multi-process configurations. Only serialize data that is required by <a class="el" href="class_q_v_r_app.html#ac497d29bb127c848af1a048f9a74cb60" title="Render the current frame. ">render()</a> and may change; this is typically what you manipulate in <a class="el" href="class_q_v_r_app.html#acb39fe1bd07ad620257d00cb01069999" title="Update scene state. ">update()</a>.</p>
+<p>Implement this if you want to support multi-process configurations. Only serialize data that is required by <a class="el" href="class_q_v_r_app.html#a0f6516c33e1c2aaa300e86e4ec240419" title="Render the current frame. ">render()</a> and may change; this is typically what you manipulate in <a class="el" href="class_q_v_r_app.html#acb39fe1bd07ad620257d00cb01069999" title="Update scene state. ">update()</a>.</p>
 <p>See also <a class="el" href="class_q_v_r_app.html#a31342ac3a1b1b643b5625ca623b5b45d" title="Serialize data that changes between frames. ">serializeDynamicData()</a>. </p>
 
 </div>
@@ -229,6 +238,114 @@ Public Member Functions</h2></td></tr>
 </dl>
 <p>Only implement this if you want to support multi-process configurations and your application benefits from transferring initialized data to slave processes instead of initializing the data in each process.</p>
 <p>See also <a class="el" href="class_q_v_r_app.html#af71e381a843afd4df3e6f00a1c2b71c8" title="Serialize data that does not change after initialization. ">serializeStaticData()</a>. </p>
+
+</div>
+</div>
+<a id="a557c467362be85e479b04901da12d9b7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a557c467362be85e479b04901da12d9b7">&#9670;&nbsp;</a></span>deviceAnalogChangeEvent()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void QVRApp::deviceAnalogChangeEvent </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_q_v_r_device_event.html">QVRDeviceEvent</a> *&#160;</td>
+          <td class="paramname"><em>event</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Handle a device analog element change event. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">event</td><td>The event</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>All events from all devices are gathered by the <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>.</p>
+<p>This function is called once for each event before each frame on the master process, before <a class="el" href="class_q_v_r_app.html#acb39fe1bd07ad620257d00cb01069999" title="Update scene state. ">update()</a>. </p>
+
+</div>
+</div>
+<a id="a4a667b88fb8762afa27496baaa99990a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4a667b88fb8762afa27496baaa99990a">&#9670;&nbsp;</a></span>deviceButtonPressEvent()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void QVRApp::deviceButtonPressEvent </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_q_v_r_device_event.html">QVRDeviceEvent</a> *&#160;</td>
+          <td class="paramname"><em>event</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Handle a device button press event. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">event</td><td>The event</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>All events from all devices are gathered by the <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>.</p>
+<p>This function is called once for each event before each frame on the master process, before <a class="el" href="class_q_v_r_app.html#acb39fe1bd07ad620257d00cb01069999" title="Update scene state. ">update()</a>. </p>
+
+</div>
+</div>
+<a id="aae5d65b3af42e66a280e9eb04b56d5f1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aae5d65b3af42e66a280e9eb04b56d5f1">&#9670;&nbsp;</a></span>deviceButtonReleaseEvent()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void QVRApp::deviceButtonReleaseEvent </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_q_v_r_device_event.html">QVRDeviceEvent</a> *&#160;</td>
+          <td class="paramname"><em>event</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Handle a device button release event. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">event</td><td>The event</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>All events from all devices are gathered by the <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>.</p>
+<p>This function is called once for each event before each frame on the master process, before <a class="el" href="class_q_v_r_app.html#acb39fe1bd07ad620257d00cb01069999" title="Update scene state. ">update()</a>. </p>
 
 </div>
 </div>
@@ -516,7 +633,7 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <p>All events from all windows on all processes are gathered by the <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>.</p>
-<p>This function is called once before each frame on the master process, before <a class="el" href="class_q_v_r_app.html#acb39fe1bd07ad620257d00cb01069999" title="Update scene state. ">update()</a>. </p>
+<p>This function is called once for each event before each frame on the master process, before <a class="el" href="class_q_v_r_app.html#acb39fe1bd07ad620257d00cb01069999" title="Update scene state. ">update()</a>. </p>
 
 </div>
 </div>
@@ -563,7 +680,7 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <p>All events from all windows on all processes are gathered by the <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>.</p>
-<p>This function is called once before each frame on the master process, before <a class="el" href="class_q_v_r_app.html#acb39fe1bd07ad620257d00cb01069999" title="Update scene state. ">update()</a>. </p>
+<p>This function is called once for each event before each frame on the master process, before <a class="el" href="class_q_v_r_app.html#acb39fe1bd07ad620257d00cb01069999" title="Update scene state. ">update()</a>. </p>
 
 </div>
 </div>
@@ -610,7 +727,7 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <p>All events from all windows on all processes are gathered by the <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>.</p>
-<p>This function is called once before each frame on the master process, before <a class="el" href="class_q_v_r_app.html#acb39fe1bd07ad620257d00cb01069999" title="Update scene state. ">update()</a>. </p>
+<p>This function is called once for each event before each frame on the master process, before <a class="el" href="class_q_v_r_app.html#acb39fe1bd07ad620257d00cb01069999" title="Update scene state. ">update()</a>. </p>
 
 </div>
 </div>
@@ -657,7 +774,7 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <p>All events from all windows on all processes are gathered by the <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>.</p>
-<p>This function is called once before each frame on the master process, before <a class="el" href="class_q_v_r_app.html#acb39fe1bd07ad620257d00cb01069999" title="Update scene state. ">update()</a>. </p>
+<p>This function is called once for each event before each frame on the master process, before <a class="el" href="class_q_v_r_app.html#acb39fe1bd07ad620257d00cb01069999" title="Update scene state. ">update()</a>. </p>
 
 </div>
 </div>
@@ -704,7 +821,7 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <p>All events from all windows on all processes are gathered by the <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>.</p>
-<p>This function is called once before each frame on the master process, before <a class="el" href="class_q_v_r_app.html#acb39fe1bd07ad620257d00cb01069999" title="Update scene state. ">update()</a>. </p>
+<p>This function is called once for each event before each frame on the master process, before <a class="el" href="class_q_v_r_app.html#acb39fe1bd07ad620257d00cb01069999" title="Update scene state. ">update()</a>. </p>
 
 </div>
 </div>
@@ -848,8 +965,8 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ac497d29bb127c848af1a048f9a74cb60"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac497d29bb127c848af1a048f9a74cb60">&#9670;&nbsp;</a></span>render()</h2>
+<a id="a0f6516c33e1c2aaa300e86e4ec240419"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0f6516c33e1c2aaa300e86e4ec240419">&#9670;&nbsp;</a></span>render()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -872,14 +989,8 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>viewPass</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">unsigned int&#160;</td>
-          <td class="paramname"><em>texture</em>&#160;</td>
+          <td class="paramtype">const unsigned int *&#160;</td>
+          <td class="paramname"><em>textures</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -898,14 +1009,13 @@ Public Member Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">w</td><td>The window </td></tr>
-    <tr><td class="paramname">context</td><td>The render context with information about the current view </td></tr>
-    <tr><td class="paramname">viewPass</td><td>The current viewPass for this render call </td></tr>
-    <tr><td class="paramname">texture</td><td>The texture to render into</td></tr>
+    <tr><td class="paramname">context</td><td>The render context with information on how to render </td></tr>
+    <tr><td class="paramname">textures</td><td>The textures to render into</td></tr>
   </table>
   </dd>
 </dl>
-<p>This function is called for each window potentially multiple times, once for each view pass, to render the current frame.</p>
-<p>The <em>context</em> holds all relevant information that the application needs to render the view. Typically this is the frustum and the view matrix: </p><div class="fragment"><div class="line">QMatrix4x4 P = context.frustum(viewPass).toMatrix4x4();</div><div class="line">QMatrix4x4 V = context.viewMatrix(viewPass);</div></div><!-- fragment --><p>The view must be rendered into the given <em>texture</em>, so the first thing this function typically does is to attach the texture to a framebuffer object that is then used for rendering. </p>
+<p>This function is called for each window to render the current frame into textures. Monoscopic windows require one view per frame (for a single eye), and stereoscopic windows require two views (one for each eye). The <em>context</em> provides information about the required views and how to render them.</p>
+<p>A typical implementation does the following: </p><div class="fragment"><div class="line"><span class="keywordflow">for</span> (<span class="keywordtype">int</span> view = 0; view &lt; context.viewCount(); view++) {</div><div class="line">    setup_framebuffer_object(textures[view], context.textureSize(view));</div><div class="line">    QMatrix4x4 projMatrix = context.frustum(view).toMatrix4x4();</div><div class="line">    QMatrix4x4 viewMatrix = context.viewMatrix(view);</div><div class="line">    set_and_clear_viewport(...);</div><div class="line">    render_my_scene(...);</div><div class="line">}</div></div><!-- fragment --><p>This example renders one or two views sequentially. As an alternative, some platform-dependent OpenGL extensions allow to render two views at once to reduce rendering costs. </p>
 
 </div>
 </div>
@@ -940,7 +1050,7 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<p>Implement this if you want to support multi-process configurations. Only serialize data that is required by <a class="el" href="class_q_v_r_app.html#ac497d29bb127c848af1a048f9a74cb60" title="Render the current frame. ">render()</a> and may change; this is typically what you manipulate in <a class="el" href="class_q_v_r_app.html#acb39fe1bd07ad620257d00cb01069999" title="Update scene state. ">update()</a>.</p>
+<p>Implement this if you want to support multi-process configurations. Only serialize data that is required by <a class="el" href="class_q_v_r_app.html#a0f6516c33e1c2aaa300e86e4ec240419" title="Render the current frame. ">render()</a> and may change; this is typically what you manipulate in <a class="el" href="class_q_v_r_app.html#acb39fe1bd07ad620257d00cb01069999" title="Update scene state. ">update()</a>.</p>
 <p>See also <a class="el" href="class_q_v_r_app.html#a68082a153e243a70882d8ce636282bf2" title="Deserialize data that changes between frames. ">deserializeDynamicData()</a>. </p>
 
 </div>
@@ -1091,7 +1201,7 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <p>All events from all windows on all processes are gathered by the <em><a class="el" href="class_q_v_r_manager.html" title="Manager of the QVR application&#39;s control flow and its processes and windows. ">QVRManager</a></em>.</p>
-<p>This function is called once before each frame on the master process, before <a class="el" href="class_q_v_r_app.html#acb39fe1bd07ad620257d00cb01069999" title="Update scene state. ">update()</a>. </p>
+<p>This function is called once for each event before each frame on the master process, before <a class="el" href="class_q_v_r_app.html#acb39fe1bd07ad620257d00cb01069999" title="Update scene state. ">update()</a>. </p>
 
 </div>
 </div>

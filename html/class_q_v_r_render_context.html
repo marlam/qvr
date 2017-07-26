@@ -70,7 +70,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Context for rendering a view.  
+<p>Context for rendering a frame.  
  <a href="class_q_v_r_render_context.html#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
@@ -111,30 +111,33 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a3c6651cce3cf8ce60fdbd81c443dd563"><td class="memItemLeft" align="right" valign="top"><a class="el" href="config_8hpp.html#ad8cb348ba654a1504085369172146314">QVROutputMode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a3c6651cce3cf8ce60fdbd81c443dd563">outputMode</a> () const</td></tr>
 <tr class="memdesc:a3c6651cce3cf8ce60fdbd81c443dd563"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the output mode of the window displaying the view.  <a href="#a3c6651cce3cf8ce60fdbd81c443dd563">More...</a><br /></td></tr>
 <tr class="separator:a3c6651cce3cf8ce60fdbd81c443dd563"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a117353d25c332194632ce20fb648bb3c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a117353d25c332194632ce20fb648bb3c">viewPasses</a> () const</td></tr>
-<tr class="memdesc:a117353d25c332194632ce20fb648bb3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of rendering passes necessary to produce the view.  <a href="#a117353d25c332194632ce20fb648bb3c">More...</a><br /></td></tr>
-<tr class="separator:a117353d25c332194632ce20fb648bb3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a61f7f327002a12f3dc1fae697cfa7b75"><td class="memItemLeft" align="right" valign="top"><a class="el" href="config_8hpp.html#ae66050fd3a370d877a255d712f401fb2">QVREye</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a61f7f327002a12f3dc1fae697cfa7b75">eye</a> (int viewPass) const</td></tr>
-<tr class="memdesc:a61f7f327002a12f3dc1fae697cfa7b75"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the eye for rendering pass <em>viewPass</em>.  <a href="#a61f7f327002a12f3dc1fae697cfa7b75">More...</a><br /></td></tr>
-<tr class="separator:a61f7f327002a12f3dc1fae697cfa7b75"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a43889e5d22019601cb879d618e9ead16"><td class="memItemLeft" align="right" valign="top">const QVector3D &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a43889e5d22019601cb879d618e9ead16">trackingPosition</a> (int viewPass) const</td></tr>
-<tr class="memdesc:a43889e5d22019601cb879d618e9ead16"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the observer tracking position for rendering pass <em>viewPass</em>.  <a href="#a43889e5d22019601cb879d618e9ead16">More...</a><br /></td></tr>
-<tr class="separator:a43889e5d22019601cb879d618e9ead16"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaf40cc19624935236e74920f3e4d80fe"><td class="memItemLeft" align="right" valign="top">const QQuaternion &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#aaf40cc19624935236e74920f3e4d80fe">trackingOrientation</a> (int viewPass) const</td></tr>
-<tr class="memdesc:aaf40cc19624935236e74920f3e4d80fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the observer tracking orientation for rendering pass <em>viewPass</em>.  <a href="#aaf40cc19624935236e74920f3e4d80fe">More...</a><br /></td></tr>
-<tr class="separator:aaf40cc19624935236e74920f3e4d80fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a04f82229f66cb1a3e269e24d48c0d1c3"><td class="memItemLeft" align="right" valign="top">QMatrix4x4&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a04f82229f66cb1a3e269e24d48c0d1c3">trackingMatrix</a> (int viewPass) const</td></tr>
-<tr class="memdesc:a04f82229f66cb1a3e269e24d48c0d1c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the observer tracking matrix for rendering pass <em>viewPass</em>.  <a href="#a04f82229f66cb1a3e269e24d48c0d1c3">More...</a><br /></td></tr>
-<tr class="separator:a04f82229f66cb1a3e269e24d48c0d1c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a774e931afbbec18fef3b89fc279cfc78"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="class_q_v_r_frustum.html">QVRFrustum</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a774e931afbbec18fef3b89fc279cfc78">frustum</a> (int viewPass) const</td></tr>
-<tr class="memdesc:a774e931afbbec18fef3b89fc279cfc78"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the frustum for rendering pass <em>viewPass</em>.  <a href="#a774e931afbbec18fef3b89fc279cfc78">More...</a><br /></td></tr>
-<tr class="separator:a774e931afbbec18fef3b89fc279cfc78"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1b6d536a06dd944fdda6a037c02f32a0"><td class="memItemLeft" align="right" valign="top">const QMatrix4x4 &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a1b6d536a06dd944fdda6a037c02f32a0">viewMatrix</a> (int viewPass) const</td></tr>
-<tr class="memdesc:a1b6d536a06dd944fdda6a037c02f32a0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the view matrix for rendering pass <em>viewPass</em>.  <a href="#a1b6d536a06dd944fdda6a037c02f32a0">More...</a><br /></td></tr>
-<tr class="separator:a1b6d536a06dd944fdda6a037c02f32a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab5615f33944e5a77e268f2929778bb36"><td class="memItemLeft" align="right" valign="top">const QMatrix4x4 &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#ab5615f33944e5a77e268f2929778bb36">viewMatrixPure</a> (int viewPass) const</td></tr>
-<tr class="memdesc:ab5615f33944e5a77e268f2929778bb36"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the pure view matrix (i.e. in tracking space, without navigation) for rendering pass <em>viewPass</em>.  <a href="#ab5615f33944e5a77e268f2929778bb36">More...</a><br /></td></tr>
-<tr class="separator:ab5615f33944e5a77e268f2929778bb36"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a90c2f43af3b0bfebbb68d40e7ae4eeae"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a90c2f43af3b0bfebbb68d40e7ae4eeae">viewCount</a> () const</td></tr>
+<tr class="memdesc:a90c2f43af3b0bfebbb68d40e7ae4eeae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of views necessary to produce the frame.  <a href="#a90c2f43af3b0bfebbb68d40e7ae4eeae">More...</a><br /></td></tr>
+<tr class="separator:a90c2f43af3b0bfebbb68d40e7ae4eeae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa21d47aa234f89905ef8fd1018c9841d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="config_8hpp.html#ae66050fd3a370d877a255d712f401fb2">QVREye</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#aa21d47aa234f89905ef8fd1018c9841d">eye</a> (int view) const</td></tr>
+<tr class="memdesc:aa21d47aa234f89905ef8fd1018c9841d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the eye for rendering <em>view</em>.  <a href="#aa21d47aa234f89905ef8fd1018c9841d">More...</a><br /></td></tr>
+<tr class="separator:aa21d47aa234f89905ef8fd1018c9841d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9aa50500003fec960edaf418b1e4e37a"><td class="memItemLeft" align="right" valign="top">QSize&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a9aa50500003fec960edaf418b1e4e37a">textureSize</a> (int view) const</td></tr>
+<tr class="memdesc:a9aa50500003fec960edaf418b1e4e37a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the texture size for rendering <em>view</em>.  <a href="#a9aa50500003fec960edaf418b1e4e37a">More...</a><br /></td></tr>
+<tr class="separator:a9aa50500003fec960edaf418b1e4e37a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59099b625d78370086bbfc1ce70f4153"><td class="memItemLeft" align="right" valign="top">const QVector3D &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a59099b625d78370086bbfc1ce70f4153">trackingPosition</a> (int view) const</td></tr>
+<tr class="memdesc:a59099b625d78370086bbfc1ce70f4153"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the observer tracking position for rendering <em>view</em>.  <a href="#a59099b625d78370086bbfc1ce70f4153">More...</a><br /></td></tr>
+<tr class="separator:a59099b625d78370086bbfc1ce70f4153"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6c4244d711f432765441493fd838c219"><td class="memItemLeft" align="right" valign="top">const QQuaternion &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#a6c4244d711f432765441493fd838c219">trackingOrientation</a> (int view) const</td></tr>
+<tr class="memdesc:a6c4244d711f432765441493fd838c219"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the observer tracking orientation for rendering <em>view</em>.  <a href="#a6c4244d711f432765441493fd838c219">More...</a><br /></td></tr>
+<tr class="separator:a6c4244d711f432765441493fd838c219"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abadbb090e7bb02cfe4c866757c4b83a2"><td class="memItemLeft" align="right" valign="top">QMatrix4x4&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#abadbb090e7bb02cfe4c866757c4b83a2">trackingMatrix</a> (int view) const</td></tr>
+<tr class="memdesc:abadbb090e7bb02cfe4c866757c4b83a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the observer tracking matrix for rendering <em>view</em>.  <a href="#abadbb090e7bb02cfe4c866757c4b83a2">More...</a><br /></td></tr>
+<tr class="separator:abadbb090e7bb02cfe4c866757c4b83a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab83e7c764f3b05b56fa04df40b2f9201"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="class_q_v_r_frustum.html">QVRFrustum</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#ab83e7c764f3b05b56fa04df40b2f9201">frustum</a> (int view) const</td></tr>
+<tr class="memdesc:ab83e7c764f3b05b56fa04df40b2f9201"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the frustum for rendering <em>view</em>.  <a href="#ab83e7c764f3b05b56fa04df40b2f9201">More...</a><br /></td></tr>
+<tr class="separator:ab83e7c764f3b05b56fa04df40b2f9201"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aacae74b585733bc3cc03a7e2728af722"><td class="memItemLeft" align="right" valign="top">const QMatrix4x4 &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#aacae74b585733bc3cc03a7e2728af722">viewMatrix</a> (int view) const</td></tr>
+<tr class="memdesc:aacae74b585733bc3cc03a7e2728af722"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the view matrix for rendering <em>view</em>.  <a href="#aacae74b585733bc3cc03a7e2728af722">More...</a><br /></td></tr>
+<tr class="separator:aacae74b585733bc3cc03a7e2728af722"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae77334436c3d1ce237149c6414ae1015"><td class="memItemLeft" align="right" valign="top">const QMatrix4x4 &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_q_v_r_render_context.html#ae77334436c3d1ce237149c6414ae1015">viewMatrixPure</a> (int view) const</td></tr>
+<tr class="memdesc:ae77334436c3d1ce237149c6414ae1015"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the pure view matrix (i.e. in tracking space, without navigation) for rendering <em>view</em>.  <a href="#ae77334436c3d1ce237149c6414ae1015">More...</a><br /></td></tr>
+<tr class="separator:ae77334436c3d1ce237149c6414ae1015"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
@@ -146,13 +149,13 @@ Friends</h2></td></tr>
 <tr class="separator:a43d6e584e1a77480374003168883ef3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Context for rendering a view. </p>
-<p>A render context provides information about a view into the virtual world.</p>
-<p>This information depends on the <em><a class="el" href="class_q_v_r_window.html" title="A Qt window on a screen and a window into the virtual world. ">QVRWindow</a></em> that the view is produced for and on the <em><a class="el" href="class_q_v_r_observer.html" title="Observer of the virtual world. ">QVRObserver</a></em> that observes this window.</p>
+<div class="textblock"><p>Context for rendering a frame. </p>
+<p>A render context provides information about the views into the virtual world that are required for one output frame in a given window.</p>
+<p>This information depends on the <em><a class="el" href="class_q_v_r_window.html" title="A Qt window on a screen and a window into the virtual world. ">QVRWindow</a></em> that the frame is produced for and on the <em><a class="el" href="class_q_v_r_observer.html" title="Observer of the virtual world. ">QVRObserver</a></em> that observes this window.</p>
 <p>The render context is used in various places:</p><ul>
-<li>In <em><a class="el" href="class_q_v_r_app.html#ac497d29bb127c848af1a048f9a74cb60" title="Render the current frame. ">QVRApp::render()</a></em>, it provides the information necessary for the application to render the view.</li>
-<li>In the event handling functions of <em><a class="el" href="class_q_v_r_app.html" title="QVR application interface. ">QVRApp</a></em>, it provides information about the view displayed in the window that generated the event.</li>
-<li>In the output plugin function <em><a class="el" href="outputplugin_8hpp.html#a014e82f9b613115213b617206a30c0d6" title="Output the rendered content. ">QVROutputPlugin()</a></em>, the context provides information useful for a plugin to decide how to process the view before displaying it. </li>
+<li>In <em><a class="el" href="class_q_v_r_app.html#a0f6516c33e1c2aaa300e86e4ec240419" title="Render the current frame. ">QVRApp::render()</a></em>, it provides the information necessary for the application to render a frame.</li>
+<li>In the event handling functions of <em><a class="el" href="class_q_v_r_app.html" title="QVR application interface. ">QVRApp</a></em>, it provides information about the frame displayed in the window that generated the event.</li>
+<li>In the output plugin function <em><a class="el" href="outputplugin_8hpp.html#a790b649099f046b0f84416049af1bd13" title="Output the rendered frame. ">QVROutputPlugin()</a></em>, the context provides information useful for a plugin to decide how to process the frame before displaying it. </li>
 </ul>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="af624784863a772c4a0ddb85bf4981588"></a>
@@ -175,8 +178,8 @@ Friends</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a61f7f327002a12f3dc1fae697cfa7b75"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a61f7f327002a12f3dc1fae697cfa7b75">&#9670;&nbsp;</a></span>eye()</h2>
+<a id="aa21d47aa234f89905ef8fd1018c9841d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa21d47aa234f89905ef8fd1018c9841d">&#9670;&nbsp;</a></span>eye()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -188,7 +191,7 @@ Friends</h2></td></tr>
           <td class="memname"><a class="el" href="config_8hpp.html#ae66050fd3a370d877a255d712f401fb2">QVREye</a> QVRRenderContext::eye </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>viewPass</em></td><td>)</td>
+          <td class="paramname"><em>view</em></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
@@ -199,12 +202,12 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Returns the eye for rendering pass <em>viewPass</em>. </p>
+<p>Returns the eye for rendering <em>view</em>. </p>
 
 </div>
 </div>
-<a id="a774e931afbbec18fef3b89fc279cfc78"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a774e931afbbec18fef3b89fc279cfc78">&#9670;&nbsp;</a></span>frustum()</h2>
+<a id="ab83e7c764f3b05b56fa04df40b2f9201"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab83e7c764f3b05b56fa04df40b2f9201">&#9670;&nbsp;</a></span>frustum()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -216,7 +219,7 @@ Friends</h2></td></tr>
           <td class="memname">const <a class="el" href="class_q_v_r_frustum.html">QVRFrustum</a>&amp; QVRRenderContext::frustum </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>viewPass</em></td><td>)</td>
+          <td class="paramname"><em>view</em></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
@@ -227,7 +230,7 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Returns the frustum for rendering pass <em>viewPass</em>. </p>
+<p>Returns the frustum for rendering <em>view</em>. </p>
 
 </div>
 </div>
@@ -474,8 +477,36 @@ Friends</h2></td></tr>
 
 </div>
 </div>
-<a id="a04f82229f66cb1a3e269e24d48c0d1c3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a04f82229f66cb1a3e269e24d48c0d1c3">&#9670;&nbsp;</a></span>trackingMatrix()</h2>
+<a id="a9aa50500003fec960edaf418b1e4e37a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9aa50500003fec960edaf418b1e4e37a">&#9670;&nbsp;</a></span>textureSize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">QSize QVRRenderContext::textureSize </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>view</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the texture size for rendering <em>view</em>. </p>
+
+</div>
+</div>
+<a id="abadbb090e7bb02cfe4c866757c4b83a2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abadbb090e7bb02cfe4c866757c4b83a2">&#9670;&nbsp;</a></span>trackingMatrix()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -487,7 +518,7 @@ Friends</h2></td></tr>
           <td class="memname">QMatrix4x4 QVRRenderContext::trackingMatrix </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>viewPass</em></td><td>)</td>
+          <td class="paramname"><em>view</em></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
@@ -498,12 +529,12 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Returns the observer tracking matrix for rendering pass <em>viewPass</em>. </p>
+<p>Returns the observer tracking matrix for rendering <em>view</em>. </p>
 
 </div>
 </div>
-<a id="aaf40cc19624935236e74920f3e4d80fe"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aaf40cc19624935236e74920f3e4d80fe">&#9670;&nbsp;</a></span>trackingOrientation()</h2>
+<a id="a6c4244d711f432765441493fd838c219"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6c4244d711f432765441493fd838c219">&#9670;&nbsp;</a></span>trackingOrientation()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -515,7 +546,7 @@ Friends</h2></td></tr>
           <td class="memname">const QQuaternion&amp; QVRRenderContext::trackingOrientation </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>viewPass</em></td><td>)</td>
+          <td class="paramname"><em>view</em></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
@@ -526,12 +557,12 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Returns the observer tracking orientation for rendering pass <em>viewPass</em>. </p>
+<p>Returns the observer tracking orientation for rendering <em>view</em>. </p>
 
 </div>
 </div>
-<a id="a43889e5d22019601cb879d618e9ead16"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a43889e5d22019601cb879d618e9ead16">&#9670;&nbsp;</a></span>trackingPosition()</h2>
+<a id="a59099b625d78370086bbfc1ce70f4153"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a59099b625d78370086bbfc1ce70f4153">&#9670;&nbsp;</a></span>trackingPosition()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -543,7 +574,7 @@ Friends</h2></td></tr>
           <td class="memname">const QVector3D&amp; QVRRenderContext::trackingPosition </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>viewPass</em></td><td>)</td>
+          <td class="paramname"><em>view</em></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
@@ -554,12 +585,12 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Returns the observer tracking position for rendering pass <em>viewPass</em>. </p>
+<p>Returns the observer tracking position for rendering <em>view</em>. </p>
 
 </div>
 </div>
-<a id="a1b6d536a06dd944fdda6a037c02f32a0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1b6d536a06dd944fdda6a037c02f32a0">&#9670;&nbsp;</a></span>viewMatrix()</h2>
+<a id="a90c2f43af3b0bfebbb68d40e7ae4eeae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a90c2f43af3b0bfebbb68d40e7ae4eeae">&#9670;&nbsp;</a></span>viewCount()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -568,63 +599,7 @@ Friends</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const QMatrix4x4&amp; QVRRenderContext::viewMatrix </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>viewPass</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Returns the view matrix for rendering pass <em>viewPass</em>. </p>
-
-</div>
-</div>
-<a id="ab5615f33944e5a77e268f2929778bb36"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab5615f33944e5a77e268f2929778bb36">&#9670;&nbsp;</a></span>viewMatrixPure()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">const QMatrix4x4&amp; QVRRenderContext::viewMatrixPure </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>viewPass</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Returns the pure view matrix (i.e. in tracking space, without navigation) for rendering pass <em>viewPass</em>. </p>
-
-</div>
-</div>
-<a id="a117353d25c332194632ce20fb648bb3c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a117353d25c332194632ce20fb648bb3c">&#9670;&nbsp;</a></span>viewPasses()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">int QVRRenderContext::viewPasses </td>
+          <td class="memname">int QVRRenderContext::viewCount </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -637,7 +612,63 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Returns the number of rendering passes necessary to produce the view. </p>
+<p>Returns the number of views necessary to produce the frame. </p>
+
+</div>
+</div>
+<a id="aacae74b585733bc3cc03a7e2728af722"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aacae74b585733bc3cc03a7e2728af722">&#9670;&nbsp;</a></span>viewMatrix()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const QMatrix4x4&amp; QVRRenderContext::viewMatrix </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>view</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the view matrix for rendering <em>view</em>. </p>
+
+</div>
+</div>
+<a id="ae77334436c3d1ce237149c6414ae1015"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae77334436c3d1ce237149c6414ae1015">&#9670;&nbsp;</a></span>viewMatrixPure()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const QMatrix4x4&amp; QVRRenderContext::viewMatrixPure </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>view</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the pure view matrix (i.e. in tracking space, without navigation) for rendering <em>view</em>. </p>
 
 </div>
 </div>

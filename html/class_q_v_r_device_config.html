@@ -158,11 +158,12 @@ Friends</h2></td></tr>
 <p>These parameters sometimes define analog elemt names. The following names have a special meaning that translates to a <em>QVRAnalog</em> value: trigger, left-trigger, right-trigger, grip, left-grip, right-grip, axis-x, axis-y, left-axis-x, left-axis-y, right-axis-x, right-axis-y. Triggers and grips have values in [0,1], while axes have values in [-1,1].</p>
 <p>For <em>QVR_Device_Analogs_None</em>, parameters are ignored.</p>
 <p>For <em>QVR_Device_Analogs_Static</em>, the parameter string is a list of name / value pairs, e.g. <code>trigger 0 axis-x 0.5</code>. The value must be in [0,1] or [-1,1].</p>
-<p>For <em>QVR_Device_Analogs_Gamepad</em>, the parameter string is the identifier of the gamepad. The default is 0 which identifies the first gamepad found by Qt; higher numbers identify additional controllers. There will be 4 gamepad analogs: right-axis-y, right-axis-x, left-axis-y, left-axis-x.</p>
+<p>For <em>QVR_Device_Analogs_Gamepad</em>, the parameter string is the identifier of the gamepad. The default is 0 which identifies the first gamepad found by Qt; higher numbers identify additional controllers. There will be 6 gamepad analogs: right-axis-y, right-axis-x, left-axis-y, left-axis-x, right-trigger, left-trigger.</p>
 <p>For <em>QVR_Device_Analogs_VRPN</em>, the parameter string is of the form <code>&lt;tracker&gt; [&lt;name0&gt; [&lt;name1&gt; [...]]]</code> where <code>&lt;tracker&gt;</code> is the VRPN tracker name, e.g. Tracker0@localhost and the optional analog name list specifies how many analog elements the device has and what meaning each of them has. Example: <code>Tracker0\@localhost trigger axis-x axis-y</code> defines 3 analog elements (VRPN analog element indices 0, 1, 2) and gives them a meaning according to their name.</p>
 <p>For <em>QVR_Device_Analogs_Oculus</em>, the parameter string must be "xbox", "controller-left", or "controller-right". The left and right controllers each have 4 analog elements: axis-y, axis-x, trigger, grip. The xbox controller has 8 analog elements: left-axis-y, left-axis-x, right-axis-y, right-axis-x, left-trigger, right-trigger, left-grip, right-grip.</p>
 <p>For <em>QVR_Device_Analogs_OpenVR</em>, the parameter string must be either "controller-0" or "controller-1". There will be 3 analogs: axis-y, axis-x, trigger.</p>
-<p>For <em>QVR_Device_Analogs_OSVR</em>, the parameter string is a space-separated list of path names of OSVR analog interfaces (one path name for each analog managed by this device). </p>
+<p>For <em>QVR_Device_Analogs_OSVR</em>, the parameter string is a space-separated list of path names of OSVR analog interfaces (one path name for each analog managed by this device).</p>
+<p>For <em>QVR_Device_Analogs_GoogleVR</em>, the parameter string must currently be "daydream". </p>
 
 </div>
 </div>
@@ -224,7 +225,8 @@ Friends</h2></td></tr>
 <p>For <em>QVR_Device_Buttons_VRPN</em>, the parameter string is of the form <code>&lt;tracker&gt; [&lt;name0&gt; [&lt;name1&gt; [...]]]</code> where <code>&lt;tracker&gt;</code> is the VRPN tracker name, e.g. Tracker0@localhost and the optional button name list specifies how many buttons the device has and what meaning each button has. Example: <code>Tracker0\@localhost up down left right l1 l2</code> defines 6 buttons (VRPN button indices 0, 1, 2, 3, 4, 5) and gives them a meaning according to their name.</p>
 <p>For <em>QVR_Device_Buttons_Oculus</em>, the parameter string must be "xbox", "controller-left", or "controller-right". The left controller has 8 buttons: up, down, left, right, x, y, l1, menu. The right controller has 8 buttons: up, down, left, right, a, b, r1, menu. Note that the up, down, left, right buttons on controllers are only simulated: they will report to be pressed when the analog value of their direction exceeds 0.5. The xbox controller has 12 buttons: up, down, left, right, a, b, x, y, l1, r1, menu, back.</p>
 <p>For <em>QVR_Device_Buttons_OpenVR</em>, the parameter string must be either "controller-0" or "controller-1". There will be 6 buttons: up, down, left, right, menu, grip. Note that the four direction buttons are only simulated: they will report to be pressed when the analog value of their direction exceeds 0.5.</p>
-<p>For <em>QVR_Device_Buttons_OSVR</em>, the parameter string is a space-separated list of button name / path name pairs. The button name defines the meaning of a name, and the path name defines the OSVR button interface. </p>
+<p>For <em>QVR_Device_Buttons_OSVR</em>, the parameter string is a space-separated list of button name / path name pairs. The button name defines the meaning of a name, and the path name defines the OSVR button interface.</p>
+<p>For <em>QVR_Device_Buttons_GoogleVR</em>, the parameter string is either "touch" or "daydream". </p>
 
 </div>
 </div>
@@ -340,7 +342,8 @@ Friends</h2></td></tr>
 <p>For <em>QVR_Device_Tracking_VRPN</em>, the parameter string is of the form <code>&lt;name&gt; [&lt;sensor&gt;]</code> where <code>&lt;name&gt;</code> is the VRPN tracker name, e.g. Tracker0@localhost, and <code>&lt;sensor&gt;</code> is the number of the sensor to be used (can be omitted to use all).</p>
 <p>For <em>QVR_Device_Tracking_Oculus</em>, the parameter string must be one of "head", "eye-left", "eye-right", "controller-left", and "controller-right".</p>
 <p>For <em>QVR_Device_Tracking_OpenVR</em>, the parameter string must be one of "head", "eye-left", "eye-right", "controller-0", and "controller-1".</p>
-<p>For <em>QVR_Device_Tracking_OSVR</em>, the parameter string is the path name of an OSVR tracker interface. The special strings "eye-center", "eye-left", and "eye-right" identify the center, left, and right eyes of the viewer (these are unfortunately not available via path names in OSVR). </p>
+<p>For <em>QVR_Device_Tracking_OSVR</em>, the parameter string is the path name of an OSVR tracker interface. The special strings "eye-center", "eye-left", and "eye-right" identify the center, left, and right eyes of the viewer (these are unfortunately not available via path names in OSVR).</p>
+<p>For <em>QVR_Device_Tracking_GoogleVR</em>, the parameter string must be one of "head", "eye-left", "eye-right", "daydream". </p>
 
 </div>
 </div>
