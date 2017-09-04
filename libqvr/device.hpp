@@ -51,15 +51,18 @@ struct QVRDeviceInternals;
 class QVRDevice
 {
 private:
+    static const int _maxButtons = QVR_Button_Unknown;
+    static const int _maxAnalogs = QVR_Analog_Unknown;
+
     int _index;
 
     QVector3D _position;
     QQuaternion _orientation;
     QVector3D _velocity;
     QVector3D _angularVelocity;
-    signed char _buttonsMap[QVR_Button_Unknown];
+    signed char _buttonsMap[_maxButtons];
     QVector<bool> _buttons;
-    signed char _analogsMap[QVR_Analog_Unknown];
+    signed char _analogsMap[_maxAnalogs];
     QVector<float> _analogs;
 
     QVRDeviceInternals* _internals;

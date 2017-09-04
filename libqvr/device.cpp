@@ -217,18 +217,18 @@ QVRDevice::QVRDevice() :
     _index(-1),
     _internals(NULL)
 {
-    for (int i = 0; i < QVR_Button_Unknown; i++)
+    for (int i = 0; i < _maxButtons; i++)
         _buttonsMap[i] = -1;
-    for (int i = 0; i < QVR_Analog_Unknown; i++)
+    for (int i = 0; i < _maxAnalogs; i++)
         _analogsMap[i] = -1;
 }
 
 QVRDevice::QVRDevice(int deviceIndex) :
     _index(deviceIndex)
 {
-    for (int i = 0; i < QVR_Button_Unknown; i++)
+    for (int i = 0; i < _maxButtons; i++)
         _buttonsMap[i] = -1;
-    for (int i = 0; i < QVR_Analog_Unknown; i++)
+    for (int i = 0; i < _maxAnalogs; i++)
         _analogsMap[i] = -1;
     _internals = new struct QVRDeviceInternals;
     _internals->currentTimestamp = -1;
@@ -375,7 +375,7 @@ QVRDevice::QVRDevice(int deviceIndex) :
     case QVR_Device_Buttons_Static:
         {
             QStringList args = config().buttonsParameters().split(' ', QString::SkipEmptyParts);
-            int n = qMax(32, args.length() / 2);
+            int n = qMin(_maxButtons, args.length() / 2);
             _buttons.resize(n);
             for (int i = 0; i < _buttons.length(); i++) {
                 QString name = args[2 * i + 0];
@@ -428,13 +428,13 @@ QVRDevice::QVRDevice(int deviceIndex) :
             QStringList args = config().buttonsParameters().split(' ', QString::SkipEmptyParts);
             QString name = (args.length() >= 1 ? args[0] : config().buttonsParameters());
             if (args.length() > 1) {
-                _buttons.resize(qMax(32, args.length() - 1));
+                _buttons.resize(qMin(_maxButtons, args.length() - 1));
                 QVRButton btn;
                 for (int i = 0; i < _buttons.length(); i++)
                     if (QVRButtonFromName(args[i + 1], &btn))
                         _buttonsMap[btn] = i;
             } else {
-                _buttons.resize(32);
+                _buttons.resize(_maxButtons);
             }
             if (QVRManager::processIndex() == config().processIndex()) {
                 _internals->vrpnButtonRemote = new vrpn_Button_Remote(qPrintable(name));
@@ -538,7 +538,7 @@ QVRDevice::QVRDevice(int deviceIndex) :
 #ifdef HAVE_OSVR
         {
             QStringList args = config().buttonsParameters().split(' ', QString::SkipEmptyParts);
-            int n = qMax(32, args.length() / 2);
+            int n = qMin(_maxButtons, args.length() / 2);
             _buttons.resize(n);
             if (QVRManager::processIndex() == config().processIndex()) {
                 Q_ASSERT(QVROsvrClientContext);
@@ -587,7 +587,7 @@ QVRDevice::QVRDevice(int deviceIndex) :
         {
             QStringList args = config().analogsParameters().split(' ', QString::SkipEmptyParts);
             _analogs.resize(args.length());
-            int n = qMax(16, args.length() / 2);
+            int n = qMin(_maxAnalogs, args.length() / 2);
             _buttons.resize(n);
             for (int i = 0; i < _analogs.length(); i++) {
                 QString name = args[2 * i + 0];
@@ -631,13 +631,13 @@ QVRDevice::QVRDevice(int deviceIndex) :
             QStringList args = config().analogsParameters().split(' ', QString::SkipEmptyParts);
             QString name = (args.length() >= 1 ? args[0] : config().analogsParameters());
             if (args.length() > 1) {
-                _analogs.resize(qMax(16, args.length() - 1));
+                _analogs.resize(qMin(_maxAnalogs, args.length() - 1));
                 QVRAnalog anlg;
                 for (int i = 0; i < _analogs.length(); i++)
                     if (QVRAnalogFromName(args[i + 1], &anlg))
                         _analogsMap[anlg] = i;
             } else {
-                _analogs.resize(16);
+                _analogs.resize(_maxAnalogs);
             }
             if (QVRManager::processIndex() == config().processIndex()) {
                 _internals->vrpnAnalogRemote = new vrpn_Analog_Remote(qPrintable(name));
@@ -723,7 +723,7 @@ QVRDevice::QVRDevice(int deviceIndex) :
 #ifdef HAVE_OSVR
         {
             QStringList args = config().analogsParameters().split(' ', QString::SkipEmptyParts);
-            int n = qMax(16, args.length() / 2);
+            int n = qMin(_maxAnalogs, args.length() / 2);
             _analogs.resize(n);
             if (QVRManager::processIndex() == config().processIndex()) {
                 Q_ASSERT(QVROsvrClientContext);
