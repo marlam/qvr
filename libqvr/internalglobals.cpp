@@ -27,6 +27,7 @@
 #include <cstring>
 
 #include "internalglobals.hpp"
+#include "manager.hpp"
 #include "logging.hpp"
 
 #ifdef HAVE_QGAMEPAD
@@ -55,6 +56,9 @@
 # define glBindVertexArray glBindVertexArrayOES
 #endif
 
+
+/* Global manager instance (singleton) */
+QVRManager* QVRManagerInstance = NULL;
 
 /* Global screen info */
 int QVRScreenCount = 0;

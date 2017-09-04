@@ -314,6 +314,8 @@ private:
     void waitForBufferSwaps();
     void quit();
 
+    friend void QVRMsg(QVRLogLevel level, const char* s);
+
 private slots:
     void masterLoop();
     void slaveLoop();

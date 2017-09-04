@@ -28,6 +28,7 @@
 #endif
 
 #include "manager.hpp"
+#include "internalglobals.hpp"
 #include "logging.hpp"
 
 static QByteArray QVRLogFile;
@@ -79,8 +80,8 @@ void QVRMsg(QVRLogLevel level, const char* s)
     // mangled. Therefore we buffer what we want to print.
     char buf[QVR_MSG_BUFSIZE] = "QVR";
     int bufIndex = 3;
-    if (QVRManager::isInitialized() && QVRManager::processCount() > 1)
-        bufIndex += snprintf(buf + bufIndex, QVR_MSG_BUFSIZE - bufIndex, "[%d]", QVRManager::processIndex());
+    if (QVRManagerInstance && QVRManagerInstance->_config && QVRManagerInstance->_config->processConfigs().size() > 1)
+        bufIndex += snprintf(buf + bufIndex, QVR_MSG_BUFSIZE - bufIndex, "[%d]", QVRManagerInstance->_processIndex);
     bufIndex += snprintf(buf + bufIndex, QVR_MSG_BUFSIZE - bufIndex, ": %s", s);
     buf[std::min(bufIndex, QVR_MSG_BUFSIZE - 2)] = '\n';
     bufIndex++;

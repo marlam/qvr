@@ -36,7 +36,11 @@
 #include <QSizeF>
 
 #include "event.hpp"
+class QVRManager;
 
+
+/* Global manager instance (singleton) */
+extern QVRManager* QVRManagerInstance;
 
 /* Global screen info */
 extern int QVRScreenCount;

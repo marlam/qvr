@@ -42,8 +42,6 @@
 #include "internalglobals.hpp"
 
 
-static QVRManager* manager = NULL; // singleton instance
-
 static bool parseLogLevel(const QString& ll, QVRLogLevel* logLevel)
 {
     if (ll.compare("fatal", Qt::CaseInsensitive) == 0)
@@ -112,8 +110,8 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
     _wasdqeTimer(NULL),
     _initialized(false)
 {
-    Q_ASSERT(!manager);  // there can be only one
-    manager = this;
+    Q_ASSERT(!QVRManagerInstance); // there can be only one
+    QVRManagerInstance = this;
     QVREventQueue = new QQueue<QVREvent>;
     Q_INIT_RESOURCE(qvr);
 
@@ -314,6 +312,7 @@ QVRManager::~QVRManager()
     delete _masterWindow;
     delete _thisProcess;
     delete _config;
+    _config = NULL;
     delete _triggerTimer;
     delete _fpsTimer;
     delete _wasdqeTimer;
@@ -322,7 +321,7 @@ QVRManager::~QVRManager()
     QVREventQueue = NULL;
     delete _server;
     delete _client;
-    manager = NULL;
+    QVRManagerInstance = NULL;
 }
 
 void QVRManager::buildProcessCommandLine(int processIndex, QString* prg, QStringList* args)
@@ -755,8 +754,7 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
 
 bool QVRManager::isInitialized()
 {
-    Q_ASSERT(manager);
-    return manager->_initialized;
+    return instance()->_initialized;
 }
 
 void QVRManager::masterLoop()
@@ -1366,7 +1364,7 @@ void QVRManager::processEventQueue()
 
 QVRManager* QVRManager::instance()
 {
-    return manager;
+    return QVRManagerInstance;
 }
 
 QVRLogLevel QVRManager::logLevel()
