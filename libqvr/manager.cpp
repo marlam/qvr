@@ -267,6 +267,10 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
             _autodetect |= QVRConfig::AutodetectGamepads;
         else if (autodetectList[i] == "~gamepads")
             _autodetect &= ~QVRConfig::AutodetectGamepads;
+        else if (autodetectList[i] == "webcam")
+            _autodetect |= QVRConfig::AutodetectWebcamHeadTracker;
+        else if (autodetectList[i] == "~webcam")
+            _autodetect &= ~QVRConfig::AutodetectWebcamHeadTracker;
         else
             QVR_WARNING("ignoring unknown entry '%s' in --qvr-autodetect list", qPrintable(autodetectList[i]));
     }
@@ -300,6 +304,9 @@ QVRManager::~QVRManager()
         QVROsvrDisplayConfig = NULL;
         QVROsvrClientContext = NULL;
     }
+#endif
+#ifdef HAVE_WEBCAMHEADTRACKER
+    QVRShutdownWebcamHeadTracker();
 #endif
     for (int i = 0; i < _devices.size(); i++)
         delete _devices.at(i);
@@ -367,6 +374,9 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
     if (!_workingDir.isEmpty())
         QDir::setCurrent(_workingDir);
 
+    // Find out about our available screens. Has to be done before QVRConfig::createDefault().
+    QVRGetScreenInfo();
+
     // Get configuration
     _config = new QVRConfig;
     if (_configFilename.isEmpty()) {
@@ -426,7 +436,9 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
                     || _config->deviceConfigs()[d].analogsType() == QVR_Device_Analogs_OSVR) {
                 needToInitializeOSVR = true;
             }
-            if (_config->deviceConfigs()[d].trackingType() == QVR_Device_Tracking_GoogleVR) {
+            if (_config->deviceConfigs()[d].trackingType() == QVR_Device_Tracking_GoogleVR
+                    || _config->deviceConfigs()[d].buttonsType() == QVR_Device_Buttons_GoogleVR
+                    || _config->deviceConfigs()[d].analogsType() == QVR_Device_Analogs_GoogleVR) {
                 needToInitializeGoogleVR = true;
             }
         }
@@ -505,6 +517,7 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
     // Create devices
     bool haveGamepadDevices = false;
     bool haveVrpnDevices = false;
+    bool haveWebcamHeadTrackerDevices = false;
     for (int d = 0; d < _config->deviceConfigs().size(); d++) {
         _devices.append(new QVRDevice(d));
         if (_processIndex == 0)
@@ -517,6 +530,9 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
                 || _config->deviceConfigs()[d].buttonsType() == QVR_Device_Buttons_VRPN
                 || _config->deviceConfigs()[d].analogsType() == QVR_Device_Analogs_VRPN) {
             haveVrpnDevices = true;
+        }
+        if (_config->deviceConfigs()[d].trackingType() == QVR_Device_Tracking_WebcamHeadTracker) {
+            haveWebcamHeadTrackerDevices = true;
         }
     }
     if (haveGamepadDevices) {
@@ -532,6 +548,20 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
 #ifdef HAVE_VRPN
 #else
         QVR_FATAL("devices configured to use VRPN, but VRPN is not available");
+        return false;
+#endif
+    }
+    if (haveWebcamHeadTrackerDevices) {
+#ifdef HAVE_WEBCAMHEADTRACKER
+        if (!QVRHaveWebcamHeadTracker) {
+            QVRAttemptWebcamHeadTrackerInitialization();
+            if (!QVRHaveWebcamHeadTracker) {
+                QVR_FATAL("cannot initialize webcam-based head tracker");
+                return false;
+            }
+        }
+#else
+        QVR_FATAL("devices configured to use webcam-based head tracking, but libwebcamheadtracker is not available");
         return false;
 #endif
     }
@@ -667,8 +697,7 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
         QVR_INFO("... done");
     }
 
-    // Find out about our available screens
-    QVRGetScreenInfo();
+    // Print screen info
     QVR_INFO("process %s (index %d) uses %s which has %d screens, default screen is %d",
             qPrintable(processConfig().id()), _processIndex,
             processConfig().display().isEmpty()
@@ -995,6 +1024,11 @@ void QVRManager::slaveLoop()
                 QVRUpdateGoogleVR();
             }
 #endif
+#ifdef HAVE_WEBCAMHEADTRACKER
+            if (QVRHaveWebcamHeadTracker) {
+                QVRUpdateWebcamHeadTracker();
+            }
+#endif
             int n = 0;
             _serializationBuffer.resize(0);
             QDataStream serializationDataStream(&_serializationBuffer, QIODevice::WriteOnly);
@@ -1099,6 +1133,11 @@ void QVRManager::updateDevices()
 #ifdef ANDROID
     if (QVRGoogleVR) {
         QVRUpdateGoogleVR();
+    }
+#endif
+#ifdef HAVE_WEBCAMHEADTRACKER
+    if (QVRHaveWebcamHeadTracker) {
+        QVRUpdateWebcamHeadTracker();
     }
 #endif
     bool haveRemoteDevices = false;

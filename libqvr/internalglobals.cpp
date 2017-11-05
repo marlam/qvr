@@ -862,3 +862,98 @@ extern "C" JNIEXPORT void JNICALL Java_de_uni_1siegen_libqvr_QVRActivity_nativeO
     QVRGoogleVRTouchEvent.store(1);
 }
 #endif
+
+#ifdef HAVE_WEBCAMHEADTRACKER
+# include <QThread>
+# include <QMutex>
+# include <webcam-head-tracker/webcam-head-tracker.hpp>
+class QVRWebcamHeadTrackerThread : public QThread
+{
+public:
+    WebcamHeadTracker tracker;
+    QAtomicInt initDone; // 0=no, 1=success, <0: failure
+    bool wantExit;
+    QMutex dataMutex;
+    float pos[3];
+    float orientation[4];
+
+    QVRWebcamHeadTrackerThread() : initDone(0), wantExit(false) {}
+
+    void run() override {
+        // initialize
+        if (!tracker.initWebcam()) {
+            QVR_WARNING("webcam head tracker: cannot find usable webcam");
+            initDone.store(-1);
+            return;
+        }
+        if (!tracker.initPoseEstimator()) {
+            QVR_WARNING("webcam head tracker: cannot find haarcascade_frontalface_alt.xml "
+                    "and/or shape_predictor_68_face_landmarks.dat");
+            initDone.store(-2);
+            return;
+        }
+        // get default values
+        tracker.getHeadPosition(pos);
+        tracker.getHeadOrientation(orientation);
+        initDone.store(1);
+        // get new frames and poses in a loop
+        while (!wantExit && tracker.isReady()) {
+            tracker.getNewFrame();
+            if (tracker.computeHeadPose()) {
+                dataMutex.lock();
+                tracker.getHeadPosition(pos);
+                tracker.getHeadOrientation(orientation);
+                dataMutex.unlock();
+            }
+        }
+    }
+};
+static QVRWebcamHeadTrackerThread* QVRWHTThread = NULL;
+void QVRAttemptWebcamHeadTrackerInitialization()
+{
+    Q_ASSERT(!QVRWHTThread);
+    QVR_DEBUG("webcam head tracker: starting up");
+    QVRWHTThread = new QVRWebcamHeadTrackerThread;
+    QVRWHTThread->start();
+    while (QVRWHTThread->initDone.load() == 0) {
+        QThread::msleep(1);
+    }
+    int initResult = QVRWHTThread->initDone.load();
+    if (initResult != 1) {
+        QVR_DEBUG("webcam head tracker: shutting down due to failed initialization");
+        delete QVRWHTThread;
+        QVRWHTThread = NULL;
+    }
+    QVRHaveWebcamHeadTracker = true;
+}
+void QVRShutdownWebcamHeadTracker()
+{
+    if (QVRWHTThread) {
+        if (QVRWHTThread->isRunning()) {
+            QVRWHTThread->wantExit = true;
+            QVRWHTThread->wait();
+        }
+        delete QVRWHTThread;
+        QVRWHTThread = NULL;
+    }
+    QVRHaveWebcamHeadTracker = false;
+}
+void QVRUpdateWebcamHeadTracker()
+{
+    QVRWHTThread->dataMutex.lock();
+    QVRWebcamHeadTrackerPos = QVector3D(
+            QVRWHTThread->pos[0],
+            QVRWHTThread->pos[1],
+            QVRWHTThread->pos[2]);
+    QVRWebcamHeadTrackerOrientation = QQuaternion(
+            QVRWHTThread->orientation[3],
+            QVRWHTThread->orientation[0],
+            QVRWHTThread->orientation[1],
+            QVRWHTThread->orientation[2]);
+    QVRWHTThread->dataMutex.unlock();
+}
+bool QVRHaveWebcamHeadTracker = false;
+QVector3D QVRWebcamHeadTrackerPos;
+QQuaternion QVRWebcamHeadTrackerOrientation;
+QVector3D QVRWebcamHeadToTrackSpaceOffset;
+#endif

@@ -34,6 +34,7 @@ find_package(Oculus)
 find_package(OpenVR)
 find_package(OSVRCore)
 find_package(OSVRRenderManager)
+find_package(WebcamHeadTracker)
 
 # The QVR library
 qt5_add_resources(QVRRESOURCES qvr.qrc)
@@ -81,6 +82,11 @@ if(OSVRCORE_FOUND)
         include_directories(${OSVRCORE_INCLUDE_DIRS} ${OSVRRENDERMANAGER_INCLUDE_DIRS})
         target_link_libraries(libqvr ${OSVRCORE_LIBRARIES} ${OSVRRENDERMANAGER_LIBRARIES})
     endif()
+endif()
+if(WebcamHeadTracker_FOUND)
+    add_definitions(-DHAVE_WEBCAMHEADTRACKER)
+    include_directories(${WEBCAMHEADTRACKER_INCLUDE_DIRS})
+    target_link_libraries(libqvr ${WEBCAMHEADTRACKER_LIBRARIES})
 endif()
 install(TARGETS libqvr
     RUNTIME DESTINATION bin

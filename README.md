@@ -39,7 +39,9 @@ Supported VR hardware includes:
 
 - Almost all tracking and interaction hardware with [VRPN](http://vrpn.org/)
 
-- Desktop-based fake-VR for development and testing purposes
+- Desktop-based fake-VR for development and testing purposes, including
+  experimental support for webcam-based head-tracking via
+  [webcam-head-tracker](https://github.com/marlam/webcam-head-tracker)
 
 ## The library
 

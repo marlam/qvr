@@ -50,7 +50,9 @@ typedef enum {
     /*! \brief A device with position and orientation tracked via <a href="http://www.osvr.org/">OSVR</a>. */
     QVR_Device_Tracking_OSVR,
     /*! \brief A device with position and orientation tracked via Google VR (Cardboard, Daydream). */
-    QVR_Device_Tracking_GoogleVR
+    QVR_Device_Tracking_GoogleVR,
+    /*! \brief A device with position and orientation tracked via WebcamHeadTracker. */
+    QVR_Device_Tracking_WebcamHeadTracker
 } QVRDeviceTrackingType;
 
 /*!
@@ -760,6 +762,8 @@ public:
         AutodetectGoogleVR = (1 << 3),
         /*! \brief Autodetect Gamepads via the QtGamepad module. */
         AutodetectGamepads = (1 << 4),
+        /*! \brief Autodetect the webcam-based head tracking library (WebcamHeadTracker). */
+        AutodetectWebcamHeadTracker = (1 << 5),
         /*! \brief Autodetect all hardware. */
         AutodetectAll = 0xffffff
     };

@@ -370,6 +370,11 @@ QVRDevice::QVRDevice(int deviceIndex) :
         }
 #endif
         break;
+    case QVR_Device_Tracking_WebcamHeadTracker:
+#ifdef HAVE_WEBCAMHEADTRACKER
+        // nothing to do, we just get the pose in ::update()
+#endif
+        break;
     }
 
     switch (config().buttonsType()) {
@@ -1180,6 +1185,15 @@ void QVRDevice::update()
         if (config().analogsType() == QVR_Device_Analogs_GoogleVR) {
             _analogs[0] = QVRGoogleVRAxes[0];
             _analogs[1] = QVRGoogleVRAxes[1];
+        }
+#endif
+#ifdef HAVE_WEBCAMHEADTRACKER
+        if (config().trackingType() == QVR_Device_Tracking_WebcamHeadTracker) {
+            _position = QVRWebcamHeadTrackerPos + QVRWebcamHeadToTrackSpaceOffset;
+            //QVR_WARNING("poswht: %g %g %g", QVRWebcamHeadTrackerPos.x(), QVRWebcamHeadTrackerPos.y(), QVRWebcamHeadTrackerPos.z());
+            //QVR_WARNING("posoff: %g %g %g", QVRWebcamHeadToTrackSpaceOffset.x(), QVRWebcamHeadToTrackSpaceOffset.y(), QVRWebcamHeadToTrackSpaceOffset.z());
+            //QVR_WARNING("pos: %g %g %g", _position.x(), _position.y(), _position.z());
+            _orientation = QVRWebcamHeadTrackerOrientation;
         }
 #endif
         if (wantVelocityCalculation && _internals->lastTimestamp >= 0) {
