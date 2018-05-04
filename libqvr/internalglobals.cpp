@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017, 2018 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -269,7 +269,6 @@ void QVRAttemptOpenVRInitialization()
     }
     QVR_INFO("OpenVR: initialization succeeded");
     std::memset(QVROpenVRControllerStates, 0, sizeof(QVROpenVRControllerStates));
-    QVROpenVRSystem->CaptureInputFocus();
     QVROpenVRHmdToEye[0] = QVROpenVRConvertMatrix(QVROpenVRSystem->GetEyeToHeadTransform(vr::Eye_Left));
     QVROpenVRHmdToEye[1] = QVROpenVRConvertMatrix(QVROpenVRSystem->GetEyeToHeadTransform(vr::Eye_Right));
     int controllerIndex = 0;
