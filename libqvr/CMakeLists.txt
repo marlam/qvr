@@ -29,12 +29,12 @@ endif()
 find_package(Qt5 5.6.0 COMPONENTS Gui Network OPTIONAL_COMPONENTS Gamepad)
 
 # Optional libraries
-find_package(VRPN)
-find_package(Oculus)
-find_package(OpenVR)
-find_package(OSVRCore)
-find_package(OSVRRenderManager)
-find_package(WebcamHeadTracker)
+find_package(VRPN QUIET)
+find_package(Oculus QUIET)
+find_package(OpenVR QUIET)
+find_package(OSVRCore QUIET)
+find_package(OSVRRenderManager QUIET)
+find_package(WebcamHeadTracker QUIET)
 
 # The QVR library
 qt5_add_resources(QVRRESOURCES qvr.qrc)
