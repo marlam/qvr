@@ -176,10 +176,10 @@ void geom_sphere(
         for (int j = 0; j <= slices; j++) {
             float tx = static_cast<float>(j) / slices;
             float lon = tx * two_pi - half_pi;
-            float sinlat = sin(lat);
-            float coslat = cos(lat);
-            float sinlon = sin(lon);
-            float coslon = cos(lon);
+            float sinlat = std::sin(lat);
+            float coslat = std::cos(lat);
+            float sinlon = std::sin(lon);
+            float coslon = std::cos(lon);
             float x = sinlat * coslon;
             float y = coslat;
             float z = sinlat * sinlon;
@@ -222,9 +222,9 @@ void geom_cylinder(
         for (int j = 0; j <= slices; j++) {
             float tx = static_cast<float>(j) / slices;
             float alpha = tx * two_pi - half_pi;
-            float x = cos(alpha);
+            float x = std::cos(alpha);
             float y = -(ty * 2.0f - 1.0f);
-            float z = sin(alpha);
+            float z = std::sin(alpha);
             positions.push_back(x);
             positions.push_back(y);
             positions.push_back(z);
@@ -265,9 +265,9 @@ void geom_cone(
         for (int j = 0; j <= slices; j++) {
             float tx = static_cast<float>(j) / slices;
             float alpha = tx * two_pi - half_pi;
-            float x = ty * cos(alpha);
+            float x = ty * std::cos(alpha);
             float y = -(ty * 2.0f - 1.0f);
-            float z = ty * sin(alpha);
+            float z = ty * std::sin(alpha);
             positions.push_back(x);
             positions.push_back(y);
             positions.push_back(z);
@@ -321,9 +321,9 @@ void geom_torus(
             float tx = static_cast<float>(j) / rings;
             float beta = tx * two_pi - pi;
 
-            float x = ringcenter + ringradius * cos(beta);
+            float x = ringcenter + ringradius * std::cos(beta);
             float y = 0.0f;
-            float z = ringradius * sin(beta);
+            float z = ringradius * std::sin(beta);
             float rx = c * x + s * y;
             float ry = c * y - s * x;
             float rz = z;
