@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017, 2018 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -240,7 +240,7 @@ bool SceneViewer::init(const aiScene* s, const QString& baseDirectory, const QMa
         m->Get(AI_MATKEY_OPACITY, opacity);
         mat.opacity = opacity;
         float bumpscaling = 0.5f;
-        m->Get(AI_MATKEY_OPACITY, bumpscaling);
+        m->Get(AI_MATKEY_BUMPSCALING, bumpscaling);
         mat.bumpscaling = bumpscaling;
         if (m->GetTextureCount(aiTextureType_AMBIENT) > 0)
             mat.ambient_tex = createTex(baseDirectory, texturemap, m, aiTextureType_AMBIENT, 0, false);
