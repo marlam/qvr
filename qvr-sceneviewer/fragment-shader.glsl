@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017, 2018 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -162,7 +162,7 @@ void main(void)
             }
             normal = TBN * normal;
         }
-        if (material_twosided && normal.z < 0.0)
+        if (material_twosided && !gl_FrontFacing)
             normal = -normal;
         vec3 view = normalize(-vpos);
         // Lighting
