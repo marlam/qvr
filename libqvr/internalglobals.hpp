@@ -88,7 +88,7 @@ extern ovrTextureSwapChain QVROculusTextureSwapChainL;
 extern ovrTextureSwapChain QVROculusTextureSwapChainR;
 extern long long QVROculusFrameIndex;
 extern ovrLayerEyeFov QVROculusLayer;
-extern ovrVector3f QVROculusHmdToEyeViewOffset[2];
+extern ovrPosef QVROculusHmdToEyeViewPose[2];
 extern ovrInputState QVROculusInputState;
 # else
 extern ovrHmd QVROculus;

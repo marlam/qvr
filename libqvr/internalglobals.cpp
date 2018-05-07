@@ -126,7 +126,7 @@ ovrTextureSwapChain QVROculusTextureSwapChainL = 0;
 ovrTextureSwapChain QVROculusTextureSwapChainR = 0;
 long long QVROculusFrameIndex = 0;
 ovrLayerEyeFov QVROculusLayer;
-ovrVector3f QVROculusHmdToEyeViewOffset[2];
+ovrPosef QVROculusHmdToEyeViewPose[2];
 ovrInputState QVROculusInputState;
 # else
 ovrHmd QVROculus = NULL;
@@ -170,8 +170,8 @@ void QVRAttemptOculusInitialization()
     const auto oculusHmdDesc = ovr_GetHmdDesc(QVROculus);
     QVROculusEyeRenderDesc[0] = ovr_GetRenderDesc(QVROculus, ovrEye_Left, oculusHmdDesc.DefaultEyeFov[0]);
     QVROculusEyeRenderDesc[1] = ovr_GetRenderDesc(QVROculus, ovrEye_Right, oculusHmdDesc.DefaultEyeFov[1]);
-    QVROculusHmdToEyeViewOffset[0] = QVROculusEyeRenderDesc[0].HmdToEyeOffset;
-    QVROculusHmdToEyeViewOffset[1] = QVROculusEyeRenderDesc[1].HmdToEyeOffset;
+    QVROculusHmdToEyeViewPose[0] = QVROculusEyeRenderDesc[0].HmdToEyePose;
+    QVROculusHmdToEyeViewPose[1] = QVROculusEyeRenderDesc[1].HmdToEyePose;
     unsigned int connectedControllers = ovr_GetConnectedControllerTypes(QVROculus);
     if (connectedControllers & ovrControllerType_XBox)
         QVROculusControllers = 1;
@@ -205,7 +205,7 @@ void QVRUpdateOculus()
     QVROculusFrameIndex++;
     double dt = ovr_GetPredictedDisplayTime(QVROculus, QVROculusFrameIndex);
     QVROculusTrackingState = ovr_GetTrackingState(QVROculus, dt, ovrTrue);
-    ovr_CalcEyePoses(QVROculusTrackingState.HeadPose.ThePose, QVROculusHmdToEyeViewOffset, QVROculusRenderPoses);
+    ovr_CalcEyePoses(QVROculusTrackingState.HeadPose.ThePose, QVROculusHmdToEyeViewPose, QVROculusRenderPoses);
     if (QVROculusControllers == 1)
         ovr_GetInputState(QVROculus, ovrControllerType_XBox, &QVROculusInputState);
     else if (QVROculusControllers == 2 || QVROculusControllers == 3 || QVROculusControllers == 4)
