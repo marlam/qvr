@@ -1,4 +1,4 @@
-# Copyright (C) 2016, 2017
+# Copyright (C) 2016, 2017, 2018
 # Computer Graphics Group, University of Siegen
 # Written by Martin Lambers <martin.lambers@uni-siegen.de>
 #
@@ -13,8 +13,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Project
 project(libqvr)
-set(QVR_VERSION 2.0.0)
-set(QVR_LIBVERSION 2.0.0)
+set(QVR_VERSION 2.0.2)
+set(QVR_LIBVERSION 2.0.2)
 set(QVR_SOVERSION 2)
 
 # Build options
