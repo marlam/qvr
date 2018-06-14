@@ -41,18 +41,18 @@ Supported VR hardware includes:
 
 - Desktop-based fake-VR for development and testing purposes, including
   experimental support for webcam-based head-tracking via
-  [webcam-head-tracker](https://github.com/marlam/webcam-head-tracker)
+  [webcam-head-tracker](https://gitlab.marlam.de/marlam/webcam-head-tracker)
 
 ## The library
 
 Build and install the QVR library `libqvr` first. After that, you can build
 and try the example applications.
 
-See the [library documentation](https://marlam.github.io/qvr/html/).
+See the [library documentation](https://marlam.de/qvr/html/).
 
-There is also an [introductory presentation](https://marlam.github.io/qvr/qvr-slides.pdf)
+There is also an [introductory presentation](https://marlam.de/qvr/qvr-slides.pdf)
 explaining the concepts of libqvr and how to use it, and a
-[short paper](https://marlam.github.io/qvr/lambers2016qvr.pdf) from the Eurographics
+[short paper](https://marlam.de/qvr/lambers2016qvr.pdf) from the Eurographics
 2016 Education track explaining the motivation behind it.
 
 ## Example applications
