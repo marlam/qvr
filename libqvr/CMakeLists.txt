@@ -13,9 +13,9 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Project
 project(libqvr)
-set(QVR_VERSION 2.0.2)
-set(QVR_LIBVERSION 2.0.2)
-set(QVR_SOVERSION 2)
+set(QVR_VERSION 3.0.0)
+set(QVR_LIBVERSION 3.0.0)
+set(QVR_SOVERSION 3)
 
 # Build options
 option(QVR_BUILD_DOCUMENTATION "Build API reference documentation (requires Doxygen)" OFF)
