@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017, 2018 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -91,11 +91,11 @@
  * Device definition (see \a QVRDevice and \a QVRDeviceConfig):
  * - `device <id>`<br>
  *   Start a new device definition with the given unique id.
- * - `tracking <none|static|oculus|openvr|osvr|vprn>`<br>
+ * - `tracking <none|static|oculus|openvr|vprn>`<br>
  *   Use the specified tracking method for this device.
- * - `buttons <none|static|gamepad|vprn|oculus|openvr|osvr>`<br>
+ * - `buttons <none|static|gamepad|vprn|oculus|openvr>`<br>
  *   Use the specified method to query digital buttons for this device.
- * - `analogs <none|static|gamepad|vrpn|oculus|openvr|osvr>`<br>
+ * - `analogs <none|static|gamepad|vrpn|oculus|openvr>`<br>
  *   Use the specified method to query analog joystick elements for this device.
  *
  * Observer definition (see \a QVRObserver and \a QVRObserverConfig):
@@ -141,7 +141,7 @@
  *   Start a new window definition with the given unique id, within the current process definition.
  * - `observer <id>`<br>
  *   Set the observer that this window provides a view for.
- * - `output <center|left|right|stereo|red_cyan|green_magenta|amber_blue|oculus|openvr|osvr|googlevr>`<br>
+ * - `output <center|left|right|stereo|red_cyan|green_magenta|amber_blue|oculus|openvr|googlevr>`<br>
  *   Set the output mode. For center, left, right, and stereo, you can set an additional output plugin.
  * - `display_screen <screen>`<br>
  *   Select the Qt screen index on the Qt display that this process is connected to.<br>
@@ -348,7 +348,7 @@ public:
      * - \-\-qvr-autodetect=\<list\><br>
      *   Comma-separated list of VR hardware that QVR should attempt to detect automatically.
      *   Currently supported keywords are 'all' for all hardware, 'oculus' for Oculus Rift,
-     *   'openvr' for OpenVR hardware, 'osvr' for OSVR hardware, 'googlevr' for Google VR hardware,
+     *   'openvr' for OpenVR hardware, 'googlevr' for Google VR hardware,
      *   'gamepads' for gamepads. Each entry can be preceded with '~' to negate it. For example,
      *   use '\-\-qvr-autodetect=all,~oculus' to try autodetection for all hardware except Oculus Rift.
      *   This option only takes effect if no \-\-qvr-config option was given.

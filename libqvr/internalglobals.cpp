@@ -38,10 +38,6 @@
 # endif
 #endif
 
-#ifdef HAVE_OSVR
-# include <osvr/ClientKit/ServerAutoStartC.h>
-#endif
-
 #ifdef ANDROID
 # include <QtMath>
 # include <QThread>
@@ -482,109 +478,6 @@ void QVRUpdateOpenVR()
                 }
             }
         }
-    }
-}
-#endif
-
-/* Global variables and functions for OSVR support */
-#ifdef HAVE_OSVR
-OSVR_ClientContext QVROsvrClientContext = NULL;
-OSVR_DisplayConfig QVROsvrDisplayConfig = NULL;
-OSVR_RenderManager QVROsvrRenderManager = NULL;
-OSVR_RenderManagerOpenGL QVROsvrRenderManagerOpenGL = NULL;
-// to prevent the OSVR Render Manager from getting in our way, we have to make
-// it use a dummy toolkit that does absolutely nothing.
-static void osvrToolkitCreate(void*) {}
-static void osvrToolkitDestroy(void*) {}
-static OSVR_CBool osvrToolkitAddOpenGLContext(void*, const OSVR_OpenGLContextParams*) { return true; }
-static OSVR_CBool osvrToolkitRemoveOpenGLContexts(void*) { return true; }
-static OSVR_CBool osvrToolkitMakeCurrent(void*, size_t) { return true; }
-static OSVR_CBool osvrToolkitSwapBuffers(void*, size_t) { return true; }
-static OSVR_CBool osvrToolkitSetVerticalSync(void*, OSVR_CBool) { return true; }
-static OSVR_CBool osvrToolkitHandleEvents(void*) { return true; }
-static OSVR_CBool osvrToolkitGetDisplayFrameBuffer(void*, size_t, GLuint* fb) { *fb = 0; return true; }
-static OSVR_CBool osvrToolkitGetDisplaySizeOverride(void*, size_t, int*, int*) { return false; }
-static OSVR_OpenGLToolkitFunctions osvrToolkit;
-void QVRAttemptOSVRInitialization()
-{
-    bool osvr = false;
-    osvrClientAttemptServerAutoStart();
-    QVROsvrClientContext = osvrClientInit("de.uni-siegen.informatik.cg.qvr");
-    if (osvrClientGetDisplay(QVROsvrClientContext, &QVROsvrDisplayConfig) == OSVR_RETURN_SUCCESS) {
-        QVR_INFO("OSVR: got display config");
-        OSVR_DisplayInputCount numDisplayInputs;
-        osvrClientGetNumDisplayInputs(QVROsvrDisplayConfig, &numDisplayInputs);
-        if (numDisplayInputs != 1) {
-            QVR_INFO("OSVR: needs more than one display inputs; QVR currently does not handle this");
-        } else {
-            OSVR_DisplayDimension w, h;
-            osvrClientGetDisplayDimensions(QVROsvrDisplayConfig, 0, &w, &h);
-            QVR_INFO("OSVR: display dimensions %dx%d", static_cast<int>(w), static_cast<int>(h));
-            OSVR_ViewerCount viewers;
-            osvrClientGetNumViewers(QVROsvrDisplayConfig, &viewers);
-            if (viewers != 1) {
-                QVR_INFO("OSVR: requires more than one viewer; QVR currently does not handle this");
-            } else {
-                OSVR_EyeCount eyes;
-                osvrClientGetNumEyesForViewer(QVROsvrDisplayConfig, 0, &eyes);
-                if (eyes != 2) {
-                    QVR_INFO("OSVR: viewer has more than 2 eyes; QVR currently does not handle this");
-                } else {
-                    OSVR_SurfaceCount surfaces0, surfaces1 = 1;
-                    osvrClientGetNumSurfacesForViewerEye(QVROsvrDisplayConfig, 0, 0, &surfaces0);
-                    if (eyes > 1)
-                        osvrClientGetNumSurfacesForViewerEye(QVROsvrDisplayConfig, 0, 1, &surfaces1);
-                    if (surfaces0 != 1 || surfaces1 != 1) {
-                        QVR_INFO("OSVR: more than one surface per eye; QVR currently does not handle this");
-                    } else {
-                        QVR_INFO("OSVR: display config is usable");
-                        OSVR_GraphicsLibraryOpenGL library;
-                        osvrToolkit.size = sizeof(OSVR_OpenGLToolkitFunctions);
-                        osvrToolkit.data = NULL;
-                        osvrToolkit.create = osvrToolkitCreate;
-                        osvrToolkit.destroy = osvrToolkitDestroy;
-                        osvrToolkit.addOpenGLContext = osvrToolkitAddOpenGLContext;
-                        osvrToolkit.removeOpenGLContexts = osvrToolkitRemoveOpenGLContexts;
-                        osvrToolkit.makeCurrent = osvrToolkitMakeCurrent;
-                        osvrToolkit.swapBuffers = osvrToolkitSwapBuffers;
-                        osvrToolkit.setVerticalSync = osvrToolkitSetVerticalSync;
-                        osvrToolkit.handleEvents = osvrToolkitHandleEvents;
-                        osvrToolkit.getDisplayFrameBuffer = osvrToolkitGetDisplayFrameBuffer;
-                        osvrToolkit.getDisplaySizeOverride = osvrToolkitGetDisplaySizeOverride;
-                        library.toolkit = &osvrToolkit;
-                        if (osvrCreateRenderManagerOpenGL(QVROsvrClientContext, "OpenGL", library,
-                                    &QVROsvrRenderManager, &QVROsvrRenderManagerOpenGL) != OSVR_RETURN_SUCCESS) {
-                            QVR_INFO("OSVR: cannot create render manager");
-                        } else if (osvrRenderManagerGetDoingOkay(QVROsvrRenderManager) != OSVR_RETURN_SUCCESS) {
-                            QVR_INFO("OSVR: created render manager does not work");
-                            osvrDestroyRenderManager(QVROsvrRenderManager);
-                            QVROsvrRenderManager = NULL;
-                        } else {
-                            QVR_INFO("OSVR: render manager works");
-                            osvr = true;
-                        }
-                    }
-                }
-            }
-        }
-    } else {
-        QVR_INFO("OSVR: cannot get display config; server probably not running correctly");
-    }
-    if (osvr) {
-        QVR_INFO("OSVR: waiting for context to become ready ... ");
-        while (osvrClientCheckStatus(QVROsvrClientContext) != OSVR_RETURN_SUCCESS) {
-            osvrClientUpdate(QVROsvrClientContext);
-        }
-        QVR_INFO("OSVR: ... context is ready");
-        QVR_INFO("OSVR: waiting for display to become ready ... ");
-        while (osvrClientCheckDisplayStartup(QVROsvrDisplayConfig) != OSVR_RETURN_SUCCESS) {
-            osvrClientUpdate(QVROsvrClientContext);
-        }
-        QVR_INFO("OSVR: ... display is ready");
-    } else {
-        osvrClientShutdown(QVROsvrClientContext);
-        QVROsvrDisplayConfig = NULL;
-        QVROsvrClientContext = NULL;
     }
 }
 #endif

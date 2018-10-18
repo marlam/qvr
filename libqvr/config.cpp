@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017, 2018 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -102,12 +102,11 @@ void QVRConfig::createDefault(bool preferCustomNavigation, Autodetect autodetect
     bool haveOculus = false;
     bool haveOculusControllers = false;
     bool haveOpenVR = false;
-    bool haveOSVR = false;
     bool haveGoogleVR = false;
     bool haveGoogleVRController = false;
     bool haveWebcamHeadTracker = false;
     if (autodetect.testFlag(AutodetectOculus)
-            && !haveOculus && !haveOpenVR && !haveOSVR && !haveGoogleVR &&!haveWebcamHeadTracker) {
+            && !haveOculus && !haveOpenVR && !haveGoogleVR &&!haveWebcamHeadTracker) {
 #ifdef HAVE_OCULUS
         QVRAttemptOculusInitialization();
         if (QVROculus) {
@@ -163,7 +162,7 @@ void QVRConfig::createDefault(bool preferCustomNavigation, Autodetect autodetect
 #endif
     }
     if (autodetect.testFlag(AutodetectOpenVR)
-            && !haveOculus && !haveOpenVR && !haveOSVR && !haveGoogleVR && !haveWebcamHeadTracker) {
+            && !haveOculus && !haveOpenVR && !haveGoogleVR && !haveWebcamHeadTracker) {
 #ifdef HAVE_OPENVR
         QVRAttemptOpenVRInitialization();
         if (QVROpenVRSystem) {
@@ -173,25 +172,8 @@ void QVRConfig::createDefault(bool preferCustomNavigation, Autodetect autodetect
         }
 #endif
     }
-    if (autodetect.testFlag(AutodetectOSVR)
-            && !haveOculus && !haveOpenVR && !haveOSVR && !haveGoogleVR && !haveWebcamHeadTracker) {
-#ifdef HAVE_OSVR
-        QVRAttemptOSVRInitialization();
-        if (QVROsvrClientContext) {
-            OSVR_EyeCount eyes;
-            osvrClientGetNumEyesForViewer(QVROsvrDisplayConfig, 0, &eyes);
-            bool ok;
-            if (eyes == 1)
-                ok = readFromFile(":/libqvr/default-config-osvr-mono.qvr");
-            else
-                ok = readFromFile(":/libqvr/default-config-osvr-stereo.qvr");
-            Q_ASSERT(ok);
-            haveOSVR = true;
-        }
-#endif
-    }
     if (autodetect.testFlag(AutodetectGoogleVR)
-            && !haveOculus && !haveOpenVR && !haveOSVR && !haveGoogleVR && !haveWebcamHeadTracker) {
+            && !haveOculus && !haveOpenVR && !haveGoogleVR && !haveWebcamHeadTracker) {
 #ifdef ANDROID
         QVRAttemptGoogleVRInitialization();
         if (QVRGoogleVR) {
@@ -217,7 +199,7 @@ void QVRConfig::createDefault(bool preferCustomNavigation, Autodetect autodetect
 #endif
     }
     if (autodetect.testFlag(AutodetectWebcamHeadTracker)
-            && !haveOculus && !haveOpenVR && !haveOSVR && !haveGoogleVR && !haveWebcamHeadTracker) {
+            && !haveOculus && !haveOpenVR && !haveGoogleVR && !haveWebcamHeadTracker) {
 #ifdef HAVE_WEBCAMHEADTRACKER
         QVRAttemptWebcamHeadTrackerInitialization();
         if (QVRHaveWebcamHeadTracker) {
@@ -235,7 +217,7 @@ void QVRConfig::createDefault(bool preferCustomNavigation, Autodetect autodetect
         }
 #endif
     }
-    if (!haveOculus && !haveOpenVR && !haveOSVR && !haveGoogleVR && !haveWebcamHeadTracker) {
+    if (!haveOculus && !haveOpenVR && !haveGoogleVR && !haveWebcamHeadTracker) {
         bool ok = readFromFile(":/libqvr/default-config-desktop.qvr");
         Q_ASSERT(ok);
     }
@@ -352,7 +334,7 @@ bool QVRConfig::readFromFile(const QString& filename)
             } else if (cmd == "tracking" && arglist.length() >= 1
                     && (arglist[0] == "none" || arglist[0] == "static" || arglist[0] == "vrpn"
                         || arglist[0] == "oculus" || arglist[0] == "openvr"
-                        || arglist[0] == "osvr" || arglist[0] == "googlevr"
+                        || arglist[0] == "googlevr"
                         || arglist[0] == "webcamheadtracker")) {
                 deviceConfig._trackingType = (
                         arglist[0] == "none" ? QVR_Device_Tracking_None
@@ -360,7 +342,6 @@ bool QVRConfig::readFromFile(const QString& filename)
                         : arglist[0] == "vrpn" ? QVR_Device_Tracking_VRPN
                         : arglist[0] == "oculus" ? QVR_Device_Tracking_Oculus
                         : arglist[0] == "openvr" ? QVR_Device_Tracking_OpenVR
-                        : arglist[0] == "osvr" ? QVR_Device_Tracking_OSVR
                         : arglist[0] == "googlevr" ? QVR_Device_Tracking_GoogleVR
                         : QVR_Device_Tracking_WebcamHeadTracker);
                 deviceConfig._trackingParameters = QStringList(arglist.mid(1)).join(' ');
@@ -368,7 +349,7 @@ bool QVRConfig::readFromFile(const QString& filename)
             } else if (cmd == "buttons" && arglist.length() >= 1
                     && (arglist[0] == "none" || arglist[0] == "static"
                         || arglist[0] == "gamepad" || arglist[0] == "vrpn"
-                        || arglist[0] == "oculus" || arglist[0] == "openvr" || arglist[0] == "osvr"
+                        || arglist[0] == "oculus" || arglist[0] == "openvr"
                         || arglist[0] == "googlevr")) {
                 deviceConfig._buttonsType = (
                         arglist[0] == "none" ? QVR_Device_Buttons_None
@@ -377,14 +358,13 @@ bool QVRConfig::readFromFile(const QString& filename)
                         : arglist[0] == "vrpn" ? QVR_Device_Buttons_VRPN
                         : arglist[0] == "oculus" ? QVR_Device_Buttons_Oculus
                         : arglist[0] == "openvr" ? QVR_Device_Buttons_OpenVR
-                        : arglist[0] == "osvr" ? QVR_Device_Buttons_OSVR
                         : QVR_Device_Buttons_GoogleVR);
                 deviceConfig._buttonsParameters = QStringList(arglist.mid(1)).join(' ');
                 continue;
             } else if (cmd == "analogs" && arglist.length() >= 1
                     && (arglist[0] == "none" || arglist[0] == "static"
                         || arglist[0] == "gamepad" || arglist[0] == "vrpn"
-                        || arglist[0] == "oculus" || arglist[0] == "openvr" || arglist[0] == "osvr"
+                        || arglist[0] == "oculus" || arglist[0] == "openvr"
                         || arglist[0] == "googlevr")) {
                 deviceConfig._analogsType = (
                         arglist[0] == "none" ? QVR_Device_Analogs_None
@@ -393,7 +373,6 @@ bool QVRConfig::readFromFile(const QString& filename)
                         : arglist[0] == "vrpn" ? QVR_Device_Analogs_VRPN
                         : arglist[0] == "oculus" ? QVR_Device_Analogs_Oculus
                         : arglist[0] == "openvr" ? QVR_Device_Analogs_OpenVR
-                        : arglist[0] == "osvr" ? QVR_Device_Analogs_OSVR
                         : QVR_Device_Analogs_GoogleVR);
                 deviceConfig._analogsParameters = QStringList(arglist.mid(1)).join(' ');
                 continue;
@@ -559,7 +538,6 @@ bool QVRConfig::readFromFile(const QString& filename)
                             || (arglist.length() == 1 && arglist[0] == "green_magenta")
                             || (arglist.length() == 1 && arglist[0] == "amber_blue")
                             || (arglist.length() == 1 && arglist[0] == "oculus")
-                            || (arglist.length() == 1 && arglist[0] == "osvr")
                             || (arglist.length() == 1 && arglist[0] == "openvr")
                             || (arglist.length() == 1 && arglist[0] == "googlevr"))) {
                     windowConfig._outputMode = (
@@ -571,7 +549,6 @@ bool QVRConfig::readFromFile(const QString& filename)
                             : arglist[0] == "green_magenta" ? QVR_Output_Green_Magenta
                             : arglist[0] == "amber_blue" ? QVR_Output_Amber_Blue
                             : arglist[0] == "oculus" ? QVR_Output_Oculus
-                            : arglist[0] == "osvr" ? QVR_Output_OSVR
                             : arglist[0] == "openvr" ? QVR_Output_OpenVR
                             : QVR_Output_GoogleVR);
                     if (arglist.length() > 1)

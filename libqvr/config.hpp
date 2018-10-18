@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017, 2018 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -47,8 +47,6 @@ typedef enum {
     QVR_Device_Tracking_Oculus,
     /*! \brief A device with position and orientation tracked via OpenVR (HTC Vive). */
     QVR_Device_Tracking_OpenVR,
-    /*! \brief A device with position and orientation tracked via <a href="http://www.osvr.org/">OSVR</a>. */
-    QVR_Device_Tracking_OSVR,
     /*! \brief A device with position and orientation tracked via Google VR (Cardboard, Daydream). */
     QVR_Device_Tracking_GoogleVR,
     /*! \brief A device with position and orientation tracked via WebcamHeadTracker. */
@@ -71,8 +69,6 @@ typedef enum {
     QVR_Device_Buttons_Oculus,
     /*! \brief A device with digital buttons queried via OpenVR (HTC Vive). */
     QVR_Device_Buttons_OpenVR,
-    /*! \brief A device with digital buttons queried via <a href="http://www.osvr.org/">OSVR</a>. */
-    QVR_Device_Buttons_OSVR,
     /*! \brief A device with digital buttons queried via Google VR. */
     QVR_Device_Buttons_GoogleVR
 } QVRDeviceButtonsType;
@@ -93,8 +89,6 @@ typedef enum {
     QVR_Device_Analogs_Oculus,
     /*! \brief A device with analog joystick elements queried via OpenVR (HTC Vive). */
     QVR_Device_Analogs_OpenVR,
-    /*! \brief A device with analog joystick elements queried via <a href="http://www.osvr.org/">OSVR</a>. */
-    QVR_Device_Analogs_OSVR,
     /*! \brief A device with analog joystick elements queried via Google VR. */
     QVR_Device_Analogs_GoogleVR
 } QVRDeviceAnalogsType;
@@ -257,12 +251,10 @@ typedef enum {
     QVR_Output_Amber_Blue = 6,
     /*! \brief Output a stereoscopic view for the Oculus Rift head-mounted display. */
     QVR_Output_Oculus = 7,
-    /*! \brief Output a view for OSVR (monoscopic or stereoscopic). */
-    QVR_Output_OSVR = 9,
     /*! \brief Output a stereoscopic view for the HTC Vive head-mounted display. */
-    QVR_Output_OpenVR = 10,
+    QVR_Output_OpenVR = 8,
     /*! \brief Output a stereoscopic view for Google VR devices (Cardboard, Daydream). */
-    QVR_Output_GoogleVR = 11
+    QVR_Output_GoogleVR = 9
 } QVROutputMode;
 
 /*!
@@ -340,11 +332,6 @@ public:
      * For \a QVR_Device_Tracking_OpenVR, the parameter string must be one of "head",
      * "eye-left", "eye-right", "controller-0", and "controller-1".
      *
-     * For \a QVR_Device_Tracking_OSVR, the parameter string is the path
-     * name of an OSVR tracker interface. The special strings "eye-center", "eye-left",
-     * and "eye-right" identify the center, left, and right eyes of the viewer (these are
-     * unfortunately not available via path names in OSVR).
-     *
      * For \a QVR_Device_Tracking_GoogleVR, the parameter string must be one of "head",
      * "eye-left", "eye-right", "daydream".
      */
@@ -392,10 +379,6 @@ public:
      * Note that the four direction buttons are only simulated: they will report to be pressed
      * when the analog value of their direction exceeds 0.5.
      *
-     * For \a QVR_Device_Buttons_OSVR, the parameter string is a space-separated list
-     * of button name / path name pairs. The button name defines the meaning of a name,
-     * and the path name defines the OSVR button interface.
-     *
      * For \a QVR_Device_Buttons_GoogleVR, the parameter string is either "touch" or "daydream".
      */
     const QString& buttonsParameters() const { return _buttonsParameters; }
@@ -438,9 +421,6 @@ public:
      *
      * For \a QVR_Device_Analogs_OpenVR, the parameter string must be either "controller-0"
      * or "controller-1". There will be 3 analogs: axis-y, axis-x, trigger.
-     *
-     * For \a QVR_Device_Analogs_OSVR, the parameter string is a space-separated list
-     * of path names of OSVR analog interfaces (one path name for each analog managed by this device).
      *
      * For \a QVR_Device_Analogs_GoogleVR, the parameter string must currently be "daydream".
      */
@@ -756,14 +736,12 @@ public:
         AutodetectOculus   = (1 << 0),
         /*! \brief Autodetect OpenVR-supported HMD and controllers (e.g. HTC Vive). */
         AutodetectOpenVR   = (1 << 1),
-        /*! \brief Autodetect OSVR-supported HMDs and other VR hardware. */
-        AutodetectOSVR     = (1 << 2),
         /*! \brief Autodetect GoogleVR-supported HMDs and controllers (Cardboard, Daydream). */
-        AutodetectGoogleVR = (1 << 3),
+        AutodetectGoogleVR = (1 << 2),
         /*! \brief Autodetect Gamepads via the QtGamepad module. */
-        AutodetectGamepads = (1 << 4),
+        AutodetectGamepads = (1 << 3),
         /*! \brief Autodetect the webcam-based head tracking library (WebcamHeadTracker). */
-        AutodetectWebcamHeadTracker = (1 << 5),
+        AutodetectWebcamHeadTracker = (1 << 4),
         /*! \brief Autodetect all hardware. */
         AutodetectAll = 0xffffff
     };

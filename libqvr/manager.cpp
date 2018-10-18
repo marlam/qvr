@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017, 2018 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -255,10 +255,6 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
             _autodetect |= QVRConfig::AutodetectOpenVR;
         else if (autodetectList[i] == "~openvr")
             _autodetect &= ~QVRConfig::AutodetectOpenVR;
-        else if (autodetectList[i] == "osvr")
-            _autodetect |= QVRConfig::AutodetectOSVR;
-        else if (autodetectList[i] == "~osvr")
-            _autodetect &= ~QVRConfig::AutodetectOSVR;
         else if (autodetectList[i] == "googlevr")
             _autodetect |= QVRConfig::AutodetectGoogleVR;
         else if (autodetectList[i] == "~googlevr")
@@ -294,15 +290,6 @@ QVRManager::~QVRManager()
 #ifdef HAVE_OPENVR
     if (QVROpenVRSystem) {
         vr::VR_Shutdown();
-    }
-#endif
-#ifdef HAVE_OSVR
-    if (QVROsvrClientContext) {
-        osvrDestroyRenderManager(QVROsvrRenderManager);
-        QVROsvrRenderManager = NULL;
-        osvrClientShutdown(QVROsvrClientContext);
-        QVROsvrDisplayConfig = NULL;
-        QVROsvrClientContext = NULL;
     }
 #endif
 #ifdef HAVE_WEBCAMHEADTRACKER
@@ -417,7 +404,6 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
     // Initialize HMDs for this process if required by the configuration
     bool needToInitializeOculus = false;
     bool needToInitializeOpenVR = false;
-    bool needToInitializeOSVR = false;
     bool needToInitializeGoogleVR = false;
     for (int d = 0; d < _config->deviceConfigs().size(); d++) {
         if (_config->deviceConfigs()[d].processIndex() == _processIndex) {
@@ -430,11 +416,6 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
                     || _config->deviceConfigs()[d].buttonsType() == QVR_Device_Buttons_OpenVR
                     || _config->deviceConfigs()[d].analogsType() == QVR_Device_Analogs_OpenVR) {
                 needToInitializeOpenVR = true;
-            }
-            if (_config->deviceConfigs()[d].trackingType() == QVR_Device_Tracking_OSVR
-                    || _config->deviceConfigs()[d].buttonsType() == QVR_Device_Buttons_OSVR
-                    || _config->deviceConfigs()[d].analogsType() == QVR_Device_Analogs_OSVR) {
-                needToInitializeOSVR = true;
             }
             if (_config->deviceConfigs()[d].trackingType() == QVR_Device_Tracking_GoogleVR
                     || _config->deviceConfigs()[d].buttonsType() == QVR_Device_Buttons_GoogleVR
@@ -449,9 +430,6 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
         }
         if (windowConfig(_processIndex, w).outputMode() == QVR_Output_OpenVR) {
             needToInitializeOpenVR = true;
-        }
-        if (windowConfig(_processIndex, w).outputMode() == QVR_Output_OSVR) {
-            needToInitializeOSVR = true;
         }
         if (windowConfig(_processIndex, w).outputMode() == QVR_Output_GoogleVR) {
             needToInitializeGoogleVR = true;
@@ -482,20 +460,6 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
         }
 #else
         QVR_FATAL("configuration requires OpenVR, but OpenVR support is not available");
-        return false;
-#endif
-    }
-    if (needToInitializeOSVR) {
-#ifdef HAVE_OSVR
-        if (!QVROsvrClientContext) {
-            QVRAttemptOSVRInitialization();
-            if (!QVROsvrClientContext) {
-                QVR_FATAL("cannot initialize OSVR");
-                return false;
-            }
-        }
-#else
-        QVR_FATAL("configuration requires OSVR, but OSVR is not available");
         return false;
 #endif
     }
@@ -1014,11 +978,6 @@ void QVRManager::slaveLoop()
                 }
             }
 #endif
-#ifdef HAVE_OSVR
-            if (QVROsvrClientContext) {
-                osvrClientUpdate(QVROsvrClientContext);
-            }
-#endif
 #ifdef ANDROID
             if (QVRGoogleVR) {
                 QVRUpdateGoogleVR();
@@ -1123,11 +1082,6 @@ void QVRManager::updateDevices()
             QVRUpdateOpenVR();
             firstRun = false;
         }
-    }
-#endif
-#ifdef HAVE_OSVR
-    if (QVROsvrClientContext) {
-        osvrClientUpdate(QVROsvrClientContext);
     }
 #endif
 #ifdef ANDROID

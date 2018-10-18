@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017, 2018 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -118,18 +118,6 @@ extern QVector<int> QVROpenVRControllerModelVertexDataIndices[2];
 extern QVector<int> QVROpenVRControllerModelTextureIndices[2];
 void QVRAttemptOpenVRInitialization();
 void QVRUpdateOpenVR();
-#endif
-
-/* Global variables and functions for OSVR support */
-#ifdef HAVE_OSVR
-# include <osvr/ClientKit/DisplayC.h>
-# include <osvr/ClientKit/ContextC.h>
-# include <osvr/RenderKit/RenderManagerOpenGLC.h>
-extern OSVR_ClientContext QVROsvrClientContext;
-extern OSVR_DisplayConfig QVROsvrDisplayConfig;
-extern OSVR_RenderManager QVROsvrRenderManager;
-extern OSVR_RenderManagerOpenGL QVROsvrRenderManagerOpenGL;
-void QVRAttemptOSVRInitialization();
 #endif
 
 /* Global variables and functions for Google VR support */

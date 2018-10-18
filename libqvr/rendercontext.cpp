@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017, 2018 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -64,22 +64,6 @@ void QVRRenderContext::setOutputConf(QVROutputMode om)
     case QVR_Output_Right:
         _viewCount = 1;
         _eye[0] = QVR_Eye_Right;
-        break;
-    case QVR_Output_OSVR:
-        _viewCount = 2;
-        _eye[0] = QVR_Eye_Left;
-        _eye[1] = QVR_Eye_Right;
-#ifdef HAVE_OSVR
-        {
-            Q_ASSERT(QVROsvrDisplayConfig);
-            OSVR_EyeCount eyes;
-            osvrClientGetNumEyesForViewer(QVROsvrDisplayConfig, 0, &eyes);
-            if (eyes == 1) {
-                _viewCount = 1;
-                _eye[0] = QVR_Eye_Center;
-            }
-        }
-#endif
         break;
     case QVR_Output_Stereo:
     case QVR_Output_Red_Cyan:
