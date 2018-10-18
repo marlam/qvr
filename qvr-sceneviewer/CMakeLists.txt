@@ -1,4 +1,4 @@
-# Copyright (C) 2016, 2017
+# Copyright (C) 2016, 2017, 2018
 # Computer Graphics Group, University of Siegen
 # Written by Martin Lambers <martin.lambers@uni-siegen.de>
 #
@@ -12,10 +12,6 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 project(qvr-sceneviewer)
-
-if(CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -Wall -Wextra")
-endif()
 
 find_package(Qt5 5.6.0 COMPONENTS Gui)
 find_package(QVR REQUIRED)

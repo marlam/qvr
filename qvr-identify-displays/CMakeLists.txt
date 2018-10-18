@@ -13,10 +13,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 project(qvr-identify-displays)
 
-if(CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -Wall -Wextra")
-endif()
-
 find_package(Qt5 5.6.0 COMPONENTS Gui)
 find_package(QVR REQUIRED)
 
