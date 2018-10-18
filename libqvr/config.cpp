@@ -104,9 +104,8 @@ void QVRConfig::createDefault(bool preferCustomNavigation, Autodetect autodetect
     bool haveOpenVR = false;
     bool haveGoogleVR = false;
     bool haveGoogleVRController = false;
-    bool haveWebcamHeadTracker = false;
     if (autodetect.testFlag(AutodetectOculus)
-            && !haveOculus && !haveOpenVR && !haveGoogleVR &&!haveWebcamHeadTracker) {
+            && !haveOculus && !haveOpenVR && !haveGoogleVR) {
 #ifdef HAVE_OCULUS
         QVRAttemptOculusInitialization();
         if (QVROculus) {
@@ -162,7 +161,7 @@ void QVRConfig::createDefault(bool preferCustomNavigation, Autodetect autodetect
 #endif
     }
     if (autodetect.testFlag(AutodetectOpenVR)
-            && !haveOculus && !haveOpenVR && !haveGoogleVR && !haveWebcamHeadTracker) {
+            && !haveOculus && !haveOpenVR && !haveGoogleVR) {
 #ifdef HAVE_OPENVR
         QVRAttemptOpenVRInitialization();
         if (QVROpenVRSystem) {
@@ -173,7 +172,7 @@ void QVRConfig::createDefault(bool preferCustomNavigation, Autodetect autodetect
 #endif
     }
     if (autodetect.testFlag(AutodetectGoogleVR)
-            && !haveOculus && !haveOpenVR && !haveGoogleVR && !haveWebcamHeadTracker) {
+            && !haveOculus && !haveOpenVR && !haveGoogleVR) {
 #ifdef ANDROID
         QVRAttemptGoogleVRInitialization();
         if (QVRGoogleVR) {
@@ -198,26 +197,7 @@ void QVRConfig::createDefault(bool preferCustomNavigation, Autodetect autodetect
         }
 #endif
     }
-    if (autodetect.testFlag(AutodetectWebcamHeadTracker)
-            && !haveOculus && !haveOpenVR && !haveGoogleVR && !haveWebcamHeadTracker) {
-#ifdef HAVE_WEBCAMHEADTRACKER
-        QVRAttemptWebcamHeadTrackerInitialization();
-        if (QVRHaveWebcamHeadTracker) {
-            bool ok = readFromFile(":/libqvr/default-config-webcamheadtracker.qvr");
-            Q_ASSERT(ok);
-            // Set offset between optical center of webcam and tracking space.
-            // first offset: from webcam optical center to middle of top border of display
-            QVRWebcamHeadToTrackSpaceOffset = QVector3D(0.0f, 0.01f, 0.0f); // wild guess for laptops; TODO: make configurable?
-            // second offset: from middle of top border of display to center of display
-            QVRWebcamHeadToTrackSpaceOffset.setY(QVRWebcamHeadToTrackSpaceOffset.y()
-                    + QVRScreenSizes[QVRPrimaryScreen].height() / 2.0f);
-            // third offset: from center of display to tracking space
-            QVRWebcamHeadToTrackSpaceOffset += _processConfigs[0]._windowConfigs[0]._screenCenter;
-            haveWebcamHeadTracker = true;
-        }
-#endif
-    }
-    if (!haveOculus && !haveOpenVR && !haveGoogleVR && !haveWebcamHeadTracker) {
+    if (!haveOculus && !haveOpenVR && !haveGoogleVR) {
         bool ok = readFromFile(":/libqvr/default-config-desktop.qvr");
         Q_ASSERT(ok);
     }
@@ -334,16 +314,14 @@ bool QVRConfig::readFromFile(const QString& filename)
             } else if (cmd == "tracking" && arglist.length() >= 1
                     && (arglist[0] == "none" || arglist[0] == "static" || arglist[0] == "vrpn"
                         || arglist[0] == "oculus" || arglist[0] == "openvr"
-                        || arglist[0] == "googlevr"
-                        || arglist[0] == "webcamheadtracker")) {
+                        || arglist[0] == "googlevr")) {
                 deviceConfig._trackingType = (
                         arglist[0] == "none" ? QVR_Device_Tracking_None
                         : arglist[0] == "static" ? QVR_Device_Tracking_Static
                         : arglist[0] == "vrpn" ? QVR_Device_Tracking_VRPN
                         : arglist[0] == "oculus" ? QVR_Device_Tracking_Oculus
                         : arglist[0] == "openvr" ? QVR_Device_Tracking_OpenVR
-                        : arglist[0] == "googlevr" ? QVR_Device_Tracking_GoogleVR
-                        : QVR_Device_Tracking_WebcamHeadTracker);
+                        : QVR_Device_Tracking_GoogleVR);
                 deviceConfig._trackingParameters = QStringList(arglist.mid(1)).join(' ');
                 continue;
             } else if (cmd == "buttons" && arglist.length() >= 1

@@ -5,7 +5,6 @@
     <file>default-config-oculus.qvr</file>
     <file>default-config-openvr.qvr</file>
     <file>default-config-googlevr.qvr</file>
-    <file>default-config-webcamheadtracker.qvr</file>
     <file>output-vs.glsl</file>
     <file>output-fs.glsl</file>
   </qresource>

@@ -32,7 +32,6 @@ find_package(Qt5 5.6.0 COMPONENTS Gui Network OPTIONAL_COMPONENTS Gamepad)
 find_package(VRPN QUIET)
 find_package(Oculus QUIET)
 find_package(OpenVR QUIET)
-find_package(WebcamHeadTracker QUIET)
 
 # The QVR library
 qt5_add_resources(QVRRESOURCES qvr.qrc)
@@ -73,11 +72,6 @@ if(OPENVR_FOUND)
     add_definitions(-DHAVE_OPENVR)
     include_directories(${OPENVR_INCLUDE_DIRS})
     target_link_libraries(libqvr ${OPENVR_LIBRARIES})
-endif()
-if(WebcamHeadTracker_FOUND)
-    add_definitions(-DHAVE_WEBCAMHEADTRACKER)
-    include_directories(${WEBCAMHEADTRACKER_INCLUDE_DIRS})
-    target_link_libraries(libqvr ${WEBCAMHEADTRACKER_LIBRARIES})
 endif()
 install(TARGETS libqvr
     RUNTIME DESTINATION bin

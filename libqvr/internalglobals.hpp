@@ -145,14 +145,4 @@ void QVRAttemptGoogleVRInitialization();
 void QVRUpdateGoogleVR();
 #endif
 
-#ifdef HAVE_WEBCAMHEADTRACKER
-extern bool QVRHaveWebcamHeadTracker;               // do we have a WebcamHeadTracker? (set by the following fuction)
-void QVRAttemptWebcamHeadTrackerInitialization();   // initialize WebcamHeadTracker
-void QVRShutdownWebcamHeadTracker();                // shut down WebcamHeadTracker
-void QVRUpdateWebcamHeadTracker();                  // update pos and orientation from WebcamHeadTracker
-extern QVector3D QVRWebcamHeadTrackerPos;           // pos
-extern QQuaternion QVRWebcamHeadTrackerOrientation; // orientation
-extern QVector3D QVRWebcamHeadToTrackSpaceOffset;   // move head into tracking space; to be initialized by QVRConfig::createDefault()
-#endif
-
 #endif

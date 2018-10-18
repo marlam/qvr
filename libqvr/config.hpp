@@ -49,8 +49,6 @@ typedef enum {
     QVR_Device_Tracking_OpenVR,
     /*! \brief A device with position and orientation tracked via Google VR (Cardboard, Daydream). */
     QVR_Device_Tracking_GoogleVR,
-    /*! \brief A device with position and orientation tracked via WebcamHeadTracker. */
-    QVR_Device_Tracking_WebcamHeadTracker
 } QVRDeviceTrackingType;
 
 /*!
@@ -740,8 +738,6 @@ public:
         AutodetectGoogleVR = (1 << 2),
         /*! \brief Autodetect Gamepads via the QtGamepad module. */
         AutodetectGamepads = (1 << 3),
-        /*! \brief Autodetect the webcam-based head tracking library (WebcamHeadTracker). */
-        AutodetectWebcamHeadTracker = (1 << 4),
         /*! \brief Autodetect all hardware. */
         AutodetectAll = 0xffffff
     };
