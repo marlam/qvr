@@ -28,6 +28,7 @@
 #include <QMutex>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLContext>
+#include <QOpenGLExtraFunctions>
 #include <QQuaternion>
 #include <QGuiApplication>
 #include <QScreen>
@@ -142,9 +143,8 @@ static QString readFile(const char* fileName)
     return in.readAll();
 }
 
-QVRWindow::QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int windowIndex) :
+QVRWindow::QVRWindow(QVRWindow* masterWindow, QVRObserver* observer, int windowIndex) :
     QWindow(),
-    QOpenGLExtraFunctions(),
     _isValid(true),
     _screen(-1),
     _thread(NULL),
@@ -159,6 +159,10 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int w
 {
     setSurfaceType(OpenGLSurface);
     create();
+    _winContext = new QOpenGLContext;
+    if (!isMaster()) {
+        _winContext->setShareContext(masterWindow->winContext());
+    }
     QSurfaceFormat format = QSurfaceFormat::defaultFormat();
     bool wantDoubleBuffer = true;
     // We do not want double buffering in the following cases:
@@ -177,12 +181,6 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int w
     bool wantStereo = (!isMaster() && config().outputMode() == QVR_Output_Stereo);
     format.setStereo(wantStereo);
     setFormat(format);
-    if (isMaster()) {
-        _winContext = masterContext;
-    } else {
-        _winContext = new QOpenGLContext;
-        _winContext->setShareContext(masterContext);
-    }
     _winContext->setFormat(format);
     _winContext->create();
     if (!_winContext->isValid()) {
@@ -200,7 +198,7 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int w
                 _winContext->format().minorVersion(),
                 _winContext->format().profile() == QSurfaceFormat::CompatibilityProfile ? "compatibility" : "core");
     }
-    if (!isMaster() && !QOpenGLContext::areSharing(_winContext, masterContext)) {
+    if (!isMaster() && !QOpenGLContext::areSharing(_winContext, masterWindow->winContext())) {
         QVR_FATAL("Cannot get a sharing OpenGL context");
         _isValid = false;
         return;
@@ -210,8 +208,11 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int w
         _isValid = false;
         return;
     }
+    _winContext->makeCurrent(this);
+    _gl = new QOpenGLExtraFunctions(_winContext);
     if (!initGL()) {
         _isValid = false;
+        _winContext->doneCurrent();
         return;
     }
 
@@ -248,13 +249,11 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int w
             glconf.OGL.Header.BackBufferSize.w = QVROculus->Resolution.w;
             glconf.OGL.Header.BackBufferSize.h = QVROculus->Resolution.h;
             glconf.OGL.Header.Multisample = 1;
-            _winContext->makeCurrent(this);
             ovrHmd_ConfigureRendering(QVROculus,
                     reinterpret_cast<ovrRenderAPIConfig*>(&glconf),
                     distortionCaps, QVROculus->DefaultEyeFov,
                     QVROculusEyeRenderDesc);
             ovrHmd_DismissHSWDisplay(QVROculus);
-            _winContext->doneCurrent();
             int oculusScreen = -1;
             for (int i = QVRScreenCount - 1; i >= 0; i--) {
                 if (QVRScreenGeometries[i].width() == QVROculus->Resolution.w
@@ -304,9 +303,10 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int w
 #ifdef ANDROID
             QVRGoogleVRResolutionFactor = config().renderResolutionFactor();
             QAndroidJniObject activity = QtAndroid::androidActivity();
-            masterContext->makeCurrent(this);
+            _winContext->doneCurrent();
+            masterWindow->winContext()->makeCurrent(this);
             activity.callMethod<void>("setMasterContext");
-            masterContext->doneCurrent();
+            masterWindow->winContext()->doneCurrent();
             QVR_DEBUG("    Google VR: set master context");
             QtAndroid::runOnAndroidThreadSync([&activity](){
                     activity = QtAndroid::androidActivity();
@@ -315,6 +315,7 @@ QVRWindow::QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int w
 #endif
         } else {
             _thread = new QVRWindowThread(this);
+            _winContext->doneCurrent();
             _winContext->moveToThread(_thread);
             _thread->renderingMutex.lock();
             _thread->swapbuffersMutex.lock();
@@ -332,6 +333,7 @@ QVRWindow::~QVRWindow()
 {
     if (_thread) {
         exitGL();
+        delete _gl;
         winContext()->deleteLater();
     }
 }
@@ -448,7 +450,7 @@ bool QVRWindow::initGL()
     Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
 
     _winContext->makeCurrent(this);
-    initializeOpenGLFunctions();
+    _gl->initializeOpenGLFunctions();
 
     if (!isMaster()) {
         if (config().outputPlugin().isEmpty()) {
@@ -464,26 +466,26 @@ bool QVRWindow::initGL()
             static GLuint quadIndices[] = {
                 0, 1, 3, 1, 2, 3
             };
-            glGenVertexArrays(1, &_outputQuadVao);
-            glBindVertexArray(_outputQuadVao);
+            _gl->glGenVertexArrays(1, &_outputQuadVao);
+            _gl->glBindVertexArray(_outputQuadVao);
             GLuint positionBuffer;
-            glGenBuffers(1, &positionBuffer);
-            glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);
-            glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(QVector3D), quadPositions, GL_STATIC_DRAW);
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-            glEnableVertexAttribArray(0);
+            _gl->glGenBuffers(1, &positionBuffer);
+            _gl->glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);
+            _gl->glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(QVector3D), quadPositions, GL_STATIC_DRAW);
+            _gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+            _gl->glEnableVertexAttribArray(0);
             GLuint texcoordBuffer;
-            glGenBuffers(1, &texcoordBuffer);
-            glBindBuffer(GL_ARRAY_BUFFER, texcoordBuffer);
-            glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(QVector2D), quadTexcoords, GL_STATIC_DRAW);
-            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
-            glEnableVertexAttribArray(1);
+            _gl->glGenBuffers(1, &texcoordBuffer);
+            _gl->glBindBuffer(GL_ARRAY_BUFFER, texcoordBuffer);
+            _gl->glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(QVector2D), quadTexcoords, GL_STATIC_DRAW);
+            _gl->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+            _gl->glEnableVertexAttribArray(1);
             GLuint indexBuffer;
-            glGenBuffers(1, &indexBuffer);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(GLuint), quadIndices, GL_STATIC_DRAW);
-            glBindVertexArray(0);
-            GLenum e = glGetError();
+            _gl->glGenBuffers(1, &indexBuffer);
+            _gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+            _gl->glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(GLuint), quadIndices, GL_STATIC_DRAW);
+            _gl->glBindVertexArray(0);
+            GLenum e = _gl->glGetError();
             if (e != GL_NO_ERROR) {
                 QVR_FATAL("OpenGL error 0x%04X\n", e);
                 return false;
@@ -558,8 +560,8 @@ void QVRWindow::exitGL()
         _thread = NULL;
         _winContext->makeCurrent(this);
         if (config().outputPlugin().isEmpty()) {
-            glDeleteTextures(2, _textures);
-            glDeleteVertexArrays(1, &_outputQuadVao);
+            _gl->glDeleteTextures(2, _textures);
+            _gl->glDeleteVertexArrays(1, &_outputQuadVao);
             delete _outputPrg;
         } else {
             _outputPluginExitFunc(this);
@@ -730,7 +732,7 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
     /* Get the textures that the application needs to render into */
 
     GLint textureBinding2dBak;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &textureBinding2dBak);
+    _gl->glGetIntegerv(GL_TEXTURE_BINDING_2D, &textureBinding2dBak);
 
 #if defined(HAVE_OCULUS) && (OVR_PRODUCT_VERSION >= 1)
     if (config().outputMode() == QVR_Output_Oculus && _textures[0] == 0) {
@@ -780,8 +782,8 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
         if (_textures[i] == 0) {
             _textureWidths[i] = -1;
             _textureHeights[i] = -1;
-            glGenTextures(1, &(_textures[i]));
-            glBindTexture(GL_TEXTURE_2D, _textures[i]);
+            _gl->glGenTextures(1, &(_textures[i]));
+            _gl->glBindTexture(GL_TEXTURE_2D, _textures[i]);
             bool wantBilinearInterpolation = true;
             if (std::abs(config().renderResolutionFactor() - 1.0f) <= 0.0f
                     && (config().outputMode() == QVR_Output_Center
@@ -794,10 +796,10 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
                         || config().outputMode() == QVR_Output_GoogleVR)) {
                 wantBilinearInterpolation = false;
             }
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, wantBilinearInterpolation ? GL_LINEAR : GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, wantBilinearInterpolation ? GL_LINEAR : GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            _gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, wantBilinearInterpolation ? GL_LINEAR : GL_NEAREST);
+            _gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, wantBilinearInterpolation ? GL_LINEAR : GL_NEAREST);
+            _gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            _gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         }
         int w = 0, h = 0;
         if (config().outputMode() == QVR_Output_Oculus) {
@@ -847,8 +849,8 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
                 // results. So fall back to linear textures.
                 wantSRGB = false;
             }
-            glBindTexture(GL_TEXTURE_2D, _textures[i]);
-            glTexImage2D(GL_TEXTURE_2D, 0,
+            _gl->glBindTexture(GL_TEXTURE_2D, _textures[i]);
+            _gl->glTexImage2D(GL_TEXTURE_2D, 0,
                     wantSRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8,
                     w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
             _textureWidths[i] = w;
@@ -857,7 +859,7 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
         _renderContext.setTextureSize(i, QSize(_textureWidths[i], _textureHeights[i]));
     }
     if (_renderContext.viewCount() == 1 && _textures[1] != 0) {
-        glDeleteTextures(1, &(_textures[1]));
+        _gl->glDeleteTextures(1, &(_textures[1]));
         _textures[1] = 0;
         _textureWidths[1] = -1;
         _textureHeights[1] = -1;
@@ -872,7 +874,7 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
     }
 #endif
 
-    glBindTexture(GL_TEXTURE_2D, textureBinding2dBak);
+    _gl->glBindTexture(GL_TEXTURE_2D, textureBinding2dBak);
 
     return _renderContext;
 }
@@ -900,34 +902,34 @@ void QVRWindow::renderOutput()
         // do nothing here, the output is done by ovrHmd_EndFrame()
 #endif
     } else {
-        glDisable(GL_DEPTH_TEST);
-        glUseProgram(_outputPrg->programId());
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, tex0);
-        glUniform1i(glGetUniformLocation(_outputPrg->programId(), "tex_l"), 0);
-        glUniform1i(glGetUniformLocation(_outputPrg->programId(), "tex_r"), 0);
-        glUniform1i(glGetUniformLocation(_outputPrg->programId(), "output_mode"), config().outputMode());
-        glBindVertexArray(_outputQuadVao);
+        _gl->glDisable(GL_DEPTH_TEST);
+        _gl->glUseProgram(_outputPrg->programId());
+        _gl->glActiveTexture(GL_TEXTURE0);
+        _gl->glBindTexture(GL_TEXTURE_2D, tex0);
+        _gl->glUniform1i(_gl->glGetUniformLocation(_outputPrg->programId(), "tex_l"), 0);
+        _gl->glUniform1i(_gl->glGetUniformLocation(_outputPrg->programId(), "tex_r"), 0);
+        _gl->glUniform1i(_gl->glGetUniformLocation(_outputPrg->programId(), "output_mode"), config().outputMode());
+        _gl->glBindVertexArray(_outputQuadVao);
         if (tex1 != 0) {
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, tex1);
-            glUniform1i(glGetUniformLocation(_outputPrg->programId(), "tex_r"), 1);
+            _gl->glActiveTexture(GL_TEXTURE1);
+            _gl->glBindTexture(GL_TEXTURE_2D, tex1);
+            _gl->glUniform1i(_gl->glGetUniformLocation(_outputPrg->programId(), "tex_r"), 1);
         }
-        glViewport(0, 0, width(), height());
+        _gl->glViewport(0, 0, width(), height());
         if (config().outputMode() == QVR_Output_Stereo) {
 #ifdef GL_BACK_LEFT
             GLenum buf = GL_BACK_LEFT;
-            glDrawBuffers(1, &buf);
+            _gl->glDrawBuffers(1, &buf);
 #endif
         }
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        _gl->glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         if (config().outputMode() == QVR_Output_Stereo) {
 #ifdef GL_BACK_RIGHT
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, tex1);
+            _gl->glActiveTexture(GL_TEXTURE0);
+            _gl->glBindTexture(GL_TEXTURE_2D, tex1);
             GLenum buf = GL_BACK_RIGHT;
-            glDrawBuffers(1, &buf);
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+            _gl->glDrawBuffers(1, &buf);
+            _gl->glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 #endif
         } else if (config().outputMode() == QVR_Output_OpenVR) {
 #ifdef HAVE_OPENVR
@@ -935,7 +937,7 @@ void QVRWindow::renderOutput()
             vr::VRCompositor()->Submit(vr::Eye_Left, &l, NULL, vr::Submit_Default);
             vr::Texture_t r = { reinterpret_cast<void*>(tex1), vr::TextureType_OpenGL, vr::ColorSpace_Linear };
             vr::VRCompositor()->Submit(vr::Eye_Right, &r, NULL, vr::Submit_Default);
-            glFlush(); // suggested by a comment in openvr.h
+            _gl->glFlush(); // suggested by a comment in openvr.h
 #endif
         }
     }

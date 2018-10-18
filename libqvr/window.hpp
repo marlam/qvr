@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017, 2018 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,7 +25,6 @@
 #define QVR_WINDOW_HPP
 
 #include <QWindow>
-#include <QOpenGLExtraFunctions>
 
 #include "config.hpp"
 #include "rendercontext.hpp"
@@ -34,6 +33,7 @@ class QVRObserver;
 class QVRWindowThread;
 class QOpenGLShaderProgram;
 class QOpenGLContext;
+class QOpenGLExtraFunctions;
 class QStringList;
 
 /*!
@@ -62,7 +62,7 @@ class QStringList;
  *
  * An window is configured via \a QVRWindowConfig.
  */
-class QVRWindow : public QWindow, protected QOpenGLExtraFunctions
+class QVRWindow : public QWindow
 {
 private:
     bool _isValid;
@@ -78,6 +78,7 @@ private:
     void (*_outputPluginExitFunc)(QVRWindow*);
     void (*_outputPluginFunc)(QVRWindow*, const QVRRenderContext&, const unsigned int*);
     QOpenGLContext* _winContext;
+    QOpenGLExtraFunctions* _gl;
     QVRRenderContext _renderContext;
 
     bool isMaster() const;
@@ -120,11 +121,15 @@ protected:
 
 public:
     /*! \brief Constructor.
-     * @param masterContext     The master OpenGL context of the process
+     * @param masterWindow      Pointer to master window
      * @param observer          The observer to provide a view for
      * @param windowIndex       The index of this window in this process
+     *
+     * The first window has to be created with parameters (0, 0, -1), and it
+     * will be the hidden master window. All other windows get a pointer to it
+     * on creation time.
      */
-    QVRWindow(QOpenGLContext* masterContext, QVRObserver* observer, int windowIndex);
+    QVRWindow(QVRWindow* masterWindow, QVRObserver* observer, int windowIndex);
     /*! \brief Destructor. */
     virtual ~QVRWindow();
 

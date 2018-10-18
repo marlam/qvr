@@ -28,6 +28,8 @@
 #include <QGuiApplication>
 #include <QTimer>
 #include <QElapsedTimer>
+#include <QOpenGLContext>
+#include <QOpenGLExtraFunctions>
 
 #include "manager.hpp"
 #include "event.hpp"
@@ -101,7 +103,6 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
     _deviceLastStates(),
     _observers(),
     _masterWindow(NULL),
-    _masterGLContext(NULL),
     _windows(),
     _thisProcess(NULL),
     _slaveProcesses(),
@@ -667,15 +668,14 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
             return false;
         }
     }
-    _masterGLContext = new QOpenGLContext();
     QVR_INFO("  master window...");
-    _masterWindow = new QVRWindow(_masterGLContext, 0, -1);
+    _masterWindow = new QVRWindow(0, 0, -1);
     if (!_masterWindow->isValid())
         return false;
     for (int w = 0; w < processConfig().windowConfigs().size(); w++) {
         QVR_INFO("  window %d...", w);
         QVRObserver* observer = _observers.at(windowConfig(_processIndex, w).observerIndex());
-        QVRWindow* window = new QVRWindow(_masterGLContext, observer, w);
+        QVRWindow* window = new QVRWindow(_masterWindow, observer, w);
         if (!window->isValid())
             return false;
         _windows.append(window);
@@ -1101,7 +1101,7 @@ void QVRManager::render()
 
     _masterWindow->winContext()->makeCurrent(_masterWindow);
 #ifdef GL_FRAMEBUFFER_SRGB
-    _masterWindow->glEnable(GL_FRAMEBUFFER_SRGB);
+    _masterWindow->_gl->glEnable(GL_FRAMEBUFFER_SRGB);
 #endif
 
     QVR_FIREHOSE("  ... preRenderProcess()");
@@ -1151,7 +1151,7 @@ void QVRManager::render()
      * the current scene, otherwise artefacts are displayed when the window
      * threads render them. It seems that glFlush() is not enough for all
      * OpenGL implementations; to be safe, we use glFinish(). */
-    _masterWindow->glFinish();
+    _masterWindow->_gl->glFinish();
     for (int w = 0; w < _windows.size(); w++) {
         QVR_FIREHOSE("  ... renderToScreen(%d)", w);
         _windows[w]->renderToScreen();

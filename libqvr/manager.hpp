@@ -191,7 +191,6 @@
 
 template <typename T> class QList;
 class QTimer;
-class QOpenGLContext;
 class QKeyEvent;
 class QMouseEvent;
 class QWheelEvent;
@@ -285,7 +284,6 @@ private:
     QList<int> _observerTrackingDevices0;
     QList<int> _observerTrackingDevices1;
     QVRWindow* _masterWindow;
-    QOpenGLContext* _masterGLContext;
     QList<QVRWindow*> _windows;
     QVRProcess* _thisProcess;
     QList<QVRProcess*> _slaveProcesses;
