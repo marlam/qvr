@@ -1,1 +1,1 @@
-This project moved to [https://gitlab.marlam.de/marlam/qvr](https://gitlab.marlam.de/marlam/qvr)
+This project moved to <https://marlam.de/qvr>
