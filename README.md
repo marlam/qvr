@@ -35,13 +35,7 @@ Supported VR hardware includes:
 
 - Google Cardboard and Daydream with [Google VR NDK](https://developers.google.com/vr/android/ndk/gvr-ndk-overview)
 
-- HDK and lots of other head-mounted displays with [OSVR](http://osvr.org/)
-
 - Almost all tracking and interaction hardware with [VRPN](http://vrpn.org/)
-
-- Desktop-based fake-VR for development and testing purposes, including
-  experimental support for webcam-based head-tracking via
-  [webcam-head-tracker](https://gitlab.marlam.de/marlam/webcam-head-tracker)
 
 ## The library
 

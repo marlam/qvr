@@ -1,12 +1,13 @@
 # qvr-vncviewer - VNC Viewer for QVR
 
-qvr-vncviewer is a VNC viewer on top of [QVR](https://gitlab.marlam.de/marlam/qvr).
+qvr-vncviewer is a VNC viewer for QVR.
 You can use it to view VNC screens across multiple displays, graphics cards,
 or hosts, or inside virtual reality devices such as the Oculus Rift.
 
 qvr-vncviewer places the VNC screen inside the virtual world. The screen
 geometry can currently be a wall (rectangle) or part of a cylinder, specified
 with the following options:
+
 * `--wall blx,bly,blz,brx,bry,brz,tlx,tly,tlz`: 
   Draw a rectangular VNC screen, given by the bottom left, bottom right, and
   top left corners of a rectangular wall.

@@ -4,6 +4,7 @@ qvr-videoplayer renders a video screen in the virtual environment.
 It is based on the Qt Multimedia module and has no further requirements.
 
 Features:
+
 * Arbitrary video screen geometry
 * Support for 2D and stereoscopic 3D videos
 * Support for multi-GPU/multi-process configurations
@@ -14,10 +15,12 @@ The list of videos to play is given on the command line:
 `qvr-videoplayer video1.mp4 video2.mp4 http://example.com/video3.wmv`
 
 Options:
+
 * `--loop`: loop the playlist
 * `--screen`: set the video screen geometry; see next section
 
 Keyboard shortcuts:
+
 * Media keys work as expected
 * Space: pause/play
 * P/N: jump to previous/next video in playlist
@@ -52,6 +55,7 @@ Stereoscopic 3D videos provide a left eye view and a right eye view. `qvr-videop
 supports video files that combine both views in each video frame. How the views
 are arranged in a frame can not always be detected automatically. You can specify
 the arrangement in the file name if autodetection fails:
+
 * `video-lr.mp4`: left view in left half of frame, right view in right half
 * `video-rl.mp4`: left view in right half of frame, right view in left half
 * `video-lrh.mp4`: left view in left half of frame, right view in right half, both squeezed to half width
