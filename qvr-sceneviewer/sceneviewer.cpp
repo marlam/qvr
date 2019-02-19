@@ -96,8 +96,8 @@ unsigned int SceneViewer::createTex(
         const aiMaterial* m, aiTextureType t, unsigned int i, bool scalar)
 {
     aiString path;
-    aiTextureMapMode mapmode;
-    m->GetTexture(t, i, &path, NULL, NULL, NULL, NULL, &mapmode);
+    aiTextureMapMode mapmode[3] = { aiTextureMapMode_Wrap, aiTextureMapMode_Wrap, aiTextureMapMode_Wrap };
+    m->GetTexture(t, i, &path, NULL, NULL, NULL, NULL, mapmode);
 
     QString filename = baseDirectory + '/' + path.C_Str();
     filename.replace('\\', '/');
@@ -123,7 +123,7 @@ unsigned int SceneViewer::createTex(
             glGenerateMipmap(GL_TEXTURE_2D);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            switch (mapmode) {
+            switch (mapmode[0]) {
             case aiTextureMapMode_Wrap:
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
