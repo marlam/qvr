@@ -1,0 +1,64 @@
+device glasses
+    tracking vrpn dtrack@141.99.37.96 0
+
+device foot-left
+    tracking vrpn dtrack@141.99.37.96 1
+
+device foot-right
+    tracking vrpn dtrack@141.99.37.96 2
+
+device leg-left
+    tracking vrpn dtrack@141.99.37.96 3
+
+device leg-right
+    tracking vrpn dtrack@141.99.37.96 4
+
+device waist
+    tracking vrpn dtrack@141.99.37.96 5
+
+device upperarm-left
+    tracking vrpn dtrack@141.99.37.96 6
+
+device upperarm-right
+    tracking vrpn dtrack@141.99.37.96 7
+
+device forearm-left
+    tracking vrpn dtrack@141.99.37.96 8
+
+device forearm-right
+    tracking vrpn dtrack@141.99.37.96 9
+
+device hand-left
+    tracking vrpn dtrack@141.99.37.96 10
+
+device hand-right
+    tracking vrpn dtrack@141.99.37.96 11
+
+device flystick
+    # We use the glasses orientation to steer navigation (tracking sensor number 0).
+    # If you want to use Flystick orientation instead, use sensor number 14.
+    # Furthermore, we reorder the indices of the digital buttons and analog joystick
+    # elements to match expectations.
+    tracking vrpn dtrack@141.99.37.96 0
+    buttons  vrpn dtrack@141.99.37.96 trigger down right left up
+    analogs  vrpn dtrack@141.99.37.96 axis-x axis-y
+
+observer default
+    navigation device flystick
+    navigation_position 0 0 0
+    navigation_up       0 1 0
+    navigation_forward  0 0 -1
+    tracking device glasses
+    tracking_position 0 1.78 0
+    tracking_up       0 1 0
+    tracking_forward  0 0 -1
+
+process default
+    window default
+        observer default
+        display_screen 1
+        fullscreen true
+        output center
+        screen_is_fixed_to_observer false
+        screen_is_given_by_center false
+        screen_wall -2.08 0.175 -2.09  +2.08 0.175 -2.09  -2.08 2.78 -2.09
