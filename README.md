@@ -33,9 +33,9 @@ Supported VR hardware includes:
 
 - Oculus Rift with [Oculus SDK](https://www.oculus.com/)
 
-- Google Cardboard and Daydream with [Google VR NDK](https://developers.google.com/vr/android/ndk/gvr-ndk-overview)
+- Google Cardboard and Daydream with [Google VR NDK](https://developers.google.com/vr/reference/android-ndk)
 
-- Almost all tracking and interaction hardware with [VRPN](http://vrpn.org/)
+- Almost all tracking and interaction hardware with [VRPN](https://github.com/vrpn/vrpn/wiki)
 
 ## The library
 
@@ -58,10 +58,10 @@ explaining the concepts of libqvr and how to use it, and a
   a simple demo scene based on OpenGL.
 
 - `qvr-example-openscenegraph`:
-  a full-featured [OpenSceneGraph](http://www.openscenegraph.com) viewer.
+  a full-featured [OpenSceneGraph](https://www.openscenegraph.com) viewer.
 
 - `qvr-example-vtk`:
-  a simple example of a [VTK](http://www.vtk.org) visualization pipeline within
+  a simple example of a [VTK](https://vtk.org/) visualization pipeline within
   a QVR application.
 
 - `qvr-sceneviewer`:

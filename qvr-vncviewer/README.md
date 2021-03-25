@@ -16,7 +16,7 @@ with the following options:
   radius, azimuth angle of screen center (phi0), and the aperture angles for
   azimuth (phirange) and polar (thetarange) directions.
 
-qvr-vncviewer uses [libvncclient](http://libvncserver.sourceforge.net/) and
+qvr-vncviewer uses [libvncclient](https://libvnc.github.io/) and
 therefore supports the usual VNC options and arguments. For example:
 $ qvr-vncviewer --wall -1,-1,-3,+1,-1,-3,-1,+1,-3 \
                 --qvr-config myconf.qvr \

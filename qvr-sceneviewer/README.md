@@ -1,8 +1,8 @@
 # qvr-sceneviewer - QVR viewer for a wide variety of models and scenes
 
 qvr-sceneviewer imports models and scenes using the
-[Open Asset Import Library](http://assimp.org/), and renders them.
-[Many file formats](http://assimp.org/main_features_formats.html) are supported.
+[Open Asset Import Library](https://assimp.org/), and renders them.
+Many file formats are supported.
 
 Features:
 
@@ -31,7 +31,7 @@ operations given on the command line:
 
 Freely available scenes to try, with appropriate transformation:
 
-* Crytek Sponza from [McGuire Graphics Data](http://graphics.cs.williams.edu/data/meshes.xml):  
+* Crytek Sponza from [McGuire Graphics Data](https://casual-effects.com/data/):  
   `qvr-sceneviewer --scale=0.01 --rotate=90,0,1,0 --translate=0,0,70 crytek-sponza/sponza.obj`
-* Rungholt from [McGuire Graphics Data](http://graphics.cs.williams.edu/data/meshes.xml):  
+* Rungholt from [McGuire Graphics Data](https://casual-effects.com/data/):  
   `qvr-sceneviewer --scale=0.5 --translate=0,-6,0 rungholt/rungholt.obj`
