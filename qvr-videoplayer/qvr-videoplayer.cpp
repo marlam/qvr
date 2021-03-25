@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2017 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2017, 2018, 2019, 2020, 2021
+ * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -458,7 +459,7 @@ bool QVRVideoPlayer::initProcess(QVRProcess* /* p */)
                 });
         _player->connect(_player, &QMediaPlayer::currentMediaChanged,
                 [=](const QMediaContent &content) {
-                    _surface->newUrl(content.canonicalUrl());
+                    _surface->newUrl(content.request().url());
                 });
         _player->connect(_player, &QMediaPlayer::metaDataAvailableChanged,
                 [=](bool available) {

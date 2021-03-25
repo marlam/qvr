@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021
+ * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -128,7 +129,7 @@ void QVRSceneViewer::keyPressEvent(const QVRRenderContext&, QKeyEvent* event)
 
 static void applyRotation(QMatrix4x4& M, const QString& s)
 {
-    QStringList l = s.split(',', QString::SkipEmptyParts);
+    QStringList l = s.split(',', Qt::SkipEmptyParts);
     bool ok[4] = { false, false, false, false };
     float v[4];
     if (l.size() == 4)
@@ -143,7 +144,7 @@ static void applyRotation(QMatrix4x4& M, const QString& s)
 
 static void applyScaling(QMatrix4x4& M, const QString& s)
 {
-    QStringList l = s.split(',', QString::SkipEmptyParts);
+    QStringList l = s.split(',', Qt::SkipEmptyParts);
     bool ok[3] = { false, false, false };
     float v[3];
     if (l.size() == 1) {
@@ -164,7 +165,7 @@ static void applyScaling(QMatrix4x4& M, const QString& s)
 
 static void applyTranslation(QMatrix4x4& M, const QString& s)
 {
-    QStringList l = s.split(',', QString::SkipEmptyParts);
+    QStringList l = s.split(',', Qt::SkipEmptyParts);
     bool ok[3] = { false, false, false };
     float v[3];
     if (l.size() == 3)
