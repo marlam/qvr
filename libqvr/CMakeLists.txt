@@ -13,8 +13,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Project
 project(libqvr)
-set(QVR_VERSION 3.0.0)
-set(QVR_LIBVERSION 3.0.0)
+set(QVR_VERSION 3.0.1)
+set(QVR_LIBVERSION 3.0.1)
 set(QVR_SOVERSION 3)
 
 # Build options
