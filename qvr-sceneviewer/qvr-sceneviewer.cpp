@@ -99,6 +99,15 @@ void QVRSceneViewer::render(QVRWindow* /* window */,
         glEnable(GL_DEPTH_TEST);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         _sceneViewer.render(context.frustum(view).toMatrix4x4(), context.viewMatrix(view));
+
+        if (QVRManager::logLevel() >= QVR_Log_Level_Info) {
+            QVector3D navPos = context.navigationPosition();
+            QQuaternion navOr = context.navigationOrientation();
+            float angle, ax, ay, az;
+            navOr.getAxisAndAngle(&ax, &ay, &az, &angle);
+            qInfo("navigation: position = (%g, %g, %g), orientation = %g degrees around (%g, %g, %g)",
+                    navPos.x(), navPos.y(), navPos.z(), angle, ax, ay, az);
+        }
     }
 }
 
