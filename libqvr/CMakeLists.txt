@@ -25,8 +25,8 @@ find_package(Qt5 5.6.0 COMPONENTS Gui Network OPTIONAL_COMPONENTS Gamepad)
 
 # Optional libraries
 find_package(VRPN QUIET)
-find_package(Oculus QUIET)
-find_package(OpenVR QUIET)
+find_package(OCULUS QUIET)
+find_package(OPENVR QUIET)
 
 # The QVR library
 qt5_add_resources(QVRRESOURCES qvr.qrc)
