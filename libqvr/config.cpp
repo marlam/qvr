@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016, 2017, 2018 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021
+ * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -268,7 +269,7 @@ bool QVRConfig::readFromFile(const QString& filename)
         while (line[i] != ' ' && line[i] != '\t')
             cmd.append(line[i++]);
         arg = line.mid(i).trimmed();
-        arglist = arg.split(' ', QString::SkipEmptyParts);
+        arglist = arg.split(' ', Qt::SkipEmptyParts);
         if (deviceIndex == -1 && observerIndex == -1) {
             // expect 'device' keyword...
             if (cmd == "device" && arglist.length() == 1) {
@@ -663,7 +664,7 @@ bool QVRConfig::readFromFile(const QString& filename)
         }
         if (_observerConfigs[i]._trackingType == QVR_Tracking_Device) {
             QString devId = _observerConfigs[i]._trackingParameters.trimmed();
-            QStringList devIdList = devId.split(' ', QString::SkipEmptyParts);
+            QStringList devIdList = devId.split(' ', Qt::SkipEmptyParts);
             int trackDev0 = -1;
             int trackDev1 = -1;
             for (int j = 0; j < _deviceConfigs.size(); j++) {

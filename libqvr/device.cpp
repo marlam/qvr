@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016, 2017, 2018 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021
+ * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -260,7 +261,7 @@ QVRDevice::QVRDevice(int deviceIndex) :
         break;
     case QVR_Device_Tracking_Static:
         {
-            QStringList args = config().trackingParameters().split(' ', QString::SkipEmptyParts);
+            QStringList args = config().trackingParameters().split(' ', Qt::SkipEmptyParts);
             if (args.length() == 3 || args.length() == 6)
                 _position = QVector3D(args[0].toFloat(), args[1].toFloat(), args[2].toFloat());
             if (args.length() == 6)
@@ -270,7 +271,7 @@ QVRDevice::QVRDevice(int deviceIndex) :
     case QVR_Device_Tracking_VRPN:
 #ifdef HAVE_VRPN
         if (QVRManager::processIndex() == config().processIndex()) {
-            QStringList args = config().trackingParameters().split(' ', QString::SkipEmptyParts);
+            QStringList args = config().trackingParameters().split(' ', Qt::SkipEmptyParts);
             QString name = (args.length() >= 1 ? args[0] : config().trackingParameters());
             int sensor = (args.length() >= 2 ? args[1].toInt() : vrpn_ALL_SENSORS);
             _internals->vrpnTrackerRemote = new vrpn_Tracker_Remote(qPrintable(name));
@@ -342,7 +343,7 @@ QVRDevice::QVRDevice(int deviceIndex) :
         break;
     case QVR_Device_Buttons_Static:
         {
-            QStringList args = config().buttonsParameters().split(' ', QString::SkipEmptyParts);
+            QStringList args = config().buttonsParameters().split(' ', Qt::SkipEmptyParts);
             int n = qMin(QVRDeviceMaxButtons, args.length() / 2);
             _buttons.resize(n);
             for (int i = 0; i < _buttons.length(); i++) {
@@ -393,7 +394,7 @@ QVRDevice::QVRDevice(int deviceIndex) :
     case QVR_Device_Buttons_VRPN:
 #ifdef HAVE_VRPN
         {
-            QStringList args = config().buttonsParameters().split(' ', QString::SkipEmptyParts);
+            QStringList args = config().buttonsParameters().split(' ', Qt::SkipEmptyParts);
             QString name = (args.length() >= 1 ? args[0] : config().buttonsParameters());
             if (args.length() > 1) {
                 _buttons.resize(qMin(QVRDeviceMaxButtons, args.length() - 1));
@@ -527,7 +528,7 @@ QVRDevice::QVRDevice(int deviceIndex) :
         break;
     case QVR_Device_Analogs_Static:
         {
-            QStringList args = config().analogsParameters().split(' ', QString::SkipEmptyParts);
+            QStringList args = config().analogsParameters().split(' ', Qt::SkipEmptyParts);
             _analogs.resize(args.length());
             int n = qMin(QVRDeviceMaxAnalogs, args.length() / 2);
             _buttons.resize(n);
@@ -570,7 +571,7 @@ QVRDevice::QVRDevice(int deviceIndex) :
     case QVR_Device_Analogs_VRPN:
 #ifdef HAVE_VRPN
         {
-            QStringList args = config().analogsParameters().split(' ', QString::SkipEmptyParts);
+            QStringList args = config().analogsParameters().split(' ', Qt::SkipEmptyParts);
             QString name = (args.length() >= 1 ? args[0] : config().analogsParameters());
             if (args.length() > 1) {
                 _analogs.resize(qMin(QVRDeviceMaxAnalogs, args.length() - 1));

@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016, 2017, 2018 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021
+ * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -93,7 +94,7 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
     _fpsMsecs(0),
     _fpsCounter(0),
     _configFilename(),
-    _autodetect(0),
+    _autodetect(),
     _isRelaunchedMaster(false),
     _server(NULL),
     _client(NULL),
@@ -242,7 +243,7 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
             break;
         }
     }
-    QStringList autodetectList = autodetectString.split(',', QString::SkipEmptyParts);
+    QStringList autodetectList = autodetectString.split(',', Qt::SkipEmptyParts);
     for (int i = 0; i < autodetectList.length(); i++) {
         if (autodetectList[i] == "all")
             _autodetect |= QVRConfig::AutodetectAll;
@@ -338,7 +339,7 @@ void QVRManager::buildProcessCommandLine(int processIndex, QString* prg, QString
     *args << QString("--qvr-config=%1").arg(_configFilename);
     *args << _appArgs;
     if (!processConfig.launcher().isEmpty() && processConfig.launcher() != "manual") {
-        QStringList ll = processConfig.launcher().split(' ', QString::SkipEmptyParts);
+        QStringList ll = processConfig.launcher().split(' ', Qt::SkipEmptyParts);
         args->prepend(*prg);
         *prg = ll[0];
         for (int i = ll.size() - 1; i >= 1; i--)
@@ -529,7 +530,7 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
         int trackDev1 = -1;
         if (_config->observerConfigs()[o].trackingType() == QVR_Tracking_Device) {
             const QString devId = _config->observerConfigs()[o].trackingParameters().trimmed();
-            const QStringList devIdList = devId.split(' ', QString::SkipEmptyParts);
+            const QStringList devIdList = devId.split(' ', Qt::SkipEmptyParts);
             for (int d = 0; d < _devices.size(); d++) {
                 if (devIdList.size() == 2) {
                     if (_devices[d]->config().id() == devIdList[0])

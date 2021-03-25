@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016, 2017, 2018 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021
+ * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -515,7 +516,7 @@ bool QVRWindow::initGL()
             }
         } else {
             // Initialize output plugin
-            QStringList pluginSpec = config().outputPlugin().split(' ', QString::SkipEmptyParts);
+            QStringList pluginSpec = config().outputPlugin().split(' ', Qt::SkipEmptyParts);
             QString pluginPath = pluginSpec.at(0);
             QStringList pluginArgs = pluginSpec.mid(1);
             QLibrary plugin(pluginPath);

@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021
+ * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,7 +32,7 @@ QVREvent::QVREvent() :
     context(),
     keyEvent(QEvent::None, 0, Qt::NoModifier),
     mouseEvent(QEvent::None, QPointF(), Qt::NoButton, Qt::NoButton, Qt::NoModifier),
-    wheelEvent(QPointF(), QPointF(), QPoint(), QPoint(), 0, Qt::Horizontal, Qt::NoButton, Qt::NoModifier),
+    wheelEvent(QPointF(), QPointF(), QPoint(), QPoint(), Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false),
     deviceEvent(QVRDevice(), -1, -1)
 {}
 
@@ -40,7 +41,7 @@ QVREvent::QVREvent(QVREventType t, const QVRRenderContext& c, const QKeyEvent& e
     context(c),
     keyEvent(e),
     mouseEvent(QEvent::None, QPointF(), Qt::NoButton, Qt::NoButton, Qt::NoModifier),
-    wheelEvent(QPointF(), QPointF(), QPoint(), QPoint(), 0, Qt::Horizontal, Qt::NoButton, Qt::NoModifier),
+    wheelEvent(QPointF(), QPointF(), QPoint(), QPoint(), Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false),
     deviceEvent(QVRDevice(), -1, -1)
 {}
 
@@ -49,7 +50,7 @@ QVREvent::QVREvent(QVREventType t, const QVRRenderContext& c, const QMouseEvent&
     context(c),
     keyEvent(QEvent::None, 0, Qt::NoModifier),
     mouseEvent(e),
-    wheelEvent(QPointF(), QPointF(), QPoint(), QPoint(), 0, Qt::Horizontal, Qt::NoButton, Qt::NoModifier),
+    wheelEvent(QPointF(), QPointF(), QPoint(), QPoint(), Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false),
     deviceEvent(QVRDevice(), -1, -1)
 {}
 
@@ -67,7 +68,7 @@ QVREvent::QVREvent(QVREventType t, const QVRDeviceEvent& e) :
     context(),
     keyEvent(QEvent::None, 0, Qt::NoModifier),
     mouseEvent(QEvent::None, QPointF(), Qt::NoButton, Qt::NoButton, Qt::NoModifier),
-    wheelEvent(QPointF(), QPointF(), QPoint(), QPoint(), 0, Qt::Horizontal, Qt::NoButton, Qt::NoModifier),
+    wheelEvent(QPointF(), QPointF(), QPoint(), QPoint(), Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false),
     deviceEvent(e)
 {}
 
@@ -95,12 +96,14 @@ QDataStream &operator<<(QDataStream& ds, const QVREvent& e)
         break;
     case QVR_Event_Wheel:
         ds << e.context
-            << e.wheelEvent.posF()
-            << e.wheelEvent.globalPosF()
+            << e.wheelEvent.position()
+            << e.wheelEvent.globalPosition()
             << e.wheelEvent.pixelDelta()
             << e.wheelEvent.angleDelta()
             << static_cast<int>(e.wheelEvent.buttons())
-            << static_cast<int>(e.wheelEvent.modifiers());
+            << static_cast<int>(e.wheelEvent.modifiers())
+            << static_cast<int>(e.wheelEvent.phase())
+            << static_cast<int>(e.wheelEvent.inverted());
         break;
     case QVR_Event_DeviceButtonPress:
     case QVR_Event_DeviceButtonRelease:
@@ -123,7 +126,7 @@ QDataStream &operator>>(QDataStream& ds, QVREvent& e)
     QPointF mepf;
     QPointF wepf[2];
     QPoint wep[2];
-    int we[2];
+    int we[4];
     QVRDevice d;
     int de[2];
 
@@ -157,9 +160,12 @@ QDataStream &operator>>(QDataStream& ds, QVREvent& e)
             >> wep[0]
             >> wep[1]
             >> we[0]
-            >> we[1];
-        e.wheelEvent = QWheelEvent(wepf[0], wepf[1], wep[0], wep[1], 0, Qt::Horizontal,
-                static_cast<Qt::MouseButtons>(we[0]), static_cast<Qt::KeyboardModifier>(we[1]));
+            >> we[1]
+            >> we[2]
+            >> we[3];
+        e.wheelEvent = QWheelEvent(wepf[0], wepf[1], wep[0], wep[1], 
+                static_cast<Qt::MouseButtons>(we[0]), static_cast<Qt::KeyboardModifier>(we[1]),
+                static_cast<Qt::ScrollPhase>(we[3]), static_cast<bool>(we[4]));
         break;
     case QVR_Event_DeviceButtonPress:
     case QVR_Event_DeviceButtonRelease:

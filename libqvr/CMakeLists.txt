@@ -1,4 +1,4 @@
-# Copyright (C) 2016, 2017, 2018
+# Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021
 # Computer Graphics Group, University of Siegen
 # Written by Martin Lambers <martin.lambers@uni-siegen.de>
 #
@@ -21,7 +21,7 @@ set(QVR_SOVERSION 3)
 option(QVR_BUILD_DOCUMENTATION "Build API reference documentation (requires Doxygen)" OFF)
 
 # Required libraries
-find_package(Qt5 5.6.0 COMPONENTS Gui Network OPTIONAL_COMPONENTS Gamepad)
+find_package(Qt5 5.12.0 COMPONENTS Gui Network OPTIONAL_COMPONENTS Gamepad)
 
 # Optional libraries
 find_package(VRPN QUIET)
