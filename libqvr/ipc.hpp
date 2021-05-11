@@ -54,10 +54,10 @@ class QVRSharedMemoryDevice;
  */
 
 /* A global timeout value, used whenever a communication function can time out.
- * TODO: this could be made configurable, e.g. via a master process attribute. */
+ * TODO: this could be made configurable, e.g. via a main process attribute. */
 extern int QVRTimeoutMsecs;
 
-/* The client, for slave processes. Based on QVRSharedMemoryDevice/QLocalSocket/QTcpSocket.
+/* The client, for child processes. Based on QVRSharedMemoryDevice/QLocalSocket/QTcpSocket.
  * Unfortunately QLocalSocket is not based on QAbstractSocket... */
 
 typedef enum {
@@ -111,7 +111,7 @@ public:
     void receiveCmdRenderArgs(float* n, float* f, QVRApp* app);
 };
 
-/* The server, for the master process. Based on QLocalServer/QTcpServer. */
+/* The server, for the main process. Based on QLocalServer/QTcpServer. */
 
 class QVRServer
 {

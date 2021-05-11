@@ -144,7 +144,7 @@ static QString readFile(const char* fileName)
     return in.readAll();
 }
 
-QVRWindow::QVRWindow(QVRWindow* masterWindow, QVRObserver* observer, int windowIndex) :
+QVRWindow::QVRWindow(QVRWindow* mainWindow, QVRObserver* observer, int windowIndex) :
     QWindow(),
     _isValid(true),
     _screen(-1),
@@ -161,25 +161,25 @@ QVRWindow::QVRWindow(QVRWindow* masterWindow, QVRObserver* observer, int windowI
     setSurfaceType(OpenGLSurface);
     create();
     _winContext = new QOpenGLContext;
-    if (!isMaster()) {
-        _winContext->setShareContext(masterWindow->winContext());
+    if (!isMain()) {
+        _winContext->setShareContext(mainWindow->winContext());
     }
     QSurfaceFormat format = QSurfaceFormat::defaultFormat();
     bool wantDoubleBuffer = true;
     // We do not want double buffering in the following cases:
-    // - master context: never renders to screen
+    // - main context: never renders to screen
     // - Oculus or OpenVR control / mirror window: double-buffering this
     //   would cause libqvr to sync to the window's swap rate instead of
     //   the faster HMD swap rate
     // Note that OpenGL ES does not seem to support single buffering.
     if (QOpenGLContext::openGLModuleType() != QOpenGLContext::LibGLES
-            && (isMaster()
+            && (isMain()
                 || config().outputMode() == QVR_Output_Oculus
                 || config().outputMode() == QVR_Output_OpenVR)) {
         wantDoubleBuffer = false;
     }
     format.setSwapBehavior(wantDoubleBuffer ? QSurfaceFormat::DoubleBuffer : QSurfaceFormat::SingleBuffer);
-    bool wantStereo = (!isMaster() && config().outputMode() == QVR_Output_Stereo);
+    bool wantStereo = (!isMain() && config().outputMode() == QVR_Output_Stereo);
     format.setStereo(wantStereo);
     setFormat(format);
     _winContext->setFormat(format);
@@ -199,7 +199,7 @@ QVRWindow::QVRWindow(QVRWindow* masterWindow, QVRObserver* observer, int windowI
                 _winContext->format().minorVersion(),
                 _winContext->format().profile() == QSurfaceFormat::CompatibilityProfile ? "compatibility" : "core");
     }
-    if (!isMaster() && !QOpenGLContext::areSharing(_winContext, masterWindow->winContext())) {
+    if (!isMain() && !QOpenGLContext::areSharing(_winContext, mainWindow->winContext())) {
         QVR_FATAL("Cannot get a sharing OpenGL context");
         _isValid = false;
         return;
@@ -222,7 +222,7 @@ QVRWindow::QVRWindow(QVRWindow* masterWindow, QVRObserver* observer, int windowI
     // Set an icon
     setIcon(QIcon(":/libqvr/cg-logo.png"));
 
-    if (!isMaster()) {
+    if (!isMain()) {
         QVR_DEBUG("    creating window %s...", qPrintable(config().id()));
         if (QVRManager::config().processConfigs().size() > 1) {
             setTitle(processConfig().id() + " - " + config().id());
@@ -305,10 +305,10 @@ QVRWindow::QVRWindow(QVRWindow* masterWindow, QVRObserver* observer, int windowI
             QVRGoogleVRResolutionFactor = config().renderResolutionFactor();
             QAndroidJniObject activity = QtAndroid::androidActivity();
             _winContext->doneCurrent();
-            masterWindow->winContext()->makeCurrent(this);
-            activity.callMethod<void>("setMasterContext");
-            masterWindow->winContext()->doneCurrent();
-            QVR_DEBUG("    Google VR: set master context");
+            mainWindow->winContext()->makeCurrent(this);
+            activity.callMethod<void>("setMainContext");
+            mainWindow->winContext()->doneCurrent();
+            QVR_DEBUG("    Google VR: set main context");
             QtAndroid::runOnAndroidThreadSync([&activity](){
                     activity = QtAndroid::androidActivity();
                     activity.callMethod<void>("initializeVR");});
@@ -341,7 +341,7 @@ QVRWindow::~QVRWindow()
 
 void QVRWindow::renderToScreen()
 {
-    Q_ASSERT(!isMaster());
+    Q_ASSERT(!isMain());
     Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
     Q_ASSERT(QOpenGLContext::currentContext() != _winContext);
     Q_ASSERT(config().outputMode() == QVR_Output_GoogleVR || _thread);
@@ -364,7 +364,7 @@ void QVRWindow::renderToScreen()
 
 void QVRWindow::asyncSwapBuffers()
 {
-    Q_ASSERT(!isMaster());
+    Q_ASSERT(!isMain());
     Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
     Q_ASSERT(QOpenGLContext::currentContext() != _winContext);
     Q_ASSERT(config().outputMode() == QVR_Output_GoogleVR || _thread);
@@ -379,7 +379,7 @@ void QVRWindow::asyncSwapBuffers()
 
 void QVRWindow::waitForSwapBuffers()
 {
-    Q_ASSERT(!isMaster());
+    Q_ASSERT(!isMain());
     Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
     Q_ASSERT(QOpenGLContext::currentContext() != _winContext);
     Q_ASSERT(config().outputMode() == QVR_Output_GoogleVR || _thread);
@@ -396,7 +396,7 @@ void QVRWindow::waitForSwapBuffers()
     }
 }
 
-bool QVRWindow::isMaster() const
+bool QVRWindow::isMain() const
 {
     return !_observer;
 }
@@ -453,7 +453,7 @@ bool QVRWindow::initGL()
     _winContext->makeCurrent(this);
     _gl->initializeOpenGLFunctions();
 
-    if (!isMaster()) {
+    if (!isMain()) {
         if (config().outputPlugin().isEmpty()) {
             // Initialize our own output code
             static QVector3D quadPositions[] = {
@@ -550,7 +550,7 @@ void QVRWindow::exitGL()
     Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
     Q_ASSERT(QOpenGLContext::currentContext() != _winContext);
 
-    if (!isMaster() && _thread) {
+    if (!isMain() && _thread) {
         if (_thread->isRunning()) {
             _thread->exitWanted = 1;
             _thread->renderingMutex.unlock();
@@ -573,7 +573,7 @@ void QVRWindow::exitGL()
 
 void QVRWindow::screenWall(QVector3D& cornerBottomLeft, QVector3D& cornerBottomRight, QVector3D& cornerTopLeft)
 {
-    Q_ASSERT(!isMaster());
+    Q_ASSERT(!isMain());
     Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
     Q_ASSERT(QOpenGLContext::currentContext() != _winContext);
     Q_ASSERT(config().outputMode() != QVR_Output_Oculus);
@@ -629,7 +629,7 @@ void QVRWindow::screenWall(QVector3D& cornerBottomLeft, QVector3D& cornerBottomR
 
 const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsigned int textures[2])
 {
-    Q_ASSERT(!isMaster());
+    Q_ASSERT(!isMain());
     Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
     Q_ASSERT(QOpenGLContext::currentContext() != _winContext);
 
@@ -882,7 +882,7 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
 
 void QVRWindow::renderOutput()
 {
-    Q_ASSERT(!isMaster());
+    Q_ASSERT(!isMain());
     Q_ASSERT(config().outputMode() != QVR_Output_GoogleVR);
     Q_ASSERT(QThread::currentThread() == _thread);
     Q_ASSERT(QOpenGLContext::currentContext() == _winContext);

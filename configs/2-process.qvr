@@ -6,7 +6,7 @@ observer o1
     navigation wasdqe
     tracking custom
 
-process master
+process main
     window 0
         observer o0
         output red_cyan
@@ -15,7 +15,7 @@ process master
         size 400 400
         screen_is_fixed_to_observer true
         screen_is_given_by_center true
-process slave
+process child
     window 1
         observer o1
         output red_cyan

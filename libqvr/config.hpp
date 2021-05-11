@@ -300,7 +300,7 @@ public:
 
     /*! \brief Returns the index of the owning process.
      *
-     * This is 0 (the master process) by default, but in special
+     * This is 0 (the main process) by default, but in special
      * cases (such as remote processes) a different process can own a device.
      *
      * The corresponding configuration file entry for the device is
@@ -624,10 +624,10 @@ public:
 /*!
  * \brief Configuration of a \a QVRProcess.
  *
- * Each process works with only one display. The master process talks to the 
+ * Each process works with only one display. The main process talks to the 
  * display that Qt initially uses by default; if a different display is configured,
- * QVR will relaunch the master process automatically so that Qt talks to the
- * configured display insted. Slave processes are usually configured to use different displays.
+ * QVR will relaunch the main process automatically so that Qt talks to the
+ * configured display insted. Child processes are usually configured to use different displays.
  *
  * The idea is that one display (with potentially multiple screens) runs on one GPU.
  */
@@ -637,10 +637,10 @@ private:
     // Unique identification string
     QString _id;
     // The communication system to use for inter-process communication.
-    // Only relevant for the master process.
+    // Only relevant for the main process.
     QVRIpcType _ipc;
     // The IP address to bind the QVR server to. Only relevant with IPC type QVR_IPC_TcpScoket,
-    // and only for the master process.
+    // and only for the main process.
     QString _address;
     // The launcher command, e.g. ssh
     QString _launcher;
@@ -648,7 +648,7 @@ private:
     QString _display;
     // Whether windows on this process sync to vblank
     bool _syncToVBlank;
-    // Whether the rendering of this slave process is decoupled from the master process
+    // Whether the rendering of this child process is decoupled from the main process
     bool _decoupledRendering;
     // The windows driven by this process.
     QList<QVRWindowConfig> _windowConfigs;
@@ -665,7 +665,7 @@ public:
     QVRIpcType ipc() const { return _ipc; }
     /*! \brief Returns the IP address that the QVR server will listen on.
      *
-     * A QVR server is only started on the master process (which is the application
+     * A QVR server is only started on the main process (which is the application
      * process that is started first), and only if multiple processes are configured.
      * A TCP QVR server that listens on a network address is only used if configured manually
      * or if at least one of the processes is run on a remote host (which is assumed to be the
@@ -696,7 +696,7 @@ public:
     const QString& display() const { return _display; }
     /*! \brief Returns whether windows of this process are synchronized with the vertical refresh of the display. */
     bool syncToVBlank() const { return _syncToVBlank; }
-    /*! \brief Returns whether the rendering of this slave process is decoupled from the master process. */
+    /*! \brief Returns whether the rendering of this child process is decoupled from the main process. */
     bool decoupledRendering() const { return _decoupledRendering; }
     /*! \brief Returns the configurations of the windows on this process. */
     const QList<QVRWindowConfig>& windowConfigs() const { return _windowConfigs; }
@@ -751,7 +751,7 @@ public:
      * This function will detect a head-mounted display and create a suitable
      * configuration for it.
      * If no special equipment is detected, the function will generate a single
-     * observer viewing a single window on the master process.
+     * observer viewing a single window on the main process.
      *
      * The observer created will a suitable default navigation type. If \a preferCustomNavigation
      * is set, then the navigation type \a QVR_Navigation_Custom will be used if it makes sense.

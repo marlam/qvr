@@ -44,7 +44,7 @@
  *
  * This class represents one video frame, in a form that allows serialization
  * to a QDataStream (for multi-process support).
- * On the master process, copying the frame data is avoided.
+ * On the main process, copying the frame data is avoided.
  */
 
 class VideoFrame

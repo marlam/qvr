@@ -81,7 +81,7 @@ private:
     QOpenGLExtraFunctions* _gl;
     QVRRenderContext _renderContext;
 
-    bool isMaster() const;
+    bool isMain() const;
     void screenWall(QVector3D& cornerBottomLeft, QVector3D& cornerBottomRight, QVector3D& cornerTopLeft);
 
     // to be called from _thread:
@@ -121,15 +121,15 @@ protected:
 
 public:
     /*! \brief Constructor.
-     * @param masterWindow      Pointer to master window
+     * @param mainWindow        Pointer to main window
      * @param observer          The observer to provide a view for
      * @param windowIndex       The index of this window in this process
      *
      * The first window has to be created with parameters (0, 0, -1), and it
-     * will be the hidden master window. All other windows get a pointer to it
+     * will be the hidden main window. All other windows get a pointer to it
      * on creation time.
      */
-    QVRWindow(QVRWindow* masterWindow, QVRObserver* observer, int windowIndex);
+    QVRWindow(QVRWindow* mainWindow, QVRObserver* observer, int windowIndex);
     /*! \brief Destructor. */
     virtual ~QVRWindow();
 

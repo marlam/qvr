@@ -2,7 +2,7 @@ observer o0
     navigation wasdqe
     tracking custom
 
-process master
+process main
     #ipc tcp-socket
     #ipc local-socket
     ipc shared-memory
@@ -14,7 +14,7 @@ process master
         size 400 400
         screen_is_fixed_to_observer true
         screen_is_given_by_center true
-process slave0
+process child0
     window 1
         observer o0
         output red_cyan
@@ -23,7 +23,7 @@ process slave0
         size 400 400
         screen_is_fixed_to_observer true
         screen_is_given_by_center true
-process slave1
+process child1
     window 2
         observer o0
         output red_cyan
@@ -32,7 +32,7 @@ process slave1
         size 400 400
         screen_is_fixed_to_observer true
         screen_is_given_by_center true
-process slave2
+process child2
     window 3
         observer o0
         output red_cyan

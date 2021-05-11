@@ -2,7 +2,7 @@ observer o0
     navigation wasdqe
     tracking custom
 
-process master
+process main
     window 0
         observer o0
         output center

@@ -41,8 +41,8 @@ class QVRProcessConfig;
  * A process can drive multiple \a QVRWindow windows with different screens,
  * positions, and sizes.
  *
- * The first process started by the user is the master process and has index 0.
- * Slave processes, if configured in the QVR configuration, are launched by the
+ * The first process started by the user is the main process and has index 0.
+ * Child processes, if configured in the QVR configuration, are launched by the
  * \a QVRManager.
  *
  * A process is configured via \a QVRProcessConfig.
@@ -52,7 +52,7 @@ class QVRProcess : public QProcess
 private:
     int _index;
 
-    // functions for the master to manage slave processes
+    // functions for the main to manage child processes
     bool launch(const QString& prg, const QStringList& args);
     bool exit();
 
@@ -69,7 +69,7 @@ public:
 
     /*! \brief Returns the index of the process in the QVR configuration.
      *
-     * The process with index 0 is the master process.
+     * The process with index 0 is the main process.
      */
     int index() const;
 

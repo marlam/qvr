@@ -2,7 +2,7 @@ observer default
     navigation wasdqe
     tracking custom
 
-process master
+process main
     window wall1
         observer default
         position 100 100

@@ -880,7 +880,7 @@ void QVRServer::receiveCmdSync(QList<QVREvent>* eventList)
 {
     // We make two passes over the input devices: first we wait
     // for all coupled devices, then we check if decoupled devices
-    // are ready. This avoids an order-dependency of slave process
+    // are ready. This avoids an order-dependency of child process
     // definitions in the configuration.
     for (int i = 0; i < inputDevices(); i++) {
         if (_clientIsSynced[i]) { // true at this point only for coupled processes

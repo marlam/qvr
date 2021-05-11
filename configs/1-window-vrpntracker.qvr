@@ -10,7 +10,7 @@ observer o0
     navigation device wand
     tracking device glasses
 
-process master
+process main
     window 0
         observer o0
         output red_cyan

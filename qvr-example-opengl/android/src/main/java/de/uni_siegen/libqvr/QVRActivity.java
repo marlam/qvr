@@ -51,7 +51,7 @@ public class QVRActivity extends QtActivity
         System.loadLibrary("qvr");
     }
 
-    private EGLContext qvrMasterContext;
+    private EGLContext qvrMainContext;
     private GvrLayout gvrLayout;
     private GLSurfaceView surfaceView;
     private long nativeGvrContext;
@@ -112,12 +112,12 @@ public class QVRActivity extends QtActivity
         return nativeGvrContext;
     }
 
-    // call this function from QVR before initializeVR(), and make sure the master context is current
+    // call this function from QVR before initializeVR(), and make sure the main context is current
     // in the currently active thread
-    void setMasterContext()
+    void setMainContext()
     {
         EGL10 egl = (EGL10)EGLContext.getEGL();
-        qvrMasterContext = egl.eglGetCurrentContext();
+        qvrMainContext = egl.eglGetCurrentContext();
     }
 
     // when calling this function from QVR, make sure that it runs on the Android thread
@@ -130,7 +130,7 @@ public class QVRActivity extends QtActivity
         surfaceView.setEGLContextFactory(new GLSurfaceView.EGLContextFactory() {
             public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig config) {
                 int[] attrib_list = { 0x3098 /* EGL_CONTEXT_CLIENT_VERSION */, 3, EGL10.EGL_NONE };
-                return egl.eglCreateContext(display, config, qvrMasterContext, attrib_list);
+                return egl.eglCreateContext(display, config, qvrMainContext, attrib_list);
             }
             public void destroyContext(EGL10 egl, EGLDisplay display, EGLContext context) {
                 egl.eglDestroyContext(display, context);

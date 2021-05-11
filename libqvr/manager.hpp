@@ -42,10 +42,10 @@
  * - Observers view the virtual scene. Often there is only one observer.
  *   Observers are configured via \a QVRObserverConfig and implemented as \a QVRObserver.
  * - Processes all run the same application binary. The first process initially
- *   run by the user is the master process. Slave processes are automatically
+ *   run by the user is the main process. Child processes are automatically
  *   launched by QVRManager as needed. Each process is connected to one display
  *   which can have multiple screens attached. Processes can run on the same host
- *   or across a network. Often there is only the master process.
+ *   or across a network. Often there is only the main process.
  *   Processes are configured via \a QVRProcessConfig and implemented as \a QVRProcess.
  * - Windows belong to processes and appear on the display that their process is
  *   connected to. They can have different positions and sizes on different screens
@@ -73,11 +73,11 @@
  * A configuration file starts with a list of observers and their properties.
  *
  * After that, the list of processes starts. There is always at least one process:
- * the master process. The master process is connected to the display that Qt initially
- * uses by default; if a different display is configured, the master process will be
- * relaunched automatically to take this into account. Slave processes typcially connect
+ * the main process. The main process is connected to the display that Qt initially
+ * uses by default; if a different display is configured, the main process will be
+ * relaunched automatically to take this into account. Child processes typcially connect
  * to different displays. Optionally, a launcher command can be specified, e.g. to run a
- * slave process on a different host using ssh.
+ * child process on a different host using ssh.
  *
  * Each process definition contains a list of windows for that process.
  * Since windows provide views into the virtual world, the geometry of the
@@ -134,7 +134,7 @@
  * - `sync_to_vblank <true|false>`<br>
  *   Whether windows of this process are synchronized with the vertical refresh of the display.
  * - `decoupled_rendering <true|false>`<br>
- *   Whether the rendering of this slave process is decoupled from the master process.
+ *   Whether the rendering of this child process is decoupled from the main process.
  *
  * Window definition (see \a QVRWindow and \a QVRWindowConfig):
  * - `window <id>`<br>
@@ -179,9 +179,9 @@
  * time with CPU work such as processing events and calling the \a QVRApp::update()
  * function of the application.
  *
- * The process initially started by the user is the master process. \a QVRManager
- * launch slave processes as required by the configuration file, and it will
- * handle all necessary synchronization and data exchange with these slave
+ * The process initially started by the user is the main process. \a QVRManager
+ * launch child processes as required by the configuration file, and it will
+ * handle all necessary synchronization and data exchange with these child
  * processes.
  */
 
@@ -267,13 +267,13 @@ private:
     unsigned int _fpsMsecs;
     unsigned int _fpsCounter;
     QString _configFilename;
-    QString _masterName;
+    QString _mainName;
     QVRConfig::Autodetect _autodetect;
     QStringList _appArgs;
-    bool _isRelaunchedMaster;
+    bool _isRelaunchedMain;
     // Data initialized by init():
     QByteArray _serializationBuffer;
-    QVRServer* _server; // only on the master process
+    QVRServer* _server; // only on the main process
     QVRClient* _client; // only on a client process
     QVRApp* _app;
     QVRConfig* _config;
@@ -283,10 +283,10 @@ private:
     QList<int> _observerNavigationDevices;
     QList<int> _observerTrackingDevices0;
     QList<int> _observerTrackingDevices1;
-    QVRWindow* _masterWindow;
+    QVRWindow* _mainWindow;
     QList<QVRWindow*> _windows;
     QVRProcess* _thisProcess;
-    QList<QVRProcess*> _slaveProcesses;
+    QList<QVRProcess*> _childProcesses;
     float _near, _far;
     bool _wantExit;
     QElapsedTimer* _wandNavigationTimer;    // Wand-based observers: framerate-independent speed
@@ -315,8 +315,8 @@ private:
     friend void QVRMsg(QVRLogLevel level, const char* s);
 
 private slots:
-    void masterLoop();
-    void slaveLoop();
+    void mainLoop();
+    void childLoop();
     void printFps();
 
 public:
@@ -369,7 +369,7 @@ public:
      * \param preferCustomNavigation    Whether the application prefers its own navigation methods.
      * \return  False on failure.
      *
-     * This function will create all slave processes and all windows, depending
+     * This function will create all child processes and all windows, depending
      * on the QVR configuration, and it will call the initialization functions
      * of \a app.
      *
@@ -453,7 +453,7 @@ public:
     }
 
     /*!
-     * \brief Return the index of the running process. The process with index 0 is the master process.
+     * \brief Return the index of the running process. The process with index 0 is the main process.
      */
     static int processIndex();
 

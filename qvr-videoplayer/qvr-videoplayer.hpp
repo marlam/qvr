@@ -48,7 +48,7 @@ private:
     QMediaPlayer* _player;
     VideoSurface* _surface;
 
-    /* Static data for rendering, initialized on the master process */
+    /* Static data for rendering, initialized on the main process */
     Screen _screen;
 
     /* Static data for rendering, initialized in initProcess() */

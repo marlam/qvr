@@ -115,7 +115,7 @@ public:
      * You should only update an observer's tracking information via \a QVRObserver::setTracking()
      * if its tracking type is \a QVR_Tracking_Custom.
      *
-     * Called once before each frame on the master process.
+     * Called once before each frame on the main process.
      */
     virtual void update(const QList<QVRObserver*>& observers) { Q_UNUSED(observers); }
 
@@ -124,7 +124,7 @@ public:
      * \param nearPlane Near clipping plane
      * \param farPlane  Far clipping plane
      *
-     * Called once before each frame on the master process.
+     * Called once before each frame on the main process.
      */
     virtual void getNearFar(float& nearPlane, float& farPlane) { nearPlane = 0.05f; farPlane = 100.0f; }
 
@@ -134,7 +134,7 @@ public:
      * When this function returns true, the application will be terminated by the
      * \a QVRManager. Typically an application returns true when ESC is pressed.
      *
-     * Called once before each frame on the master process.
+     * Called once before each frame on the main process.
      */
     virtual bool wantExit() { return false; }
 
@@ -250,7 +250,7 @@ public:
      * \param ds        Stream to write the serialization data to.
      *
      * Only implement this if you want to support multi-process configurations
-     * and your application benefits from transferring initialized data to slave
+     * and your application benefits from transferring initialized data to child
      * processes instead of initializing the data in each process.
      *
      * See also deserializeStaticData().
@@ -262,7 +262,7 @@ public:
      * \param ds        Stream to read the serialization data from.
      *
      * Only implement this if you want to support multi-process configurations
-     * and your application benefits from transferring initialized data to slave
+     * and your application benefits from transferring initialized data to child
      * processes instead of initializing the data in each process.
      *
      * See also serializeStaticData().
@@ -276,7 +276,7 @@ public:
      *
      * All events from all windows on all processes are gathered by the \a QVRManager.
      *
-     * This function is called once before each frame on the master process, before
+     * This function is called once before each frame on the main process, before
      * update().
      */
     virtual void keyPressEvent(const QVRRenderContext& context, QKeyEvent* event) { Q_UNUSED(context); Q_UNUSED(event); }
@@ -289,7 +289,7 @@ public:
      * All events from all windows on all processes are gathered by the \a QVRManager.
      *
      * This function is called once for each event before each frame on the
-     * master process, before update().
+     * main process, before update().
      */
     virtual void keyReleaseEvent(const QVRRenderContext& context, QKeyEvent* event) { Q_UNUSED(context); Q_UNUSED(event); }
 
@@ -301,7 +301,7 @@ public:
      * All events from all windows on all processes are gathered by the \a QVRManager.
      *
      * This function is called once for each event before each frame on the
-     * master process, before update().
+     * main process, before update().
      */
     virtual void mouseMoveEvent(const QVRRenderContext& context, QMouseEvent* event) { Q_UNUSED(context); Q_UNUSED(event); }
 
@@ -313,7 +313,7 @@ public:
      * All events from all windows on all processes are gathered by the \a QVRManager.
      *
      * This function is called once for each event before each frame on the
-     * master process, before update().
+     * main process, before update().
      */
     virtual void mousePressEvent(const QVRRenderContext& context, QMouseEvent* event) { Q_UNUSED(context); Q_UNUSED(event); }
 
@@ -325,7 +325,7 @@ public:
      * All events from all windows on all processes are gathered by the \a QVRManager.
      *
      * This function is called once for each event before each frame on the
-     * master process, before update().
+     * main process, before update().
      */
     virtual void mouseReleaseEvent(const QVRRenderContext& context, QMouseEvent* event) { Q_UNUSED(context); Q_UNUSED(event); }
 
@@ -337,7 +337,7 @@ public:
      * All events from all windows on all processes are gathered by the \a QVRManager.
      *
      * This function is called once for each event before each frame on the
-     * master process, before update().
+     * main process, before update().
      */
     virtual void mouseDoubleClickEvent(const QVRRenderContext& context, QMouseEvent* event) { Q_UNUSED(context); Q_UNUSED(event); }
 
@@ -349,7 +349,7 @@ public:
      * All events from all windows on all processes are gathered by the \a QVRManager.
      *
      * This function is called once for each event before each frame on the
-     * master process, before update().
+     * main process, before update().
      */
     virtual void wheelEvent(const QVRRenderContext& context, QWheelEvent* event) { Q_UNUSED(context); Q_UNUSED(event); }
 
@@ -360,7 +360,7 @@ public:
      * All events from all devices are gathered by the \a QVRManager.
      *
      * This function is called once for each event before each frame on the
-     * master process, before update().
+     * main process, before update().
      */
     virtual void deviceButtonPressEvent(QVRDeviceEvent* event) { Q_UNUSED(event); }
 
@@ -371,7 +371,7 @@ public:
      * All events from all devices are gathered by the \a QVRManager.
      *
      * This function is called once for each event before each frame on the
-     * master process, before update().
+     * main process, before update().
      */
     virtual void deviceButtonReleaseEvent(QVRDeviceEvent* event) { Q_UNUSED(event); }
 
@@ -382,7 +382,7 @@ public:
      * All events from all devices are gathered by the \a QVRManager.
      *
      * This function is called once for each event before each frame on the
-     * master process, before update().
+     * main process, before update().
      */
     virtual void deviceAnalogChangeEvent(QVRDeviceEvent* event) { Q_UNUSED(event); }
 };

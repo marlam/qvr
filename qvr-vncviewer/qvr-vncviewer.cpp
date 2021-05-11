@@ -314,8 +314,8 @@ bool QVRVNCViewer::initProcess(QVRProcess* p)
     _prg.link();
 
     // VNC
-    // We only have a VNC client on the master process, and send framebuffer
-    // data to slave processes as necessary.
+    // We only have a VNC client on the main process, and send framebuffer
+    // data to child processes as necessary.
     if (p->index() == 0) {
         _vncClient = rfbGetClient(8, 3, 4); // 32 bpp
         _vncClient->MallocFrameBuffer = vncResizeCallback;

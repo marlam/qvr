@@ -95,7 +95,7 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
     _fpsCounter(0),
     _configFilename(),
     _autodetect(),
-    _isRelaunchedMaster(false),
+    _isRelaunchedMain(false),
     _server(NULL),
     _client(NULL),
     _app(NULL),
@@ -103,10 +103,10 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
     _devices(),
     _deviceLastStates(),
     _observers(),
-    _masterWindow(NULL),
+    _mainWindow(NULL),
     _windows(),
     _thisProcess(NULL),
-    _slaveProcesses(),
+    _childProcesses(),
     _wantExit(false),
     _wandNavigationTimer(NULL),
     _wasdqeTimer(NULL),
@@ -130,12 +130,12 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
         }
     }
 
-    // get process index (it is 0 == master by default)
+    // get process index (it is 0 == main by default)
     for (int i = 1; i < argc; i++) {
         if (strncmp(argv[i], "--qvr-process=", 14) == 0) {
             _processIndex = ::atoi(argv[i] + 14);
             if (_processIndex == 0)
-                _isRelaunchedMaster = true;
+                _isRelaunchedMain = true;
             removeArg(argc, argv, i);
             break;
         }
@@ -221,10 +221,10 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
         }
     }
 
-    // get master name (if any)
+    // get main name (if any)
     for (int i = 1; i < argc; i++) {
         if (strncmp(argv[i], "--qvr-server=", 13) == 0) {
-            _masterName = QString(argv[i] + 13);
+            _mainName = QString(argv[i] + 13);
             removeArg(argc, argv, i);
             break;
         }
@@ -269,7 +269,7 @@ QVRManager::QVRManager(int& argc, char* argv[]) :
             QVR_WARNING("ignoring unknown entry '%s' in --qvr-autodetect list", qPrintable(autodetectList[i]));
     }
 
-    // preserve remaining command line content for slave processes
+    // preserve remaining command line content for child processes
     for (int i = 1; i < argc; i++)
         _appArgs << argv[i];
 }
@@ -296,9 +296,9 @@ QVRManager::~QVRManager()
         delete _observers.at(i);
     for (int i = 0; i < _windows.size(); i++)
         delete _windows.at(i);
-    for (int i = 0; i < _slaveProcesses.size(); i++)
-        delete _slaveProcesses.at(i);
-    delete _masterWindow;
+    for (int i = 0; i < _childProcesses.size(); i++)
+        delete _childProcesses.at(i);
+    delete _mainWindow;
     delete _thisProcess;
     delete _config;
     _config = NULL;
@@ -369,28 +369,28 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
         }
     }
 
-    // Check if we need to relaunch the master process to apply configuration
+    // Check if we need to relaunch the main process to apply configuration
     // settings such as "launcher" and "display"
-    if (_processIndex == 0 && !_isRelaunchedMaster
+    if (_processIndex == 0 && !_isRelaunchedMain
             && _config->processConfigs()[0].launcher() != "manual"
             && (!_config->processConfigs()[0].launcher().isEmpty()
                 || !_config->processConfigs()[0].display().isEmpty())) {
-        QVR_INFO("relaunching the master process...");
+        QVR_INFO("relaunching the main process...");
         // relaunch, and be sure to use the --qvr-process= option so that
-        // the relaunched master knows that it was relaunched.
+        // the relaunched main knows that it was relaunched.
         QString prg;
         QStringList args;
         buildProcessCommandLine(0, &prg, &args);
-        QProcess relaunchedMaster;
-        relaunchedMaster.setProcessChannelMode(QProcess::ForwardedErrorChannel);
+        QProcess relaunchedMain;
+        relaunchedMain.setProcessChannelMode(QProcess::ForwardedErrorChannel);
         QVR_DEBUG("    %s %s", qPrintable(prg), qPrintable(args.join(' ')));
-        relaunchedMaster.start(prg, args, QIODevice::ReadWrite);
-        if (!relaunchedMaster.waitForStarted(QVRTimeoutMsecs)) {
-            QVR_FATAL("failed to relaunch the master process");
+        relaunchedMain.start(prg, args, QIODevice::ReadWrite);
+        if (!relaunchedMain.waitForStarted(QVRTimeoutMsecs)) {
+            QVR_FATAL("failed to relaunch the main process");
             return false;
         }
-        relaunchedMaster.waitForFinished(-1);
-        QVR_INFO("... relaunched master process finished.");
+        relaunchedMain.waitForFinished(-1);
+        QVR_INFO("... relaunched main process finished.");
         // make the application exit as soon as it enters the main loop:
         QTimer::singleShot(0, QGuiApplication::instance(), SLOT(quit()));
         return true;
@@ -571,7 +571,7 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
             QVR_INFO("starting IPC server");
             QVRIpcType ipc = _config->processConfigs()[0].ipc();
             if (ipc == QVR_IPC_Automatic) {
-                // Choose TCP if a slave process has a launcher command (assuming this starts the
+                // Choose TCP if a child process has a launcher command (assuming this starts the
                 // process on a remote host)
                 for (int p = 1; p < _config->processConfigs().size(); p++) {
                     if (!_config->processConfigs()[p].launcher().isEmpty()) {
@@ -601,39 +601,39 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
             _app->serializeStaticData(serializationDataStream);
             for (int p = 1; p < _config->processConfigs().size(); p++) {
                 QVRProcess* process = new QVRProcess(p);
-                _slaveProcesses.append(process);
-                QVR_INFO("launching slave process %s (index %d) ...", qPrintable(process->id()), p);
+                _childProcesses.append(process);
+                QVR_INFO("launching child process %s (index %d) ...", qPrintable(process->id()), p);
                 QString prg;
                 QStringList args;
                 buildProcessCommandLine(p, &prg, &args);
                 if (!process->launch(prg, args))
                     return false;
             }
-            QVR_INFO("waiting for slave processes to connect to master ...");
+            QVR_INFO("waiting for child processes to connect to main ...");
             if (!_server->waitForClients())
                 return false;
             QVR_INFO("... all clients connected");
-            QVR_INFO("initializing slave processes with %d bytes of static application data", _serializationBuffer.size());
+            QVR_INFO("initializing child processes with %d bytes of static application data", _serializationBuffer.size());
             _server->sendCmdInit(_serializationBuffer);
             _server->flush();
         }
     } else {
         _serializationBuffer.reserve(1024);
         _client = new QVRClient;
-        QVR_INFO("slave process %s (index %d) connecting to master ...", qPrintable(_thisProcess->id()), _processIndex);
-        if (!_client->start(_masterName)) {
-            QVR_FATAL("cannot connect to master");
+        QVR_INFO("child process %s (index %d) connecting to main ...", qPrintable(_thisProcess->id()), _processIndex);
+        if (!_client->start(_mainName)) {
+            QVR_FATAL("cannot connect to main");
             return false;
         }
         QVR_INFO("... done");
-        QVR_INFO("slave process %s (index %d) waiting for init command from master ...", qPrintable(_thisProcess->id()), _processIndex);
+        QVR_INFO("child process %s (index %d) waiting for init command from main ...", qPrintable(_thisProcess->id()), _processIndex);
         QVRClientCmd cmd;
         if (!_client->receiveCmd(&cmd, true) || cmd != QVRClientCmdInit) {
-            QVR_FATAL("cannot receive init command from master");
+            QVR_FATAL("cannot receive init command from main");
             return false;
         }
         QVR_INFO("... done");
-        QVR_INFO("initializing slave process %s (index %d) ...", qPrintable(_thisProcess->id()), _processIndex);
+        QVR_INFO("initializing child process %s (index %d) ...", qPrintable(_thisProcess->id()), _processIndex);
         _client->receiveCmdInitArgs(_app);
         QVR_INFO("... done");
     }
@@ -669,27 +669,27 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
             return false;
         }
     }
-    QVR_INFO("  master window...");
-    _masterWindow = new QVRWindow(0, 0, -1);
-    if (!_masterWindow->isValid())
+    QVR_INFO("  main window...");
+    _mainWindow = new QVRWindow(0, 0, -1);
+    if (!_mainWindow->isValid())
         return false;
     for (int w = 0; w < processConfig().windowConfigs().size(); w++) {
         QVR_INFO("  window %d...", w);
         QVRObserver* observer = _observers.at(windowConfig(_processIndex, w).observerIndex());
-        QVRWindow* window = new QVRWindow(_masterWindow, observer, w);
+        QVRWindow* window = new QVRWindow(_mainWindow, observer, w);
         if (!window->isValid())
             return false;
         _windows.append(window);
     }
 
     // Initialize application process and windows
-    _masterWindow->winContext()->makeCurrent(_masterWindow);
+    _mainWindow->winContext()->makeCurrent(_mainWindow);
     if (!_app->initProcess(_thisProcess))
         return false;
     for (int w = 0; w < _windows.size(); w++)
         if (!_app->initWindow(_windows[w]))
             return false;
-    _masterWindow->winContext()->doneCurrent();
+    _mainWindow->winContext()->doneCurrent();
     if (_processIndex == 0) {
         updateDevices();
         _app->update(_observers);
@@ -701,14 +701,14 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
         _fpsTimer->start(_fpsMsecs);
     }
 
-    // Initialize render loop (only on master process)
+    // Initialize render loop (only on main process)
     if (_processIndex == 0) {
-        // Set up timer to trigger master loop
-        QObject::connect(_triggerTimer, SIGNAL(timeout()), this, SLOT(masterLoop()));
+        // Set up timer to trigger main loop
+        QObject::connect(_triggerTimer, SIGNAL(timeout()), this, SLOT(mainLoop()));
         _triggerTimer->start();
     } else {
-        // Set up timer to trigger slave loop
-        QObject::connect(_triggerTimer, SIGNAL(timeout()), this, SLOT(slaveLoop()));
+        // Set up timer to trigger child loop
+        QObject::connect(_triggerTimer, SIGNAL(timeout()), this, SLOT(childLoop()));
         _triggerTimer->start();
     }
 
@@ -726,22 +726,22 @@ bool QVRManager::isInitialized()
     return instance()->_initialized;
 }
 
-void QVRManager::masterLoop()
+void QVRManager::mainLoop()
 {
     Q_ASSERT(_processIndex == 0);
 
-    QVR_FIREHOSE("masterLoop() ...");
+    QVR_FIREHOSE("mainLoop() ...");
 
-    _masterWindow->winContext()->makeCurrent(_masterWindow);
+    _mainWindow->winContext()->makeCurrent(_mainWindow);
 
     if (_wantExit || _app->wantExit()) {
         QVR_FIREHOSE("  ... exit now!");
         _triggerTimer->stop();
-        if (_slaveProcesses.size() > 0) {
+        if (_childProcesses.size() > 0) {
             _server->sendCmdQuit();
             _server->flush();
-            for (int p = 0; p < _slaveProcesses.size(); p++)
-                _slaveProcesses[p]->exit();
+            for (int p = 0; p < _childProcesses.size(); p++)
+                _childProcesses[p]->exit();
         }
         quit();
         return;
@@ -877,32 +877,32 @@ void QVRManager::masterLoop()
 
     _app->getNearFar(_near, _far);
 
-    if (_slaveProcesses.size() > 0) {
+    if (_childProcesses.size() > 0) {
         for (int d = 0; d < _devices.size(); d++) {
             _serializationBuffer.resize(0);
             QDataStream serializationDataStream(&_serializationBuffer, QIODevice::WriteOnly);
             serializationDataStream << (*_devices[d]);
-            QVR_FIREHOSE("  ... sending device %d (%d bytes) to slave processes", d, _serializationBuffer.size());
+            QVR_FIREHOSE("  ... sending device %d (%d bytes) to child processes", d, _serializationBuffer.size());
             _server->sendCmdDevice(_serializationBuffer);
         }
         if (_haveWasdqeObservers) {
             _serializationBuffer.resize(0);
             QDataStream serializationDataStream(&_serializationBuffer, QIODevice::WriteOnly);
             serializationDataStream << _wasdqeMouseProcessIndex << _wasdqeMouseWindowIndex << _wasdqeMouseInitialized;
-            QVR_FIREHOSE("  ... sending wasdqe state (%d bytes) to slave processes", _serializationBuffer.size());
+            QVR_FIREHOSE("  ... sending wasdqe state (%d bytes) to child processes", _serializationBuffer.size());
             _server->sendCmdWasdqeState(_serializationBuffer);
         }
         for (int o = 0; o < _observers.size(); o++) {
             _serializationBuffer.resize(0);
             QDataStream serializationDataStream(&_serializationBuffer, QIODevice::WriteOnly);
             serializationDataStream << (*_observers[o]);
-            QVR_FIREHOSE("  ... sending observer %d (%d bytes) to slave processes", o, _serializationBuffer.size());
+            QVR_FIREHOSE("  ... sending observer %d (%d bytes) to child processes", o, _serializationBuffer.size());
             _server->sendCmdObserver(_serializationBuffer);
         }
         _serializationBuffer.resize(0);
         QDataStream serializationDataStream(&_serializationBuffer, QIODevice::WriteOnly);
         _app->serializeDynamicData(serializationDataStream);
-        QVR_FIREHOSE("  ... sending dynamic application data (%d bytes) to slave processes", _serializationBuffer.size());
+        QVR_FIREHOSE("  ... sending dynamic application data (%d bytes) to child processes", _serializationBuffer.size());
         _server->sendCmdRender(_near, _far, _serializationBuffer);
         _server->flush();
         QVR_FIREHOSE("  ... rendering commands are on their way");
@@ -919,27 +919,27 @@ void QVRManager::masterLoop()
 
     // now wait for windows to finish buffer swap...
     waitForBufferSwaps();
-    // ... and for the slaves to sync
-    if (_slaveProcesses.size() > 0) {
-        QVR_FIREHOSE("  ... waiting for slaves to sync");
-        QList<QVREvent> slaveEvents;
-        _server->receiveCmdSync(&slaveEvents);
-        for (int e = 0; e < slaveEvents.size(); e++) {
+    // ... and for the children to sync
+    if (_childProcesses.size() > 0) {
+        QVR_FIREHOSE("  ... waiting for children to sync");
+        QList<QVREvent> childEvents;
+        _server->receiveCmdSync(&childEvents);
+        for (int e = 0; e < childEvents.size(); e++) {
             QVR_FIREHOSE("  ... got an event from process %d window %d",
-                    slaveEvents[e].context.processIndex(), slaveEvents[e].context.windowIndex());
-            QVREventQueue->enqueue(slaveEvents[e]);
+                    childEvents[e].context.processIndex(), childEvents[e].context.windowIndex());
+            QVREventQueue->enqueue(childEvents[e]);
         }
     }
 
     _fpsCounter++;
 }
 
-void QVRManager::slaveLoop()
+void QVRManager::childLoop()
 {
     QVRClientCmd cmd;
     while (_client->receiveCmd(&cmd)) {
         if (cmd == QVRClientCmdUpdateDevices) {
-            QVR_FIREHOSE("  ... got command 'update-devices' from master");
+            QVR_FIREHOSE("  ... got command 'update-devices' from main");
 #ifdef HAVE_OCULUS
             if (QVROculus) {
                 QVRUpdateOculus();
@@ -969,25 +969,25 @@ void QVRManager::slaveLoop()
                     n++;
                 }
             }
-            QVR_FIREHOSE("  ... sending %d updated devices to master", n);
+            QVR_FIREHOSE("  ... sending %d updated devices to main", n);
             _client->sendReplyUpdateDevices(n, _serializationBuffer);
             _client->flush();
         } else if (cmd == QVRClientCmdDevice) {
-            QVR_FIREHOSE("  ... got command 'device' from master");
+            QVR_FIREHOSE("  ... got command 'device' from main");
             QVRDevice d;
             _client->receiveCmdDeviceArgs(&d);
             *(_devices.at(d.index())) = d;
         } else if (cmd == QVRClientCmdWasdqeState) {
-            QVR_FIREHOSE("  ... got command 'wasdqestate' from master");
+            QVR_FIREHOSE("  ... got command 'wasdqestate' from main");
             _client->receiveCmdWasdqeStateArgs(&_wasdqeMouseProcessIndex,
                     &_wasdqeMouseWindowIndex, &_wasdqeMouseInitialized);
         } else if (cmd == QVRClientCmdObserver) {
-            QVR_FIREHOSE("  ... got command 'observer' from master");
+            QVR_FIREHOSE("  ... got command 'observer' from main");
             QVRObserver o;
             _client->receiveCmdObserverArgs(&o);
             *(_observers.at(o.index())) = o;
         } else if (cmd == QVRClientCmdRender) {
-            QVR_FIREHOSE("  ... got command 'render' from master");
+            QVR_FIREHOSE("  ... got command 'render' from main");
             _client->receiveCmdRenderArgs(&_near, &_far, _app);
             render();
             QGuiApplication::processEvents();
@@ -999,17 +999,17 @@ void QVRManager::slaveLoop()
                 n++;
             }
             waitForBufferSwaps();
-            QVR_FIREHOSE("  ... sending command 'sync' with %d events in %d bytes to master", n, _serializationBuffer.size());
+            QVR_FIREHOSE("  ... sending command 'sync' with %d events in %d bytes to main", n, _serializationBuffer.size());
             _client->sendCmdSync(n, _serializationBuffer);
             _client->flush();
             _fpsCounter++;
         } else if (cmd == QVRClientCmdQuit) {
-            QVR_FIREHOSE("  ... got command 'quit' from master");
+            QVR_FIREHOSE("  ... got command 'quit' from main");
             _triggerTimer->stop();
             quit();
             break;
         } else {
-            QVR_FATAL("  got unknown command from master!?");
+            QVR_FATAL("  got unknown command from main!?");
             _triggerTimer->stop();
             quit();
             break;
@@ -1021,7 +1021,7 @@ void QVRManager::quit()
 {
     QVR_DEBUG("quitting process %d...", _thisProcess->index());
     _fpsTimer->stop();
-    _masterWindow->winContext()->makeCurrent(_masterWindow);
+    _mainWindow->winContext()->makeCurrent(_mainWindow);
     for (int w = _windows.size() - 1; w >= 0; w--) {
         QVR_DEBUG("... exiting window %d", w);
         _app->exitWindow(_windows[w]);
@@ -1030,7 +1030,7 @@ void QVRManager::quit()
     }
     QVR_DEBUG("... exiting process");
     _app->exitProcess(_thisProcess);
-    _masterWindow->close();
+    _mainWindow->close();
     QTimer::singleShot(0, QGuiApplication::instance(), SLOT(quit()));
     QVR_DEBUG("... quitting process %d done", _thisProcess->index());
 }
@@ -1068,10 +1068,10 @@ void QVRManager::updateDevices()
             haveRemoteDevices = true;
     }
     if (haveRemoteDevices) {
-        QVR_FIREHOSE("ordering slave processes to update devices");
+        QVR_FIREHOSE("ordering child processes to update devices");
         _server->sendCmdUpdateDevices();
         _server->flush();
-        QVR_FIREHOSE("getting updated device info from slave processes");
+        QVR_FIREHOSE("getting updated device info from child processes");
         _server->receiveReplyUpdateDevices(_devices);
     }
 
@@ -1100,9 +1100,9 @@ void QVRManager::render()
 {
     QVR_FIREHOSE("  render() ...");
 
-    _masterWindow->winContext()->makeCurrent(_masterWindow);
+    _mainWindow->winContext()->makeCurrent(_mainWindow);
 #ifdef GL_FRAMEBUFFER_SRGB
-    _masterWindow->_gl->glEnable(GL_FRAMEBUFFER_SRGB);
+    _mainWindow->_gl->glEnable(GL_FRAMEBUFFER_SRGB);
 #endif
 
     QVR_FIREHOSE("  ... preRenderProcess()");
@@ -1152,7 +1152,7 @@ void QVRManager::render()
      * the current scene, otherwise artefacts are displayed when the window
      * threads render them. It seems that glFlush() is not enough for all
      * OpenGL implementations; to be safe, we use glFinish(). */
-    _masterWindow->_gl->glFinish();
+    _mainWindow->_gl->glFinish();
     for (int w = 0; w < _windows.size(); w++) {
         QVR_FIREHOSE("  ... renderToScreen(%d)", w);
         _windows[w]->renderToScreen();

@@ -2,7 +2,7 @@ observer o0
     navigation wasdqe
     tracking custom
 
-process master
+process main
     window 0
         observer o0
         output red_cyan
@@ -11,7 +11,7 @@ process master
         size 400 400
         screen_is_fixed_to_observer true
         screen_is_given_by_center true
-process slave0
+process child0
     launcher ssh jones env LD_LIBRARY_PATH=/home/lambers/install/lib
     display :0.0
     window 1
@@ -22,7 +22,7 @@ process slave0
         size 400 400
         screen_is_fixed_to_observer true
         screen_is_given_by_center true
-process slave1
+process child1
     launcher ssh jones env LD_LIBRARY_PATH=/home/lambers/install/lib
     display :0.0
     window 2
