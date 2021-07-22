@@ -144,6 +144,12 @@ static QString readFile(const char* fileName)
     return in.readAll();
 }
 
+// Helper function: get a string from GL
+static const char* getGLString(QOpenGLExtraFunctions* gl, GLenum p)
+{
+    return reinterpret_cast<const char*>(gl->glGetString(p));
+}
+
 QVRWindow::QVRWindow(QVRWindow* mainWindow, QVRObserver* observer, int windowIndex) :
     QWindow(),
     _isValid(true),
@@ -211,6 +217,10 @@ QVRWindow::QVRWindow(QVRWindow* mainWindow, QVRObserver* observer, int windowInd
     }
     _winContext->makeCurrent(this);
     _gl = new QOpenGLExtraFunctions(_winContext);
+    QVR_DEBUG("    OpenGL version:    %s", getGLString(_gl, GL_VERSION));
+    QVR_DEBUG("    OpenGL SL version: %s", getGLString(_gl, GL_SHADING_LANGUAGE_VERSION));
+    QVR_DEBUG("    OpenGL vendor:     %s", getGLString(_gl, GL_VENDOR));
+    QVR_DEBUG("    OpenGL renderer:   %s", getGLString(_gl, GL_RENDERER));
     if (!initGL()) {
         _isValid = false;
         _winContext->doneCurrent();
