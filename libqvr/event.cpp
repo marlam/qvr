@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021
+ * Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021, 2022
  * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
@@ -165,7 +165,7 @@ QDataStream &operator>>(QDataStream& ds, QVREvent& e)
             >> we[3];
         e.wheelEvent = QWheelEvent(wepf[0], wepf[1], wep[0], wep[1], 
                 static_cast<Qt::MouseButtons>(we[0]), static_cast<Qt::KeyboardModifier>(we[1]),
-                static_cast<Qt::ScrollPhase>(we[3]), static_cast<bool>(we[4]));
+                static_cast<Qt::ScrollPhase>(we[2]), static_cast<bool>(we[3]));
         break;
     case QVR_Event_DeviceButtonPress:
     case QVR_Event_DeviceButtonRelease:
