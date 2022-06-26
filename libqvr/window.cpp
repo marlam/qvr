@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021
+ * Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021, 2022
  * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
@@ -631,9 +631,9 @@ void QVRWindow::screenWall(QVector3D& cornerBottomLeft, QVector3D& cornerBottomR
     }
     if (config().screenIsFixedToObserver()) {
         QMatrix4x4 o = _observer->trackingMatrix();
-        cornerBottomLeft = o * cornerBottomLeft;
-        cornerBottomRight = o * cornerBottomRight;
-        cornerTopLeft = o * cornerTopLeft;
+        cornerBottomLeft = o.map(cornerBottomLeft);
+        cornerBottomRight = o.map(cornerBottomRight);
+        cornerTopLeft = o.map(cornerTopLeft);
     }
 }
 

@@ -1,4 +1,4 @@
-# Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021
+# Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021, 2022
 # Computer Graphics Group, University of Siegen
 # Written by Martin Lambers <martin.lambers@uni-siegen.de>
 #
@@ -13,15 +13,16 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Project
 project(libqvr)
-set(QVR_VERSION 3.0.2)
-set(QVR_LIBVERSION 3.0.2)
-set(QVR_SOVERSION 3)
+set(QVR_VERSION 4.0.0)
+set(QVR_LIBVERSION 4.0.0)
+set(QVR_SOVERSION 4)
 
 # Build options
 option(QVR_BUILD_DOCUMENTATION "Build API reference documentation (requires Doxygen)" OFF)
 
 # Required libraries
-find_package(Qt5 5.12.0 COMPONENTS Gui Network OPTIONAL_COMPONENTS Gamepad)
+find_package(Qt6 6.2.0 COMPONENTS Gui OpenGL Network OPTIONAL_COMPONENTS Gamepad)
+add_definitions(-DQT_DEPRECATED_WARNINGS)
 
 # Optional libraries
 find_package(VRPN QUIET)
@@ -29,7 +30,7 @@ find_package(OCULUS QUIET)
 find_package(OPENVR QUIET)
 
 # The QVR library
-qt5_add_resources(QVRRESOURCES qvr.qrc)
+qt6_add_resources(QVRRESOURCES qvr.qrc)
 add_library(libqvr SHARED
     manager.hpp manager.cpp
     config.hpp config.cpp
@@ -48,10 +49,10 @@ set_target_properties(libqvr PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 set_target_properties(libqvr PROPERTIES OUTPUT_NAME qvr)
 set_target_properties(libqvr PROPERTIES VERSION ${QVR_LIBVERSION})
 set_target_properties(libqvr PROPERTIES SOVERSION ${QVR_SOVERSION})
-target_link_libraries(libqvr Qt5::Gui Qt5::Network)
-if(Qt5Gamepad_FOUND)
+target_link_libraries(libqvr Qt6::Gui Qt6::OpenGL Qt6::Network)
+if(Qt6Gamepad_FOUND)
     add_definitions(-DHAVE_QGAMEPAD)
-    target_link_libraries(libqvr Qt5::Gamepad)
+    target_link_libraries(libqvr Qt6::Gamepad)
 endif()
 if(VRPN_FOUND)
     add_definitions(-DHAVE_VRPN)

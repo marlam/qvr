@@ -182,7 +182,7 @@ bool SceneViewer::init(const aiScene* s, const QString& baseDirectory, const QMa
             continue;
         }
         QVector3D p = QVector3D(l->mPosition[0], l->mPosition[1], l->mPosition[2]);
-        QVector3D tp = transformationMatrix * p;
+        QVector3D tp = transformationMatrix.map(p);
         light.position[0] = tp.x();
         light.position[1] = tp.y();
         light.position[2] = tp.z();
@@ -269,7 +269,7 @@ bool SceneViewer::init(const aiScene* s, const QString& baseDirectory, const QMa
     for (unsigned int i = 0; i < s->mNumMeshes; i++) {
         Shape shape;
         const aiMesh* m = s->mMeshes[i];
-        if (m->mPrimitiveTypes != aiPrimitiveType_TRIANGLE)
+        if (!(m->mPrimitiveTypes & aiPrimitiveType_TRIANGLE))
             continue;
         shape.material_index = m->mMaterialIndex;
         glGenVertexArrays(1, &(shape.vao));
@@ -280,7 +280,7 @@ bool SceneViewer::init(const aiScene* s, const QString& baseDirectory, const QMa
         std::vector<float> positions(m->mNumVertices * 3);
         for (unsigned int j = 0; j < m->mNumVertices; j++) {
             QVector3D v = QVector3D(m->mVertices[j].x, m->mVertices[j].y, m->mVertices[j].z);
-            QVector3D w = transformationMatrix * v;
+            QVector3D w = transformationMatrix.map(v);
             positions[3 * j + 0] = w.x();
             positions[3 * j + 1] = w.y();
             positions[3 * j + 2] = w.z();
@@ -294,7 +294,7 @@ bool SceneViewer::init(const aiScene* s, const QString& baseDirectory, const QMa
         std::vector<float> normals(m->mNumVertices * 3);
         for (unsigned int j = 0; j < m->mNumVertices; j++) {
             QVector3D v = QVector3D(m->mNormals[j].x, m->mNormals[j].y, m->mNormals[j].z);
-            QVector3D w = normalMatrix * v;
+            QVector3D w = normalMatrix.map(v);
             normals[3 * j + 0] = w.x();
             normals[3 * j + 1] = w.y();
             normals[3 * j + 2] = w.z();

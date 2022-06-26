@@ -213,9 +213,9 @@ void QVRVNCViewer::createSceneGeometry(QVector<QVector3D>& positions,
             float phi = phiCenter + (xf - 0.5f) * phiRange;
             float px = radius * std::cos(phi);
             float pz = radius * std::sin(phi);
-            positions.append(M * QVector3D(px, py, pz));
+            positions.append(M.map(QVector3D(px, py, pz)));
             texcoords.append(QVector2D(xf, 0.0f));
-            positions.append(M * QVector3D(px, -py, pz));
+            positions.append(M.map(QVector3D(px, -py, pz)));
             texcoords.append(QVector2D(xf, 1.0f));
             if (x > 0) {
                 indices.append(2 * (x - 1));

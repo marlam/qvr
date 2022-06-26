@@ -30,80 +30,123 @@
 QVREvent::QVREvent() :
     type(QVR_Event_KeyPress),
     context(),
-    keyEvent(QEvent::None, 0, Qt::NoModifier),
-    mouseEvent(QEvent::None, QPointF(), Qt::NoButton, Qt::NoButton, Qt::NoModifier),
-    wheelEvent(QPointF(), QPointF(), QPoint(), QPoint(), Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false),
-    deviceEvent(QVRDevice(), -1, -1)
-{}
-
-QVREvent::QVREvent(QVREventType t, const QVRRenderContext& c, const QKeyEvent& e) :
-    type(t),
-    context(c),
-    keyEvent(e),
-    mouseEvent(QEvent::None, QPointF(), Qt::NoButton, Qt::NoButton, Qt::NoModifier),
-    wheelEvent(QPointF(), QPointF(), QPoint(), QPoint(), Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false),
-    deviceEvent(QVRDevice(), -1, -1)
-{}
-
-QVREvent::QVREvent(QVREventType t, const QVRRenderContext& c, const QMouseEvent& e) :
-    type(t),
-    context(c),
-    keyEvent(QEvent::None, 0, Qt::NoModifier),
-    mouseEvent(e),
-    wheelEvent(QPointF(), QPointF(), QPoint(), QPoint(), Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false),
-    deviceEvent(QVRDevice(), -1, -1)
-{}
-
-QVREvent::QVREvent(QVREventType t, const QVRRenderContext& c, const QWheelEvent& e) :
-    type(t),
-    context(c),
-    keyEvent(QEvent::None, 0, Qt::NoModifier),
-    mouseEvent(QEvent::None, QPointF(), Qt::NoButton, Qt::NoButton, Qt::NoModifier),
-    wheelEvent(e),
-    deviceEvent(QVRDevice(), -1, -1)
+    deviceEvent(QVRDevice(), -1, -1),
+    keyEventType(QEvent::None),
+    keyEventKey(0),
+    keyEventModifiers(Qt::NoModifier),
+    keyEventNativeScanCode(0),
+    keyEventNativeVirtualKey(0),
+    keyEventNativeModifiers(0),
+    keyEventText(),
+    keyEventAutorepeat(false),
+    keyEventCount(0)
 {}
 
 QVREvent::QVREvent(QVREventType t, const QVRDeviceEvent& e) :
     type(t),
     context(),
-    keyEvent(QEvent::None, 0, Qt::NoModifier),
-    mouseEvent(QEvent::None, QPointF(), Qt::NoButton, Qt::NoButton, Qt::NoModifier),
-    wheelEvent(QPointF(), QPointF(), QPoint(), QPoint(), Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false),
     deviceEvent(e)
 {}
 
+QVREvent::QVREvent(QVREventType t, const QVRRenderContext& c, const QKeyEvent& e) :
+    type(t),
+    context(c),
+    deviceEvent(QVRDevice(), -1, -1),
+    keyEventType(e.type()),
+    keyEventKey(e.key()),
+    keyEventModifiers(e.modifiers()),
+    keyEventNativeScanCode(e.nativeScanCode()),
+    keyEventNativeVirtualKey(e.nativeVirtualKey()),
+    keyEventNativeModifiers(e.nativeModifiers()),
+    keyEventText(e.text()),
+    keyEventAutorepeat(e.isAutoRepeat()),
+    keyEventCount(e.count())
+{}
+
+QVREvent::QVREvent(QVREventType t, const QVRRenderContext& c, const QMouseEvent& e) :
+    type(t),
+    context(c),
+    deviceEvent(QVRDevice(), -1, -1),
+    mouseEventType(e.type()),
+    mouseEventPosition(e.position()),
+    mouseEventScenePosition(e.scenePosition()),
+    mouseEventGlobalPosition(e.globalPosition()),
+    mouseEventButton(e.button()),
+    mouseEventButtons(e.buttons()),
+    mouseEventModifiers(e.modifiers())
+{}
+
+QVREvent::QVREvent(QVREventType t, const QVRRenderContext& c, const QWheelEvent& e) :
+    type(t),
+    context(c),
+    deviceEvent(QVRDevice(), -1, -1),
+    wheelEventPosition(e.position()),
+    wheelEventGlobalPosition(e.globalPosition()),
+    wheelEventPixelDelta(e.pixelDelta()),
+    wheelEventAngleDelta(e.angleDelta()),
+    wheelEventButtons(e.buttons()),
+    wheelEventModifiers(e.modifiers()),
+    wheelEventPhase(e.phase()),
+    wheelEventInverted(e.inverted())
+{}
+
+QKeyEvent* QVREvent::createKeyEvent() const
+{
+    return new QKeyEvent(keyEventType, keyEventKey, keyEventModifiers,
+            keyEventNativeScanCode, keyEventNativeVirtualKey, keyEventNativeModifiers,
+            keyEventText, keyEventAutorepeat, keyEventCount);
+}
+
+QMouseEvent* QVREvent::createMouseEvent() const
+{
+    return new QMouseEvent(mouseEventType, mouseEventPosition, mouseEventScenePosition,
+            mouseEventGlobalPosition, mouseEventButton, mouseEventButtons, mouseEventModifiers);
+}
+
+QWheelEvent* QVREvent::createWheelEvent() const
+{
+    return new QWheelEvent(wheelEventPosition, wheelEventGlobalPosition, wheelEventPixelDelta,
+            wheelEventAngleDelta, wheelEventButtons, wheelEventModifiers, wheelEventPhase,
+            wheelEventInverted);
+}
+
 QDataStream &operator<<(QDataStream& ds, const QVREvent& e)
 {
-    ds << static_cast<int>(e.type);
+    ds << static_cast<int>(e.type) << e.context;
     switch (e.type) {
     case QVR_Event_KeyPress:
     case QVR_Event_KeyRelease:
-        ds << e.context
-            << static_cast<int>(e.keyEvent.type())
-            << e.keyEvent.key()
-            << static_cast<int>(e.keyEvent.modifiers());
+        ds << static_cast<int>(e.keyEventType)
+            << e.keyEventKey
+            << static_cast<int>(e.keyEventModifiers)
+            << e.keyEventNativeScanCode
+            << e.keyEventNativeVirtualKey
+            << e.keyEventNativeModifiers
+            << e.keyEventText
+            << e.keyEventAutorepeat
+            << e.keyEventCount;
         break;
     case QVR_Event_MouseMove:
     case QVR_Event_MousePress:
     case QVR_Event_MouseRelease:
     case QVR_Event_MouseDoubleClick:
-        ds << e.context
-            << static_cast<int>(e.mouseEvent.type())
-            << e.mouseEvent.localPos()
-            << static_cast<int>(e.mouseEvent.button())
-            << static_cast<int>(e.mouseEvent.buttons())
-            << static_cast<int>(e.mouseEvent.modifiers());
+        ds << static_cast<int>(e.mouseEventType)
+            << e.mouseEventPosition
+            << e.mouseEventScenePosition
+            << e.mouseEventGlobalPosition
+            << static_cast<int>(e.mouseEventButton)
+            << static_cast<int>(e.mouseEventButtons)
+            << static_cast<int>(e.mouseEventModifiers);
         break;
     case QVR_Event_Wheel:
-        ds << e.context
-            << e.wheelEvent.position()
-            << e.wheelEvent.globalPosition()
-            << e.wheelEvent.pixelDelta()
-            << e.wheelEvent.angleDelta()
-            << static_cast<int>(e.wheelEvent.buttons())
-            << static_cast<int>(e.wheelEvent.modifiers())
-            << static_cast<int>(e.wheelEvent.phase())
-            << static_cast<int>(e.wheelEvent.inverted());
+        ds << e.wheelEventPosition
+            << e.wheelEventGlobalPosition
+            << e.wheelEventPixelDelta
+            << e.wheelEventAngleDelta
+            << static_cast<int>(e.wheelEventButtons)
+            << static_cast<int>(e.wheelEventModifiers)
+            << static_cast<int>(e.wheelEventPhase)
+            << e.wheelEventInverted;
         break;
     case QVR_Event_DeviceButtonPress:
     case QVR_Event_DeviceButtonRelease:
@@ -120,60 +163,62 @@ QDataStream &operator>>(QDataStream& ds, QVREvent& e)
     int type;
     ds >> type;
     e.type = static_cast<QVREventType>(type);
+    ds >> e.context;
 
-    int ke[3];
-    int me[4];
-    QPointF mepf;
-    QPointF wepf[2];
-    QPoint wep[2];
-    int we[4];
-    QVRDevice d;
-    int de[2];
-
+    int intval;
     switch (e.type) {
     case QVR_Event_KeyPress:
     case QVR_Event_KeyRelease:
-        ds >> e.context
-            >> ke[0]
-            >> ke[1]
-            >> ke[2];
-        e.keyEvent = QKeyEvent(static_cast<QEvent::Type>(ke[0]), ke[1], static_cast<Qt::KeyboardModifier>(ke[2]));
+        ds >> intval;
+        e.keyEventType = static_cast<QEvent::Type>(intval);
+        ds >> e.keyEventKey;
+        ds >> intval;
+        e.keyEventModifiers = static_cast<Qt::KeyboardModifiers>(intval);
+        ds >> e.keyEventNativeScanCode
+            >> e.keyEventNativeVirtualKey
+            >> e.keyEventNativeModifiers
+            >> e.keyEventText
+            >> e.keyEventAutorepeat
+            >> e.keyEventCount;
         break;
     case QVR_Event_MouseMove:
     case QVR_Event_MousePress:
     case QVR_Event_MouseRelease:
     case QVR_Event_MouseDoubleClick:
-        ds >> e.context
-            >> me[0]
-            >> mepf
-            >> me[1]
-            >> me[2]
-            >> me[3];
-        e.mouseEvent = QMouseEvent(static_cast<QEvent::Type>(me[0]), mepf,
-                static_cast<Qt::MouseButton>(me[1]), static_cast<Qt::MouseButtons>(me[2]),
-                static_cast<Qt::KeyboardModifier>(me[3]));
+        ds >> intval;
+        e.mouseEventType = static_cast<QEvent::Type>(intval);
+        ds >> e.mouseEventPosition
+            >> e.mouseEventScenePosition
+            >> e.mouseEventGlobalPosition
+            >> intval;
+        e.mouseEventButton = static_cast<Qt::MouseButton>(intval);
+        ds >> intval;
+        e.mouseEventButtons = static_cast<Qt::MouseButtons>(intval);
+        ds >> intval;
+        e.mouseEventModifiers = static_cast<Qt::KeyboardModifiers>(intval);
         break;
     case QVR_Event_Wheel:
-        ds >> e.context
-            >> wepf[0]
-            >> wepf[1]
-            >> wep[0]
-            >> wep[1]
-            >> we[0]
-            >> we[1]
-            >> we[2]
-            >> we[3];
-        e.wheelEvent = QWheelEvent(wepf[0], wepf[1], wep[0], wep[1], 
-                static_cast<Qt::MouseButtons>(we[0]), static_cast<Qt::KeyboardModifier>(we[1]),
-                static_cast<Qt::ScrollPhase>(we[2]), static_cast<bool>(we[3]));
+        ds >> e.wheelEventPosition
+            >> e.wheelEventGlobalPosition
+            >> e.wheelEventPixelDelta
+            >> e.wheelEventAngleDelta
+            >> intval;
+        e.wheelEventButtons = static_cast<Qt::MouseButtons>(intval);
+        ds >> intval;
+        e.wheelEventModifiers = static_cast<Qt::KeyboardModifiers>(intval);
+        ds >> intval;
+        e.wheelEventPhase = static_cast<Qt::ScrollPhase>(intval);
+        ds >> e.wheelEventInverted;
         break;
     case QVR_Event_DeviceButtonPress:
     case QVR_Event_DeviceButtonRelease:
     case QVR_Event_DeviceAnalogChange:
-        ds >> d
-            >> de[0]
-            >> de[1];
-        e.deviceEvent = QVRDeviceEvent(d, de[0], de[1]);
+        {
+            QVRDevice d;
+            int de[2];
+            ds >> d >> de[0] >> de[1];
+            e.deviceEvent = QVRDeviceEvent(d, de[0], de[1]);
+        }
         break;
     }
     return ds;

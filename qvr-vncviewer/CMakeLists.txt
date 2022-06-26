@@ -1,4 +1,4 @@
-# Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021
+# Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021, 2022
 # Computer Graphics Group, University of Siegen
 # Written by Martin Lambers <martin.lambers@uni-siegen.de>
 #
@@ -8,12 +8,14 @@
 
 cmake_minimum_required(VERSION 3.4)
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR} ${CMAKE_MODULE_PATH})
+set(CMAKE_FIND_PACKAGE_SORT_ORDER NATURAL)
+set(CMAKE_FIND_PACKAGE_SORT_DIRECTION DEC)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 project(qvr-vncviewer)
 
-find_package(Qt5 5.12.0 COMPONENTS Gui)
+find_package(Qt6 6.2.0 COMPONENTS OpenGL)
 find_package(QVR REQUIRED)
 find_package(PkgConfig)
 pkg_check_modules(LIBVNCCLIENT REQUIRED libvncclient)
@@ -26,8 +28,8 @@ endif()
 
 include_directories(${QVR_INCLUDE_DIRS} ${LIBVNCCLIENT_INCLUDE_DIRS})
 link_directories(${QVR_LIBRARY_DIRS} ${LIBVNCCLIENT_LIBRARY_DIRS})
-qt5_add_resources(RESOURCES resources.qrc)
+qt6_add_resources(RESOURCES resources.qrc)
 add_executable(qvr-vncviewer qvr-vncviewer.cpp qvr-vncviewer.hpp ${RESOURCES})
 set_target_properties(qvr-vncviewer PROPERTIES WIN32_EXECUTABLE TRUE)
-target_link_libraries(qvr-vncviewer ${QVR_LIBRARIES} Qt5::Gui ${LIBVNCCLIENT_LIBRARIES})
+target_link_libraries(qvr-vncviewer ${QVR_LIBRARIES} Qt6::OpenGL ${LIBVNCCLIENT_LIBRARIES})
 install(TARGETS qvr-vncviewer RUNTIME DESTINATION bin)

@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016, 2017, 2018 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021, 2022
+ * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -34,7 +35,6 @@ class QVRWindowThread;
 class QOpenGLShaderProgram;
 class QOpenGLContext;
 class QOpenGLExtraFunctions;
-class QStringList;
 
 /*!
  * \brief A Qt window on a screen and a window into the virtual world

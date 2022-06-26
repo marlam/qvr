@@ -1192,7 +1192,7 @@ void QVRManager::processEventQueue()
                     .observerIndex()).navigationType() == QVR_Navigation_WASDQE) {
             bool consumed = false;
             if (e.type == QVR_Event_KeyPress) {
-                switch (e.keyEvent.key()) {
+                switch (e.keyEventKey) {
                 case Qt::Key_Escape:
                     if (_wasdqeMouseProcessIndex >= 0) {
                         _wasdqeMouseProcessIndex = -1;
@@ -1227,7 +1227,7 @@ void QVRManager::processEventQueue()
                     break;
                 }
             } else if (e.type == QVR_Event_KeyRelease) {
-                switch (e.keyEvent.key())
+                switch (e.keyEventKey)
                 {
                 case Qt::Key_W:
                     _wasdqeIsPressed[0] = false;
@@ -1264,7 +1264,7 @@ void QVRManager::processEventQueue()
                         && _wasdqeMouseProcessIndex == e.context.processIndex()
                         && _wasdqeMouseWindowIndex == e.context.windowIndex()) {
                     // Horizontal angle
-                    float x = e.mouseEvent.pos().x();
+                    float x = e.mouseEventPosition.x();
                     float w = e.context.windowGeometry().width();
                     float xf = x / w * 2.0f - 1.0f;
                     _wasdqeHorzAngle = -xf * 180.0f;
@@ -1274,7 +1274,7 @@ void QVRManager::processEventQueue()
                     // sickness fast ;)
                     if (windowConfig(e.context.processIndex(), e.context.windowIndex()).outputMode()
                             != QVR_Output_Oculus) {
-                        float y = e.mouseEvent.pos().y();
+                        float y = e.mouseEventPosition.y();
                         float h = e.context.windowGeometry().height();
                         float yf = y / h * 2.0f - 1.0f;
                         _wasdqeVertAngle = -yf * 90.0f;
@@ -1288,25 +1288,53 @@ void QVRManager::processEventQueue()
         }
         switch (e.type) {
         case QVR_Event_KeyPress:
-            _app->keyPressEvent(e.context, &e.keyEvent);
+            {
+                QKeyEvent* keyEvent = e.createKeyEvent();
+                _app->keyPressEvent(e.context, keyEvent);
+                delete keyEvent;
+            }
             break;
         case QVR_Event_KeyRelease:
-            _app->keyReleaseEvent(e.context, &e.keyEvent);
+            {
+                QKeyEvent* keyEvent = e.createKeyEvent();
+                _app->keyReleaseEvent(e.context, keyEvent);
+                delete keyEvent;
+            }
             break;
         case QVR_Event_MouseMove:
-            _app->mouseMoveEvent(e.context, &e.mouseEvent);
+            {
+                QMouseEvent* mouseEvent = e.createMouseEvent();
+                _app->mouseMoveEvent(e.context, mouseEvent);
+                delete mouseEvent;
+            }
             break;
         case QVR_Event_MousePress:
-            _app->mousePressEvent(e.context, &e.mouseEvent);
+            {
+                QMouseEvent* mouseEvent = e.createMouseEvent();
+                _app->mousePressEvent(e.context, mouseEvent);
+                delete mouseEvent;
+            }
             break;
         case QVR_Event_MouseRelease:
-            _app->mouseReleaseEvent(e.context, &e.mouseEvent);
+            {
+                QMouseEvent* mouseEvent = e.createMouseEvent();
+                _app->mouseReleaseEvent(e.context, mouseEvent);
+                delete mouseEvent;
+            }
             break;
         case QVR_Event_MouseDoubleClick:
-            _app->mouseDoubleClickEvent(e.context, &e.mouseEvent);
+            {
+                QMouseEvent* mouseEvent = e.createMouseEvent();
+                _app->mouseDoubleClickEvent(e.context, mouseEvent);
+                delete mouseEvent;
+            }
             break;
         case QVR_Event_Wheel:
-            _app->wheelEvent(e.context, &e.wheelEvent);
+            {
+                QWheelEvent* wheelEvent = e.createWheelEvent();
+                _app->wheelEvent(e.context, wheelEvent);
+                delete wheelEvent;
+            }
             break;
         case QVR_Event_DeviceButtonPress:
             _app->deviceButtonPressEvent(&e.deviceEvent);

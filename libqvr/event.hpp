@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021, 2022
+ * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,7 +28,6 @@
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QWheelEvent>
-#include <QMatrix4x4>
 
 #include "device.hpp"
 #include "rendercontext.hpp"
@@ -52,16 +52,44 @@ class QVREvent
 public:
     QVREventType type;
     QVRRenderContext context;
-    QKeyEvent keyEvent;
-    QMouseEvent mouseEvent;
-    QWheelEvent wheelEvent;
     QVRDeviceEvent deviceEvent;
+    /* for QKeyEvent: */
+    QEvent::Type keyEventType;
+    int keyEventKey;
+    Qt::KeyboardModifiers keyEventModifiers;
+    quint32 keyEventNativeScanCode;
+    quint32 keyEventNativeVirtualKey;
+    quint32 keyEventNativeModifiers;
+    QString keyEventText;
+    bool keyEventAutorepeat;
+    quint16 keyEventCount;
+    /* for QMouseEvent: */
+    QEvent::Type mouseEventType;
+    QPointF mouseEventPosition;
+    QPointF mouseEventScenePosition;
+    QPointF mouseEventGlobalPosition;
+    Qt::MouseButton mouseEventButton;
+    Qt::MouseButtons mouseEventButtons;
+    Qt::KeyboardModifiers mouseEventModifiers;
+    /* for QWheelEvent: */
+    QPointF wheelEventPosition;
+    QPointF wheelEventGlobalPosition;
+    QPoint wheelEventPixelDelta;
+    QPoint wheelEventAngleDelta;
+    Qt::MouseButtons wheelEventButtons;
+    Qt::KeyboardModifiers wheelEventModifiers;
+    Qt::ScrollPhase wheelEventPhase;
+    bool wheelEventInverted;
 
     QVREvent();
+    QVREvent(QVREventType t, const QVRDeviceEvent& e);
     QVREvent(QVREventType t, const QVRRenderContext& c, const QKeyEvent& e);
     QVREvent(QVREventType t, const QVRRenderContext& c, const QMouseEvent& e);
     QVREvent(QVREventType t, const QVRRenderContext& c, const QWheelEvent& e);
-    QVREvent(QVREventType t, const QVRDeviceEvent& e);
+
+    QKeyEvent* createKeyEvent() const;
+    QMouseEvent* createMouseEvent() const;
+    QWheelEvent* createWheelEvent() const;
 };
 
 QDataStream &operator<<(QDataStream& ds, const QVREvent& e);
