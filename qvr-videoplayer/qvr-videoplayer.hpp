@@ -56,8 +56,8 @@ public:
     };
 
     StereoLayout stereoLayout;
-    QImage image;
     float aspectRatio;
+    QImage image;
 
     VideoFrame();
 

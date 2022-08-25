@@ -38,7 +38,7 @@
 
 
 VideoFrame::VideoFrame() :
-    stereoLayout(Layout_Unknown), image(), aspectRatio(0.0f)
+    stereoLayout(Layout_Unknown), aspectRatio(0.0f), image()
 {
 }
 
@@ -62,16 +62,27 @@ void VideoFrame::update(enum StereoLayout sl, const QVideoFrame& frame)
 QDataStream &operator<<(QDataStream& ds, const VideoFrame& f)
 {
     ds << static_cast<int>(f.stereoLayout);
-    ds << f.image;
+    ds << f.aspectRatio;
+    ds << f.image.width();
+    ds << f.image.height();
+    ds << f.image.sizeInBytes();
+    ds.writeRawData(reinterpret_cast<const char*>(f.image.bits()), f.image.sizeInBytes());
     return ds;
 }
 
 QDataStream &operator>>(QDataStream& ds, VideoFrame& f)
 {
-    int tmp;
-    ds >> tmp;
-    f.stereoLayout = static_cast<enum VideoFrame::StereoLayout>(tmp);
-    ds >> f.image;
+    int sl, w, h;
+    qsizetype size;
+    ds >> sl;
+    f.stereoLayout = static_cast<enum VideoFrame::StereoLayout>(sl);
+    ds >> f.aspectRatio;
+    ds >> w;
+    ds >> h;
+    ds >> size;
+    f.image = QImage(w, h, QImage::Format_RGB30);
+    Q_ASSERT(size == f.image.sizeInBytes());
+    ds.readRawData(reinterpret_cast<char*>(f.image.bits()), size);
     return ds;
 }
 
