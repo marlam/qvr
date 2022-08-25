@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017, 2018, 2019, 2020, 2021
+ * Copyright (C) 2017, 2018, 2019, 2020, 2021, 2022
  * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
@@ -28,9 +28,7 @@
 #include <QCommandLineParser>
 #include <QKeyEvent>
 #include <QMediaPlayer>
-#include <QMediaPlaylist>
-#include <QAbstractVideoSurface>
-#include <QVideoSurfaceFormat>
+#include <QAudioOutput>
 #include <QFileInfo>
 #include <QTemporaryFile>
 
@@ -39,97 +37,32 @@
 #include "qvr-videoplayer.hpp"
 
 
-/*
- * The VideoFrame class.
- *
- * This class represents one video frame, in a form that allows serialization
- * to a QDataStream (for multi-process support).
- * On the main process, copying the frame data is avoided.
- */
-
-class VideoFrame
+VideoFrame::VideoFrame() :
+    stereoLayout(Layout_Unknown), image(), aspectRatio(0.0f)
 {
-public:
-    enum StereoLayout {
-        Layout_Unknown,         // unknown; needs to be guessed
-        Layout_Mono,            // monoscopic video
-        Layout_Top_Bottom,      // stereoscopic video, left eye top, right eye bottom
-        Layout_Top_Bottom_Half, // stereoscopic video, left eye top, right eye bottom, both half height
-        Layout_Bottom_Top,      // stereoscopic video, left eye bottom, right eye top
-        Layout_Bottom_Top_Half, // stereoscopic video, left eye bottom, right eye top, both half height
-        Layout_Left_Right,      // stereoscopic video, left eye left, right eye right
-        Layout_Left_Right_Half, // stereoscopic video, left eye left, right eye right, both half width
-        Layout_Right_Left,      // stereoscopic video, left eye right, right eye left
-        Layout_Right_Left_Half  // stereoscopic video, left eye right, right eye left, both half width
-    };
+}
 
-    QVideoFrame::PixelFormat pixelFormat;
-    QVideoSurfaceFormat::YCbCrColorSpace yCbCrColorSpace;
-    QSize size;
-    float aspectRatio;
-    StereoLayout stereoLayout;
-    QByteArray data;
-
-    VideoFrame() :
-        pixelFormat(QVideoFrame::Format_Invalid),
-        yCbCrColorSpace(QVideoSurfaceFormat::YCbCr_Undefined),
-        size(-1, -1),
-        aspectRatio(0.0f),
-        stereoLayout(Layout_Unknown),
-        data()
-    {
+void VideoFrame::update(enum StereoLayout sl, const QVideoFrame& frame)
+{
+    bool valid = (frame.pixelFormat() != QVideoFrameFormat::Format_Invalid);
+    if (valid) {
+        stereoLayout = sl;
+        image = frame.toImage();
+        image.convertTo(QImage::Format_RGB30);
+        aspectRatio = float(image.width()) / image.height();
+    } else {
+        // Synthesize a black frame
+        stereoLayout = Layout_Mono;
+        image = QImage(1, 1, QImage::Format_RGB30);
+        image.fill(0);
+        aspectRatio = 1.0f;
     }
-
-    // Map a QVideoFrame to this video frame; see also unmap()
-    void map(enum StereoLayout sl, const QVideoSurfaceFormat& format, const QVideoFrame& frame)
-    {
-        bool valid = (frame.pixelFormat() != QVideoFrame::Format_Invalid);
-        if (valid) {
-            // This assignment does not copy the frame data:
-            _mapFrame = frame;
-            if (!_mapFrame.map(QAbstractVideoBuffer::ReadOnly))
-                valid = false;
-        }
-        if (valid) {
-            pixelFormat = frame.pixelFormat();
-            yCbCrColorSpace = format.yCbCrColorSpace();
-            size = frame.size();
-            aspectRatio = static_cast<float>(size.width() * format.pixelAspectRatio().width())
-                / static_cast<float>(size.height() * format.pixelAspectRatio().height());
-            stereoLayout = sl;
-            // This assignment does not copy the frame data:
-            data.setRawData(reinterpret_cast<const char*>(_mapFrame.bits()), _mapFrame.mappedBytes());
-        } else {
-            // Synthesize a black frame
-            pixelFormat = QVideoFrame::Format_ARGB32;
-            yCbCrColorSpace = QVideoSurfaceFormat::YCbCr_Undefined;
-            size = QSize(1, 1);
-            aspectRatio = 1.0f;
-            stereoLayout = Layout_Mono;
-            static const char zeroes[4] = { 0, 0, 0, 0 };
-            data.setRawData(zeroes, 4);
-        }
-    }
-
-    // Unmap this video frame (must be called if map() was called)
-    void unmap()
-    {
-        if (_mapFrame.isMapped())
-            _mapFrame.unmap();
-    }
-
-private:
-    QVideoFrame _mapFrame;
-};
+}
 
 QDataStream &operator<<(QDataStream& ds, const VideoFrame& f)
 {
-    ds << static_cast<int>(f.pixelFormat);
-    ds << static_cast<int>(f.yCbCrColorSpace);
-    ds << f.size;
-    ds << f.aspectRatio;
     ds << static_cast<int>(f.stereoLayout);
-    ds << f.data;
+    ds << f.image;
     return ds;
 }
 
@@ -137,124 +70,65 @@ QDataStream &operator>>(QDataStream& ds, VideoFrame& f)
 {
     int tmp;
     ds >> tmp;
-    f.pixelFormat = static_cast<QVideoFrame::PixelFormat>(tmp);
-    ds >> tmp;
-    f.yCbCrColorSpace = static_cast<QVideoSurfaceFormat::YCbCrColorSpace>(tmp);
-    ds >> f.size;
-    ds >> f.aspectRatio;
-    ds >> tmp;
     f.stereoLayout = static_cast<enum VideoFrame::StereoLayout>(tmp);
-    ds >> f.data;
+    ds >> f.image;
     return ds;
 }
 
-/*
- * The VideoSurface class.
- *
- * This class is used by QMediaPlayer as a video surface, i.e. to output video
- * frames.
- * It specifies the video frame formats we can handle, and maps the incoming
- * QVideoFrame data to our video frame representation.
- */
-
-class VideoSurface : public QAbstractVideoSurface
+VideoSink::VideoSink(VideoFrame* frame, bool* frameIsNew) :
+    _frame(frame), _frameIsNew(frameIsNew), _stereoLayout(VideoFrame::Layout_Unknown)
 {
-private:
-    VideoFrame* _frame; // target video frame
-    bool *_frameIsNew;  // flag to set when the target frame represents a new frame
-    QVideoSurfaceFormat _format; // format with which playback is started
-    enum VideoFrame::StereoLayout _stereoLayout; // stereo layout of current media
+    connect(this, SIGNAL(videoFrameChanged(const QVideoFrame&)), this, SLOT(processNewFrame(const QVideoFrame&)));
+}
 
-public:
-    VideoSurface(VideoFrame* frame, bool* frameIsNew) :
-        _frame(frame), _frameIsNew(frameIsNew), _stereoLayout(VideoFrame::Layout_Unknown)
-    {
-    }
+void VideoSink::newUrl(const QUrl& url) // called whenever a new media URL is played
+{
+    // Reset stereo layout, then try to guess it from URL.
+    // This should be compatible to these conventions:
+    // http://bino3d.org/doc/bino.html#File-Name-Conventions-1
+    _stereoLayout = VideoFrame::Layout_Unknown;
+    QString fileName = url.fileName();
+    QString marker = fileName.left(fileName.lastIndexOf('.'));
+    marker = marker.right(marker.length() - marker.lastIndexOf('-') - 1);
+    marker = marker.toLower();
+    if (marker == "lr")
+        _stereoLayout = VideoFrame::Layout_Left_Right;
+    else if (marker == "rl")
+        _stereoLayout = VideoFrame::Layout_Right_Left;
+    else if (marker == "lrh" || marker == "lrq")
+        _stereoLayout = VideoFrame::Layout_Left_Right_Half;
+    else if (marker == "rlh" || marker == "rlq")
+        _stereoLayout = VideoFrame::Layout_Right_Left_Half;
+    else if (marker == "tb" || marker == "ab")
+        _stereoLayout = VideoFrame::Layout_Top_Bottom;
+    else if (marker == "bt" || marker == "ba")
+        _stereoLayout = VideoFrame::Layout_Bottom_Top;
+    else if (marker == "tbh" || marker == "abq")
+        _stereoLayout = VideoFrame::Layout_Top_Bottom_Half;
+    else if (marker == "bth" || marker == "baq")
+        _stereoLayout = VideoFrame::Layout_Bottom_Top_Half;
+    else if (marker == "2d")
+        _stereoLayout = VideoFrame::Layout_Mono;
+}
 
-    virtual QList<QVideoFrame::PixelFormat> supportedPixelFormats(
-            QAbstractVideoBuffer::HandleType type = QAbstractVideoBuffer::NoHandle) const
-    {
-        Q_UNUSED(type);
-        QList<QVideoFrame::PixelFormat> pixelFormats;
-        pixelFormats.append(QVideoFrame::Format_RGB24);
-        pixelFormats.append(QVideoFrame::Format_ARGB32);
-        pixelFormats.append(QVideoFrame::Format_RGB32);
-        pixelFormats.append(QVideoFrame::Format_RGB565);
-        pixelFormats.append(QVideoFrame::Format_BGRA32);
-        pixelFormats.append(QVideoFrame::Format_BGR32);
-        pixelFormats.append(QVideoFrame::Format_BGR24);
-        pixelFormats.append(QVideoFrame::Format_BGR565);
-        pixelFormats.append(QVideoFrame::Format_YUV420P);
-        pixelFormats.append(QVideoFrame::Format_YUV444);
-        pixelFormats.append(QVideoFrame::Format_AYUV444);
-        pixelFormats.append(QVideoFrame::Format_YV12);
-        // TODO: we could support more formats with a little bit more effort in
-        // preRenderProcess(), but probably RGB24 and YUV420P are the only
-        // ones that are really relevant.
-        return pixelFormats;
-    }
+void VideoSink::newMetaData(const QMediaMetaData& metaData)
+{
+    /* TODO: we should set the stereoscopic layout from media meta data */
+}
 
-    virtual bool present(const QVideoFrame &frame)
-    {
-        _frame->unmap();
-        _frame->map(_stereoLayout, _format, frame);
-        *_frameIsNew = true;
-        return true;
-    }
-
-    virtual bool start(const QVideoSurfaceFormat &format)
-    {
-        _format = format;
-        return QAbstractVideoSurface::start(format);
-    }
-
-    void newUrl(const QUrl& url) // called whenever a new media URL is played
-    {
-        // Reset stereo layout, then try to guess it from URL.
-        // This should be compatible to these conventions:
-        // http://bino3d.org/doc/bino.html#File-Name-Conventions-1
-        _stereoLayout = VideoFrame::Layout_Unknown;
-        QString fileName = url.fileName();
-        QString marker = fileName.left(fileName.lastIndexOf('.'));
-        marker = marker.right(marker.length() - marker.lastIndexOf('-') - 1);
-        marker = marker.toLower();
-        if (marker == "lr")
-            _stereoLayout = VideoFrame::Layout_Left_Right;
-        else if (marker == "rl")
-            _stereoLayout = VideoFrame::Layout_Right_Left;
-        else if (marker == "lrh" || marker == "lrq")
-            _stereoLayout = VideoFrame::Layout_Left_Right_Half;
-        else if (marker == "rlh" || marker == "rlq")
-            _stereoLayout = VideoFrame::Layout_Right_Left_Half;
-        else if (marker == "tb" || marker == "ab")
-            _stereoLayout = VideoFrame::Layout_Top_Bottom;
-        else if (marker == "bt" || marker == "ba")
-            _stereoLayout = VideoFrame::Layout_Bottom_Top;
-        else if (marker == "tbh" || marker == "abq")
-            _stereoLayout = VideoFrame::Layout_Top_Bottom_Half;
-        else if (marker == "bth" || marker == "baq")
-            _stereoLayout = VideoFrame::Layout_Bottom_Top_Half;
-        else if (marker == "2d")
-            _stereoLayout = VideoFrame::Layout_Mono;
-    }
-
-    void newMetaData(const QMediaObject* mediaObject) // called whenever new media is played
-    {
-        /* TODO: we should set the stereoscopic layout from media meta data, but unfortunately
-         * Qt does not give us access to the full media meta data, only to a small subset
-         * of predefined keys, which do not include information about stereoscopic layouts... */
-        Q_UNUSED(mediaObject);
-    }
-};
-
+void VideoSink::processNewFrame(const QVideoFrame& frame)
+{
+    _frame->update(_stereoLayout, frame);
+    *_frameIsNew = true;
+}
 
 static bool isGLES = false; // Is this OpenGL ES or plain OpenGL? Initialized in main().
 
-QVRVideoPlayer::QVRVideoPlayer(const Screen& screen, QMediaPlaylist* playlist) :
+QVRVideoPlayer::QVRVideoPlayer(const Screen& screen, const QUrl& source) :
     _wantExit(false),
-    _playlist(playlist),
+    _source(source),
     _player(NULL),
-    _surface(NULL),
+    _sink(NULL),
     _screen(screen),
     _frame(NULL),
     _frameIsNew(false)
@@ -305,7 +179,6 @@ bool QVRVideoPlayer::initProcess(QVRProcess* /* p */)
     initializeOpenGLFunctions();
 
     // FBO and PBO
-    glGenFramebuffers(1, &_fbo);
     glGenBuffers(1, &_pbo);
     glGenFramebuffers(1, &_viewFbo);
     if (_screen.isPlanar) {
@@ -320,22 +193,6 @@ bool QVRVideoPlayer::initProcess(QVRProcess* /* p */)
         glBindFramebuffer(GL_FRAMEBUFFER, _viewFbo);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depthTex, 0);
     }
-
-    // Color data textures
-    glGenTextures(1, &_rgbTex);
-    glBindTexture(GL_TEXTURE_2D, _rgbTex);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glGenTextures(3, _yuvTex);
-    glBindTexture(GL_TEXTURE_2D, _yuvTex[0]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glBindTexture(GL_TEXTURE_2D, _yuvTex[1]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glBindTexture(GL_TEXTURE_2D, _yuvTex[2]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // Quad geometry
     const float quadPositions[] = {
@@ -372,25 +229,11 @@ bool QVRVideoPlayer::initProcess(QVRProcess* /* p */)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadIndexBuf);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quadIndices), quadIndices, GL_STATIC_DRAW);
 
-    // Color conversion shader program
-    QString colorConvVertexShaderSource = readFile(":colorconv-vs.glsl");
-    QString colorConvFragmentShaderSource = readFile(":colorconv-fs.glsl");
-    if (isGLES) {
-        colorConvVertexShaderSource.prepend("#version 300 es\n");
-        colorConvFragmentShaderSource.prepend("#version 300 es\n");
-    } else {
-        colorConvVertexShaderSource.prepend("#version 330\n");
-        colorConvFragmentShaderSource.prepend("#version 330\n");
-    }
-    _colorConvPrg.addShaderFromSourceCode(QOpenGLShader::Vertex, colorConvVertexShaderSource);
-    _colorConvPrg.addShaderFromSourceCode(QOpenGLShader::Fragment, colorConvFragmentShaderSource);
-    _colorConvPrg.link();
-
     // Frame texture
     glGenTextures(1, &_frameTex);
     glBindTexture(GL_TEXTURE_2D, _frameTex);
     unsigned int black = 0;
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB10_A2, 1, 1, 0, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV, &black);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB10_A2, 1, 1, 0, GL_RGBA, GL_UNSIGNED_INT_10_10_10_2, &black);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -443,31 +286,29 @@ bool QVRVideoPlayer::initProcess(QVRProcess* /* p */)
     // Media Player
     _frame = new VideoFrame;
     if (QVRManager::processIndex() == 0) {
-        _surface = new VideoSurface(_frame, &_frameIsNew);
-        _player = new QMediaPlayer(NULL, QMediaPlayer::VideoSurface);
-        _player->connect(_player, static_cast<void(QMediaPlayer::*)(QMediaPlayer::Error)>(&QMediaPlayer::error),
-                [=](QMediaPlayer::Error error) {
-                    if (error != QMediaPlayer::NoError) {
-                        //qCritical("Error: %s", qPrintable(_player->errorString()));
-                        _wantExit = true;
-                    }
+        _sink = new VideoSink(_frame, &_frameIsNew);
+        _player = new QMediaPlayer;
+        _player->connect(_player, &QMediaPlayer::errorOccurred,
+                [=](QMediaPlayer::Error error, const QString& errorString) {
+                    qCritical("Error: %s", qPrintable(errorString));
+                    _wantExit = true;
                 });
-        _player->connect(_player, &QMediaPlayer::stateChanged,
-                [=](QMediaPlayer::State state) {
+        _player->connect(_player, &QMediaPlayer::playbackStateChanged,
+                [=](QMediaPlayer::PlaybackState state) {
                     if (state == QMediaPlayer::StoppedState)
                         _wantExit = true;
                 });
-        _player->connect(_player, &QMediaPlayer::currentMediaChanged,
-                [=](const QMediaContent &content) {
-                    _surface->newUrl(content.request().url());
+        _player->connect(_player, &QMediaPlayer::sourceChanged,
+                [=](const QUrl& source) {
+                    _sink->newUrl(source);
                 });
-        _player->connect(_player, &QMediaPlayer::metaDataAvailableChanged,
-                [=](bool available) {
-                    if (available)
-                        _surface->newMetaData(_player);
+        _player->connect(_player, &QMediaPlayer::metaDataChanged,
+                [=]() {
+                    _sink->newMetaData(_player->metaData());
                 });
-        _player->setVideoOutput(_surface);
-        _player->setPlaylist(_playlist);
+        _player->setVideoOutput(_sink);
+        _player->setAudioOutput(new QAudioOutput());
+        _player->setSource(_source);
         _player->play();
     }
 
@@ -478,189 +319,23 @@ void QVRVideoPlayer::preRenderProcess(QVRProcess* /* p */)
 {
     /* We need to get new frame data into a texture that is suitable for
      * rendering the screen: _frameTex.
-     * On the way, we typically need to convert the color space with a fragment
-     * shader. SRGB texture formats are not suitable since we cannot render
-     * into them from OpenGL ES. Therefore we need to store linear RGB. This
-     * means 8 bit per color is not enough since we would lose details in dark
-     * regions. GL_RGB10_A2 seems to be a good choice for _frameTex: we can
-     * render into that format, it is filterable, and 10 bit per color should be
-     * enough. */
+     * To make this easy, we have ensured in VideoFrame that the frame data is
+     * in format 2-10-10-10 per pixel, and we just upload that to _frameTex. */
     if (_frameIsNew && QVRManager::windowCount() > 0) {
-        // First copy the frame data into a PBO and from there into textures.
+        // First copy the frame data into a PBO and from there into the texture.
         // This is faster than using glTexImage2D() directly on the frame data.
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, _pbo);
-        glBufferData(GL_PIXEL_UNPACK_BUFFER, _frame->data.size(), NULL, GL_STREAM_DRAW);
-        void* ptr = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, _frame->data.size(),
+        glBufferData(GL_PIXEL_UNPACK_BUFFER, _frame->image.sizeInBytes(), NULL, GL_STREAM_DRAW);
+        void* ptr = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, _frame->image.sizeInBytes(),
                 GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
         Q_ASSERT(ptr);
-        std::memcpy(ptr, _frame->data.constData(), _frame->data.size());
+        std::memcpy(ptr, _frame->image.constBits(), _frame->image.sizeInBytes());
         glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-        const int w = _frame->size.width();
-        const int h = _frame->size.height();
-        int shaderInput; // 0=rgbTex.rgb, 1=yuvTex.rgb, 2=vec3(yuvTex[0].r,yuvTex[1].r,yuvTex[2].r)
-        switch (_frame->pixelFormat) {
-        case QVideoFrame::Format_RGB24:
-            glBindTexture(GL_TEXTURE_2D, _rgbTex);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_RED);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_BLUE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_ONE);
-            shaderInput = 0;
-            break;
-        case QVideoFrame::Format_BGR24:
-            glBindTexture(GL_TEXTURE_2D, _rgbTex);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_BLUE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_ONE);
-            shaderInput = 0;
-            break;
-        case QVideoFrame::Format_ARGB32:
-        case QVideoFrame::Format_RGB32:
-            glBindTexture(GL_TEXTURE_2D, _rgbTex);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_GREEN);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_BLUE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_ALPHA);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_ONE);
-            shaderInput = 0;
-            break;
-        case QVideoFrame::Format_BGRA32:
-        case QVideoFrame::Format_BGR32:
-            glBindTexture(GL_TEXTURE_2D, _rgbTex);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_BLUE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_ONE);
-            shaderInput = 0;
-            break;
-        case QVideoFrame::Format_RGB565:
-            glBindTexture(GL_TEXTURE_2D, _rgbTex);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB565, w, h, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, NULL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_RED);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_BLUE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_ONE);
-            shaderInput = 0;
-            break;
-        case QVideoFrame::Format_BGR565:
-            glBindTexture(GL_TEXTURE_2D, _rgbTex);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB565, w, h, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, NULL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_BLUE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_ONE);
-            shaderInput = 0;
-            break;
-        case QVideoFrame::Format_YUV444:
-            glBindTexture(GL_TEXTURE_2D, _yuvTex[0]);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_RED);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_BLUE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_ONE);
-            shaderInput = 1;
-            break;
-        case QVideoFrame::Format_AYUV444:
-            glBindTexture(GL_TEXTURE_2D, _yuvTex[0]);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_GREEN);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_BLUE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_ALPHA);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_ONE);
-            shaderInput = 1;
-            break;
-        case QVideoFrame::Format_YUV420P:
-            glBindTexture(GL_TEXTURE_2D, _yuvTex[0]);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, w, h, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_RED);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_ZERO);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_ZERO);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_ONE);
-            glBindTexture(GL_TEXTURE_2D, _yuvTex[1]);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, w / 2, h / 2, 0, GL_RED, GL_UNSIGNED_BYTE,
-                    reinterpret_cast<const GLvoid*>(w * h));
-            glBindTexture(GL_TEXTURE_2D, _yuvTex[2]);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, w / 2, h / 2, 0, GL_RED, GL_UNSIGNED_BYTE,
-                    reinterpret_cast<const GLvoid*>(w * h + w * h / 4));
-            shaderInput = 2;
-            break;
-        case QVideoFrame::Format_YV12:
-            glBindTexture(GL_TEXTURE_2D, _yuvTex[0]);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, w, h, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_RED);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_ZERO);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_ZERO);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_ONE);
-            glBindTexture(GL_TEXTURE_2D, _yuvTex[2]);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, w / 2, h / 2, 0, GL_RED, GL_UNSIGNED_BYTE,
-                    reinterpret_cast<const GLvoid*>(w * h));
-            glBindTexture(GL_TEXTURE_2D, _yuvTex[1]);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, w / 2, h / 2, 0, GL_RED, GL_UNSIGNED_BYTE,
-                    reinterpret_cast<const GLvoid*>(w * h + w * h / 4));
-            shaderInput = 2;
-            break;
-        default:
-            qFatal("unknown pixel format %d", _frame->pixelFormat);
-            break;
-        }
-        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+        const int w = _frame->image.width();
+        const int h = _frame->image.height();
         glBindTexture(GL_TEXTURE_2D, _frameTex);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB10_A2, w, h, 0, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV, NULL);
-        glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _frameTex, 0);
-        glDisable(GL_DEPTH_TEST);
-        glViewport(0, 0, w, h);
-        glUseProgram(_colorConvPrg.programId());
-        _colorConvPrg.setUniformValue("rgb_tex", 0);
-        _colorConvPrg.setUniformValue("yuv_tex0", 0);
-        _colorConvPrg.setUniformValue("yuv_tex1", 0);
-        _colorConvPrg.setUniformValue("yuv_tex2", 0);
-        _colorConvPrg.setUniformValue("shader_input", shaderInput);
-        if (shaderInput != 0) {
-            switch (_frame->yCbCrColorSpace) {
-            case QVideoSurfaceFormat::YCbCr_Undefined: // XXX: seems to be used when in doubt!?
-            case QVideoSurfaceFormat::YCbCr_BT601:
-                _colorConvPrg.setUniformValue("yuv_value_range_8bit_mpeg", true);
-                _colorConvPrg.setUniformValue("yuv_709", false);
-                break;
-            case QVideoSurfaceFormat::YCbCr_BT709:
-                _colorConvPrg.setUniformValue("yuv_value_range_8bit_mpeg", true);
-                _colorConvPrg.setUniformValue("yuv_709", true);
-                break;
-            case QVideoSurfaceFormat::YCbCr_xvYCC601:
-                _colorConvPrg.setUniformValue("yuv_value_range_8bit_mpeg", false);
-                _colorConvPrg.setUniformValue("yuv_709", false);
-                break;
-            case QVideoSurfaceFormat::YCbCr_xvYCC709:
-                _colorConvPrg.setUniformValue("yuv_value_range_8bit_mpeg", false);
-                _colorConvPrg.setUniformValue("yuv_709", true);
-                break;
-            default:
-                qFatal("unknown YCbCr color space");
-                break;
-            }
-        }
-        glActiveTexture(GL_TEXTURE0);
-        if (shaderInput == 0) {
-            glBindTexture(GL_TEXTURE_2D, _rgbTex);
-        } else {
-            glBindTexture(GL_TEXTURE_2D, _yuvTex[0]);
-            if (shaderInput == 2) {
-                _colorConvPrg.setUniformValue("yuv_tex1", 1);
-                _colorConvPrg.setUniformValue("yuv_tex2", 2);
-                glActiveTexture(GL_TEXTURE1);
-                glBindTexture(GL_TEXTURE_2D, _yuvTex[1]);
-                glActiveTexture(GL_TEXTURE2);
-                glBindTexture(GL_TEXTURE_2D, _yuvTex[2]);
-            }
-        }
-        glBindVertexArray(_quadVao);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB10_A2, w, h, 0, GL_BGRA, GL_UNSIGNED_INT_2_10_10_10_REV, NULL);
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
         glBindTexture(GL_TEXTURE_2D, _frameTex);
         if (!_screen.isPlanar)
             glGenerateMipmap(GL_TEXTURE_2D);
@@ -775,20 +450,6 @@ void QVRVideoPlayer::render(QVRWindow* /* w */,
     }
 }
 
-void QVRVideoPlayer::playlistNext()
-{
-    if (_playlist->currentIndex() < _playlist->mediaCount() - 1)
-        _playlist->next();
-}
-
-void QVRVideoPlayer::playlistPrevious()
-{
-    if (_playlist->currentIndex() > 0 && _player->position() < 5000)
-        _playlist->previous();
-    else
-        _playlist->setCurrentIndex(_playlist->currentIndex());
-}
-
 void QVRVideoPlayer::seek(qint64 milliseconds)
 {
     _player->setPosition(_player->position() + milliseconds);
@@ -796,32 +457,32 @@ void QVRVideoPlayer::seek(qint64 milliseconds)
 
 void QVRVideoPlayer::togglePause()
 {
-    if (_player->state() == QMediaPlayer::PlayingState)
+    if (_player->playbackState() == QMediaPlayer::PlayingState)
         _player->pause();
-    else if (_player->state() == QMediaPlayer::PausedState)
+    else if (_player->playbackState() == QMediaPlayer::PausedState)
         _player->play();
 }
 
 void QVRVideoPlayer::pause()
 {
-    if (_player->state() == QMediaPlayer::PlayingState)
+    if (_player->playbackState() == QMediaPlayer::PlayingState)
         _player->pause();
 }
 
 void QVRVideoPlayer::play()
 {
-    if (_player->state() == QMediaPlayer::PausedState)
+    if (_player->playbackState() == QMediaPlayer::PausedState)
         _player->play();
 }
 
 void QVRVideoPlayer::toggleMute()
 {
-    _player->setMuted(!_player->isMuted());
+    _player->audioOutput()->setMuted(!_player->audioOutput()->isMuted());
 }
 
 void QVRVideoPlayer::changeVolume(int offset)
 {
-    _player->setVolume(_player->volume() + offset);
+    _player->audioOutput()->setVolume(_player->audioOutput()->volume() + offset);
 }
 
 void QVRVideoPlayer::stop()
@@ -847,14 +508,6 @@ void QVRVideoPlayer::keyPressEvent(const QVRRenderContext& /* context */, QKeyEv
         break;
     case Qt::Key_MediaPlay:
         play();
-        break;
-    case Qt::Key_P:
-    case Qt::Key_MediaPrevious:
-        playlistPrevious();
-        break;
-    case Qt::Key_N:
-    case Qt::Key_MediaNext:
-        playlistNext();
         break;
     case Qt::Key_M:
     case Qt::Key_VolumeMute:
@@ -899,7 +552,7 @@ int main(int argc, char* argv[])
             QVector3D(-16.0f / 9.0f, -1.0f + QVRObserverConfig::defaultEyeHeight, -8.0f),
             QVector3D(+16.0f / 9.0f, -1.0f + QVRObserverConfig::defaultEyeHeight, -8.0f),
             QVector3D(-16.0f / 9.0f, +1.0f + QVRObserverConfig::defaultEyeHeight, -8.0f));
-    QMediaPlaylist playlist;
+    QUrl source;
     if (QVRManager::processIndex() == 0) {
         QCommandLineParser parser;
         parser.setApplicationDescription("QVR video player");
@@ -907,7 +560,6 @@ int main(int argc, char* argv[])
         parser.addVersionOption();
         parser.addPositionalArgument("video...", "Video file(s) to play.");
         parser.addOptions({
-                { { "l", "loop" }, "Loop playlist." },
                 { { "s", "screen" }, "Set screen geometry.", "screen" },
         });
         parser.process(app);
@@ -915,9 +567,8 @@ int main(int argc, char* argv[])
         if (posArgs.length() == 0) {
             QFile file(":logo.mp4");
             QTemporaryFile* tmpFile = QTemporaryFile::createNativeFile(file);
-            playlist.addMedia(QUrl::fromLocalFile(tmpFile->fileName()));
-            playlist.setPlaybackMode(QMediaPlaylist::Loop);
-        } else {
+            source = QUrl::fromLocalFile(tmpFile->fileName());
+        } else if (posArgs.length() == 1) {
             for (int i = 0; i < posArgs.length(); i++) {
                 QUrl url(posArgs[i]);
                 if (url.isRelative()) {
@@ -929,13 +580,11 @@ int main(int argc, char* argv[])
                         return 1;
                     }
                 }
-                qInfo("Adding to playlist: %s", qPrintable(url.toDisplayString()));
-                playlist.addMedia(url);
+                source = url;
             }
-        }
-        if (parser.isSet("loop")) {
-            qInfo("Setting playlist to loop mode");
-            playlist.setPlaybackMode(QMediaPlaylist::Loop);
+        } else {
+            qInfo("Only one video file can be played");
+            return 1;
         }
         if (parser.isSet("screen")) {
             QStringList paramList = parser.value("screen").split(',');
@@ -982,7 +631,7 @@ int main(int argc, char* argv[])
     QSurfaceFormat::setDefaultFormat(format);
 
     /* Then start QVR with your app */
-    QVRVideoPlayer qvrapp(screen, &playlist);
+    QVRVideoPlayer qvrapp(screen, source);
     if (!manager.init(&qvrapp)) {
         qCritical("Cannot initialize QVR manager");
         return 1;

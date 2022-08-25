@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2017, 2022 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,22 +33,12 @@ smooth in vec2 vtexcoord;
 
 layout(location = 0) out vec4 fcolor;
 
-float linear_to_nonlinear(float x)
-{
-    return (x <= 0.0031308 ? (x * 12.92) : (1.055 * pow(x, 1.0 / 2.4) - 0.055));
-}
-
 void main(void)
 {
     float vtx = view_offset_x + view_factor_x * vtexcoord.x;
     float vty = view_offset_y + view_factor_y * vtexcoord.y;
     float tx = (      vtx - 0.5 * (1.0 - relative_width )) / relative_width;
     float ty = (1.0 - vty - 0.5 * (1.0 - relative_height)) / relative_height;
-    vec3 linear_rgb = texture(tex, vec2(tx, ty)).rgb;
-    vec3 srgb = vec3(
-            linear_to_nonlinear(linear_rgb.r),
-            linear_to_nonlinear(linear_rgb.g),
-            linear_to_nonlinear(linear_rgb.b));
-
-    fcolor = vec4(srgb, 1.0);
+    vec3 rgb = texture(tex, vec2(tx, ty)).rgb;
+    fcolor = vec4(rgb, 1.0);
 }

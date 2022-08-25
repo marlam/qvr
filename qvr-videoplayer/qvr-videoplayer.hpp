@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2017 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2017, 2018, 2019, 2020, 2021, 2022
+ * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,40 +25,83 @@
 #ifndef QVR_VIDEOPLAYER_HPP
 #define QVR_VIDEOPLAYER_HPP
 
+#include <QUrl>
+#include <QVideoFrame>
+#include <QVideoSink>
+#include <QImage>
+#include <QMediaMetaData>
 #include <QOpenGLExtraFunctions>
 #include <QOpenGLShaderProgram>
-class QMediaPlaylist;
 class QMediaPlayer;
-class VideoSurface;
-class VideoFrame;
 
 #include <qvr/app.hpp>
 
 #include "screen.hpp"
 
 
+class VideoFrame
+{
+public:
+    enum StereoLayout {
+        Layout_Unknown,         // unknown; needs to be guessed
+        Layout_Mono,            // monoscopic video
+        Layout_Top_Bottom,      // stereoscopic video, left eye top, right eye bottom
+        Layout_Top_Bottom_Half, // stereoscopic video, left eye top, right eye bottom, both half height
+        Layout_Bottom_Top,      // stereoscopic video, left eye bottom, right eye top
+        Layout_Bottom_Top_Half, // stereoscopic video, left eye bottom, right eye top, both half height
+        Layout_Left_Right,      // stereoscopic video, left eye left, right eye right
+        Layout_Left_Right_Half, // stereoscopic video, left eye left, right eye right, both half width
+        Layout_Right_Left,      // stereoscopic video, left eye right, right eye left
+        Layout_Right_Left_Half  // stereoscopic video, left eye right, right eye left, both half width
+    };
+
+    StereoLayout stereoLayout;
+    QImage image;
+    float aspectRatio;
+
+    VideoFrame();
+
+    void update(enum StereoLayout sl, const QVideoFrame& frame);
+};
+
+class VideoSink : public QVideoSink
+{
+Q_OBJECT
+
+private:
+    VideoFrame* _frame; // target video frame
+    bool *_frameIsNew;  // flag to set when the target frame represents a new frame
+    enum VideoFrame::StereoLayout _stereoLayout; // stereo layout of current media
+
+public:
+    VideoSink(VideoFrame* frame, bool* frameIsNew);
+
+    void newUrl(const QUrl& url);
+
+    void newMetaData(const QMediaMetaData& metaData);
+
+public Q_SLOTS:
+    void processNewFrame(const QVideoFrame& frame);
+};
+
 class QVRVideoPlayer : public QVRApp, protected QOpenGLExtraFunctions
 {
 public:
-    QVRVideoPlayer(const Screen& screen, QMediaPlaylist* playlist);
+    QVRVideoPlayer(const Screen& screen, const QUrl& source);
 
 private:
     /* Data not directly relevant for rendering */
     bool _wantExit;
-    QMediaPlaylist* _playlist;
+    QUrl _source;
     QMediaPlayer* _player;
-    VideoSurface* _surface;
+    VideoSink* _sink;
 
     /* Static data for rendering, initialized on the main process */
     Screen _screen;
 
     /* Static data for rendering, initialized in initProcess() */
-    unsigned int _fbo;
     unsigned int _pbo;
-    unsigned int _rgbTex;
-    unsigned int _yuvTex[3];
     unsigned int _quadVao;
-    QOpenGLShaderProgram _colorConvPrg;
     unsigned int _viewFbo;
     unsigned int _depthTex;
     unsigned int _frameTex;
@@ -69,8 +113,6 @@ private:
     bool _frameIsNew;
 
     /* Interaction functions */
-    void playlistNext();
-    void playlistPrevious();
     void seek(qint64 milliseconds);
     void togglePause();
     void pause();
