@@ -7,7 +7,7 @@ It is based on Qt and requires no other libraries.
 
 QVR manages all graphics views required for a VR application, based on a
 configuration for the target VR environment, from multi-node multi-GPU render
-clusters to head-mounted displays such as the Oculus Rift. A simple change
+clusters to head-mounted displays such as the HTC Vive. A simple change
 of the configuration file makes the same application run on a completely
 different setup.
 
@@ -29,7 +29,7 @@ Supported VR hardware includes:
 
 - Custom large-scale VR labs with multiple GPUs and/or render clusters
 
-- HTC Vive and SteamVR with [OpenVR](https://github.com/ValveSoftware/openvr)
+- HTC Vive and SteamVR with [OpenVR](https://github.com/ValveSoftware/openvr) on both Linux and Windows
 
 - Oculus Rift with [Oculus SDK](https://www.oculus.com/)
 
