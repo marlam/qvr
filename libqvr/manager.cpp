@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021
+ * Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021, 2022
  * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
@@ -613,7 +613,7 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
             if (!_server->waitForClients())
                 return false;
             QVR_INFO("... all clients connected");
-            QVR_INFO("initializing child processes with %d bytes of static application data", _serializationBuffer.size());
+            QVR_INFO("initializing child processes with %lld bytes of static application data", _serializationBuffer.size());
             _server->sendCmdInit(_serializationBuffer);
             _server->flush();
         }
@@ -659,7 +659,7 @@ bool QVRManager::init(QVRApp* app, bool preferCustomNavigation)
         syncToVBlank = _syncToVBlank;
     format.setSwapInterval(syncToVBlank ? 1 : 0);
     QSurfaceFormat::setDefaultFormat(format);
-    QVR_INFO("process %s (index %d) creating %d windows",
+    QVR_INFO("process %s (index %d) creating %lld windows",
             qPrintable(processConfig().id()), _processIndex,
             processConfig().windowConfigs().size());
     for (int w = 0; w < processConfig().windowConfigs().size(); w++) {
@@ -882,27 +882,27 @@ void QVRManager::mainLoop()
             _serializationBuffer.resize(0);
             QDataStream serializationDataStream(&_serializationBuffer, QIODevice::WriteOnly);
             serializationDataStream << (*_devices[d]);
-            QVR_FIREHOSE("  ... sending device %d (%d bytes) to child processes", d, _serializationBuffer.size());
+            QVR_FIREHOSE("  ... sending device %d (%lld bytes) to child processes", d, _serializationBuffer.size());
             _server->sendCmdDevice(_serializationBuffer);
         }
         if (_haveWasdqeObservers) {
             _serializationBuffer.resize(0);
             QDataStream serializationDataStream(&_serializationBuffer, QIODevice::WriteOnly);
             serializationDataStream << _wasdqeMouseProcessIndex << _wasdqeMouseWindowIndex << _wasdqeMouseInitialized;
-            QVR_FIREHOSE("  ... sending wasdqe state (%d bytes) to child processes", _serializationBuffer.size());
+            QVR_FIREHOSE("  ... sending wasdqe state (%lld bytes) to child processes", _serializationBuffer.size());
             _server->sendCmdWasdqeState(_serializationBuffer);
         }
         for (int o = 0; o < _observers.size(); o++) {
             _serializationBuffer.resize(0);
             QDataStream serializationDataStream(&_serializationBuffer, QIODevice::WriteOnly);
             serializationDataStream << (*_observers[o]);
-            QVR_FIREHOSE("  ... sending observer %d (%d bytes) to child processes", o, _serializationBuffer.size());
+            QVR_FIREHOSE("  ... sending observer %d (%lld bytes) to child processes", o, _serializationBuffer.size());
             _server->sendCmdObserver(_serializationBuffer);
         }
         _serializationBuffer.resize(0);
         QDataStream serializationDataStream(&_serializationBuffer, QIODevice::WriteOnly);
         _app->serializeDynamicData(serializationDataStream);
-        QVR_FIREHOSE("  ... sending dynamic application data (%d bytes) to child processes", _serializationBuffer.size());
+        QVR_FIREHOSE("  ... sending dynamic application data (%lld bytes) to child processes", _serializationBuffer.size());
         _server->sendCmdRender(_near, _far, _serializationBuffer);
         _server->flush();
         QVR_FIREHOSE("  ... rendering commands are on their way");
@@ -999,7 +999,7 @@ void QVRManager::childLoop()
                 n++;
             }
             waitForBufferSwaps();
-            QVR_FIREHOSE("  ... sending command 'sync' with %d events in %d bytes to main", n, _serializationBuffer.size());
+            QVR_FIREHOSE("  ... sending command 'sync' with %d events in %lld bytes to main", n, _serializationBuffer.size());
             _client->sendCmdSync(n, _serializationBuffer);
             _client->flush();
             _fpsCounter++;
