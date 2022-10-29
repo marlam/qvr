@@ -2,6 +2,7 @@
  * Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021, 2022
  * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
+ * Copyright (C) 2022 Martin Lambers <marlam@marlam.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -178,7 +179,7 @@ QVRWindow::QVRWindow(QVRWindow* mainWindow, QVRObserver* observer, int windowInd
     //   would cause libqvr to sync to the window's swap rate instead of
     //   the faster HMD swap rate
     // Note that OpenGL ES does not seem to support single buffering.
-    if (QOpenGLContext::openGLModuleType() != QOpenGLContext::LibGLES
+    if (format.renderableType() != QSurfaceFormat::OpenGLES
             && (isMain()
                 || config().outputMode() == QVR_Output_Oculus
                 || config().outputMode() == QVR_Output_OpenVR)) {
@@ -505,9 +506,10 @@ bool QVRWindow::initGL()
             _outputPrg = new QOpenGLShaderProgram(this);
             QString vertexShaderSource = readFile(":/libqvr/output-vs.glsl");
             QString fragmentShaderSource = readFile(":/libqvr/output-fs.glsl");
-            if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES) {
+            if (QOpenGLContext::currentContext()->isOpenGLES()) {
                 vertexShaderSource.prepend("#version 300 es\n");
-                fragmentShaderSource.prepend("#version 300 es\n");
+                fragmentShaderSource.prepend("#version 300 es\n"
+                        "precision mediump float;\n");
             } else {
                 vertexShaderSource.prepend("#version 330\n");
                 fragmentShaderSource.prepend("#version 330\n");

@@ -9,7 +9,7 @@ The following steps are necessary:
   to use the QOpenGLExtraFunctions abstractions to work with both Desktop GL
   and GL ES. Even then, a few places in your code will need to differentiate
   between the two. You can use the following test for that purpose:
-  if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES) { ... }
+  if (QOpenGLContext::currentContext()->isOpenGLES) { ... }
 
 - Get the Google Android SDK and NDK, plus the Google VR SDK and NDK.
 

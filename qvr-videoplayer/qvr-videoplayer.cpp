@@ -2,6 +2,7 @@
  * Copyright (C) 2017, 2018, 2019, 2020, 2021, 2022
  * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
+ * Copyright (C) 2022 Martin Lambers <marlam@marlam.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -244,7 +245,7 @@ bool QVRVideoPlayer::initProcess(QVRProcess* /* p */)
     glGenTextures(1, &_frameTex);
     glBindTexture(GL_TEXTURE_2D, _frameTex);
     unsigned int black = 0;
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB10_A2, 1, 1, 0, GL_RGBA, GL_UNSIGNED_INT_10_10_10_2, &black);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB10_A2, 1, 1, 0, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV, &black);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -285,7 +286,8 @@ bool QVRVideoPlayer::initProcess(QVRProcess* /* p */)
     QString fragmentShaderSource = readFile(":fragment-shader.glsl");
     if (isGLES) {
         vertexShaderSource.prepend("#version 300 es\n");
-        fragmentShaderSource.prepend("#version 300 es\n");
+        fragmentShaderSource.prepend("#version 300 es\n"
+                "precision mediump float;\n");
     } else {
         vertexShaderSource.prepend("#version 330\n");
         fragmentShaderSource.prepend("#version 330\n");
@@ -331,7 +333,8 @@ void QVRVideoPlayer::preRenderProcess(QVRProcess* /* p */)
     /* We need to get new frame data into a texture that is suitable for
      * rendering the screen: _frameTex.
      * To make this easy, we have ensured in VideoFrame that the frame data is
-     * in format 2-10-10-10 per pixel, and we just upload that to _frameTex. */
+     * in format 2-10-10-10 per pixel, and we just upload that to _frameTex.
+     * But note that we need to swizzle in the shader (.bgr instead of .rgb). */
     if (_frameIsNew && QVRManager::windowCount() > 0) {
         // First copy the frame data into a PBO and from there into the texture.
         // This is faster than using glTexImage2D() directly on the frame data.
@@ -345,7 +348,7 @@ void QVRVideoPlayer::preRenderProcess(QVRProcess* /* p */)
         const int w = _frame->image.width();
         const int h = _frame->image.height();
         glBindTexture(GL_TEXTURE_2D, _frameTex);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB10_A2, w, h, 0, GL_BGRA, GL_UNSIGNED_INT_2_10_10_10_REV, NULL);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB10_A2, w, h, 0, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV, NULL);
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
         glBindTexture(GL_TEXTURE_2D, _frameTex);
         if (!_screen.isPlanar)

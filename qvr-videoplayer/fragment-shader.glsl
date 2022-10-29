@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2017, 2022 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
+ * Copyright (C) 2022 Martin Lambers <marlam@marlam.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +40,6 @@ void main(void)
     float vty = view_offset_y + view_factor_y * vtexcoord.y;
     float tx = (      vtx - 0.5 * (1.0 - relative_width )) / relative_width;
     float ty = (1.0 - vty - 0.5 * (1.0 - relative_height)) / relative_height;
-    vec3 rgb = texture(tex, vec2(tx, ty)).rgb;
+    vec3 rgb = texture(tex, vec2(tx, ty)).bgr;
     fcolor = vec4(rgb, 1.0);
 }

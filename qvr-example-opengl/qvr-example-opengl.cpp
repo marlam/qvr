@@ -2,6 +2,7 @@
  * Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021, 2022
  * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
+ * Copyright (C) 2022 Martin Lambers <marlam@marlam.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -262,7 +263,8 @@ bool QVRExampleOpenGL::initProcess(QVRProcess* /* p */)
     QString fragmentShaderSource  = readFile(":fragment-shader.glsl");
     if (isGLES) {
         vertexShaderSource.prepend("#version 300 es\n");
-        fragmentShaderSource.prepend("#version 300 es\n");
+        fragmentShaderSource.prepend("#version 300 es\n"
+                "precision mediump float;\n");
         fragmentShaderSource.replace("$WITH_NORMAL_MAPS", "0");
         fragmentShaderSource.replace("$WITH_SPEC_MAPS", "0");
     } else {
