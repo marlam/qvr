@@ -29,6 +29,10 @@ add_definitions(-DQT_DEPRECATED_WARNINGS)
 find_package(VRPN QUIET)
 find_package(OCULUS QUIET)
 find_package(OPENVR QUIET)
+#message(STATUS "Build QVR with Gamepad support: " ${Qt6Gamepad_FOUND})
+message(STATUS "Build QVR with VRPN support:   " ${VRPN_FOUND})
+message(STATUS "Build QVR with Oculus support: " ${OCULUS_FOUND})
+message(STATUS "Build QVR with OpenVR support: " ${OPENVR_FOUND})
 
 # The QVR library
 qt6_add_resources(QVRRESOURCES qvr.qrc)
