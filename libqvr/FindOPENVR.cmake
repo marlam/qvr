@@ -6,7 +6,7 @@
 # permitted in any medium without royalty provided the copyright notice and this
 # notice are preserved. This file is offered as-is, without any warranty.
 
-FIND_PATH(OPENVR_INCLUDE_DIR NAMES openvr.h)
+FIND_PATH(OPENVR_INCLUDE_DIR NAMES openvr/openvr.h)
 
 FIND_LIBRARY(OPENVR_LIBRARY NAMES openvr_api)
 

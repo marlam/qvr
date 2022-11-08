@@ -103,7 +103,7 @@ void QVRUpdateOculus();
 
 /* Global variables and functions for OpenVR (HTC Vive) support */
 #ifdef HAVE_OPENVR
-# include <openvr.h>
+# include <openvr/openvr.h>
 extern vr::IVRSystem* QVROpenVRSystem;
 extern unsigned int QVROpenVRControllerIndices[2];
 extern vr::VRControllerState_t QVROpenVRControllerStates[2];
