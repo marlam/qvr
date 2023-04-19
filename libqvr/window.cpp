@@ -2,7 +2,7 @@
  * Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021, 2022
  * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
- * Copyright (C) 2022 Martin Lambers <marlam@marlam.de>
+ * Copyright (C) 2022, 2023 Martin Lambers <marlam@marlam.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -851,8 +851,8 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
             h = QVRGoogleVRTexSize.height();
 #endif
         } else {
-            w = width() * config().renderResolutionFactor();
-            h = height() * config().renderResolutionFactor();
+            w = width() * devicePixelRatio() * config().renderResolutionFactor();
+            h = height() * devicePixelRatio() * config().renderResolutionFactor();
         }
         if (_textureWidths[i] != w || _textureHeights[i] != h) {
             bool wantSRGB = true;
@@ -928,7 +928,7 @@ void QVRWindow::renderOutput()
             _gl->glBindTexture(GL_TEXTURE_2D, tex1);
             _gl->glUniform1i(_gl->glGetUniformLocation(_outputPrg->programId(), "tex_r"), 1);
         }
-        _gl->glViewport(0, 0, width(), height());
+        _gl->glViewport(0, 0, width() * devicePixelRatio(), height() * devicePixelRatio());
         if (config().outputMode() == QVR_Output_Stereo) {
 #ifdef GL_BACK_LEFT
             GLenum buf = GL_BACK_LEFT;

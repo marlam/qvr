@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
+ * Copyright (C) 2023 Martin Lambers <marlam@marlam.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -118,7 +119,7 @@ void QVRExampleOutputPlugin::output(const QVRRenderContext& /* context */,
 {
     // This toy example plugin only uses the first view regardless of output
     // mode information in the render context.
-    glViewport(0, 0, _window->width(), _window->height());
+    glViewport(0, 0, _window->width() * _window->devicePixelRatio(), _window->height() * _window->devicePixelRatio());
     glUseProgram(_prg->programId());
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textures[0]);
