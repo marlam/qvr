@@ -163,44 +163,18 @@ int QVRSharedMemoryDevice::bytesAvailableForWriting() const
     return freeBytes - 1;
 }
 
-bool QVRSharedMemoryDevice::waitForReadyRead(int msecs)
+bool QVRSharedMemoryDevice::waitForReadyRead(int /* msecs */)
 {
-    if (msecs == 0) {
-        return (bytesAvailable() > 0);
-    } else if (msecs < 0) {
-        while (bytesAvailable() <= 0)
-            QThread::yieldCurrentThread();
-        return true;
-    } else {
-        QElapsedTimer t;
-        t.start();
-        int bA = bytesAvailable();
-        while (bA <= 0 && t.elapsed() < msecs) {
-            QThread::yieldCurrentThread();
-            bA = bytesAvailable();
-        }
-        return (bA > 0);
-    }
+    while (bytesAvailable() <= 0)
+        QThread::yieldCurrentThread();
+    return true;
 }
 
-bool QVRSharedMemoryDevice::waitForBytesWritten(int msecs)
+bool QVRSharedMemoryDevice::waitForBytesWritten(int /* msecs */)
 {
-    if (msecs == 0) {
-        return (bytesAvailableForWriting() > 0);
-    } else if (msecs < 0) {
-        while (bytesAvailableForWriting() <= 0)
-            QThread::yieldCurrentThread();
-        return true;
-    } else {
-        QElapsedTimer t;
-        t.start();
-        int bAFW = bytesAvailableForWriting();
-        while (bAFW <= 0 && t.elapsed() < msecs) {
-            QThread::yieldCurrentThread();
-            bAFW = bytesAvailableForWriting();
-        }
-        return (bAFW > 0);
-    }
+    while (bytesAvailableForWriting() <= 0)
+        QThread::yieldCurrentThread();
+    return true;
 }
 
 qint64 QVRSharedMemoryDevice::readData(char* data, qint64 maxSize)
