@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
+ * Copyright (C) 2024 Martin Lambers <marlam@marlam.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -408,7 +409,6 @@ bool QVRClient::start(const QString& serverName)
             delete socket;
             return false;
         }
-        socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
         QVR_INFO("connected to tcp server %s port %d", qPrintable(socket->peerName()), socket->peerPort());
         _tcpSocket = socket;
         int pI = QVRManager::processIndex();
@@ -711,7 +711,6 @@ bool QVRServer::waitForClients()
                 socket = _tcpServer->nextPendingConnection();
                 Q_ASSERT(socket);
             }
-            socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
             int clientProcessIndex;
             QVRReadData(socket, reinterpret_cast<char*>(&clientProcessIndex), sizeof(int));
             if (clientProcessIndex < 1 || clientProcessIndex >= QVRManager::processCount()) {
