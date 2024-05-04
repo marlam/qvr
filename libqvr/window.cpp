@@ -2,7 +2,7 @@
  * Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021, 2022
  * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
- * Copyright (C) 2022, 2023 Martin Lambers <marlam@marlam.de>
+ * Copyright (C) 2022, 2023, 2024 Martin Lambers <marlam@marlam.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -230,8 +230,6 @@ QVRWindow::QVRWindow(QVRWindow* mainWindow, QVRObserver* observer, int windowInd
 
     // Disable the close button, since we cannot really properly handle it.
     setFlags(flags() | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
-    // Set an icon
-    setIcon(QIcon(":/libqvr/cg-logo.png"));
 
     if (!isMain()) {
         QVR_DEBUG("    creating window %s...", qPrintable(config().id()));

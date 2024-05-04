@@ -1,6 +1,5 @@
 <RCC>
   <qresource prefix="/libqvr">
-    <file>cg-logo.png</file>
     <file>default-config-desktop.qvr</file>
     <file>default-config-oculus.qvr</file>
     <file>default-config-openvr.qvr</file>
