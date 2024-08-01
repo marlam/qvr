@@ -26,7 +26,7 @@ qt6_add_resources(RESOURCES resources.qrc)
 add_executable(qvr-videoplayer
     qvr-videoplayer.cpp qvr-videoplayer.hpp
     screen.cpp screen.hpp
-    tiny_obj_loader.cc tiny_obj_loader.h
+    tiny_obj_loader.h
     ${RESOURCES})
 set_target_properties(qvr-videoplayer PROPERTIES WIN32_EXECUTABLE TRUE)
 target_link_libraries(qvr-videoplayer ${QVR_LIBRARIES} Qt6::OpenGL Qt6::Multimedia)

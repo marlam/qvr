@@ -25,14 +25,32 @@
 #include <string>
 #include <utility>
 #include <map>
-#include <limits>
 
 #include <QDataStream>
 
 #include "screen.hpp"
 
+#define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
+
+Screen::Screen()
+{
+    positions = {
+        -1.0f, +1.0f, 0.0f,
+        +1.0f, +1.0f, 0.0f,
+        +1.0f, -1.0f, 0.0f,
+        -1.0f, -1.0f, 0.0f
+    };
+    texCoords = {
+        0.0f, 1.0f,
+        1.0f, 1.0f,
+        1.0f, 0.0f,
+        0.0f, 0.0f
+    };
+    indices = { 0, 3, 1, 1, 3, 2 };
+    aspectRatio = 0.0f;
+}
 
 Screen::Screen(const QVector3D& bottomLeftCorner,
         const QVector3D& bottomRightCorner,
@@ -57,63 +75,87 @@ Screen::Screen(const QVector3D& bottomLeftCorner,
     aspectRatio = width / height;
 }
 
+/* Helper function to split a multiline TinyObjLoader message */
+static std::vector<std::string> tinyObjMsgToLines(const std::string& s)
+{
+    std::vector<std::string> lines;
+    size_t i = 0;
+    for (;;) {
+        size_t j = s.find_first_of('\n', i);
+        if (j < std::string::npos) {
+            lines.push_back(s.substr(i, j - i));
+            i = j + 1;
+        } else {
+            break;
+        }
+    }
+    return lines;
+}
+
 Screen::Screen(const QString& objFileName, float aspectRatio)
 {
-    std::string fileName(qPrintable(objFileName));
-    tinyobj::attrib_t attrib;
-    std::vector<tinyobj::shape_t> shapes;
-    std::vector<tinyobj::material_t> materials;
-    std::string errMsg;
-
-    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &errMsg, fileName.c_str(), NULL)) {
-        if (!errMsg.empty() && errMsg.back() == '\n')
-            errMsg.back() = '\0';
-        qCritical("Failed to load %s: %s", fileName.c_str(), errMsg.c_str());
+    const QString shapeName;
+    tinyobj::ObjReaderConfig conf;
+    conf.triangulate = true;
+    conf.vertex_color = false;
+    tinyobj::ObjReader reader;
+    reader.ParseFromFile(qPrintable(objFileName), conf);
+    if (reader.Warning().size() > 0) {
+        std::vector<std::string> lines = tinyObjMsgToLines(reader.Warning());
+        for (size_t i = 0; i < lines.size(); i++)
+            fprintf(stderr, "Warning: %s", lines[i].c_str());
+    }
+    if (!reader.Valid()) {
+        if (reader.Error().size() > 0) {
+            std::vector<std::string> lines = tinyObjMsgToLines(reader.Error());
+            for (size_t i = 0; i < lines.size(); i++)
+                fprintf(stderr, "Error: %s", lines[i].c_str());
+        } else {
+            fprintf(stderr, "Error: Unknown error");
+        }
         return;
     }
-    if (shapes.size() == 0) {
-        qCritical("No shapes in %s", fileName.c_str());
-        return;
-    }
 
-    bool ok = true;
-    std::map<std::pair<int, int>, unsigned short> indexPairMap;
-    for (size_t i = 0; ok && i < shapes.size(); i++) {
-        for (size_t j = 0; ok && j < shapes[i].mesh.indices.size(); j++) {
-            tinyobj::index_t index = shapes[i].mesh.indices[j];
-            int vertexIndex = index.vertex_index;
-            int texCoordIndex = index.texcoord_index;
-            if (texCoordIndex < 0) {
-                qCritical("Some shapes without texture coordinates in %s", fileName.c_str());
-                ok = false;
-                break;
-            }
-            std::pair<int, int> indexPair = std::make_pair(vertexIndex, texCoordIndex);
-            std::map<std::pair<int, int>, unsigned short>::iterator it = indexPairMap.find(indexPair);
-            if (it == indexPairMap.end()) {
-                unsigned short newIndex = indexPairMap.size();
-                if (newIndex == std::numeric_limits<unsigned short>::max()) {
-                    qCritical("More vertices than I can handle in %s", fileName.c_str());
-                    ok = false;
-                    break;
+    // Read all geometry (or at least the shape with the given name)
+    // and ignore all materials.
+    const tinyobj::attrib_t& attrib = reader.GetAttrib();
+    const std::vector<tinyobj::shape_t>& shapes = reader.GetShapes();
+    std::map<std::tuple<int, int>, unsigned int> indexTupleMap;
+    positions.clear();
+    texCoords.clear();
+    indices.clear();
+    bool haveTexcoords = true;
+    for (size_t s = 0; s < shapes.size(); s++) {
+        if (!shapeName.isEmpty() && shapeName != shapes[s].name.c_str())
+            continue;
+        const tinyobj::mesh_t& mesh = shapes[s].mesh;
+        for (size_t i = 0; i < mesh.indices.size(); i++) {
+            const tinyobj::index_t& index = mesh.indices[i];
+            int vi = index.vertex_index;
+            int ti = index.texcoord_index;
+            std::tuple<int, int> indexTuple = std::make_tuple(vi, ti);
+            auto it = indexTupleMap.find(indexTuple);
+            if (it == indexTupleMap.end()) {
+                unsigned int newIndex = indexTupleMap.size();
+                assert(vi >= 0);
+                positions.append(attrib.vertices[3 * vi + 0]);
+                positions.append(attrib.vertices[3 * vi + 1]);
+                positions.append(attrib.vertices[3 * vi + 2]);
+                if (ti < 0)
+                    haveTexcoords = false;
+                if (haveTexcoords) {
+                    texCoords.append(attrib.texcoords[2 * ti + 0]);
+                    texCoords.append(attrib.texcoords[2 * ti + 1]);
                 }
-                positions.push_back(attrib.vertices[3 * vertexIndex + 0]);
-                positions.push_back(attrib.vertices[3 * vertexIndex + 1]);
-                positions.push_back(attrib.vertices[3 * vertexIndex + 2]);
-                texCoords.push_back(attrib.texcoords[2 * texCoordIndex + 0]);
-                texCoords.push_back(attrib.texcoords[2 * texCoordIndex + 1]);
                 indices.push_back(newIndex);
-                indexPairMap.insert(std::make_pair(indexPair, newIndex));
+                indexTupleMap.insert(std::make_pair(indexTuple, newIndex));
             } else {
                 indices.push_back(it->second);
             }
         }
     }
-    if (!ok) {
-        positions.clear();
+    if (!haveTexcoords) {
         texCoords.clear();
-        indices.clear();
-        return;
     }
 
     this->aspectRatio = aspectRatio;

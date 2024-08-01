@@ -36,7 +36,7 @@ public:
     QVector<unsigned short> indices;
     float aspectRatio;
 
-    Screen() : aspectRatio(0.0f) {}
+    Screen();
 
     // Construct a planar screen.
     // The aspect ratio is inferred from the screen corners.
