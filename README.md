@@ -42,7 +42,7 @@ Supported VR hardware includes:
 Build and install the QVR library `libqvr` first. After that, you can build
 and try the example applications.
 
-See the [library documentation](https://marlam.de/qvr).
+See the [library documentation](https://marlam.de/qvr/libqvr-reference/).
 
 There is also an [introductory presentation](https://marlam.de/qvr/qvr-slides.pdf)
 explaining the concepts of libqvr and how to use it, and a
