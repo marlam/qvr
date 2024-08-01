@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016, 2017, 2018 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
+ * Copyright (C) 2024 Martin Lambers <marlam@marlam.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -92,49 +93,49 @@
  * - `device <id>`<br>
  *   Start a new device definition with the given unique id.
  * - `tracking <none|static|oculus|openvr|vprn>`<br>
- *   Use the specified tracking method for this device.
+ *   Use the specified tracking method for this device. Default: `none`.
  * - `buttons <none|static|gamepad|vprn|oculus|openvr>`<br>
- *   Use the specified method to query digital buttons for this device.
+ *   Use the specified method to query digital buttons for this device. Default: `none`.
  * - `analogs <none|static|gamepad|vrpn|oculus|openvr>`<br>
- *   Use the specified method to query analog joystick elements for this device.
+ *   Use the specified method to query analog joystick elements for this device. Default: `none`.
  *
  * Observer definition (see \a QVRObserver and \a QVRObserverConfig):
  * - `observer <id>`<br>
  *   Start a new observer definition with the given unique id.
  * - `navigation <stationary|vrpn|wasdqe|custom> [parameters...]`<br>
- *   Set the navigation type and parameters.
+ *   Set the navigation type and parameters. Default: `stationary`.
  * - `navigation_position <x> <y> <z>`<br>
- *   Set the initial navigation position.
+ *   Set the initial navigation position. Default: `0 0 0`.
  * - `navigation_forward <x> <y> <z>`<br>
- *   Set the initial navigation forward (or viewing) direction.
+ *   Set the initial navigation forward (or viewing) direction. Default: `0 0 -1`.
  * - `navigation_up <x> <y> <z>`<br>
- *   Set the initial navigation up direction.
+ *   Set the initial navigation up direction. Default: `0 1 0`.
  * - `tracking <stationary|vrpn|oculus|custom> [parameters...]`<br>
- *   Set the tracking type and parameters.
+ *   Set the tracking type and parameters. Default: `stationary`.
  * - `eye_distance <meters>`<br>
- *   Set the interpupillary distance.
+ *   Set the interpupillary distance in meters. Default: `0.064`.
  * - `tracking_position <x> <y> <z>`<br>
- *   Set the initial tracking position.
+ *   Set the initial tracking position. Default: `0 0 0`.
  * - `tracking_forward <x> <y> <z>`<br>
- *   Set the initial tracking forward (or viewing) direction.
+ *   Set the initial tracking forward (or viewing) direction. Default: `0 0 -1`.
  * - `tracking_up <x> <y> <z>`<br>
- *   Set the initial tracking up direction.
+ *   Set the initial tracking up direction. Default: `0 1 0`.
  *
  * Process definition (see \a QVRProcess and \a QVRProcessConfig):
  * - `process <id>`<br>
  *   Start a new process definition with the given unique id.
  * - `ipc <tcp-socket|local-socket|shared-memory|auto>`<br>
- *   Select the inter-process communication method.
+ *   Select the inter-process communication method. Default: `auto`.
  * - `address <ip-address>`<br>
- *   Set the IP address to bind the server to when using tcp-based inter-process communication.
+ *   Set the IP address to bind the server to when using tcp-based inter-process communication. Default: empty.
  * - `launcher <prg-and-args>`<br>
- *   Launcher commando used to start this process.
+ *   Launcher commando used to start this process. Default: empty.
  * - `display <name>`<br>
- *   Display that this process is connected to.
+ *   X11 Display that this process is connected to. Default: empty (which means the default display).
  * - `sync_to_vblank <true|false>`<br>
- *   Whether windows of this process are synchronized with the vertical refresh of the display.
+ *   Whether windows of this process are synchronized with the vertical refresh of the display. Default: `true`.
  * - `decoupled_rendering <true|false>`<br>
- *   Whether the rendering of this child process is decoupled from the main process.
+ *   Whether the rendering of this child process is decoupled from the main process. Default: `false`.
  *
  * Window definition (see \a QVRWindow and \a QVRWindowConfig):
  * - `window <id>`<br>
@@ -142,28 +143,28 @@
  * - `observer <id>`<br>
  *   Set the observer that this window provides a view for.
  * - `output <center|left|right|stereo|red_cyan|green_magenta|amber_blue|oculus|openvr|googlevr>`<br>
- *   Set the output mode. For center, left, right, and stereo, you can set an additional output plugin.
+ *   Set the output mode. For center, left, right, and stereo, you can set an additional output plugin. Default: `center`.
  * - `display_screen <screen>`<br>
- *   Select the Qt screen index on the Qt display that this process is connected to.<br>
+ *   Select the Qt screen index on the Qt display that this process is connected to. Default: `-1` (which means the default screen).
  * - `fullscreen <true|false>`
- *   Whether to show the window in fullscreen mode.<br>
+ *   Whether to show the window in fullscreen mode. Default: `false`.
  * - `position <x> <y>`<br>
- *   Set the window position on the Qt screen in pixels.
+ *   Set the window position on the Qt screen in pixels. Default: `-1 -1` (which means automatic positioning).
  * - `size <w> <h>`<br>
- *   Set the window size on the Qt screen in pixels.
+ *   Set the window size on the Qt screen in pixels. Default: `800 600`.
  * - `screen_is_fixed_to_observer <true|false>`<br>
  *   Whether the screen wall represented by this window is fixed to the observer,
- *   like a head-mounted display, or it is fixed in virtual world space.
+ *   like a head-mounted display, or it is fixed in virtual world space. Default: `true`.
  * - `screen_is_given_by_center <true|false>`<br>
  *   Whether the screen wall represented by this window is given by its center
- *   or by three of its corners.
+ *   or by three of its corners. Default: `true`.
  * - `screen_center <x> <y> <z>`<br>
- *   Set screen wall center coordinates.
+ *   Set screen wall center coordinates. Default: `0 0 -0.5`.
  * - `screen_wall <blx> <bly> <blz> <brx> <bry> <brz> <tlx> <tly> <tlz>`<br>
  *   Set the screen wall geometry defined by three points: bottom left corner, bottom
- *   right corner, and top left corner.
+ *   right corner, and top left corner. Default: `0 0 0 0 0 0 0 0 0`.
  * - `render_resolution_factor <factor>`<br>
- *   Set the render resolution factor.
+ *   Set the render resolution factor. Default: `1.0`.
  *
  * \section Implementation
  *
