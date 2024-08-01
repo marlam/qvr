@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
+ * Copyright (C) 2024 Martin Lambers <marlam@marlam.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,9 +35,8 @@ public:
     QVector<float> texCoords; // each texCoord consists of 2 floats
     QVector<unsigned short> indices;
     float aspectRatio;
-    bool isPlanar;
 
-    Screen() : aspectRatio(0.0f), isPlanar(false) {}
+    Screen() : aspectRatio(0.0f) {}
 
     // Construct a planar screen.
     // The aspect ratio is inferred from the screen corners.

@@ -637,7 +637,7 @@ void QVRWindow::screenWall(QVector3D& cornerBottomLeft, QVector3D& cornerBottomR
     }
 }
 
-const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsigned int textures[2])
+void QVRWindow::computeRenderContext(float n, float f)
 {
     Q_ASSERT(!isMain());
     Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
@@ -739,6 +739,13 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
         }
         _renderContext.setViewMatrix(i, viewMatrix);
     }
+}
+
+void QVRWindow::getTextures(unsigned int textures[2])
+{
+    Q_ASSERT(!isMain());
+    Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
+    Q_ASSERT(QOpenGLContext::currentContext() != _winContext);
 
     /* Get the textures that the application needs to render into */
 
@@ -886,8 +893,6 @@ const QVRRenderContext& QVRWindow::computeRenderContext(float n, float f, unsign
 #endif
 
     _gl->glBindTexture(GL_TEXTURE_2D, textureBinding2dBak);
-
-    return _renderContext;
 }
 
 void QVRWindow::renderOutput()

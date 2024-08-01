@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
+ * Copyright (C) 2024 Martin Lambers <marlam@marlam.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,7 +55,6 @@ Screen::Screen(const QVector3D& bottomLeftCorner,
     float width = (bottomRightCorner - bottomLeftCorner).length();
     float height = (topLeftCorner - bottomLeftCorner).length();
     aspectRatio = width / height;
-    isPlanar = true;
 }
 
 Screen::Screen(const QString& objFileName, float aspectRatio)
@@ -117,17 +117,16 @@ Screen::Screen(const QString& objFileName, float aspectRatio)
     }
 
     this->aspectRatio = aspectRatio;
-    isPlanar = false;
 }
 
 QDataStream &operator<<(QDataStream& ds, const Screen& s)
 {
-    ds << s.positions << s.texCoords << s.indices << s.aspectRatio << s.isPlanar;
+    ds << s.positions << s.texCoords << s.indices << s.aspectRatio;
     return ds;
 }
 
 QDataStream &operator>>(QDataStream& ds, Screen& s)
 {
-    ds >> s.positions >> s.texCoords >> s.indices >> s.aspectRatio >> s.isPlanar;
+    ds >> s.positions >> s.texCoords >> s.indices >> s.aspectRatio;
     return ds;
 }

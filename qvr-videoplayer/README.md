@@ -43,6 +43,11 @@ In case of a planar physical display screen, simply specify the 3D coordinates
 of its bottom left, bottom right, and top left corners:
 `qvr-videoplayer --screen=blx,bly,blz,brx,bry,brz,tlx,tly,tlz`
 
+If you have multiple output windows with physical coordinates that lie in the
+same plane, you can also use the special values `--screen=united` or
+`--screen=intersected` to use a virtual video screen that represents all those
+windows united / intersected.
+
 If you have a non-planar physical screen, e.g. a half-cylinder, you can model
 your physical screen geometry in an OBJ file, with appropriate texture
 coordinates. For such arbitrary video screen geometry, an aspect ratio needs to

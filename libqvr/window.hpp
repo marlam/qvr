@@ -2,6 +2,7 @@
  * Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021, 2022
  * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
+ * Copyright (C) 2023, 2024  Martin Lambers <marlam@marlam.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -89,7 +90,9 @@ private:
 
     // to be called by QVRManager from the main thread:
     bool isValid() const { return _isValid; }
-    const QVRRenderContext& computeRenderContext(float n, float f, unsigned int textures[2]);
+    void computeRenderContext(float n, float f);
+    QVRRenderContext& renderContext() { return _renderContext; }
+    void getTextures(unsigned int textures[2]);
     void exitGL();
     void renderToScreen();
     void asyncSwapBuffers();

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
+ * Copyright (C) 2024  Martin Lambers <marlam@marlam.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -71,6 +72,8 @@ private:
     QVRFrustum _frustum[2];
     QMatrix4x4 _viewMatrix[2];
     QMatrix4x4 _viewMatrixPure[2];
+    QVector3D _unitedScreenWall[3];
+    QVector3D _intersectedScreenWall[3];
 
     friend QDataStream &operator<<(QDataStream& ds, const QVRRenderContext& rc);
     friend QDataStream &operator>>(QDataStream& ds, QVRRenderContext& rc);
@@ -90,6 +93,12 @@ private:
     void setFrustum(int vp, const QVRFrustum f) { _frustum[vp] = f; }
     void setViewMatrix(int vp, const QMatrix4x4& vm) { _viewMatrix[vp] = vm; }
     void setViewMatrixPure(int vp, const QMatrix4x4& vmp) { _viewMatrixPure[vp] = vmp; }
+    // These functions are used internally by QVRManager when computing the global screen information.
+    friend class QVRManager;
+    void setUnitedScreenWall(const QVector3D& bl, const QVector3D& br, const QVector3D& tl)
+    { _unitedScreenWall[0] = bl; _unitedScreenWall[1]= br; _unitedScreenWall[2] = tl; }
+    void setIntersectedScreenWall(const QVector3D& bl, const QVector3D& br, const QVector3D& tl)
+    { _intersectedScreenWall[0] = bl; _intersectedScreenWall[1]= br; _intersectedScreenWall[2] = tl; }
 
 public:
     /*! \brief Constructor. */
@@ -135,6 +144,22 @@ public:
     const QMatrix4x4& viewMatrix(int view) const { Q_ASSERT(view >= 0 && view < viewCount()); return _viewMatrix[view]; }
     /*! \brief Returns the pure view matrix (i.e. in tracking space, without navigation) for rendering \a view. */
     const QMatrix4x4& viewMatrixPure(int view) const { Q_ASSERT(view >= 0 && view < viewCount()); return _viewMatrixPure[view]; }
+    /*! \brief Returns whether there is a global 2D screen wall that is united across all windows. */
+    bool haveUnitedScreenWall() const { return !_unitedScreenWall[0].isNull() || !_unitedScreenWall[1].isNull() || !_unitedScreenWall[2].isNull(); }
+    /*! \brief Returns the virtual world coordinates of the bottom left corner of the global screen wall united across all windows. */
+    QVector3D unitedScreenWallBottomLeft() const { return _unitedScreenWall[0]; }
+    /*! \brief Returns the virtual world coordinates of the bottom right corner of the global screen wall united across all windows. */
+    QVector3D unitedScreenWallBottomRight() const { return _unitedScreenWall[1]; }
+    /*! \brief Returns the virtual world coordinates of the top left corner of the global screen wall united across all windows. */
+    QVector3D unitedScreenWallTopLeft() const { return _unitedScreenWall[2]; }
+    /*! \brief Returns whether there is a global 2D screen wall that is intersected across all windows. */
+    bool haveIntersectedScreenWall() const { return !_intersectedScreenWall[0].isNull() || !_intersectedScreenWall[1].isNull() || !_intersectedScreenWall[2].isNull(); }
+    /*! \brief Returns the virtual world coordinates of the bottom left corner of the global screen wall intersected across all windows. */
+    QVector3D intersectedScreenWallBottomLeft() const { return _intersectedScreenWall[0]; }
+    /*! \brief Returns the virtual world coordinates of the bottom right corner of the global screen wall intersected across all windows. */
+    QVector3D intersectedScreenWallBottomRight() const { return _intersectedScreenWall[1]; }
+    /*! \brief Returns the virtual world coordinates of the top left corner of the global screen wall intersected across all windows. */
+    QVector3D intersectedScreenWallTopLeft() const { return _intersectedScreenWall[2]; }
 };
 
 QDataStream &operator<<(QDataStream& ds, const QVRRenderContext& rc);

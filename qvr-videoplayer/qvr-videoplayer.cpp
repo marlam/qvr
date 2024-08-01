@@ -2,7 +2,7 @@
  * Copyright (C) 2017, 2018, 2019, 2020, 2021, 2022
  * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
- * Copyright (C) 2022 Martin Lambers <marlam@marlam.de>
+ * Copyright (C) 2022, 2023, 2024  Martin Lambers <marlam@marlam.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -123,7 +123,7 @@ void VideoSink::newUrl(const QUrl& url) // called whenever a new media URL is pl
         _stereoLayout = VideoFrame::Layout_Mono;
 }
 
-void VideoSink::newMetaData(const QMediaMetaData& metaData)
+void VideoSink::newMetaData(const QMediaMetaData& /* metaData */)
 {
     /* TODO: we should set the stereoscopic layout from media meta data */
 }
@@ -136,11 +136,12 @@ void VideoSink::processNewFrame(const QVideoFrame& frame)
 
 static bool isGLES = false; // Is this OpenGL ES or plain OpenGL? Initialized in main().
 
-QVRVideoPlayer::QVRVideoPlayer(const Screen& screen, const QUrl& source) :
+QVRVideoPlayer::QVRVideoPlayer(ScreenType type, const Screen& screen, const QUrl& source) :
     _wantExit(false),
     _source(source),
     _player(NULL),
     _sink(NULL),
+    _screenType(type),
     _screen(screen),
     _frame(NULL),
     _frameIsNew(false)
@@ -149,12 +150,12 @@ QVRVideoPlayer::QVRVideoPlayer(const Screen& screen, const QUrl& source) :
 
 void QVRVideoPlayer::serializeStaticData(QDataStream& ds) const
 {
-    ds << _screen;
+    ds << _screenType << _screen;
 }
 
 void QVRVideoPlayer::deserializeStaticData(QDataStream& ds)
 {
-    ds >> _screen;
+    ds >> _screenType >> _screen;
 }
 
 void QVRVideoPlayer::serializeDynamicData(QDataStream& ds) const
@@ -193,53 +194,14 @@ bool QVRVideoPlayer::initProcess(QVRProcess* /* p */)
     // FBO and PBO
     glGenBuffers(1, &_pbo);
     glGenFramebuffers(1, &_viewFbo);
-    if (_screen.isPlanar) {
-        _depthTex = 0;
-    } else {
-        glGenTextures(1, &_depthTex);
-        glBindTexture(GL_TEXTURE_2D, _depthTex);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, 1, 1,
-                0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
-        glBindFramebuffer(GL_FRAMEBUFFER, _viewFbo);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depthTex, 0);
-    }
-
-    // Quad geometry
-    const float quadPositions[] = {
-        -1.0f, +1.0f, 0.0f,
-        +1.0f, +1.0f, 0.0f,
-        +1.0f, -1.0f, 0.0f,
-        -1.0f, -1.0f, 0.0f
-    };
-    const float quadTexCoords[] = {
-        0.0f, 1.0f,
-        1.0f, 1.0f,
-        1.0f, 0.0f,
-        0.0f, 0.0f
-    };
-    static const unsigned short quadIndices[] = {
-        0, 3, 1, 1, 3, 2
-    };
-    glGenVertexArrays(1, &_quadVao);
-    glBindVertexArray(_quadVao);
-    GLuint quadPositionBuf;
-    glGenBuffers(1, &quadPositionBuf);
-    glBindBuffer(GL_ARRAY_BUFFER, quadPositionBuf);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(quadPositions), quadPositions, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(0);
-    GLuint quadTexCoordBuf;
-    glGenBuffers(1, &quadTexCoordBuf);
-    glBindBuffer(GL_ARRAY_BUFFER, quadTexCoordBuf);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(quadTexCoords), quadTexCoords, GL_STATIC_DRAW);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(1);
-    GLuint quadIndexBuf;
-    glGenBuffers(1, &quadIndexBuf);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadIndexBuf);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quadIndices), quadIndices, GL_STATIC_DRAW);
+    glGenTextures(1, &_depthTex);
+    glBindTexture(GL_TEXTURE_2D, _depthTex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, 1, 1,
+            0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
+    glBindFramebuffer(GL_FRAMEBUFFER, _viewFbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depthTex, 0);
 
     // Frame texture
     glGenTextures(1, &_frameTex);
@@ -249,37 +211,12 @@ bool QVRVideoPlayer::initProcess(QVRProcess* /* p */)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    if (_screen.isPlanar) {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    } else {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        if (!isGLES)
-            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4.0f);
-    }
 
     // Screen geometry
     glGenVertexArrays(1, &_screenVao);
-    glBindVertexArray(_screenVao);
-    GLuint positionBuf;
-    glGenBuffers(1, &positionBuf);
-    glBindBuffer(GL_ARRAY_BUFFER, positionBuf);
-    glBufferData(GL_ARRAY_BUFFER, _screen.positions.size() * sizeof(float),
-            _screen.positions.constData(), GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(0);
-    GLuint texcoordBuf;
-    glGenBuffers(1, &texcoordBuf);
-    glBindBuffer(GL_ARRAY_BUFFER, texcoordBuf);
-    glBufferData(GL_ARRAY_BUFFER, _screen.texCoords.size() * sizeof(float),
-            _screen.texCoords.constData(), GL_STATIC_DRAW);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(1);
-    GLuint indexBuf;
-    glGenBuffers(1, &indexBuf);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuf);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-            _screen.indices.length() * sizeof(unsigned short),
-            _screen.indices.constData(), GL_STATIC_DRAW);
+    glGenBuffers(1, &_positionBuf);
+    glGenBuffers(1, &_texcoordBuf);
+    glGenBuffers(1, &_indexBuf);
 
     // Shader program
     QString vertexShaderSource = readFile(":vertex-shader.glsl");
@@ -302,7 +239,7 @@ bool QVRVideoPlayer::initProcess(QVRProcess* /* p */)
         _sink = new VideoSink(_frame, &_frameIsNew);
         _player = new QMediaPlayer;
         _player->connect(_player, &QMediaPlayer::errorOccurred,
-                [=](QMediaPlayer::Error error, const QString& errorString) {
+                [=](QMediaPlayer::Error /* error */, const QString& errorString) {
                     qCritical("Error: %s", qPrintable(errorString));
                     _wantExit = true;
                 });
@@ -350,9 +287,10 @@ void QVRVideoPlayer::preRenderProcess(QVRProcess* /* p */)
         glBindTexture(GL_TEXTURE_2D, _frameTex);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB10_A2, w, h, 0, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV, NULL);
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-        glBindTexture(GL_TEXTURE_2D, _frameTex);
-        if (!_screen.isPlanar)
-            glGenerateMipmap(GL_TEXTURE_2D);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        if (!isGLES)
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4.0f);
         _frameIsNew = false;
     }
 }
@@ -360,24 +298,49 @@ void QVRVideoPlayer::preRenderProcess(QVRProcess* /* p */)
 void QVRVideoPlayer::render(QVRWindow* /* w */,
         const QVRRenderContext& context, const unsigned int* textures)
 {
+    // Update screen
+    Screen screen;
+    switch (_screenType) {
+    case ScreenUnited:
+        screen = Screen(context.unitedScreenWallBottomLeft(), context.unitedScreenWallBottomRight(), context.unitedScreenWallTopLeft());
+        break;
+    case ScreenIntersected:
+        screen = Screen(context.intersectedScreenWallBottomLeft(), context.intersectedScreenWallBottomRight(), context.intersectedScreenWallTopLeft());
+        break;
+    case ScreenGeometry:
+        screen = _screen;
+        break;
+    }
+    // Update VAO
+    glBindVertexArray(_screenVao);
+    glBindBuffer(GL_ARRAY_BUFFER, _positionBuf);
+    glBufferData(GL_ARRAY_BUFFER, screen.positions.size() * sizeof(float),
+            screen.positions.constData(), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, _texcoordBuf);
+    glBufferData(GL_ARRAY_BUFFER, screen.texCoords.size() * sizeof(float),
+            screen.texCoords.constData(), GL_STATIC_DRAW);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(1);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuf);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+            screen.indices.length() * sizeof(unsigned short),
+            screen.indices.constData(), GL_STATIC_DRAW);
     for (int view = 0; view < context.viewCount(); view++) {
         // Get view dimensions
         int width = context.textureSize(view).width();
         int height = context.textureSize(view).height();
         // Set up framebuffer object to render into
-        if (!_screen.isPlanar) {
-            glBindTexture(GL_TEXTURE_2D, _depthTex);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height,
-                    0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
-            glEnable(GL_DEPTH_TEST);
-        } else {
-            glDisable(GL_DEPTH_TEST);
-        }
+        glBindTexture(GL_TEXTURE_2D, _depthTex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height,
+                0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
+        glEnable(GL_DEPTH_TEST);
         glBindFramebuffer(GL_FRAMEBUFFER, _viewFbo);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[view], 0);
         // Set up view
         glViewport(0, 0, width, height);
-        glClear(_screen.isPlanar ? GL_COLOR_BUFFER_BIT : (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         QMatrix4x4 projectionMatrix = context.frustum(view).toMatrix4x4();
         QMatrix4x4 viewMatrix = context.viewMatrix(view);
         // Set up stereo layout
@@ -438,10 +401,10 @@ void QVRVideoPlayer::render(QVRWindow* /* w */,
         // Set up correct aspect ratio on screen
         float relWidth = 1.0f;
         float relHeight = 1.0f;
-        if (_screen.aspectRatio < frameAspectRatio)
-            relHeight = _screen.aspectRatio / frameAspectRatio;
+        if (screen.aspectRatio < frameAspectRatio)
+            relHeight = screen.aspectRatio / frameAspectRatio;
         else
-            relWidth = frameAspectRatio / _screen.aspectRatio;
+            relWidth = frameAspectRatio / screen.aspectRatio;
         // Set up shader program
         glUseProgram(_prg.programId());
         _prg.setUniformValue("projection_model_view_matrix", projectionMatrix * viewMatrix);
@@ -454,13 +417,10 @@ void QVRVideoPlayer::render(QVRWindow* /* w */,
         // Render scene
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, _frameTex);
-        glBindVertexArray(_screenVao);
-        glDrawElements(GL_TRIANGLES, _screen.indices.size(), GL_UNSIGNED_SHORT, 0);
+        glDrawElements(GL_TRIANGLES, screen.indices.size(), GL_UNSIGNED_SHORT, 0);
         // Invalidate depth attachment (to help OpenGL ES performance)
-        if (!_screen.isPlanar) {
-            const GLenum fboInvalidations[] = { GL_DEPTH_ATTACHMENT };
-            glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, fboInvalidations);
-        }
+        const GLenum fboInvalidations[] = { GL_DEPTH_ATTACHMENT };
+        glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, fboInvalidations);
     }
 }
 
@@ -562,6 +522,7 @@ int main(int argc, char* argv[])
     isGLES = (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES);
 
     /* Process command line */
+    QVRVideoPlayer::ScreenType screenType = QVRVideoPlayer::ScreenGeometry;
     Screen screen(
             QVector3D(-16.0f / 9.0f, -1.0f + QVRObserverConfig::defaultEyeHeight, -8.0f),
             QVector3D(+16.0f / 9.0f, -1.0f + QVRObserverConfig::defaultEyeHeight, -8.0f),
@@ -601,33 +562,40 @@ int main(int argc, char* argv[])
             return 1;
         }
         if (parser.isSet("screen")) {
-            QStringList paramList = parser.value("screen").split(',');
-            float values[9];
-            if (paramList.length() == 9
-                    && 9 == std::sscanf(qPrintable(parser.value("screen")),
-                        "%f,%f,%f,%f,%f,%f,%f,%f,%f",
-                        values + 0, values + 1, values + 2,
-                        values + 3, values + 4, values + 5,
-                        values + 6, values + 7, values + 8)) {
-                screen = Screen(
-                        QVector3D(values[0], values[1], values[2]),
-                        QVector3D(values[3], values[4], values[5]),
-                        QVector3D(values[6], values[7], values[8]));
-            } else if (paramList.length() == 2) {
-                float ar;
-                float ar2[2];
-                if (2 == std::sscanf(qPrintable(paramList[0]), "%f:%f", ar2 + 0, ar2 + 1)) {
-                    ar = ar2[0] / ar2[1];
-                } else if (1 != std::sscanf(qPrintable(paramList[0]), "%f", &ar)) {
-                    qCritical("Invalid aspect ratio %s", qPrintable(paramList[0]));
+            if (parser.value("screen") == "united") {
+                screenType = QVRVideoPlayer::ScreenUnited;
+            } else if (parser.value("screen") == "intersected") {
+                screenType = QVRVideoPlayer::ScreenIntersected;
+            } else {
+                screenType = QVRVideoPlayer::ScreenGeometry;
+                QStringList paramList = parser.value("screen").split(',');
+                float values[9];
+                if (paramList.length() == 9
+                        && 9 == std::sscanf(qPrintable(parser.value("screen")),
+                            "%f,%f,%f,%f,%f,%f,%f,%f,%f",
+                            values + 0, values + 1, values + 2,
+                            values + 3, values + 4, values + 5,
+                            values + 6, values + 7, values + 8)) {
+                    screen = Screen(
+                            QVector3D(values[0], values[1], values[2]),
+                            QVector3D(values[3], values[4], values[5]),
+                            QVector3D(values[6], values[7], values[8]));
+                } else if (paramList.length() == 2) {
+                    float ar;
+                    float ar2[2];
+                    if (2 == std::sscanf(qPrintable(paramList[0]), "%f:%f", ar2 + 0, ar2 + 1)) {
+                        ar = ar2[0] / ar2[1];
+                    } else if (1 != std::sscanf(qPrintable(paramList[0]), "%f", &ar)) {
+                        qCritical("Invalid aspect ratio %s", qPrintable(paramList[0]));
+                        return 1;
+                    }
+                    screen = Screen(paramList[1], ar);
+                    if (screen.indices.size() == 0)
+                        return 1;
+                } else {
+                    qCritical("Invalid screen definition: %s", qPrintable(parser.value("screen")));
                     return 1;
                 }
-                screen = Screen(paramList[1], ar);
-                if (screen.indices.size() == 0)
-                    return 1;
-            } else {
-                qCritical("Invalid screen definition: %s", qPrintable(parser.value("screen")));
-                return 1;
             }
         } else {
             qInfo("Using default video screen");
@@ -645,7 +613,7 @@ int main(int argc, char* argv[])
     QSurfaceFormat::setDefaultFormat(format);
 
     /* Then start QVR with your app */
-    QVRVideoPlayer qvrapp(screen, source);
+    QVRVideoPlayer qvrapp(screenType, screen, source);
     if (!manager.init(&qvrapp)) {
         qCritical("Cannot initialize QVR manager");
         return 1;

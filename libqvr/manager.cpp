@@ -2,6 +2,7 @@
  * Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021, 2022
  * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
+ * Copyright (C) 2023, 2024  Martin Lambers <marlam@marlam.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1107,6 +1108,63 @@ void QVRManager::render()
 
     QVR_FIREHOSE("  ... preRenderProcess()");
     _app->preRenderProcess(_thisProcess);
+    // determine global 2D screens, if available
+    constexpr float tolerance = 1e-5f;
+    QRectF unitedScreenRect;
+    QRectF intersectedScreenRect;
+    float screenCommonZ;
+    bool haveCommonAxisAlignedScreen = true;
+    for (int w = 0; w < _windows.size(); w++) {
+        _windows[w]->computeRenderContext(_near, _far);
+        const QVRRenderContext& renderContext = _windows[w]->renderContext();
+        if (qAbs(renderContext.screenWallBottomLeft().z() - renderContext.screenWallBottomRight().z()) < tolerance
+                && qAbs(renderContext.screenWallBottomLeft().z() - renderContext.screenWallTopLeft().z()) < tolerance) {
+            if (w == 0) {
+                screenCommonZ = renderContext.screenWallBottomLeft().z();
+            } else {
+                if (qAbs(renderContext.screenWallBottomLeft().z() - screenCommonZ) >= tolerance) {
+                    haveCommonAxisAlignedScreen = false;
+                }
+            }
+        } else {
+            haveCommonAxisAlignedScreen = false;
+        }
+        if (haveCommonAxisAlignedScreen) {
+            if (qAbs(renderContext.screenWallBottomLeft().y() - renderContext.screenWallBottomRight().y()) >= tolerance
+                    || qAbs(renderContext.screenWallBottomLeft().x() - renderContext.screenWallTopLeft().x()) >= tolerance) {
+                haveCommonAxisAlignedScreen = false;
+            } else {
+                QRectF rect(
+                        renderContext.screenWallBottomLeft().x(),
+                        renderContext.screenWallBottomLeft().y(),
+                        renderContext.screenWallBottomRight().x() - renderContext.screenWallBottomLeft().x(),
+                        renderContext.screenWallTopLeft().y() - renderContext.screenWallBottomLeft().y());
+                if (w == 0) {
+                    unitedScreenRect = rect;
+                    intersectedScreenRect = rect;
+                } else {
+                    unitedScreenRect = unitedScreenRect.united(rect);
+                    intersectedScreenRect = intersectedScreenRect.intersected(rect);
+                }
+            }
+        }
+    }
+    QVector3D unitedScreenBottomLeft, unitedScreenBottomRight, unitedScreenTopLeft;
+    QVector3D intersectedScreenBottomLeft, intersectedScreenBottomRight, intersectedScreenTopLeft;
+    if (haveCommonAxisAlignedScreen) {
+        unitedScreenBottomLeft = QVector3D(unitedScreenRect.topLeft().x(), unitedScreenRect.topLeft().y(), screenCommonZ);
+        unitedScreenBottomRight = QVector3D(unitedScreenRect.topRight().x(), unitedScreenRect.topRight().y(), screenCommonZ);
+        unitedScreenTopLeft = QVector3D(unitedScreenRect.bottomLeft().x(), unitedScreenRect.bottomLeft().y(), screenCommonZ);
+        if (!intersectedScreenRect.isEmpty()) {
+            intersectedScreenBottomLeft = QVector3D(intersectedScreenRect.topLeft().x(), intersectedScreenRect.topLeft().y(), screenCommonZ);
+            intersectedScreenBottomRight = QVector3D(intersectedScreenRect.topRight().x(), intersectedScreenRect.topRight().y(), screenCommonZ);
+            intersectedScreenTopLeft = QVector3D(intersectedScreenRect.bottomLeft().x(), intersectedScreenRect.bottomLeft().y(), screenCommonZ);
+        }
+    }
+    for (int w = 0; w < _windows.size(); w++) {
+        _windows[w]->renderContext().setUnitedScreenWall(unitedScreenBottomLeft, unitedScreenBottomRight, unitedScreenTopLeft);
+        _windows[w]->renderContext().setIntersectedScreenWall(intersectedScreenBottomLeft, intersectedScreenBottomRight, intersectedScreenTopLeft);
+    }
     // render
     for (int w = 0; w < _windows.size(); w++) {
         if (!_wasdqeMouseInitialized) {
@@ -1122,8 +1180,9 @@ void QVRManager::render()
         QVR_FIREHOSE("  ... preRenderWindow(%d)", w);
         _app->preRenderWindow(_windows[w]);
         QVR_FIREHOSE("  ... render(%d)", w);
+        const QVRRenderContext& renderContext = _windows[w]->renderContext();
         unsigned int textures[2];
-        const QVRRenderContext& renderContext = _windows[w]->computeRenderContext(_near, _far, textures);
+        _windows[w]->getTextures(textures);
         for (int i = 0; i < renderContext.viewCount(); i++) {
             QVR_FIREHOSE("  ... view %d frustum: l=%g r=%g b=%g t=%g n=%g f=%g", i,
                     renderContext.frustum(i).leftPlane(),

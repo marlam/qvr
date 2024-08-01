@@ -2,6 +2,7 @@
  * Copyright (C) 2017, 2018, 2019, 2020, 2021, 2022
  * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
+ * Copyright (C) 2023, 2024  Martin Lambers <marlam@marlam.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -87,7 +88,13 @@ public Q_SLOTS:
 class QVRVideoPlayer : public QVRApp, protected QOpenGLExtraFunctions
 {
 public:
-    QVRVideoPlayer(const Screen& screen, const QUrl& source);
+    enum ScreenType {
+        ScreenUnited,           // global 2D united screen given by QVR
+        ScreenIntersected,      // global 2D intersected screen given by QVR
+        ScreenGeometry          // explicit geometry stored in _screen
+    };
+
+    QVRVideoPlayer(ScreenType type, const Screen& screen, const QUrl& source);
 
 private:
     /* Data not directly relevant for rendering */
@@ -97,15 +104,15 @@ private:
     VideoSink* _sink;
 
     /* Static data for rendering, initialized on the main process */
+    ScreenType _screenType;
     Screen _screen;
 
     /* Static data for rendering, initialized in initProcess() */
     unsigned int _pbo;
-    unsigned int _quadVao;
     unsigned int _viewFbo;
     unsigned int _depthTex;
     unsigned int _frameTex;
-    unsigned int _screenVao;
+    unsigned int _screenVao, _positionBuf, _texcoordBuf, _indexBuf;
     QOpenGLShaderProgram _prg;
 
     /* Dynamic data for rendering */
