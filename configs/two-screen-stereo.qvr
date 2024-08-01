@@ -1,0 +1,20 @@
+# Use this for a two-screen stereo setup, where you want the left view
+# to go on the first screen, and the right view to go on the second screen.
+
+observer obs
+    navigation stationary
+    tracking stationary
+
+process main
+    window left
+        observer obs
+        output left
+        display_screen 0
+	fullscreen true
+        screen_is_given_by_center true
+    window right
+        observer obs
+        output right
+        display_screen 1
+	fullscreen true
+        screen_is_given_by_center true
