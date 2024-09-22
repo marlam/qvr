@@ -147,19 +147,19 @@ public:
     /*! \brief Returns whether there is a global 2D screen wall that is united across all windows. */
     bool haveUnitedScreenWall() const { return !_unitedScreenWall[0].isNull() || !_unitedScreenWall[1].isNull() || !_unitedScreenWall[2].isNull(); }
     /*! \brief Returns the virtual world coordinates of the bottom left corner of the global screen wall united across all windows. */
-    QVector3D unitedScreenWallBottomLeft() const { return _unitedScreenWall[0]; }
+    const QVector3D& unitedScreenWallBottomLeft() const { return _unitedScreenWall[0]; }
     /*! \brief Returns the virtual world coordinates of the bottom right corner of the global screen wall united across all windows. */
-    QVector3D unitedScreenWallBottomRight() const { return _unitedScreenWall[1]; }
+    const QVector3D& unitedScreenWallBottomRight() const { return _unitedScreenWall[1]; }
     /*! \brief Returns the virtual world coordinates of the top left corner of the global screen wall united across all windows. */
-    QVector3D unitedScreenWallTopLeft() const { return _unitedScreenWall[2]; }
+    const QVector3D& unitedScreenWallTopLeft() const { return _unitedScreenWall[2]; }
     /*! \brief Returns whether there is a global 2D screen wall that is intersected across all windows. */
     bool haveIntersectedScreenWall() const { return !_intersectedScreenWall[0].isNull() || !_intersectedScreenWall[1].isNull() || !_intersectedScreenWall[2].isNull(); }
     /*! \brief Returns the virtual world coordinates of the bottom left corner of the global screen wall intersected across all windows. */
-    QVector3D intersectedScreenWallBottomLeft() const { return _intersectedScreenWall[0]; }
+    const QVector3D& intersectedScreenWallBottomLeft() const { return _intersectedScreenWall[0]; }
     /*! \brief Returns the virtual world coordinates of the bottom right corner of the global screen wall intersected across all windows. */
-    QVector3D intersectedScreenWallBottomRight() const { return _intersectedScreenWall[1]; }
+    const QVector3D& intersectedScreenWallBottomRight() const { return _intersectedScreenWall[1]; }
     /*! \brief Returns the virtual world coordinates of the top left corner of the global screen wall intersected across all windows. */
-    QVector3D intersectedScreenWallTopLeft() const { return _intersectedScreenWall[2]; }
+    const QVector3D& intersectedScreenWallTopLeft() const { return _intersectedScreenWall[2]; }
 };
 
 QDataStream &operator<<(QDataStream& ds, const QVRRenderContext& rc);
