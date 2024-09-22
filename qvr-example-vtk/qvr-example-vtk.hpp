@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
+ * Copyright (C) 2024 Martin Lambers <marlam@marlam.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,6 +42,7 @@ public:
 
 private:
     bool _wantExit;
+    bool _vtkIsInitialized;
     // VTK objects
     vtkSmartPointer<vtkRenderer> _vtkRenderer;
     vtkSmartPointer<vtkRenderWindow> _vtkRenderWindow;

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016, 2017 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
+ * Copyright (C) 2024 Martin Lambers <marlam@marlam.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,6 +42,7 @@
 
 QVRExampleVTK::QVRExampleVTK() :
     _wantExit(false),
+    _vtkIsInitialized(false),
     _vtkRenderer(vtkSmartPointer<vtkRenderer>::New()),
     _vtkRenderWindow(vtkSmartPointer<vtkRenderWindow>::New()),
     _vtkCamera(vtkSmartPointer<vtkExternalOpenGLCamera>::New())
@@ -68,48 +70,6 @@ bool QVRExampleVTK::initProcess(QVRProcess* /* p */)
             0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _fboDepthTex, 0);
 
-    // VTK: Pipeline. This one is a shortened version of the Marching Cubes example.
-    vtkSmartPointer<vtkSphereSource> sphereSource = vtkSmartPointer<vtkSphereSource>::New();
-    sphereSource->SetPhiResolution(20);
-    sphereSource->SetThetaResolution(20);
-    sphereSource->Update();
-    double bounds[6];
-    sphereSource->GetOutput()->GetBounds(bounds);
-    for (int i = 0; i < 6; i += 2) {
-        double range = bounds[i + 1] - bounds[i];
-        bounds[i] = bounds[i] - 0.1 * range;
-        bounds[i + 1] = bounds[i + 1] + 0.1 * range;
-    }
-    vtkSmartPointer<vtkVoxelModeller> voxelModeller = vtkSmartPointer<vtkVoxelModeller>::New();
-    voxelModeller->SetSampleDimensions(50, 50, 50);
-    voxelModeller->SetModelBounds(bounds);
-    voxelModeller->SetScalarTypeToFloat();
-    voxelModeller->SetMaximumDistance(0.1);
-    voxelModeller->SetInputConnection(sphereSource->GetOutputPort());
-    voxelModeller->Update();
-    vtkSmartPointer<vtkImageData> volume = vtkSmartPointer<vtkImageData>::New();
-    volume->DeepCopy(voxelModeller->GetOutput());
-    vtkSmartPointer<vtkMarchingCubes> surface = vtkSmartPointer<vtkMarchingCubes>::New();
-    surface->SetInputData(volume);
-    surface->ComputeNormalsOn();
-    surface->SetValue(0, 0.5);
-    vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    mapper->SetInputConnection(surface->GetOutputPort());
-    vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
-    actor->SetMapper(mapper);
-    double pos[3] = { 0.0, 1.5, -3.0 };
-    actor->SetPosition(pos);
-
-    // VTK: Renderer and render window
-    // Since we always only have to deal with one OpenGL context, we set up
-    // just one render window, and in render() reuse it as necessary.
-    _vtkRenderer->SetActiveCamera(_vtkCamera);
-    _vtkRenderer->AddActor(actor);
-    _vtkRenderWindow->AddRenderer(_vtkRenderer);
-    _vtkRenderWindow->InitializeFromCurrentContext();
-    _vtkRenderWindow->SwapBuffersOff();
-    _vtkRenderWindow->StereoRenderOff();
-
     return true;
 }
 
@@ -133,15 +93,60 @@ void QVRExampleVTK::render(QVRWindow* /* w */,
         glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[view], 0);
         // Set up VTK render window
+        if (!_vtkIsInitialized) {
+            /* We have to initialize VTK late, at this point, because it queries the current
+             * framebuffer attachment (GL_DRAW buffer), so we need to have a valid one. */
+            // VTK: Pipeline. This one is a shortened version of the Marching Cubes example.
+            vtkSmartPointer<vtkSphereSource> sphereSource = vtkSmartPointer<vtkSphereSource>::New();
+            sphereSource->SetPhiResolution(20);
+            sphereSource->SetThetaResolution(20);
+            sphereSource->Update();
+            double bounds[6];
+            sphereSource->GetOutput()->GetBounds(bounds);
+            for (int i = 0; i < 6; i += 2) {
+                double range = bounds[i + 1] - bounds[i];
+                bounds[i] = bounds[i] - 0.1 * range;
+                bounds[i + 1] = bounds[i + 1] + 0.1 * range;
+            }
+            vtkSmartPointer<vtkVoxelModeller> voxelModeller = vtkSmartPointer<vtkVoxelModeller>::New();
+            voxelModeller->SetSampleDimensions(50, 50, 50);
+            voxelModeller->SetModelBounds(bounds);
+            voxelModeller->SetScalarTypeToFloat();
+            voxelModeller->SetMaximumDistance(0.1);
+            voxelModeller->SetInputConnection(sphereSource->GetOutputPort());
+            voxelModeller->Update();
+            vtkSmartPointer<vtkImageData> volume = vtkSmartPointer<vtkImageData>::New();
+            volume->DeepCopy(voxelModeller->GetOutput());
+            vtkSmartPointer<vtkMarchingCubes> surface = vtkSmartPointer<vtkMarchingCubes>::New();
+            surface->SetInputData(volume);
+            surface->ComputeNormalsOn();
+            surface->SetValue(0, 0.5);
+            vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+            mapper->SetInputConnection(surface->GetOutputPort());
+            vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
+            actor->SetMapper(mapper);
+            double pos[3] = { 0.0, 1.5, -3.0 };
+            actor->SetPosition(pos);
+            // VTK: Renderer and render window
+            // Since we always only have to deal with one OpenGL context, we set up
+            // just one render window, and in render() reuse it as necessary.
+            _vtkRenderer->SetActiveCamera(_vtkCamera);
+            _vtkRenderer->AddActor(actor);
+            _vtkRenderWindow->AddRenderer(_vtkRenderer);
+            _vtkRenderWindow->InitializeFromCurrentContext();
+            _vtkRenderWindow->SwapBuffersOff();
+            _vtkRenderWindow->StereoRenderOff();
+            _vtkIsInitialized = true;
+        }
         _vtkRenderWindow->SetSize(width, height);
         // Set up VTK camera view and projection matrix
         double vtkMatrix[16];
         qMatrixToVtkMatrix(context.frustum(view).toMatrix4x4(), vtkMatrix);
-        _vtkCamera->SetProjectionTransformMatrix(vtkMatrix);
-        qMatrixToVtkMatrix(context.viewMatrix(view), vtkMatrix);
-        _vtkCamera->SetViewTransformMatrix(vtkMatrix);
-        // Render
-        _vtkRenderWindow->Render();
+            _vtkCamera->SetProjectionTransformMatrix(vtkMatrix);
+            qMatrixToVtkMatrix(context.viewMatrix(view), vtkMatrix);
+            _vtkCamera->SetViewTransformMatrix(vtkMatrix);
+            // Render
+            _vtkRenderWindow->Render();
     }
 }
 

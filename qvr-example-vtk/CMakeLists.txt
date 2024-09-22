@@ -19,7 +19,7 @@ project(qvr-example-vtk)
 
 find_package(Qt6 6.2.0 COMPONENTS OpenGL)
 find_package(QVR REQUIRED)
-find_package(VTK 6.2 REQUIRED COMPONENTS vtkRenderingExternal NO_MODULE)
+find_package(VTK 9.0 REQUIRED COMPONENTS vtkRenderingExternal vtkFiltersSources vtkImagingHybrid NO_MODULE)
 include(${VTK_USE_FILE})
 
 include_directories(${VTK_INCLUDE_DIRS} ${QVR_INCLUDE_DIRS})
