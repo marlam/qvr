@@ -13,7 +13,7 @@ process main
         screen_is_given_by_center true
     window 1
         observer o0
-        output center qvr-example-outputplugin ripple
+        output center libqvr-example-outputplugin.so ripple
         display_screen -1
         position 510 100
         size 400 400
@@ -21,7 +21,7 @@ process main
         screen_is_given_by_center true
     window 2
         observer o0
-        output center qvr-example-outputplugin edge
+        output center libqvr-example-outputplugin.so edge
         display_screen -1
         position 100 530
         size 400 400
@@ -29,7 +29,7 @@ process main
         screen_is_given_by_center true
     window 3
         observer o0
-        output center qvr-example-outputplugin ripple edge
+        output center libqvr-example-outputplugin.so ripple edge
         display_screen -1
         position 510 530
         size 400 400
