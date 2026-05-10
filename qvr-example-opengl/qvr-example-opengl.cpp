@@ -170,13 +170,17 @@ bool QVRExampleOpenGL::wantExit()
     return _wantExit;
 }
 
-// Helper function: read a complete file into a QString (without error checking)
+// Helper function: read a complete file into a QString
 static QString readFile(const char* fileName)
 {
+    QString s;
     QFile f(fileName);
-    f.open(QIODevice::ReadOnly);
-    QTextStream in(&f);
-    return in.readAll();
+    bool ok = f.open(QIODevice::ReadOnly);
+    if (ok) {
+        QTextStream in(&f);
+        s = in.readAll();
+    }
+    return s;
 }
 
 bool QVRExampleOpenGL::initProcess(QVRProcess* /* p */)

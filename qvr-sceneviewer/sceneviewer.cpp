@@ -149,12 +149,16 @@ unsigned int SceneViewer::createTex(
     return tex;
 }
 
-static QString readFile(const QString& filename)
+static QString readFile(const char* fileName)
 {
-    QFile f(filename);
-    f.open(QIODevice::ReadOnly);
-    QTextStream in(&f);
-    return in.readAll();
+    QString s;
+    QFile f(fileName);
+    bool ok = f.open(QIODevice::ReadOnly);
+    if (ok) {
+        QTextStream in(&f);
+        s = in.readAll();
+    }
+    return s;
 }
 
 bool SceneViewer::init(const aiScene* s, const QString& baseDirectory, const QMatrix4x4& transformationMatrix)
