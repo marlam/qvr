@@ -1,7 +1,7 @@
 # Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021, 2022
 # Computer Graphics Group, University of Siegen
 # Written by Martin Lambers <martin.lambers@uni-siegen.de>
-# Copyright (C) 2024
+# Copyright (C) 2024, 2025, 2026
 # Martin Lambers <marlam@marlam.de>
 #
 # Copying and distribution of this file, with or without modification, are
@@ -17,7 +17,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 project(qvr-example-openscenegraph)
 
-find_package(Qt6 6.2.0 COMPONENTS OpenGL)
+find_package(Qt6 6.9.0 COMPONENTS OpenGL)
 find_package(QVR REQUIRED)
 set(OpenSceneGraph_MARK_AS_ADVANCED ON)
 find_package(OpenSceneGraph REQUIRED COMPONENTS osgViewer osgDB)

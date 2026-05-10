@@ -1,7 +1,7 @@
 # Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021, 2022
 # Computer Graphics Group, University of Siegen
 # Written by Martin Lambers <martin.lambers@uni-siegen.de>
-# Copyright (C) 2024
+# Copyright (C) 2024, 2025, 2026
 # Martin Lambers <marlam@marlam.de>
 #
 # Copying and distribution of this file, with or without modification, are
@@ -23,8 +23,8 @@ set(QVR_SOVERSION 5)
 option(QVR_BUILD_DOCUMENTATION "Build API reference documentation (requires Doxygen)" OFF)
 
 # Required libraries
-#find_package(Qt6 6.2.0 COMPONENTS Gui OpenGL Network OPTIONAL_COMPONENTS Gamepad)
-find_package(Qt6 6.2.0 COMPONENTS Gui OpenGL Network)
+#find_package(Qt6 6.9.0 COMPONENTS Gui OpenGL Network OPTIONAL_COMPONENTS Gamepad)
+find_package(Qt6 6.9.0 COMPONENTS Gui OpenGL Network)
 add_definitions(-DQT_DEPRECATED_WARNINGS)
 
 # Optional libraries
