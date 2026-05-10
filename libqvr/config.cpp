@@ -209,7 +209,7 @@ void QVRConfig::createDefault(bool preferCustomNavigation, Autodetect autodetect
     if (autodetect.testFlag(AutodetectGamepads) && wantGamepads) {
 #ifdef HAVE_QGAMEPAD
         QVRDetectGamepads();
-        QVR_DEBUG("autodetected gamepads: %d", QVRGamepads.size());
+        QVR_DEBUG("autodetected gamepads: %d", int(QVRGamepads.size()));
         for (int i = 0; i < QVRGamepads.size(); i++) {
             int id = QVRGamepads[i];
             QVR_DEBUG("autodetected gamepad %d has device id %d", i, id);

@@ -23,8 +23,8 @@ set(QVR_SOVERSION 5)
 option(QVR_BUILD_DOCUMENTATION "Build API reference documentation (requires Doxygen)" OFF)
 
 # Required libraries
-#find_package(Qt6 6.9.0 COMPONENTS Gui OpenGL Network OPTIONAL_COMPONENTS Gamepad)
 find_package(Qt6 6.9.0 COMPONENTS Gui OpenGL Network)
+find_package(Qt6GamepadLegacy QUIET)
 add_definitions(-DQT_DEPRECATED_WARNINGS)
 
 # Optional libraries
@@ -57,9 +57,9 @@ set_target_properties(libqvr PROPERTIES OUTPUT_NAME qvr)
 set_target_properties(libqvr PROPERTIES VERSION ${QVR_LIBVERSION})
 set_target_properties(libqvr PROPERTIES SOVERSION ${QVR_SOVERSION})
 target_link_libraries(libqvr Qt6::Gui Qt6::OpenGL Qt6::Network)
-if(Qt6Gamepad_FOUND)
+if(Qt6GamepadLegacy_FOUND)
     add_definitions(-DHAVE_QGAMEPAD)
-    target_link_libraries(libqvr Qt6::Gamepad)
+    target_link_libraries(libqvr Qt6::GamepadLegacy)
 endif()
 if(VRPN_FOUND)
     add_definitions(-DHAVE_VRPN)
