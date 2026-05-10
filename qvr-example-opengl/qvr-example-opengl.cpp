@@ -52,7 +52,7 @@ unsigned int QVRExampleOpenGL::setupTex(const QString& filename)
     img.load(filename);
     if (isGLES)
         img = img.scaledToWidth(img.width() / 2, Qt::SmoothTransformation);
-    img = img.mirrored(false, true);
+    img = img.flipped(Qt::Vertical);
     img = img.convertToFormat(QImage::Format_RGBA8888);
     return setupTex(img);
 }

@@ -113,7 +113,7 @@ unsigned int SceneViewer::createTex(
         } else {
             // Using Qt bindTexture() does not work for some reason, maybe it's
             // because we use a core context. So we do it ourselves.
-            img = img.mirrored(false, true);
+            img = img.flipped(Qt::Vertical);
             img = img.convertToFormat(QImage::Format_ARGB32);
             glGenTextures(1, &tex);
             glBindTexture(GL_TEXTURE_2D, tex);
