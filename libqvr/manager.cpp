@@ -1112,7 +1112,7 @@ void QVRManager::render()
     constexpr float tolerance = 1e-5f;
     QRectF unitedScreenRect;
     QRectF intersectedScreenRect;
-    float screenCommonZ;
+    float screenCommonZ = 0.0f;
     bool haveCommonAxisAlignedScreen = true;
     for (int w = 0; w < _windows.size(); w++) {
         _windows[w]->computeRenderContext(_near, _far);
